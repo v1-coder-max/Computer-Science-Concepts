@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command Pattern — DevLens</title>
+  <meta name="description" content="The Command pattern: wrap a request as an object so you can queue, log, and undo it, decoupling the invoker from the receiver — the basis of undo/redo, task queues, MediatR and CQRS." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="command" data-title="Command Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Command Pattern</h1>
+          <p class="lede">
+            Turn a request into a <strong>first-class object</strong>. Once an action is an object you can store it,
+            queue it, log it, pass it around — and undo it.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#behavioral</span>
+            <span class="tag">#undo</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Normally you call a method and it runs immediately. The <strong>Command</strong> pattern wraps that call
+            — the receiver, the method, and its arguments — into a <strong>command object</strong> with an
+            <code>Execute()</code> method (and often an <code>Undo()</code>). Because the action is now data, you gain
+            superpowers:
+          </p>
+          <ul>
+            <li><strong>Queue / schedule</strong> it — run later, on a background worker, or in order.</li>
+            <li><strong>Log / persist</strong> it — replay or audit what happened.</li>
+            <li><strong>Undo / redo</strong> — keep a history stack and reverse commands.</li>
+            <li><strong>Decouple</strong> the <em>invoker</em> (the button, the queue) from the <em>receiver</em> (the thing that does the work) — the invoker just calls <code>Execute()</code>.</li>
+          </ul>
+          <p>
+            The classic structure: an <strong>invoker</strong> holds commands and triggers them; each
+            <strong>command</strong> knows its <strong>receiver</strong> and how to act on it. This is also the
+            conceptual root of <strong>CQRS</strong> and libraries like <strong>MediatR</strong>, where a request
+            object is dispatched to a handler.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Undo/redo</strong> in editors (text, design tools, IDEs) is the killer use: each edit is a
+              command pushed onto a history stack, and Ctrl+Z pops one and calls <code>Undo()</code>. <strong>Task
+              queues</strong> serialize commands and process them on workers (a job system). UI frameworks bind
+              buttons/menus to command objects (WPF’s <code>ICommand</code>) so the same action works from a toolbar,
+              a shortcut, or a context menu. And in modern .NET, <strong>MediatR</strong> commands
+              (<code>IRequest</code> → handler) are the command pattern powering CQRS.
+            </p>
+          </div>
+
+          <h2>Invoker → command → receiver</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="Command decouples invoker and receiver">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="52" width="120" height="46" rx="9"/><text class="dgm-sub" x="80" y="72" text-anchor="middle">invoker</text><text class="dgm-sub" x="80" y="88" text-anchor="middle">button / queue</text>
+              <rect class="dgm-box-accent" x="230" y="48" width="150" height="54" rx="10"/><text class="dgm-label" x="305" y="70" text-anchor="middle">Command</text><text class="dgm-sub" x="305" y="88" text-anchor="middle">Execute() / Undo()</text>
+              <rect class="dgm-box" x="460" y="52" width="120" height="46" rx="9"/><text class="dgm-sub" x="520" y="78" text-anchor="middle">receiver</text>
+              <line class="dgm-line" x1="140" y1="75" x2="228" y2="75" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="380" y1="75" x2="458" y2="75" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="184" y="65" text-anchor="middle">triggers</text>
+              <text class="dgm-sub" x="300" y="130" text-anchor="middle">commands can be queued, logged, and undone (history stack)</text>
+            </svg>
+            <figcaption>Figure 1 — The invoker just runs <code>Execute()</code>; the command knows its receiver and how to undo.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public interface ICommand { void Execute(); void Undo(); }
+
+// A concrete command knows its receiver and how to act + reverse.
+public class AddTextCommand(Document doc, string text) : ICommand
+{
+    public void Execute() =&gt; doc.Append(text);
+    public void Undo()    =&gt; doc.RemoveLast(text.Length);
+}
+
+// Invoker keeps a history → undo/redo for free.
+public class Editor
+{
+    private readonly Stack&lt;ICommand&gt; _history = new();
+    public void Run(ICommand cmd) { cmd.Execute(); _history.Push(cmd); }
+    public void Undo() { if (_history.Count &gt; 0) _history.Pop().Undo(); }
+}
+
+var editor = new Editor();
+editor.Run(new AddTextCommand(doc, "Hello"));   // do
+editor.Undo();                                   // undo (Ctrl+Z)
+
+// Modern .NET: a MediatR command is this pattern — a request object + a handler.
+// public record PlaceOrder(Guid Id) : IRequest&lt;OrderResult&gt;;</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Command wraps a request (receiver + action + args) as an object with <code>Execute()</code> (and often <code>Undo()</code>).</li>
+              <li>Because the action is data, you can queue, log, schedule, and undo it — and the invoker is decoupled from the receiver.</li>
+              <li>It’s the basis of undo/redo, task queues, UI <code>ICommand</code>, and MediatR/CQRS commands.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/mediator.html"><span class="rc-cat">C#</span><span class="rc-title">Mediator Pattern</span></a>
+            <a class="related-card" href="../csharp/cqrs.html"><span class="rc-cat">C#</span><span class="rc-title">CQRS</span></a>
+            <a class="related-card" href="../csharp/chain-of-responsibility.html"><span class="rc-cat">C#</span><span class="rc-title">Chain of Responsibility</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“How would you implement undo/redo?”</em> — Command, with a history stack and an <code>Undo()</code>
+              per command. Stress that turning an action into an <strong>object</strong> is what enables queuing,
+              logging, and undo, and that it <strong>decouples invoker from receiver</strong>. Tie it to MediatR/CQRS
+              for modern .NET relevance.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

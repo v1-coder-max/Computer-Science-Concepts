@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Observer Pattern — DevLens</title>
+  <meta name="description" content="The Observer pattern: a one-to-many dependency where a subject notifies all its observers when it changes — and how C# events, delegates and IObservable<T> are observer built into the language." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="observer" data-title="Observer Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Observer Pattern</h1>
+          <p class="lede">
+            A one-to-many relationship: when one object (the <strong>subject</strong>) changes, all its registered
+            <strong>observers</strong> are notified automatically. In C#, this <em>is</em> events.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#behavioral</span>
+            <span class="tag">#events</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Sometimes many parts of a system need to react when something changes — a price updates, an order is
+            placed, a setting toggles. You <em>could</em> have the changing object call each interested party
+            directly, but that couples it to all of them. The <strong>Observer</strong> pattern inverts it: the
+            subject keeps a list of <strong>observers</strong> who <em>subscribe</em>, and when its state changes it
+            <strong>notifies</strong> them all — without knowing who they are or what they do.
+          </p>
+          <p>
+            That’s loose coupling and the <strong>publish/subscribe</strong> idea at the object level: observers can
+            come and go (subscribe/unsubscribe) without the subject changing. The subject pushes; observers react.
+          </p>
+          <p>
+            C# has the observer pattern <strong>built into the language</strong>. A <code>delegate</code> is a list
+            of method references, and an <code>event</code> is a subject’s notification point — <code>+=</code> to
+            subscribe, raise to notify all. You rarely hand-roll the GoF interfaces in C#; you use events. For
+            streams of values over time, <code>IObservable&lt;T&gt;</code>/<code>IObserver&lt;T&gt;</code> (Reactive
+            Extensions) is the same pattern at scale.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>UI data binding</strong> is observer: when a view-model property changes, it raises
+              <code>PropertyChanged</code> and every bound control updates — the view-model doesn’t know which
+              controls are listening. A stock ticker pushes price updates to every subscribed chart and alert. Domain
+              events (<code>OrderPlaced</code>) let handlers react without the order code referencing them. It’s the
+              same idea as the system-level event-driven architecture, just inside one process — and in C# it’s all
+              expressed with <code>event</code>.
+            </p>
+          </div>
+
+          <h2>Subject notifies many observers</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="Subject notifying observers">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="30" y="52" width="150" height="48" rx="10"/><text class="dgm-label" x="105" y="74" text-anchor="middle">Subject</text><text class="dgm-sub" x="105" y="92" text-anchor="middle">state changed</text>
+              <rect class="dgm-box" x="280" y="14" width="170" height="28" rx="6"/><text class="dgm-sub" x="365" y="33" text-anchor="middle">observer: chart</text>
+              <rect class="dgm-box" x="280" y="60" width="170" height="28" rx="6"/><text class="dgm-sub" x="365" y="79" text-anchor="middle">observer: alert</text>
+              <rect class="dgm-box" x="280" y="106" width="170" height="28" rx="6"/><text class="dgm-sub" x="365" y="125" text-anchor="middle">observer: logger</text>
+              <line class="dgm-line" x1="180" y1="68" x2="278" y2="28" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="180" y1="76" x2="278" y2="74" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="180" y1="84" x2="278" y2="120" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="230" y="60" text-anchor="middle">notify</text>
+            </svg>
+            <figcaption>Figure 1 — One change fans out to every subscriber; the subject doesn’t know who they are.</figcaption>
+          </figure>
+
+          <h2>In C# (events are observer)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class Stock
+{
+    public event EventHandler&lt;decimal&gt;? PriceChanged;   // the subject's notification point
+
+    private decimal _price;
+    public decimal Price
+    {
+        get =&gt; _price;
+        set { _price = value; PriceChanged?.Invoke(this, value); } // notify all observers
+    }
+}
+
+var msft = new Stock();
+msft.PriceChanged += (s, price) =&gt; Console.WriteLine($"chart: {price}");   // subscribe (+=)
+msft.PriceChanged += (s, price) =&gt; AlertIfAbove(price, 400m);             // another observer
+msft.Price = 410m;   // every subscriber is notified automatically
+// msft.PriceChanged -= handler;   // unsubscribe when done (avoids leaks)
+
+// For streams of values over time, IObservable&lt;T&gt; (Rx) is observer at scale.</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Unsubscribe to avoid leaks</p>
+            <p>
+              An event holds references to its handlers. If a long-lived subject keeps a subscription to a
+              short-lived observer, the observer can’t be garbage-collected — a classic managed memory leak. Always
+              <code>-=</code> when the observer goes away (or use weak-event patterns).
+            </p>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Observer is a one-to-many dependency: the subject notifies all subscribers when it changes, without knowing who they are (loose coupling).</li>
+              <li>In C# it’s built in — <code>delegate</code> + <code>event</code> (<code>+=</code>/<code>-=</code>); <code>IObservable&lt;T&gt;</code> for value streams.</li>
+              <li>Unsubscribe to prevent the event-handler memory leak.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/delegates-events.html"><span class="rc-cat">C#</span><span class="rc-title">Delegates &amp; Events</span></a>
+            <a class="related-card" href="../csharp/mediator.html"><span class="rc-cat">C#</span><span class="rc-title">Mediator Pattern</span></a>
+            <a class="related-card" href="../microservices/event-driven.html"><span class="rc-cat">Microservices</span><span class="rc-title">Event-Driven Architecture</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The C#-specific insight: <strong>events ARE the observer pattern</strong> — you don’t implement the GoF
+              interfaces, you use <code>event</code>. Mention subscribe/notify/loose-coupling, the unsubscribe leak,
+              and <code>IObservable&lt;T&gt;</code> for streams. Distinguish it from Mediator (hub) and pub/sub at the
+              system level.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

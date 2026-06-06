@@ -82,7 +82,13 @@
           { slug: "builder", title: "Builder Pattern" },
           { slug: "prototype", title: "Prototype Pattern" },
           { slug: "adapter", title: "Adapter Pattern" },
-          { slug: "decorator", title: "Decorator Pattern" }
+          { slug: "decorator", title: "Decorator Pattern" },
+          { slug: "facade", title: "Facade Pattern" },
+          { slug: "proxy", title: "Proxy Pattern" },
+          { slug: "composite", title: "Composite Pattern" },
+          { slug: "strategy", title: "Strategy Pattern" },
+          { slug: "observer", title: "Observer Pattern" },
+          { slug: "command", title: "Command Pattern" }
         ]
       },
       {

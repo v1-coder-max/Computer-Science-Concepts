@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proxy Pattern — DevLens</title>
+  <meta name="description" content="The Proxy pattern: a stand-in with the same interface that controls access to a real object — virtual (lazy), protection, remote and caching proxies, as seen in EF Core lazy loading and gRPC clients." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="proxy" data-title="Proxy Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Proxy Pattern</h1>
+          <p class="lede">
+            A stand-in object with the <strong>same interface</strong> as the real one, sitting in front of it to
+            <strong>control access</strong> — for lazy loading, security, remoting, or caching.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#structural</span>
+            <span class="tag">#access-control</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>Proxy</strong> implements the same interface as a real object (the <em>subject</em>) and stands
+            in for it, intercepting calls to add <strong>access control</strong> before (or instead of) forwarding to
+            the real thing. Because it shares the interface, callers can’t tell they’re holding a proxy. The common
+            flavors:
+          </p>
+          <ul>
+            <li><strong>Virtual proxy</strong> — defers creating an expensive object until it’s actually needed (lazy loading).</li>
+            <li><strong>Protection proxy</strong> — checks permissions before allowing the call.</li>
+            <li><strong>Remote proxy</strong> — represents an object living in another process/machine, handling the network underneath.</li>
+            <li><strong>Caching proxy</strong> — returns cached results to avoid repeating expensive work.</li>
+          </ul>
+          <p>
+            Proxy looks structurally identical to Decorator (both wrap an object with the same interface), but the
+            <em>intent</em> differs: a decorator <strong>adds new behavior</strong> to enrich the object; a proxy
+            <strong>controls access</strong> to it (when/whether/by whom it’s reached). Same shape, different purpose.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>EF Core lazy loading</strong> uses proxies: navigation properties return proxy objects that
+              fetch the related rows from the database only when you first access them (a virtual proxy). A
+              <strong>gRPC</strong> client is a remote proxy — you call <code>client.GetPriceAsync(...)</code> as if
+              it were local, and the generated proxy marshals it over HTTP/2. Frameworks like Castle DynamicProxy
+              generate proxies at runtime to inject logging, transactions, or authorization around method calls.
+              Anywhere a call <em>looks</em> direct but secretly does access control, lazy init, or remoting, a proxy
+              is at work.
+            </p>
+          </div>
+
+          <h2>Stand-in controls access</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 140" role="img" aria-label="Proxy controlling access to a real subject">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="48" width="120" height="44" rx="9"/><text class="dgm-sub" x="80" y="74" text-anchor="middle">client</text>
+              <rect class="dgm-box-accent" x="220" y="44" width="150" height="52" rx="10"/><text class="dgm-label" x="295" y="66" text-anchor="middle">Proxy</text><text class="dgm-sub" x="295" y="84" text-anchor="middle">check / lazy / cache</text>
+              <rect class="dgm-box" x="450" y="48" width="130" height="44" rx="9"/><text class="dgm-sub" x="515" y="68" text-anchor="middle">real subject</text><text class="dgm-sub" x="515" y="84" text-anchor="middle">(expensive)</text>
+              <line class="dgm-line" x1="140" y1="70" x2="218" y2="70" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="370" y1="70" x2="448" y2="70" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="180" y="40" text-anchor="middle">same interface</text>
+              <text class="dgm-sub" x="410" y="40" text-anchor="middle">maybe forward</text>
+            </svg>
+            <figcaption>Figure 1 — Same interface as the subject; the proxy decides if/when/how the real call happens.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public interface IImage { void Display(); }
+
+// Real subject: expensive to create (loads a big file).
+public class HighResImage : IImage
+{
+    public HighResImage(string path) { /* load megabytes from disk now */ }
+    public void Display() { /* draw */ }
+}
+
+// Virtual proxy: same interface, but defers the expensive load until first use.
+public class LazyImageProxy(string path) : IImage
+{
+    private HighResImage? _real;
+    public void Display()
+    {
+        _real ??= new HighResImage(path);   // create on first access (lazy)
+        _real.Display();                     // then forward
+    }
+}
+
+IImage image = new LazyImageProxy("huge.png"); // cheap; nothing loaded yet
+image.Display();                                // NOW it loads, then displays
+
+// Protection proxy: gate access before forwarding.
+public class SecureDocProxy(IDocument inner, IUser user) : IDocument
+{
+    public string Read() =&gt; user.CanRead ? inner.Read()
+                                          : throw new UnauthorizedAccessException();
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A proxy shares the subject’s interface and <strong>controls access</strong> to it — virtual (lazy), protection, remote, or caching.</li>
+              <li>Same structure as a decorator, different intent: proxy <em>controls access</em>; decorator <em>adds behavior</em>.</li>
+              <li>EF Core lazy loading and gRPC clients are real-world proxies (virtual and remote).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/decorator.html"><span class="rc-cat">C#</span><span class="rc-title">Decorator Pattern</span></a>
+            <a class="related-card" href="../csharp/facade.html"><span class="rc-cat">C#</span><span class="rc-title">Facade Pattern</span></a>
+            <a class="related-card" href="../dotnet/ef-core-internals.html"><span class="rc-cat">.NET</span><span class="rc-title">EF Core Internals</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Proxy vs Decorator?”</em> Same wrapping structure; the difference is <strong>intent</strong> —
+              proxy controls <em>access</em> (lazy/security/remote/cache), decorator <em>adds</em> behavior. Name the
+              four proxy types and cite EF Core lazy loading or a gRPC client as proof you’ve seen it.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Composite Pattern — DevLens</title>
+  <meta name="description" content="The Composite pattern: treat individual objects and groups of objects uniformly through one interface, modeling part-whole tree structures like file systems and UI trees, in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="composite" data-title="Composite Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Composite Pattern</h1>
+          <p class="lede">
+            Treat a single object and a whole tree of objects <strong>the same way</strong>. A file and a folder
+            full of files both answer “what’s your size?” — and the client doesn’t care which it’s holding.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#structural</span>
+            <span class="tag">#tree</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Lots of data is a <strong>part-whole hierarchy</strong>: a folder contains files <em>and</em> other
+            folders; a UI panel contains buttons <em>and</em> other panels. The <strong>Composite</strong> pattern
+            lets you build these trees and treat <strong>leaves</strong> (individual items) and
+            <strong>composites</strong> (containers of children) <em>uniformly</em>, because both implement the same
+            <strong>component</strong> interface.
+          </p>
+          <p>
+            A leaf does its operation directly; a composite implements the operation by <strong>recursing</strong>
+            over its children and aggregating. So <code>folder.GetSize()</code> sums its children’s sizes, each of
+            which might be a file (returns its own size) or another folder (recurses again). The win: client code
+            handles the whole tree with one method call and never writes <code>if (it’s a folder) … else …</code> —
+            the recursion lives in the composite.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              The <strong>file system</strong> is the textbook composite — files and directories share operations
+              (size, delete, search), and “delete this directory” recurses through the tree. UI frameworks are
+              composites: a control tree where a container renders by rendering its children (WPF/Blazor component
+              trees, the browser <strong>DOM</strong>). Org charts, menu/submenu structures, and graphics scene
+              graphs all use it. Any time you find yourself writing recursive code over a nested structure with a
+              shared operation, you’re using composite.
+            </p>
+          </div>
+
+          <h2>Leaves and composites, one interface</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Composite tree of leaves and composites">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="240" y="14" width="120" height="34" rx="8"/><text class="dgm-sub" x="300" y="35" text-anchor="middle">Folder (composite)</text>
+              <rect class="dgm-box" x="60" y="80" width="110" height="30" rx="6"/><text class="dgm-sub" x="115" y="100" text-anchor="middle">file.txt (leaf)</text>
+              <rect class="dgm-box-accent" x="240" y="80" width="120" height="30" rx="6"/><text class="dgm-sub" x="300" y="100" text-anchor="middle">Subfolder</text>
+              <rect class="dgm-box" x="430" y="80" width="110" height="30" rx="6"/><text class="dgm-sub" x="485" y="100" text-anchor="middle">img.png (leaf)</text>
+              <rect class="dgm-box" x="240" y="124" width="120" height="28" rx="6"/><text class="dgm-sub" x="300" y="143" text-anchor="middle">note.md (leaf)</text>
+              <line class="dgm-line" x1="280" y1="48" x2="130" y2="78" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="300" y1="48" x2="300" y2="78" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="48" x2="470" y2="78" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="300" y1="110" x2="300" y2="122" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="490" y="143" text-anchor="end" fill="var(--c-success)" style="font:600 11px var(--font-sans)">all are IComponent</text>
+            </svg>
+            <figcaption>Figure 1 — Folders contain files and folders; <code>GetSize()</code> recurses uniformly.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Component: the shared interface for leaf AND composite.
+public interface IFileSystemItem { long GetSize(); }
+
+// Leaf: does the work directly.
+public class FileItem(long size) : IFileSystemItem
+{
+    public long GetSize() =&gt; size;
+}
+
+// Composite: holds children and recurses.
+public class Folder : IFileSystemItem
+{
+    private readonly List&lt;IFileSystemItem&gt; _children = new();
+    public void Add(IFileSystemItem item) =&gt; _children.Add(item);
+
+    public long GetSize() =&gt; _children.Sum(c =&gt; c.GetSize());  // recursion is here
+}
+
+// Client treats the whole tree uniformly — no leaf-vs-composite branching.
+var root = new Folder();
+root.Add(new FileItem(100));
+var sub = new Folder();
+sub.Add(new FileItem(50));
+root.Add(sub);
+Console.WriteLine(root.GetSize());   // 150 — recurses through the tree</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Composite models part-whole <strong>trees</strong>; leaves and composites share one component interface.</li>
+              <li>The composite implements operations by <strong>recursing</strong> over children — clients treat the whole tree uniformly, with no type-checking.</li>
+              <li>File systems, UI/DOM trees, and org charts are classic composites.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/decorator.html"><span class="rc-cat">C#</span><span class="rc-title">Decorator Pattern</span></a>
+            <a class="related-card" href="../csharp/builder.html"><span class="rc-cat">C#</span><span class="rc-title">Builder Pattern</span></a>
+            <a class="related-card" href="../oop/polymorphism.html"><span class="rc-cat">OOP</span><span class="rc-title">Polymorphism</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The keyword is <strong>tree / part-whole hierarchy treated uniformly</strong>. Use the file-system
+              example, point out that leaf and composite share an interface and the composite <strong>recurses</strong>,
+              and that the payoff is client code with no <code>if (folder) … else …</code> branching.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

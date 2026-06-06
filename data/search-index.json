@@ -684,5 +684,47 @@
     "tags": ["design-pattern", "structural", "composition", "gof", "wrapper", "streams"],
     "description": "Add behavior to an object by wrapping it in another with the same interface — stackable, composition-over-inheritance extension, as in .NET Streams.",
     "url": "concepts/csharp/decorator.html"
+  },
+  {
+    "title": "Facade Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "structural", "simplification", "gof", "subsystem", "coupling"],
+    "description": "A single simplified entry point that hides a complex subsystem of many classes — reducing coupling, without changing or adding behavior.",
+    "url": "concepts/csharp/facade.html"
+  },
+  {
+    "title": "Proxy Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "structural", "access-control", "gof", "lazy-loading", "remote"],
+    "description": "A stand-in with the same interface that controls access to a real object — virtual (lazy), protection, remote and caching proxies, as in EF Core and gRPC.",
+    "url": "concepts/csharp/proxy.html"
+  },
+  {
+    "title": "Composite Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "structural", "tree", "gof", "part-whole", "recursion"],
+    "description": "Treat individual objects and groups uniformly through one interface, modeling part-whole tree structures like file systems and UI trees.",
+    "url": "concepts/csharp/composite.html"
+  },
+  {
+    "title": "Strategy Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "behavioral", "algorithms", "gof", "delegates", "open-closed"],
+    "description": "Define a family of interchangeable algorithms behind one interface and swap them at runtime — replacing conditionals; in C# a delegate is often the strategy.",
+    "url": "concepts/csharp/strategy.html"
+  },
+  {
+    "title": "Observer Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "behavioral", "events", "gof", "pub-sub", "iobservable"],
+    "description": "A one-to-many dependency where a subject notifies all observers when it changes — and how C# events, delegates and IObservable<T> are observer built in.",
+    "url": "concepts/csharp/observer.html"
+  },
+  {
+    "title": "Command Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "behavioral", "undo", "gof", "queue", "mediatr"],
+    "description": "Wrap a request as an object so you can queue, log and undo it, decoupling invoker from receiver — the basis of undo/redo, task queues, MediatR and CQRS.",
+    "url": "concepts/csharp/command.html"
   }
 ]
