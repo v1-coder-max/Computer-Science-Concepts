@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inter-Service Communication — DevLens</title>
+  <meta name="description" content="How microservices talk: synchronous REST/gRPC (simple but tightly coupled, risk of cascading failures) versus asynchronous messaging/events (decoupled, resilient, eventually consistent) — and when to use each." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="inter-service-comms" data-title="Inter-Service Communication">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Inter-Service Communication</h1>
+          <p class="lede">
+            Once you split into services, they have to talk over the network. The biggest design choice is
+            <strong>synchronous</strong> (call and wait) vs <strong>asynchronous</strong> (fire an event).
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#communication</span>
+            <span class="tag">#sync-vs-async</span>
+            <span class="tag">#rest</span>
+            <span class="tag">#messaging</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Synchronous</strong> communication (REST over HTTP, or gRPC) is request/response: service A calls
+            service B and <em>waits</em> for the answer. It’s simple and intuitive, and right when you need an
+            immediate result (a query). The danger is <strong>temporal coupling</strong>: if B is slow or down, A is
+            stuck — and in a chain A→B→C→D, one slow link can cause <strong>cascading failures</strong> across the
+            system. Within microservices, <strong>gRPC</strong> is often preferred over REST for internal calls
+            (binary, HTTP/2, typed contracts, faster).
+          </p>
+          <p>
+            <strong>Asynchronous</strong> communication (message queues / events via a broker) is fire-and-forget:
+            A publishes a message/event and moves on; B processes it when ready. This <strong>decouples</strong> the
+            services in time — B can be down and catch up later — and adds resilience (retries, buffering). The cost
+            is <strong>eventual consistency</strong> and the operational weight of a broker, plus harder debugging
+            (no single call stack).
+          </p>
+          <p>
+            The rule of thumb: <strong>sync for queries</strong> that need an answer now; <strong>async for
+            commands/events</strong> and anything that can happen in the background. And keep an eye on
+            <strong>chatty synchronous chains</strong> — deep A→B→C→D request trees are a classic microservices
+            anti-pattern that multiplies latency and failure surface.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              At checkout, the order service might call the pricing service <strong>synchronously</strong> (you need
+              the total right now), but it <strong>publishes</strong> an <code>OrderPlaced</code> event
+              <strong>asynchronously</strong> so payment, inventory, shipping, and email all react on their own time —
+              none of them block the user’s “order confirmed.” This split is why a slow email provider never delays a
+              checkout. Internally, hot service-to-service calls (recommendations, catalog) often use
+              <strong>gRPC</strong> for speed, while public-facing traffic stays REST.
+            </p>
+          </div>
+
+          <h2>Call-and-wait vs publish-and-forget</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Synchronous versus asynchronous communication">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <text class="dgm-label" x="20" y="22" fill="var(--c-info)">Synchronous (REST/gRPC)</text>
+              <rect class="dgm-box-accent" x="30" y="36" width="80" height="34" rx="7"/><text class="dgm-sub" x="70" y="57" text-anchor="middle">A</text>
+              <rect class="dgm-box" x="200" y="36" width="80" height="34" rx="7"/><text class="dgm-sub" x="240" y="57" text-anchor="middle">B</text>
+              <line class="dgm-line" x1="110" y1="48" x2="198" y2="48" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="200" y1="62" x2="112" y2="62" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="155" y="92" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">B down → A blocked (cascades)</text>
+
+              <text class="dgm-label" x="330" y="22" fill="var(--c-success)">Asynchronous (events)</text>
+              <rect class="dgm-box-accent" x="330" y="36" width="60" height="34" rx="7"/><text class="dgm-sub" x="360" y="57" text-anchor="middle">A</text>
+              <rect class="dgm-box" x="420" y="36" width="60" height="34" rx="7"/><text class="dgm-sub" x="450" y="57" text-anchor="middle">bus</text>
+              <rect class="dgm-box" x="510" y="20" width="70" height="24" rx="5"/><text class="dgm-sub" x="545" y="37" text-anchor="middle">B</text>
+              <rect class="dgm-box" x="510" y="52" width="70" height="24" rx="5"/><text class="dgm-sub" x="545" y="69" text-anchor="middle">C</text>
+              <line class="dgm-line" x1="390" y1="53" x2="418" y2="53" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="480" y1="48" x2="508" y2="34" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="480" y1="56" x2="508" y2="64" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="455" y="92" text-anchor="middle">A doesn't wait; B/C catch up</text>
+            </svg>
+            <figcaption>Figure 1 — Sync couples services in time; async decouples them at the cost of eventual consistency.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// SYNC: need the answer now (a query). Use resilient HttpClient or gRPC.
+var price = await _pricingClient.GetTotalAsync(cart);   // waits for pricing service
+
+// ASYNC: a command/event that can happen in the background. Publish and return.
+await _bus.Publish(new OrderPlaced(order.Id, price));   // payment/inventory/email react later
+
+// ⚠ Avoid deep synchronous chains: Order → Pricing → Tax → FX → ...
+//   each hop adds latency and a new way to fail. Prefer events past the first hop.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Synchronous (REST/gRPC) is simple and immediate but tightly couples services and risks cascading failures.</li>
+              <li>Asynchronous (events/queues) decouples services and adds resilience, at the cost of eventual consistency.</li>
+              <li>Sync for queries; async for commands/events. Avoid chatty deep sync chains; prefer gRPC for internal sync calls.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/grpc.html"><span class="rc-cat">.NET</span><span class="rc-title">gRPC</span></a>
+            <a class="related-card" href="../system-design/message-queues.html"><span class="rc-cat">System Design</span><span class="rc-title">Message Queues</span></a>
+            <a class="related-card" href="../microservices/event-driven.html"><span class="rc-cat">Microservices</span><span class="rc-title">Event-Driven Architecture</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Frame every comms decision as <strong>sync vs async</strong>: immediate answer → sync (REST/gRPC);
+              background/decoupled → async (events). Raise <strong>cascading failures</strong> as the sync risk and
+              <strong>eventual consistency</strong> as the async cost, and warn against deep synchronous call chains.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

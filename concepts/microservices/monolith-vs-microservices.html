@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monolith vs Microservices — DevLens</title>
+  <meta name="description" content="When to choose a monolith vs microservices: the trade-off between simplicity and independent deploy/scale, the distributed-systems tax, bounded contexts, and why most teams should start monolith." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="monolith-vs-microservices" data-title="Monolith vs Microservices">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Monolith vs Microservices</h1>
+          <p class="lede">
+            One deployable app or many small ones? It’s not about which is “modern” — it’s a trade between
+            <strong>simplicity</strong> and <strong>independent scale/deploy</strong>, paid for in complexity.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#microservices</span>
+            <span class="tag">#monolith</span>
+            <span class="tag">#architecture</span>
+            <span class="tag">#bounded-context</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>monolith</strong> is one application — all features, one codebase, one deployable, usually one
+            database. <strong>Microservices</strong> split the system into many small, <strong>independently
+            deployable</strong> services, each owning a <strong>bounded context</strong> (a business capability) and
+            <em>its own data</em>. They talk over the network.
+          </p>
+          <p><strong>Monolith — pros:</strong> simple to build, run, and test; one deploy; trivial in-process calls; easy ACID transactions. <strong>Cons:</strong> you scale the whole thing even if one module is hot; modules get tangled over time; every change is a big-bang deploy; one bug can take down everything.</p>
+          <p><strong>Microservices — pros:</strong> deploy and scale each service independently; teams own services autonomously (Conway’s Law); pick the right tech per service; a failure can be isolated. <strong>Cons:</strong> you’ve traded code complexity for <strong>distributed-systems complexity</strong> — the network is unreliable, transactions span services (no easy ACID → sagas), and you need serious observability, deployment, and ops machinery.</p>
+          <p>
+            The honest default: <strong>start with a monolith</strong> (ideally a <em>modular</em> monolith with
+            clean internal boundaries), and extract services only when a real driver appears — a module that must
+            scale separately, a team that needs to deploy on its own cadence, or a clear bounded context. Reaching
+            for microservices on day one usually buys the complexity without the payoff.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Amazon</strong> and <strong>Netflix</strong> both <em>started as monoliths</em> and migrated to
+              microservices once scale and org size demanded it — Netflix needed thousands of engineers to deploy
+              independently and to scale streaming separately from billing. But for every famous migration there are
+              countless startups that adopted microservices too early and drowned in distributed complexity (network
+              failures, debugging across services, data consistency) before they had the traffic or team size to need
+              it. The lesson everyone repeats: earn your microservices.
+            </p>
+          </div>
+
+          <h2>One box vs many</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Monolith versus microservices">
+              <text class="dgm-label" x="20" y="22">Monolith</text>
+              <rect class="dgm-box-accent" x="20" y="34" width="200" height="96" rx="10"/>
+              <rect class="dgm-box" x="36" y="50" width="80" height="24" rx="4"/><rect class="dgm-box" x="124" y="50" width="80" height="24" rx="4"/>
+              <rect class="dgm-box" x="36" y="82" width="80" height="24" rx="4"/><rect class="dgm-box" x="124" y="82" width="80" height="24" rx="4"/>
+              <text class="dgm-sub" x="120" y="124" text-anchor="middle">one deploy · one DB</text>
+
+              <text class="dgm-label" x="330" y="22">Microservices</text>
+              <rect class="dgm-box-accent" x="330" y="34" width="70" height="40" rx="7"/><rect class="dgm-box" x="345" y="80" width="40" height="18" rx="3"/>
+              <rect class="dgm-box-accent" x="420" y="34" width="70" height="40" rx="7"/><rect class="dgm-box" x="435" y="80" width="40" height="18" rx="3"/>
+              <rect class="dgm-box-accent" x="510" y="34" width="70" height="40" rx="7"/><rect class="dgm-box" x="525" y="80" width="40" height="18" rx="3"/>
+              <text class="dgm-sub" x="455" y="124" text-anchor="middle">each: own deploy + own data, talks over network</text>
+            </svg>
+            <figcaption>Figure 1 — Microservices buy independence (deploy/scale/team) by introducing the network and split data.</figcaption>
+          </figure>
+
+          <h2>The decision factors</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">When microservices earn their cost</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml">choose_microservices_when:
+  - independent scaling needed     # one part is hot (e.g. streaming vs billing)
+  - many teams shipping in parallel # avoid stepping on each other (Conway's Law)
+  - clear bounded contexts          # natural seams in the domain
+  - fault isolation matters         # one feature must not sink the rest
+
+stay_monolith_when:
+  - small team / early stage        # simplicity > autonomy
+  - domain still shifting           # boundaries aren't clear yet
+  - you can't run distributed ops   # tracing, CI/CD, on-call maturity missing
+# Pragmatic path: modular monolith → extract services as real drivers appear.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Monolith = simple, one deploy, easy transactions; microservices = independent deploy/scale + team autonomy.</li>
+              <li>Microservices trade code complexity for <strong>distributed-systems complexity</strong> (network, consistency, observability, ops).</li>
+              <li>Start with a (modular) monolith; extract services only when a real driver — scale, teams, or a clear bounded context — demands it.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/api-gateway.html"><span class="rc-cat">Microservices</span><span class="rc-title">API Gateway</span></a>
+            <a class="related-card" href="../microservices/inter-service-comms.html"><span class="rc-cat">Microservices</span><span class="rc-title">Inter-Service Communication</span></a>
+            <a class="related-card" href="../microservices/dotnet-microservices.html"><span class="rc-cat">Microservices</span><span class="rc-title">Microservices with .NET</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Would you use microservices here?”</em> Never answer “yes, they’re modern.” Weigh the drivers
+              (independent scale, team autonomy, bounded contexts) against the <strong>distributed tax</strong>, and
+              say you’d start with a modular monolith and extract services when justified. Mention Conway’s Law and
+              that data ownership (a DB per service) is the hardest part.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

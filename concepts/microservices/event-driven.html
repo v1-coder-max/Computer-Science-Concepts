@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event-Driven Architecture — DevLens</title>
+  <meta name="description" content="How services collaborate by producing and consuming events: loose coupling via pub/sub, choreography vs orchestration, eventual consistency, and event sourcing." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="event-driven" data-title="Event-Driven Architecture">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Event-Driven Architecture</h1>
+          <p class="lede">
+            Instead of services calling each other, they announce that <strong>something happened</strong> and let
+            anyone interested react. Producers don’t know — or care — who’s listening.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#event-driven</span>
+            <span class="tag">#pub-sub</span>
+            <span class="tag">#choreography</span>
+            <span class="tag">#eventual-consistency</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            An <strong>event</strong> is an immutable statement of fact about the past: <code>OrderPlaced</code>,
+            <code>PaymentFailed</code>, <code>UserSignedUp</code>. In event-driven architecture, a service
+            <strong>publishes</strong> events to a broker/event bus, and other services <strong>subscribe</strong> to
+            the ones they care about (pub/sub). The publisher has no idea who consumes them — that’s the whole point:
+            <strong>loose coupling</strong>.
+          </p>
+          <p>The big wins:</p>
+          <ul>
+            <li><strong>Decoupling &amp; extensibility</strong> — add a new consumer (analytics, fraud check, a new notification) without touching the producer.</li>
+            <li><strong>Resilience &amp; scale</strong> — consumers process independently, at their own pace, and survive each other’s outages.</li>
+          </ul>
+          <p>Two ways to coordinate a multi-step business process:</p>
+          <ul>
+            <li><strong>Choreography</strong> — no central brain; each service reacts to events and emits its own. Decentralized and flexible, but the overall flow is implicit and harder to trace.</li>
+            <li><strong>Orchestration</strong> — a coordinator explicitly drives the steps. Easier to see and change the flow, but the orchestrator is a focal point.</li>
+          </ul>
+          <p>
+            Two consequences to accept: the system is <strong>eventually consistent</strong> (reactions happen
+            shortly <em>after</em> the fact, not atomically), and a related pattern, <strong>event sourcing</strong>,
+            takes it further by storing the <em>stream of events</em> as the source of truth and deriving current
+            state by replaying them.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When you place an order, the order service emits one <code>OrderPlaced</code> event. Independently,
+              payment charges the card, inventory reserves stock, the shipping service schedules a pickup, the email
+              service sends a confirmation, and analytics records the sale — all subscribers to the same event, none
+              aware of the others. Months later, adding a “loyalty points” service is a <em>new subscriber</em> and
+              zero changes to the order service. This is how <strong>Uber</strong> and <strong>LinkedIn</strong>
+              build on Kafka: one event stream, many independent reactions.
+            </p>
+          </div>
+
+          <h2>One event, many reactions</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Event bus pub/sub fan-out">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="20" y="62" width="120" height="44" rx="9"/><text class="dgm-label" x="80" y="82" text-anchor="middle">Order svc</text><text class="dgm-sub" x="80" y="98" text-anchor="middle">OrderPlaced</text>
+              <rect class="dgm-box" x="200" y="60" width="120" height="48" rx="9"/><text class="dgm-label" x="260" y="88" text-anchor="middle">Event bus</text>
+              <rect class="dgm-box" x="430" y="8" width="150" height="28" rx="6"/><text class="dgm-sub" x="505" y="27" text-anchor="middle">Payment</text>
+              <rect class="dgm-box" x="430" y="44" width="150" height="28" rx="6"/><text class="dgm-sub" x="505" y="63" text-anchor="middle">Inventory</text>
+              <rect class="dgm-box" x="430" y="80" width="150" height="28" rx="6"/><text class="dgm-sub" x="505" y="99" text-anchor="middle">Email</text>
+              <rect class="dgm-box" x="430" y="116" width="150" height="28" rx="6"/><text class="dgm-sub" x="505" y="135" text-anchor="middle">Analytics</text>
+              <line class="dgm-line" x1="140" y1="84" x2="198" y2="84" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="80" x2="428" y2="22" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="82" x2="428" y2="58" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="86" x2="428" y2="94" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="90" x2="428" y2="130" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Publish once; any number of subscribers react. Add consumers without touching the producer.</figcaption>
+          </figure>
+
+          <h2>In C# (publish &amp; subscribe)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public record OrderPlaced(Guid OrderId, decimal Total, string Email);  // immutable fact
+
+// Producer: announce what happened; don't call anyone directly.
+await _bus.Publish(new OrderPlaced(order.Id, order.Total, order.Email));
+
+// Consumers subscribe independently — each one a separate, isolated reaction.
+public class EmailOnOrderPlaced : IConsumer&lt;OrderPlaced&gt;
+{
+    public Task Consume(ConsumeContext&lt;OrderPlaced&gt; ctx)
+        =&gt; _email.SendConfirmationAsync(ctx.Message.Email, ctx.Message.OrderId);
+}
+public class StockOnOrderPlaced : IConsumer&lt;OrderPlaced&gt;
+{
+    public Task Consume(ConsumeContext&lt;OrderPlaced&gt; ctx)
+        =&gt; _inventory.ReserveAsync(ctx.Message.OrderId);   // adding a new consumer = new class
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Services publish immutable events and subscribe to the ones they care about — producers don’t know consumers (loose coupling).</li>
+              <li>Extensible by design: add a new subscriber without changing the producer.</li>
+              <li>Choreography (decentralized reactions) vs orchestration (a coordinator); the system is eventually consistent; event sourcing stores events as the source of truth.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/message-queues.html"><span class="rc-cat">System Design</span><span class="rc-title">Message Queues</span></a>
+            <a class="related-card" href="../microservices/saga-pattern.html"><span class="rc-cat">Microservices</span><span class="rc-title">Saga Pattern</span></a>
+            <a class="related-card" href="../microservices/outbox-pattern.html"><span class="rc-cat">Microservices</span><span class="rc-title">Outbox Pattern</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Stress <strong>loose coupling</strong> (producer doesn’t know consumers) and <strong>extensibility</strong>
+              (add a subscriber, change nothing upstream). Distinguish <strong>events from commands</strong>, and
+              <strong>choreography vs orchestration</strong>, and acknowledge <strong>eventual consistency</strong>
+              as the trade. Bonus: define event sourcing.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

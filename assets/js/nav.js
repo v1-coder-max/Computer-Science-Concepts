@@ -119,9 +119,17 @@
       },
       {
         id: "microservices", slug: "microservices", title: "Microservices", icon: "🔗",
-        color: "var(--cat-microservices)", expected: 18,
+        color: "var(--cat-microservices)", expected: 14,
         blurb: "Gateways, saga & outbox, circuit breakers, tracing, Docker/K8s.",
-        concepts: []
+        concepts: [
+          { slug: "monolith-vs-microservices", title: "Monolith vs Microservices" },
+          { slug: "api-gateway", title: "API Gateway" },
+          { slug: "service-discovery", title: "Service Discovery" },
+          { slug: "inter-service-comms", title: "Inter-Service Communication" },
+          { slug: "event-driven", title: "Event-Driven Architecture" },
+          { slug: "saga-pattern", title: "Saga Pattern" },
+          { slug: "outbox-pattern", title: "Outbox Pattern" }
+        ]
       },
       {
         id: "system-design", slug: "system-design", title: "System Design", icon: "🛰️",

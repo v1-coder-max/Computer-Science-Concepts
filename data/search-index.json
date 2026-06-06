@@ -539,6 +539,55 @@
     "url": "concepts/oop/dry-kiss-yagni.html"
   },
   {
+    "title": "Monolith vs Microservices",
+    "category": "microservices",
+    "tags": ["microservices", "monolith", "architecture", "bounded-context", "conways-law", "modular-monolith"],
+    "description": "When to choose a monolith vs microservices: simplicity vs independent deploy/scale, the distributed-systems tax, bounded contexts, and starting monolith.",
+    "url": "concepts/microservices/monolith-vs-microservices.html"
+  },
+  {
+    "title": "API Gateway",
+    "category": "microservices",
+    "tags": ["api-gateway", "routing", "bff", "microservices", "yarp", "ocelot"],
+    "description": "Why microservices put a single API gateway in front of clients — routing, auth, rate limiting, TLS, aggregation, protocol translation — plus BFF and the SPOF risk.",
+    "url": "concepts/microservices/api-gateway.html"
+  },
+  {
+    "title": "Service Discovery",
+    "category": "microservices",
+    "tags": ["service-discovery", "service-registry", "microservices", "kubernetes", "consul", "eureka"],
+    "description": "How services find each other when instances come and go: the registry, client-side vs server-side discovery, health-based registration, and Kubernetes DNS.",
+    "url": "concepts/microservices/service-discovery.html"
+  },
+  {
+    "title": "Inter-Service Communication",
+    "category": "microservices",
+    "tags": ["communication", "sync-vs-async", "rest", "messaging", "cascading-failure", "grpc"],
+    "description": "How microservices talk: synchronous REST/gRPC (simple but coupled, cascading failures) vs asynchronous events (decoupled, resilient, eventually consistent).",
+    "url": "concepts/microservices/inter-service-comms.html"
+  },
+  {
+    "title": "Event-Driven Architecture",
+    "category": "microservices",
+    "tags": ["event-driven", "pub-sub", "choreography", "eventual-consistency", "event-sourcing", "kafka"],
+    "description": "Services collaborate by producing/consuming events: loose coupling via pub/sub, choreography vs orchestration, eventual consistency, and event sourcing.",
+    "url": "concepts/microservices/event-driven.html"
+  },
+  {
+    "title": "Saga Pattern",
+    "category": "microservices",
+    "tags": ["saga", "distributed-transactions", "compensation", "consistency", "choreography", "orchestration"],
+    "description": "Keeping data consistent across services without distributed ACID: a sequence of local transactions with compensating actions to undo on failure.",
+    "url": "concepts/microservices/saga-pattern.html"
+  },
+  {
+    "title": "Outbox Pattern",
+    "category": "microservices",
+    "tags": ["outbox", "dual-write", "reliable-messaging", "at-least-once", "cdc", "debezium"],
+    "description": "The dual-write problem and the transactional outbox: write the event to an outbox table in the same DB transaction, then a relay publishes it (at-least-once).",
+    "url": "concepts/microservices/outbox-pattern.html"
+  },
+  {
     "title": "Singleton Pattern",
     "category": "csharp",
     "tags": ["design-pattern", "creational", "singleton", "thread-safety", "gof", "lazy"],

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saga Pattern — DevLens</title>
+  <meta name="description" content="How to keep data consistent across microservices without distributed ACID transactions: a saga is a sequence of local transactions with compensating actions to undo on failure — choreography vs orchestration." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="saga-pattern" data-title="Saga Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Saga Pattern</h1>
+          <p class="lede">
+            A business transaction spanning several services can’t be one ACID transaction. A <strong>saga</strong>
+            chains local transactions and, when a step fails, runs <strong>compensating actions</strong> to undo the
+            earlier ones.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#saga</span>
+            <span class="tag">#distributed-transactions</span>
+            <span class="tag">#compensation</span>
+            <span class="tag">#consistency</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            In a monolith, “place order” is one database transaction — all or nothing. In microservices the order,
+            payment, and inventory live in <em>separate</em> services with <em>separate</em> databases, so there’s no
+            single transaction to wrap them. Two-phase commit (2PC) <em>could</em> span them but it’s slow, locks
+            resources, and couples services tightly — so it’s avoided.
+          </p>
+          <p>
+            A <strong>saga</strong> solves it differently. Each service does its <strong>own local transaction</strong>
+            and signals the next step. If a later step fails, the saga doesn’t roll back (you can’t roll back a
+            committed local transaction) — instead it runs <strong>compensating transactions</strong> that
+            semantically undo the completed steps. “Reserve stock” is compensated by “release stock”; “charge card”
+            by “refund.” You get <strong>eventual consistency</strong> across services instead of strict atomicity.
+          </p>
+          <p>Two coordination styles:</p>
+          <ul>
+            <li><strong>Choreography</strong> — each service listens for events and emits the next; no central controller. Simple for short sagas, but the flow is implicit and hard to follow as it grows.</li>
+            <li><strong>Orchestration</strong> — a central <strong>orchestrator</strong> (often a state machine) tells each service what to do and triggers compensations on failure. Clearer and easier to manage for complex sagas, at the cost of a coordinator.</li>
+          </ul>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              An e-commerce “place order” saga runs: <em>create order → reserve inventory → charge payment →
+              schedule shipping</em>. If the payment is declined at step 3, the saga fires compensations in reverse:
+              <em>release the reserved inventory</em> and <em>mark the order cancelled</em> — so the customer isn’t
+              charged and stock isn’t stuck. Travel bookings (flight + hotel + car) are the canonical saga: book all
+              three, and if the car rental fails, cancel the flight and hotel. This is how distributed systems stay
+              consistent without a global lock.
+            </p>
+          </div>
+
+          <h2>Steps forward, compensations back</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Saga steps and compensating transactions">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="20" y="34" width="120" height="36" rx="7"/><text class="dgm-sub" x="80" y="56" text-anchor="middle">1. create order</text>
+              <rect class="dgm-box-accent" x="180" y="34" width="120" height="36" rx="7"/><text class="dgm-sub" x="240" y="56" text-anchor="middle">2. reserve stock</text>
+              <rect x="340" y="34" width="120" height="36" rx="7" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)"/><text x="400" y="56" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">3. charge ✗ fails</text>
+              <line class="dgm-line" x1="140" y1="52" x2="178" y2="52" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="300" y1="52" x2="338" y2="52" marker-end="url(#arrow)"/>
+
+              <rect class="dgm-box" x="180" y="110" width="120" height="36" rx="7"/><text class="dgm-sub" x="240" y="132" text-anchor="middle">release stock</text>
+              <rect class="dgm-box" x="20" y="110" width="120" height="36" rx="7"/><text class="dgm-sub" x="80" y="132" text-anchor="middle">cancel order</text>
+              <line class="dgm-line" x1="360" y1="70" x2="300" y2="110" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="240" y1="110" x2="140" y2="128" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="430" y="100" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">compensate ↩</text>
+            </svg>
+            <figcaption>Figure 1 — On failure, run compensating transactions in reverse to undo committed steps.</figcaption>
+          </figure>
+
+          <h2>In C# (orchestrated saga sketch)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Orchestrator drives the steps and compensates on failure.
+async Task PlaceOrderSaga(Order o)
+{
+    var done = new Stack&lt;Func&lt;Task&gt;&gt;();          // compensations to run if a later step fails
+    try
+    {
+        await _orders.CreateAsync(o);    done.Push(() =&gt; _orders.CancelAsync(o.Id));
+        await _inventory.ReserveAsync(o); done.Push(() =&gt; _inventory.ReleaseAsync(o.Id));
+        await _payments.ChargeAsync(o);  done.Push(() =&gt; _payments.RefundAsync(o.Id));
+        await _shipping.ScheduleAsync(o);
+    }
+    catch
+    {
+        while (done.Count &gt; 0) await done.Pop()(); // run compensations in reverse order
+        throw;
+    }
+}
+// (MassTransit's Saga State Machine formalizes this with persisted state + events.)</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A saga replaces a cross-service ACID transaction with a sequence of local transactions.</li>
+              <li>On failure, run <strong>compensating transactions</strong> to semantically undo completed steps (eventual consistency, not rollback).</li>
+              <li>Choreography (events, decentralized) vs orchestration (a central coordinator/state machine).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/transactions-acid.html"><span class="rc-cat">Database</span><span class="rc-title">Transactions &amp; ACID</span></a>
+            <a class="related-card" href="../microservices/event-driven.html"><span class="rc-cat">Microservices</span><span class="rc-title">Event-Driven Architecture</span></a>
+            <a class="related-card" href="../microservices/outbox-pattern.html"><span class="rc-cat">Microservices</span><span class="rc-title">Outbox Pattern</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“How do you handle a transaction across services?”</em> Say you avoid 2PC and use a <strong>saga</strong>:
+              local transactions + <strong>compensating actions</strong>, giving eventual consistency. Compare
+              <strong>choreography vs orchestration</strong>, and note compensations must be idempotent and that some
+              steps (sending an email) can’t truly be undone — design for it.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

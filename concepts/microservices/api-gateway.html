@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Gateway — DevLens</title>
+  <meta name="description" content="Why microservices put a single API gateway in front of clients — routing, auth, rate limiting, TLS termination, aggregation and protocol translation — plus the BFF pattern and the single-point-of-failure risk." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="api-gateway" data-title="API Gateway">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>API Gateway</h1>
+          <p class="lede">
+            One front door for many services. Clients talk to the gateway; it routes to the right service and
+            handles the cross-cutting concerns in one place.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#api-gateway</span>
+            <span class="tag">#routing</span>
+            <span class="tag">#bff</span>
+            <span class="tag">#microservices</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            With dozens of microservices, you don’t want clients calling each one directly — they’d need to know
+            every address, handle auth everywhere, and make many round trips. An <strong>API gateway</strong> is a
+            single entry point that sits in front of the services and does the shared work:
+          </p>
+          <ul>
+            <li><strong>Routing</strong> — map incoming paths to the right backend service.</li>
+            <li><strong>Authentication / authorization</strong> — validate tokens once, at the edge.</li>
+            <li><strong>Rate limiting &amp; throttling</strong> — protect the whole system.</li>
+            <li><strong>TLS termination</strong>, <strong>compression</strong>, <strong>caching</strong>.</li>
+            <li><strong>Request aggregation</strong> — fan out to several services and combine the responses, so the client makes one call.</li>
+            <li><strong>Protocol translation</strong> — e.g. external REST/JSON ↔ internal gRPC.</li>
+          </ul>
+          <p>
+            A common refinement is the <strong>Backend-for-Frontend (BFF)</strong>: a dedicated gateway per client
+            type (web, mobile) tailored to that UI’s needs, so a mobile app gets compact, mobile-shaped responses.
+          </p>
+          <p>
+            The caveat: the gateway is a <strong>single point of failure</strong> and a potential bottleneck, so it
+            must be highly available and kept thin — routing and cross-cutting concerns, <em>not</em> business
+            logic (that belongs in the services). It pairs with a load balancer in front of it.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Netflix</strong> built <strong>Zuul</strong> as its gateway, fronting hundreds of services and
+              handling auth, routing, and resilience at the edge. Your phone’s Netflix app hits one endpoint; the
+              gateway authenticates you, routes to the right services, and often aggregates (profile + continue-
+              watching + recommendations) into a single response so the app isn’t making ten calls over a mobile
+              network. In .NET, teams use <strong>YARP</strong> or <strong>Ocelot</strong> for the same role.
+            </p>
+          </div>
+
+          <h2>One entry point, many services</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="API gateway in front of services">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="14" y="64" width="96" height="44" rx="9"/><text class="dgm-sub" x="62" y="90" text-anchor="middle">clients</text>
+              <rect class="dgm-box-accent" x="170" y="52" width="150" height="68" rx="10"/><text class="dgm-label" x="245" y="78" text-anchor="middle">API Gateway</text><text class="dgm-sub" x="245" y="96" text-anchor="middle">auth · route · rate-limit</text>
+              <rect class="dgm-box" x="430" y="18" width="150" height="32" rx="7"/><text class="dgm-sub" x="505" y="39" text-anchor="middle">Orders svc</text>
+              <rect class="dgm-box" x="430" y="68" width="150" height="32" rx="7"/><text class="dgm-sub" x="505" y="89" text-anchor="middle">Catalog svc</text>
+              <rect class="dgm-box" x="430" y="118" width="150" height="32" rx="7"/><text class="dgm-sub" x="505" y="139" text-anchor="middle">Payments svc</text>
+              <line class="dgm-line" x1="110" y1="86" x2="168" y2="86" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="78" x2="428" y2="34" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="86" x2="428" y2="84" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="94" x2="428" y2="134" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Clients see one address; the gateway centralizes routing and cross-cutting concerns.</figcaption>
+          </figure>
+
+          <h2>In config (YARP reverse-proxy gateway)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">JSON — YARP (ASP.NET Core)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-json">{
+  "ReverseProxy": {
+    "Routes": {
+      "orders":  { "ClusterId": "orders",  "Match": { "Path": "/api/orders/{**c}" } },
+      "catalog": { "ClusterId": "catalog", "Match": { "Path": "/api/catalog/{**c}" } }
+    },
+    "Clusters": {
+      "orders":  { "Destinations": { "d1": { "Address": "http://orders:8080/" } } },
+      "catalog": { "Destinations": { "d1": { "Address": "http://catalog:8080/" } } }
+    }
+  }
+}
+// In Program.cs: builder.Services.AddReverseProxy().LoadFromConfig(...);  app.MapReverseProxy();
+// Add auth, rate limiting, and TLS as middleware at the gateway — once, for everyone.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>An API gateway is the single entry point that routes to services and centralizes auth, rate limiting, TLS, aggregation, and protocol translation.</li>
+              <li>The BFF pattern gives each client type (web/mobile) its own tailored gateway.</li>
+              <li>Keep it thin (no business logic) and highly available — it’s a potential bottleneck and single point of failure.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/monolith-vs-microservices.html"><span class="rc-cat">Microservices</span><span class="rc-title">Monolith vs Microservices</span></a>
+            <a class="related-card" href="../system-design/rate-limiting.html"><span class="rc-cat">System Design</span><span class="rc-title">Rate Limiting</span></a>
+            <a class="related-card" href="../dotnet/auth-pipeline.html"><span class="rc-cat">.NET</span><span class="rc-title">Auth Pipeline</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              List the gateway’s jobs (routing, auth, rate limiting, aggregation, TLS) and why clients shouldn’t
+              call services directly. Then show balance: it’s a <strong>single point of failure</strong>, so keep
+              it thin and HA, and don’t leak business logic into it. Mentioning the <strong>BFF</strong> pattern is
+              a strong add.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

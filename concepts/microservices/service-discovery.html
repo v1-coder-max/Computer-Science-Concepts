@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Service Discovery — DevLens</title>
+  <meta name="description" content="How services find each other when instances come and go: the service registry, client-side vs server-side discovery, health-check based registration, and DNS-based discovery in Kubernetes." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="service-discovery" data-title="Service Discovery">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Service Discovery</h1>
+          <p class="lede">
+            In a world of autoscaling containers, service instances appear and vanish with ever-changing IPs.
+            Service discovery is how one service <strong>finds a healthy instance</strong> of another.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#service-discovery</span>
+            <span class="tag">#service-registry</span>
+            <span class="tag">#microservices</span>
+            <span class="tag">#kubernetes</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Hardcoding <code>http://10.0.3.14:8080</code> works until that instance is rescheduled, scaled, or
+            replaced and its IP changes — which, with containers and autoscaling, is constantly. Services need a
+            dynamic phone book. The core piece is a <strong>service registry</strong> (Consul, Eureka, etcd): each
+            instance <strong>registers</strong> itself (name + address) on startup and is <strong>deregistered</strong>
+            when it stops or fails a health check. Consumers look up the registry to get a current, healthy address.
+          </p>
+          <p>Two models for the lookup:</p>
+          <ul>
+            <li><strong>Client-side discovery</strong> — the calling service queries the registry, gets the list of instances, and picks one itself (often load-balancing client-side). More control, but every client needs discovery logic.</li>
+            <li><strong>Server-side discovery</strong> — the client calls a stable endpoint (a load balancer / gateway) that queries the registry and forwards. Clients stay dumb; the platform handles it.</li>
+          </ul>
+          <p>
+            On <strong>Kubernetes</strong> this is mostly invisible: a <em>Service</em> gives a stable virtual name
+            and IP, and the platform’s <strong>DNS</strong> resolves <code>orders-service</code> to a healthy pod —
+            built-in, DNS-based, server-side discovery. <strong>Health checks</strong> are what keep the registry
+            honest by removing dead instances automatically.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              On <strong>Kubernetes</strong>, a service just calls <code>http://payments</code> — the cluster DNS
+              resolves that name to one of the currently-healthy payment pods, even as pods are killed, rescheduled,
+              and autoscaled minute to minute. No service ever learns a real pod IP. Before Kubernetes made this
+              built-in, teams ran <strong>Consul</strong> or Netflix’s <strong>Eureka</strong> as an explicit
+              registry that instances registered with on boot and that health checks pruned. Either way, the point
+              is the same: addresses are dynamic, so you look them up by <em>name</em>, never by IP.
+            </p>
+          </div>
+
+          <h2>Register, then look up</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Service registry and lookup">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="220" y="20" width="160" height="44" rx="9"/><text class="dgm-label" x="300" y="40" text-anchor="middle">Service Registry</text><text class="dgm-sub" x="300" y="56" text-anchor="middle">name → healthy addresses</text>
+              <rect class="dgm-box" x="40" y="110" width="130" height="40" rx="8"/><text class="dgm-sub" x="105" y="134" text-anchor="middle">payments #1 ✓</text>
+              <rect class="dgm-box" x="190" y="110" width="130" height="40" rx="8"/><text class="dgm-sub" x="255" y="134" text-anchor="middle">payments #2 ✓</text>
+              <rect class="dgm-box" x="440" y="110" width="130" height="40" rx="8"/><text class="dgm-sub" x="505" y="134" text-anchor="middle">consumer</text>
+              <line class="dgm-line" x1="105" y1="110" x2="250" y2="66" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="150" y="92" text-anchor="middle">register + heartbeat</text>
+              <line class="dgm-line" x1="255" y1="110" x2="290" y2="66" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="490" y1="110" x2="360" y2="66" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="430" y="92" text-anchor="middle">look up "payments"</text>
+            </svg>
+            <figcaption>Figure 1 — Instances self-register with health; consumers resolve a name to a live address.</figcaption>
+          </figure>
+
+          <h2>In practice</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — call by service name, not IP</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// On Kubernetes the service NAME is the stable address; DNS + the platform do discovery.
+builder.Services.AddHttpClient("payments", c =&gt;
+    c.BaseAddress = new Uri("http://payments"));   // resolves to a healthy pod, not a fixed IP
+
+// The calling code never knows or cares which instance answered:
+var http = factory.CreateClient("payments");
+await http.PostAsJsonAsync("/charge", request);
+// (Outside K8s, a Consul/Eureka client would resolve "payments" → an address list instead.)</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Instances have dynamic IPs, so services find each other by <strong>name</strong> via a registry, not hardcoded addresses.</li>
+              <li>Client-side discovery (caller queries the registry) vs server-side (a stable LB/gateway does it).</li>
+              <li>Health checks register/deregister instances; Kubernetes provides DNS-based discovery out of the box.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/load-balancers.html"><span class="rc-cat">System Design</span><span class="rc-title">Load Balancers</span></a>
+            <a class="related-card" href="../microservices/kubernetes.html"><span class="rc-cat">Microservices</span><span class="rc-title">Kubernetes Concepts</span></a>
+            <a class="related-card" href="../microservices/api-gateway.html"><span class="rc-cat">Microservices</span><span class="rc-title">API Gateway</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              State the problem first: <strong>dynamic IPs</strong> make hardcoding impossible. Then describe a
+              <strong>registry</strong> with health-based register/deregister, and contrast <strong>client-side vs
+              server-side</strong> discovery. Knowing that Kubernetes Services + DNS give this for free shows you’ve
+              run it.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
