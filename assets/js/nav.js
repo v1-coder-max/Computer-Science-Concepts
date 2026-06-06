@@ -88,7 +88,13 @@
           { slug: "composite", title: "Composite Pattern" },
           { slug: "strategy", title: "Strategy Pattern" },
           { slug: "observer", title: "Observer Pattern" },
-          { slug: "command", title: "Command Pattern" }
+          { slug: "command", title: "Command Pattern" },
+          { slug: "template-method", title: "Template Method Pattern" },
+          { slug: "state", title: "State Pattern" },
+          { slug: "chain-of-responsibility", title: "Chain of Responsibility" },
+          { slug: "mediator", title: "Mediator Pattern" },
+          { slug: "cqrs", title: "CQRS" },
+          { slug: "repository", title: "Repository Pattern" }
         ]
       },
       {

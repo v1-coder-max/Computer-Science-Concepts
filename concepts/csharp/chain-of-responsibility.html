@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chain of Responsibility — DevLens</title>
+  <meta name="description" content="The Chain of Responsibility pattern: pass a request along a chain of handlers, each deciding to handle it or forward it — decoupling sender from receiver, exactly like the ASP.NET Core middleware pipeline." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="chain-of-responsibility" data-title="Chain of Responsibility">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Chain of Responsibility</h1>
+          <p class="lede">
+            Pass a request down a line of handlers; each one either deals with it or hands it to the next. The
+            sender never needs to know which handler will respond.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#behavioral</span>
+            <span class="tag">#pipeline</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            You have a request and several possible <strong>handlers</strong>, and you don’t want the sender hard-wired
+            to a specific one. <strong>Chain of Responsibility</strong> links the handlers into a chain: each handler
+            gets the request, decides whether it can deal with it, and either handles it, passes it to the
+            <em>next</em> handler, or does some work and <em>then</em> passes it along. The sender just drops the
+            request at the head of the chain.
+          </p>
+          <p>The benefits:</p>
+          <ul>
+            <li><strong>Decoupling</strong> — sender and receiver don’t know about each other; the sender knows only “the chain.”</li>
+            <li><strong>Flexible composition</strong> — add, remove, or reorder handlers without touching the others.</li>
+            <li><strong>Single responsibility</strong> — each handler does one focused check/step.</li>
+          </ul>
+          <p>
+            If this sounds familiar, it’s because the <strong>ASP.NET Core middleware pipeline</strong> <em>is</em>
+            chain of responsibility: each middleware can act on the request, call <code>next()</code> to pass it on,
+            or short-circuit. Validation chains, logging/auth filters, and Polly’s policy-wrapping use the same shape.
+            (A handler can also do work on the way back out, like middleware touching the response.)
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every ASP.NET Core app is built on this pattern: a request flows through exception handling →
+              authentication → authorization → routing → your endpoint, and any link can handle-and-stop (auth
+              returns 401) or pass along. Support systems escalate tickets through tiers (bot → tier-1 → tier-2 →
+              human) until one resolves it. Approval flows route a purchase request up the management chain until
+              someone has the authority to approve the amount. The sender just submits; the chain figures out who
+              acts.
+            </p>
+          </div>
+
+          <h2>Request flows down the chain</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Chain of responsibility handlers">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="14" y="44" width="100" height="40" rx="8"/><text class="dgm-sub" x="64" y="68" text-anchor="middle">request</text>
+              <rect class="dgm-box-accent" x="150" y="44" width="110" height="40" rx="8"/><text class="dgm-sub" x="205" y="68" text-anchor="middle">Auth</text>
+              <rect class="dgm-box-accent" x="290" y="44" width="110" height="40" rx="8"/><text class="dgm-sub" x="345" y="68" text-anchor="middle">Validate</text>
+              <rect class="dgm-box-accent" x="430" y="44" width="110" height="40" rx="8"/><text class="dgm-sub" x="485" y="68" text-anchor="middle">Handle</text>
+              <line class="dgm-line" x1="114" y1="64" x2="148" y2="64" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="260" y1="64" x2="288" y2="64" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="400" y1="64" x2="428" y2="64" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="205" y="36" text-anchor="middle">handle or pass →</text>
+              <text class="dgm-sub" x="300" y="108" text-anchor="middle">any handler can stop the chain (e.g. auth → 401)</text>
+            </svg>
+            <figcaption>Figure 1 — Each handler chooses to act or forward; the sender just starts the chain.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public abstract class Handler
+{
+    private Handler? _next;
+    public Handler SetNext(Handler next) { _next = next; return next; } // build the chain
+
+    public virtual void Handle(Request req) =&gt; _next?.Handle(req);      // default: pass along
+}
+
+public class AuthHandler : Handler
+{
+    public override void Handle(Request req)
+    {
+        if (!req.IsAuthenticated) throw new UnauthorizedAccessException(); // handle &amp; STOP
+        base.Handle(req);                                                  // else pass on
+    }
+}
+public class ValidationHandler : Handler
+{
+    public override void Handle(Request req)
+    {
+        if (!req.IsValid) throw new ValidationException();
+        base.Handle(req);
+    }
+}
+
+// Compose the chain; the sender only knows the head.
+var auth = new AuthHandler();
+auth.SetNext(new ValidationHandler()).SetNext(new BusinessHandler());
+auth.Handle(request);
+
+// This is exactly ASP.NET Core middleware:
+// app.Use(async (ctx, next) =&gt; { /* act */ await next(); /* or short-circuit */ });</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A request travels a chain of handlers; each handles it or passes it on, decoupling sender from receiver.</li>
+              <li>Handlers can be added, removed, or reordered freely; any can short-circuit the chain.</li>
+              <li>The ASP.NET Core <strong>middleware pipeline</strong> is this pattern — the clearest real example.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/middleware-pipeline.html"><span class="rc-cat">.NET</span><span class="rc-title">Middleware Pipeline</span></a>
+            <a class="related-card" href="../csharp/decorator.html"><span class="rc-cat">C#</span><span class="rc-title">Decorator Pattern</span></a>
+            <a class="related-card" href="../csharp/command.html"><span class="rc-cat">C#</span><span class="rc-title">Command Pattern</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The instant-credibility move: <em>“ASP.NET Core middleware is Chain of Responsibility.”</em> Explain
+              handle-or-pass, short-circuiting, and the sender/receiver decoupling. Distinguish it from Decorator
+              (which always delegates and adds behavior, rather than possibly stopping).
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

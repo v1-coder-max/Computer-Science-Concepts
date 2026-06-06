@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CQRS — DevLens</title>
+  <meta name="description" content="Command Query Responsibility Segregation: separate the model that writes data (commands) from the model that reads it (queries), enabling optimized read models and independent scaling — and when not to use it." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="cqrs" data-title="CQRS">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>CQRS</h1>
+          <p class="lede">
+            Command Query Responsibility Segregation: use <strong>different models for writing and reading</strong>.
+            One side changes state; the other side, optimized separately, serves data.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#cqrs</span>
+            <span class="tag">#modern-pattern</span>
+            <span class="tag">#read-model</span>
+            <span class="tag">#mediatr</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Most apps use one model for everything — the same entities and DbContext to write <em>and</em> read. That’s
+            fine until reads and writes pull in opposite directions: writes want a normalized, validated, transaction-
+            friendly model; reads want denormalized, query-shaped data, and there are usually <em>far more</em> reads.
+            <strong>CQRS</strong> splits them:
+          </p>
+          <ul>
+            <li><strong>Commands</strong> change state (PlaceOrder, CancelOrder). They’re imperative, validated, and typically return nothing (or just an ack).</li>
+            <li><strong>Queries</strong> return data and have <strong>no side effects</strong>. They can use lightweight, denormalized read models shaped exactly for the screen.</li>
+          </ul>
+          <p>
+            At minimum CQRS is just <em>separate command and query handlers</em> over the same database (a common,
+            modest version, usually via MediatR). Taken further, the read and write sides use <strong>different data
+            stores</strong> — a normalized write store plus denormalized read <strong>projections</strong> kept in
+            sync (often via events). That lets you scale and optimize reads independently, but introduces
+            <strong>eventual consistency</strong> between the stores.
+          </p>
+          <p>
+            Important: CQRS is <strong>not a default</strong>. The simple shared-handler form is cheap and useful;
+            the separate-stores form is powerful but complex (sync, consistency, more moving parts). Apply it where
+            read/write needs genuinely diverge — not everywhere.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A high-traffic e-commerce site writes orders into a normalized, ACID store (commands), but serves
+              product and order <em>views</em> from a denormalized, pre-joined read model (queries) — often cached or
+              in a separate store — so the millions of reads never hammer the transactional database or join six
+              tables. The read model is rebuilt from <code>OrderPlaced</code>/<code>OrderShipped</code> events.
+              Banking and analytics-heavy systems do the same. In .NET this is typically MediatR commands and queries;
+              when paired with event sourcing, the events <em>are</em> the write model and projections build the reads.
+            </p>
+          </div>
+
+          <h2>Two sides, one system</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="CQRS command and query sides">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="58" width="100" height="44" rx="9"/><text class="dgm-sub" x="70" y="84" text-anchor="middle">app / API</text>
+              <rect class="dgm-box-accent" x="200" y="20" width="170" height="40" rx="9"/><text class="dgm-sub" x="285" y="38" text-anchor="middle">Commands (write model)</text><text class="dgm-sub" x="285" y="54" text-anchor="middle">normalized · ACID</text>
+              <rect class="dgm-box-accent" x="200" y="100" width="170" height="40" rx="9"/><text class="dgm-sub" x="285" y="118" text-anchor="middle">Queries (read model)</text><text class="dgm-sub" x="285" y="134" text-anchor="middle">denormalized · fast</text>
+              <rect class="dgm-box" x="430" y="20" width="150" height="40" rx="9"/><text class="dgm-sub" x="505" y="44" text-anchor="middle">write store</text>
+              <rect class="dgm-box" x="430" y="100" width="150" height="40" rx="9"/><text class="dgm-sub" x="505" y="124" text-anchor="middle">read store / cache</text>
+              <line class="dgm-line" x1="120" y1="72" x2="198" y2="44" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="120" y1="88" x2="198" y2="118" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="370" y1="40" x2="428" y2="40" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="370" y1="120" x2="428" y2="120" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="505" y1="60" x2="505" y2="98" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="560" y="84" text-anchor="end">events sync →</text>
+            </svg>
+            <figcaption>Figure 1 — Commands write; queries read an optimized model; events keep them in sync (eventual consistency).</figcaption>
+          </figure>
+
+          <h2>In C# (MediatR)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// COMMAND: changes state, returns an ack.
+public record PlaceOrder(Guid CartId) : IRequest&lt;Guid&gt;;
+public class PlaceOrderHandler(IOrderWriteStore store) : IRequestHandler&lt;PlaceOrder, Guid&gt;
+{
+    public Task&lt;Guid&gt; Handle(PlaceOrder c, CancellationToken ct) =&gt; store.CreateAsync(c.CartId);
+}
+
+// QUERY: no side effects, returns a read-shaped DTO from the read model.
+public record GetOrderSummary(Guid Id) : IRequest&lt;OrderSummaryDto&gt;;
+public class GetOrderSummaryHandler(IOrderReadStore reads)
+    : IRequestHandler&lt;GetOrderSummary, OrderSummaryDto&gt;
+{
+    public Task&lt;OrderSummaryDto&gt; Handle(GetOrderSummary q, CancellationToken ct)
+        =&gt; reads.GetSummaryAsync(q.Id);   // denormalized, no joins
+}
+// Same DB at first; split stores only when reads/writes truly diverge.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>CQRS separates the write model (commands, state-changing) from the read model (queries, side-effect-free).</li>
+              <li>The light version is just separate handlers on one DB; the heavy version uses separate read/write stores synced by events (eventual consistency).</li>
+              <li>It’s not a default — apply it where read and write needs genuinely diverge; it adds real complexity.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/mediator.html"><span class="rc-cat">C#</span><span class="rc-title">Mediator Pattern</span></a>
+            <a class="related-card" href="../database/normalization.html"><span class="rc-cat">Database</span><span class="rc-title">Normalization</span></a>
+            <a class="related-card" href="../microservices/event-driven.html"><span class="rc-cat">Microservices</span><span class="rc-title">Event-Driven Architecture</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define CQRS as <strong>separate read/write models</strong> and resist over-selling it: say the simple
+              handler split is cheap, but separate stores bring <strong>eventual consistency</strong> and complexity,
+              so use it only when justified (read-heavy, very different read/write shapes). Mention MediatR and the
+              event-sourcing pairing.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

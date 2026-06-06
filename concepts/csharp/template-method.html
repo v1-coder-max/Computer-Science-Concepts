@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template Method Pattern — DevLens</title>
+  <meta name="description" content="The Template Method pattern: define the skeleton of an algorithm in a base class and let subclasses fill in specific steps via overridable hooks — the Hollywood principle, as in ASP.NET Core's BackgroundService." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="template-method" data-title="Template Method Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Template Method Pattern</h1>
+          <p class="lede">
+            Pin down the <strong>shape</strong> of an algorithm in a base class, but leave specific
+            <strong>steps</strong> for subclasses to fill in. The base method calls your overrides — not the other
+            way around.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#behavioral</span>
+            <span class="tag">#inheritance</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            When several processes follow the <em>same overall steps</em> but differ in the details, the
+            <strong>Template Method</strong> pattern captures the fixed sequence once in a base-class method (the
+            “template method”), and defines the variable steps as <code>abstract</code> or <code>virtual</code>
+            methods that subclasses override. The template method calls those steps in order; subclasses can’t change
+            the <em>structure</em>, only fill in the <em>blanks</em>.
+          </p>
+          <p>
+            This is the <strong>Hollywood Principle</strong>: “don’t call us, we’ll call you.” Your subclass doesn’t
+            drive the flow — the framework’s base method does, calling back into your overridden hooks at the right
+            moments. It eliminates duplicated skeleton code and guarantees every variant runs the steps in the
+            correct order (e.g. always validate before save).
+          </p>
+          <p>
+            Template Method is the <strong>inheritance-based</strong> cousin of <strong>Strategy</strong>: both vary
+            part of an algorithm, but Strategy injects the variable behavior via <em>composition</em> (a strategy
+            object/delegate), while Template Method varies it via <em>subclassing</em>. Composition is usually
+            preferred — reach for Template Method when there’s a genuine is-a base with a fixed lifecycle.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              ASP.NET Core’s <code>BackgroundService</code> is template method in the framework: the base class owns
+              the start/stop lifecycle and <em>calls</em> your <code>ExecuteAsync</code> — you fill in the work, it
+              controls the flow. Data-import pipelines do it too: a base <code>Importer</code> runs <em>open →
+              parse → validate → save → close</em> in a fixed order, and a <code>CsvImporter</code> vs
+              <code>XmlImporter</code> only override <code>Parse</code>. Test frameworks (<code>Setup</code>/
+              <code>TearDown</code> around your test) and ADO.NET base providers use the same shape.
+            </p>
+          </div>
+
+          <h2>Fixed skeleton, pluggable steps</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="Template method skeleton with overridable steps">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="20" y="20" width="220" height="110" rx="11"/>
+              <text class="dgm-label" x="130" y="40" text-anchor="middle">Import()  ← template method</text>
+              <rect class="dgm-box" x="40" y="52" width="180" height="20" rx="4"/><text class="dgm-sub" x="130" y="67" text-anchor="middle">Open()  (fixed)</text>
+              <rect x="40" y="78" width="180" height="20" rx="4" fill="var(--c-tip)" fill-opacity="0.16" stroke="var(--c-tip)"/><text x="130" y="93" text-anchor="middle" fill="var(--c-tip)" style="font:600 11px var(--font-sans)">Parse()  ← abstract hook</text>
+              <rect class="dgm-box" x="40" y="104" width="180" height="20" rx="4"/><text class="dgm-sub" x="130" y="119" text-anchor="middle">Save()  (fixed)</text>
+
+              <rect class="dgm-box" x="340" y="40" width="110" height="34" rx="7"/><text class="dgm-sub" x="395" y="62" text-anchor="middle">CsvImporter</text>
+              <rect class="dgm-box" x="340" y="86" width="110" height="34" rx="7"/><text class="dgm-sub" x="395" y="108" text-anchor="middle">XmlImporter</text>
+              <text class="dgm-sub" x="520" y="80" text-anchor="middle">override Parse()</text>
+              <line class="dgm-line" x1="240" y1="88" x2="338" y2="57" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="240" y1="88" x2="338" y2="103" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — The base method fixes the order; subclasses fill the hooks. It calls them, not vice-versa.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public abstract class DataImporter
+{
+    // The TEMPLATE METHOD: fixed sequence, sealed so the structure can't change.
+    public void Import(string path)
+    {
+        var raw = Open(path);
+        var rows = Parse(raw);     // ← the variable step (hook)
+        Validate(rows);
+        Save(rows);
+    }
+
+    protected string Open(string path) =&gt; File.ReadAllText(path);   // fixed
+    protected abstract IEnumerable&lt;Row&gt; Parse(string raw);          // subclass fills in
+    protected virtual void Validate(IEnumerable&lt;Row&gt; rows) { }      // optional hook
+    protected void Save(IEnumerable&lt;Row&gt; rows) { /* fixed */ }
+}
+
+public class CsvImporter : DataImporter
+{
+    protected override IEnumerable&lt;Row&gt; Parse(string raw) =&gt; /* split CSV */ default!;
+}
+// new CsvImporter().Import("data.csv");  // base controls the flow, calls Parse()</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Template Method fixes an algorithm’s skeleton in a base method and defers variable steps to subclass hooks.</li>
+              <li>It’s the Hollywood Principle — the base calls your overrides; subclasses can’t change the structure, only the steps.</li>
+              <li>It’s the inheritance-based counterpart to Strategy (composition); prefer Strategy unless there’s a real is-a lifecycle.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/strategy.html"><span class="rc-cat">C#</span><span class="rc-title">Strategy Pattern</span></a>
+            <a class="related-card" href="../csharp/factory-pattern.html"><span class="rc-cat">C#</span><span class="rc-title">Factory Pattern</span></a>
+            <a class="related-card" href="../dotnet/ihostedservice.html"><span class="rc-cat">.NET</span><span class="rc-title">IHostedService</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Template Method vs Strategy?”</em> Same goal (vary part of an algorithm), different mechanism:
+              Template Method uses <strong>inheritance + overridable hooks</strong>; Strategy uses
+              <strong>composition</strong>. Mention the Hollywood Principle and <code>BackgroundService.ExecuteAsync</code>
+              as a real framework example.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

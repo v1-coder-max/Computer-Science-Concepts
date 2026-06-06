@@ -726,5 +726,47 @@
     "tags": ["design-pattern", "behavioral", "undo", "gof", "queue", "mediatr"],
     "description": "Wrap a request as an object so you can queue, log and undo it, decoupling invoker from receiver — the basis of undo/redo, task queues, MediatR and CQRS.",
     "url": "concepts/csharp/command.html"
+  },
+  {
+    "title": "Template Method Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "behavioral", "inheritance", "gof", "hollywood-principle", "hooks"],
+    "description": "Define the skeleton of an algorithm in a base class and let subclasses fill in steps via overridable hooks — the Hollywood Principle, as in BackgroundService.",
+    "url": "concepts/csharp/template-method.html"
+  },
+  {
+    "title": "State Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "behavioral", "state-machine", "gof", "transitions", "workflow"],
+    "description": "Let an object change behavior when its state changes by delegating to state objects that handle transitions — a clean OO state machine, contrasted with Strategy.",
+    "url": "concepts/csharp/state.html"
+  },
+  {
+    "title": "Chain of Responsibility",
+    "category": "csharp",
+    "tags": ["design-pattern", "behavioral", "pipeline", "gof", "middleware", "handlers"],
+    "description": "Pass a request along a chain of handlers, each handling it or forwarding it — decoupling sender from receiver, exactly like the ASP.NET Core middleware pipeline.",
+    "url": "concepts/csharp/chain-of-responsibility.html"
+  },
+  {
+    "title": "Mediator Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "behavioral", "decoupling", "mediatr", "hub", "gof"],
+    "description": "Route interactions between objects through a central hub instead of direct references, cutting many-to-many coupling — and how MediatR applies it in .NET.",
+    "url": "concepts/csharp/mediator.html"
+  },
+  {
+    "title": "CQRS",
+    "category": "csharp",
+    "tags": ["cqrs", "modern-pattern", "read-model", "mediatr", "commands-queries", "eventual-consistency"],
+    "description": "Command Query Responsibility Segregation: separate the write model (commands) from the read model (queries) for optimized reads and scaling — and when not to use it.",
+    "url": "concepts/csharp/cqrs.html"
+  },
+  {
+    "title": "Repository Pattern",
+    "category": "csharp",
+    "tags": ["repository", "data-access", "abstraction", "testability", "ef-core", "unit-of-work"],
+    "description": "A collection-like abstraction over data access that hides the DB/ORM and aids testability — plus the caveat that EF Core's DbContext is already a repository.",
+    "url": "concepts/csharp/repository.html"
   }
 ]

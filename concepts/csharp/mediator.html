@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mediator Pattern — DevLens</title>
+  <meta name="description" content="The Mediator pattern: route interactions between objects through a central hub instead of letting them reference each other, cutting many-to-many coupling — and how MediatR applies it in .NET." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="mediator" data-title="Mediator Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Mediator Pattern</h1>
+          <p class="lede">
+            Stop objects from referencing each other directly. Route their interactions through a central
+            <strong>mediator</strong>, turning a tangled mesh into a clean hub.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#behavioral</span>
+            <span class="tag">#decoupling</span>
+            <span class="tag">#mediatr</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            When many objects need to talk to many other objects, they end up holding references to each other — a
+            <strong>many-to-many mesh</strong> that’s hard to change because everything is coupled to everything. The
+            <strong>Mediator</strong> pattern introduces a central object that all the “colleagues” talk <em>to</em>
+            instead of to each other. A colleague notifies the mediator; the mediator decides who else needs to know
+            and coordinates them. Each colleague now depends only on the mediator, not on its peers.
+          </p>
+          <p>
+            This collapses the mesh into a <strong>hub-and-spoke</strong>: the interaction logic lives in one place
+            (the mediator) and the colleagues stay simple and decoupled. The trade-off is that a complex mediator can
+            become a “god object,” so keep its responsibility focused.
+          </p>
+          <p>
+            In modern .NET, the name is most associated with <strong>MediatR</strong>: an in-process messaging library
+            where you send a <em>request</em> object (a command or query) and it dispatches to the matching
+            <em>handler</em> — so your controllers don’t reference services directly, they just send messages. It also
+            supports <em>notifications</em> (one message, many handlers) and a pipeline of behaviors (logging,
+            validation). MediatR is the backbone of most CQRS-in-.NET implementations.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A thin ASP.NET Core controller does <code>await _mediator.Send(new PlaceOrderCommand(...))</code> and
+              nothing else — it doesn’t know about the order service, validators, or the database; MediatR routes the
+              command to its handler. This keeps controllers tiny and the app loosely coupled, which is why MediatR +
+              CQRS is so common. The classic GoF example is a <strong>chat room</strong>: users send to the room (the
+              mediator), which relays to the others — no user references another user. Air-traffic control coordinates
+              planes that never talk directly.
+            </p>
+          </div>
+
+          <h2>Mesh → hub</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="Mediator turns a mesh into a hub">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <text class="dgm-label" x="20" y="22" fill="var(--c-warning)">Direct mesh ✗</text>
+              <circle class="dgm-box" cx="50" cy="60" r="14"/><circle class="dgm-box" cx="150" cy="50" r="14"/><circle class="dgm-box" cx="120" cy="110" r="14"/><circle class="dgm-box" cx="40" cy="110" r="14"/>
+              <line class="dgm-line" x1="50" y1="60" x2="150" y2="50"/><line class="dgm-line" x1="50" y1="60" x2="120" y2="110"/><line class="dgm-line" x1="50" y1="60" x2="40" y2="110"/><line class="dgm-line" x1="150" y1="50" x2="120" y2="110"/><line class="dgm-line" x1="150" y1="50" x2="40" y2="110"/><line class="dgm-line" x1="120" y1="110" x2="40" y2="110"/>
+
+              <text class="dgm-label" x="360" y="22" fill="var(--c-success)">Via mediator ✓</text>
+              <rect class="dgm-box-accent" x="400" y="58" width="90" height="34" rx="8"/><text class="dgm-sub" x="445" y="80" text-anchor="middle">Mediator</text>
+              <circle class="dgm-box" cx="350" cy="40" r="14"/><circle class="dgm-box" cx="540" cy="40" r="14"/><circle class="dgm-box" cx="350" cy="110" r="14"/><circle class="dgm-box" cx="540" cy="110" r="14"/>
+              <line class="dgm-line" x1="364" y1="46" x2="400" y2="66" marker-end="url(#arrow)"/><line class="dgm-line" x1="526" y1="46" x2="490" y2="66" marker-end="url(#arrow)"/><line class="dgm-line" x1="364" y1="104" x2="400" y2="84" marker-end="url(#arrow)"/><line class="dgm-line" x1="526" y1="104" x2="490" y2="84" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Everyone talks to the hub; the N×N coupling becomes N spokes.</figcaption>
+          </figure>
+
+          <h2>In C# (MediatR)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// A request (command) — just data.
+public record PlaceOrder(Guid CartId) : IRequest&lt;OrderResult&gt;;
+
+// Its handler — the only thing that knows how to fulfil it.
+public class PlaceOrderHandler(IOrders orders) : IRequestHandler&lt;PlaceOrder, OrderResult&gt;
+{
+    public Task&lt;OrderResult&gt; Handle(PlaceOrder req, CancellationToken ct)
+        =&gt; orders.PlaceAsync(req.CartId);
+}
+
+// The controller depends ONLY on the mediator — not on IOrders, validators, etc.
+[ApiController]
+public class OrdersController(IMediator mediator) : ControllerBase
+{
+    [HttpPost("/orders")]
+    public Task&lt;OrderResult&gt; Post(PlaceOrder cmd) =&gt; mediator.Send(cmd); // routed to the handler
+}
+// builder.Services.AddMediatR(c =&gt; c.RegisterServicesFromAssembly(...));</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Mediator routes interactions through a central hub so objects don’t reference each other — N×N coupling becomes N spokes.</li>
+              <li>The coordination logic lives in one place; keep the mediator focused so it doesn’t become a god object.</li>
+              <li>In .NET it’s MediatR: send a request → dispatched to a handler (plus notifications + a behavior pipeline) — the basis of CQRS.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/command.html"><span class="rc-cat">C#</span><span class="rc-title">Command Pattern</span></a>
+            <a class="related-card" href="../csharp/cqrs.html"><span class="rc-cat">C#</span><span class="rc-title">CQRS</span></a>
+            <a class="related-card" href="../csharp/observer.html"><span class="rc-cat">C#</span><span class="rc-title">Observer Pattern</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Sell it as <strong>mesh → hub</strong>: objects talk to a mediator instead of each other, cutting
+              many-to-many coupling. In .NET, immediately bring up <strong>MediatR</strong> (send → handler) and its
+              role in CQRS and thin controllers. Note the god-object risk to show balance.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
