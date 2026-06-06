@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JWT &amp; Stateless Auth — DevLens</title>
+  <meta name="description" content="JSON Web Tokens explained: the header.payload.signature structure, why a JWT is signed (not encrypted), stateless validation with no server lookup, and the revocation trade-off versus sessions." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="web-fundamentals" data-concept="jwt" data-title="JWT & Stateless Auth">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>JWT &amp; Stateless Auth</h1>
+          <p class="lede">
+            A JSON Web Token is a <strong>signed, self-contained</strong> credential: the server can trust it
+            without looking anything up — which is its superpower and its weakness.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#jwt</span>
+            <span class="tag">#stateless-auth</span>
+            <span class="tag">#claims</span>
+            <span class="tag">#bearer-token</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A JWT is three base64url-encoded parts joined by dots:
+            <code>header.payload.signature</code>.
+          </p>
+          <ul>
+            <li><strong>Header</strong> — the signing algorithm (e.g. <code>HS256</code>, <code>RS256</code>).</li>
+            <li><strong>Payload</strong> — the <strong>claims</strong>: statements about the user — <code>sub</code> (subject/user id), <code>exp</code> (expiry), <code>iss</code> (issuer), <code>aud</code> (audience), plus roles/scopes.</li>
+            <li><strong>Signature</strong> — the header + payload signed with a secret (HMAC) or private key (RSA).</li>
+          </ul>
+          <p>
+            The magic: to authenticate a request the server just <strong>re-computes the signature and checks
+            <code>exp</code></strong>. If it matches, the token is genuine and untampered — <em>no database
+            lookup, no shared session store</em>. That makes JWTs ideal for stateless, horizontally-scaled APIs.
+          </p>
+          <p>
+            Two things people get wrong: a JWT is <strong>signed, not encrypted</strong> — anyone can base64-decode
+            and read the payload, so <em>never put secrets in it</em>. And because validation is self-contained,
+            you <strong>can’t easily revoke</strong> a JWT before it expires (no central record to delete) — the
+            usual fixes are short-lived access tokens plus a refresh-token flow, or a denylist (which reintroduces
+            state).
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When a single-page app talks to an API gateway fronting dozens of microservices, JWTs shine: the
+              user logs in once, gets a signed access token, and <strong>every</strong> service can validate it
+              locally with the issuer’s public key — no chatty calls to an auth server per request. That’s how
+              OAuth/OIDC providers (Auth0, Azure AD, Google) issue access tokens. The trade-off bites on logout:
+              since the token is valid until <code>exp</code>, “log everyone out now” means short lifetimes +
+              refresh tokens, or a revocation list.
+            </p>
+          </div>
+
+          <h2>Three parts, one signature check</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="JWT structure and verification">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect x="20" y="30" width="170" height="44" rx="9" fill="var(--c-info)" fill-opacity="0.14" stroke="var(--c-info)"/>
+              <text x="105" y="52" text-anchor="middle" fill="var(--c-info)" style="font:700 13px var(--font-sans)">header</text>
+              <text class="dgm-sub" x="105" y="68" text-anchor="middle">alg: HS256</text>
+              <rect x="210" y="30" width="170" height="44" rx="9" fill="var(--c-tip)" fill-opacity="0.14" stroke="var(--c-tip)"/>
+              <text x="295" y="52" text-anchor="middle" fill="var(--c-tip)" style="font:700 13px var(--font-sans)">payload (claims)</text>
+              <text class="dgm-sub" x="295" y="68" text-anchor="middle">sub, exp, roles</text>
+              <rect x="400" y="30" width="180" height="44" rx="9" fill="var(--c-success)" fill-opacity="0.14" stroke="var(--c-success)"/>
+              <text x="490" y="52" text-anchor="middle" fill="var(--c-success)" style="font:700 13px var(--font-sans)">signature</text>
+              <text class="dgm-sub" x="490" y="68" text-anchor="middle">sign(header.payload, key)</text>
+
+              <rect class="dgm-box-accent" x="180" y="112" width="240" height="44" rx="9" />
+              <text class="dgm-sub" x="300" y="134" text-anchor="middle">server re-signs &amp; compares + checks exp</text>
+              <text class="dgm-sub" x="300" y="150" text-anchor="middle">match → trusted, NO lookup</text>
+              <line class="dgm-line" x1="490" y1="74" x2="360" y2="110" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Payload is readable (signed, not encrypted); trust comes from the signature.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — ASP.NET Core</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =&gt;
+    {
+        o.TokenValidationParameters = new()
+        {
+            ValidateIssuer = true,   ValidIssuer   = "https://login.example.com",
+            ValidateAudience = true, ValidAudience = "devlens-api",
+            ValidateLifetime = true,                 // checks exp
+            ValidateIssuerSigningKey = true,         // verifies the signature
+            IssuerSigningKey = signingKey
+        };
+    });
+
+// Each request: the middleware validates the signature + exp locally — no DB hit —
+// and turns the claims into HttpContext.User. (See the Auth Pipeline page.)</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Signed ≠ encrypted; revocation is hard</p>
+            <p>
+              The payload is readable by anyone — never put passwords or PII in it. And you can’t un-issue a valid
+              JWT before <code>exp</code>; use <strong>short-lived access tokens + refresh tokens</strong> (or a
+              denylist) when you need real logout/revocation. Store browser tokens in an <code>HttpOnly</code>
+              cookie rather than <code>localStorage</code> to resist XSS.
+            </p>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A JWT is <code>header.payload.signature</code>; validating = re-checking the signature and expiry, with no server lookup.</li>
+              <li>It’s signed, not encrypted — readable by anyone, so no secrets in the payload.</li>
+              <li>Stateless and scalable, but hard to revoke before expiry → short-lived tokens + refresh flow.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/sessions.html"><span class="rc-cat">System Design</span><span class="rc-title">How Sessions Work</span></a>
+            <a class="related-card" href="../web-fundamentals/oauth.html"><span class="rc-cat">Web</span><span class="rc-title">OAuth 2.0 &amp; OIDC</span></a>
+            <a class="related-card" href="../dotnet/auth-pipeline.html"><span class="rc-cat">.NET</span><span class="rc-title">Auth Pipeline</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“JWT vs session — and can you revoke a JWT?”</em> JWT = stateless, validated by signature, scales
+              without a shared store; the catch is <strong>revocation</strong> (valid until <code>exp</code>),
+              solved with short lifetimes + refresh tokens. Always add: <strong>signed, not encrypted</strong> — a
+              detail that trips up many candidates.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

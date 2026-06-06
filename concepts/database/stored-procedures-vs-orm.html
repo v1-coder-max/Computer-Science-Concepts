@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stored Procedures vs ORMs — DevLens</title>
+  <meta name="description" content="The trade-offs between stored procedures (precompiled SQL in the database) and ORMs like EF Core (productivity, testability), plus the pragmatic middle ground of a micro-ORM for hot paths." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="stored-procedures-vs-orm" data-title="Stored Procedures vs ORMs">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Stored Procedures vs ORMs</h1>
+          <p class="lede">
+            Two ways your app talks to the database: hand-written SQL living <em>in</em> the database, or an
+            object-mapper that generates SQL <em>for</em> you. Each wins somewhere.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#stored-procedures</span>
+            <span class="tag">#orm</span>
+            <span class="tag">#ef-core</span>
+            <span class="tag">#trade-offs</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>stored procedure</strong> is named SQL stored and executed inside the database. Pros: the
+            query plan is reused, it’s network-efficient (send one call, not a big query + round trips), it can
+            encapsulate complex set-based logic, and you can lock down table access. Cons: business logic lives in
+            the database (harder to version-control, unit-test, and refactor), it’s tied to that DB’s dialect, and
+            it splits your logic across two codebases.
+          </p>
+          <p>
+            An <strong>ORM</strong> like <strong>EF Core</strong> maps tables to objects and turns LINQ into SQL.
+            Pros: huge productivity, type-safety, maintainable code, migrations, easy testing, and DB portability.
+            Cons: it can emit inefficient SQL (the <strong>N+1</strong> problem, over-fetching), the abstraction
+            leaks for complex queries, and you’re one step removed from the exact SQL.
+          </p>
+          <p>
+            In modern apps the answer is usually <strong>“ORM by default, raw SQL where it pays.”</strong> Use EF
+            Core for the 90% of CRUD where productivity matters, and drop to <strong>raw SQL</strong> or a
+            <strong>micro-ORM (Dapper)</strong> — or a stored procedure — for the hot, complex, or
+            performance-critical 10%. EF Core can even call stored procedures and run raw SQL, so it’s not all-or-nothing.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A typical team builds the bulk of an app on <strong>EF Core</strong> — entities, migrations, LINQ
+              queries — because it ships features fast and stays testable. Then the nightly reconciliation report
+              that joins eight tables over millions of rows gets a hand-tuned <strong>stored procedure</strong> or a
+              <strong>Dapper</strong> query, because there the exact execution plan and minimal allocations matter
+              more than developer convenience. The mistake juniors make is treating it as a holy war; seniors use
+              the right tool per query.
+            </p>
+          </div>
+
+          <h2>Two paths to the data</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="ORM versus stored procedure paths">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="60" width="110" height="44" rx="9"/><text class="dgm-sub" x="75" y="86" text-anchor="middle">App (C#)</text>
+
+              <rect class="dgm-box-accent" x="200" y="24" width="170" height="36" rx="8"/><text class="dgm-sub" x="285" y="46" text-anchor="middle">ORM → generated SQL</text>
+              <rect class="dgm-box" x="200" y="100" width="170" height="36" rx="8"/><text class="dgm-sub" x="285" y="122" text-anchor="middle">EXEC sp_DoThing @id</text>
+
+              <rect class="dgm-box" x="450" y="60" width="120" height="44" rx="9"/><text class="dgm-label" x="510" y="86" text-anchor="middle">Database</text>
+
+              <line class="dgm-line" x1="130" y1="74" x2="198" y2="44" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="130" y1="90" x2="198" y2="118" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="370" y1="42" x2="448" y2="72" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="370" y1="118" x2="448" y2="92" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="285" y="78" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">productivity ↑</text>
+              <text class="dgm-sub" x="285" y="152" text-anchor="middle">control / perf ↑, logic in DB</text>
+            </svg>
+            <figcaption>Figure 1 — ORM optimizes for developer speed; stored procs/raw SQL optimize for control.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ORM (EF Core): productive, type-safe, testable — great for everyday CRUD.
+var open = await db.Orders
+    .Where(o =&gt; o.Status == "Open")
+    .Select(o =&gt; new { o.Id, o.Total })
+    .ToListAsync();
+
+// Hot path: call a stored procedure (tuned plan, set-based logic in the DB).
+var report = await db.Database
+    .SqlQuery&lt;ReportRow&gt;($"EXEC GetSalesReport @from={from}, @to={to}")
+    .ToListAsync();
+
+// Or a micro-ORM (Dapper) for fast, explicit raw SQL without full EF overhead:
+var rows = await conn.QueryAsync&lt;ReportRow&gt;(
+    "SELECT region, SUM(total) AS total FROM Orders GROUP BY region");</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Stored procedures: reused plans, network-efficient, encapsulated — but logic in the DB, harder to test/version, DB-specific.</li>
+              <li>ORMs: productivity, type-safety, maintainability, migrations — but can emit inefficient SQL (N+1) and leak on complex queries.</li>
+              <li>Pragmatic answer: ORM by default, drop to raw SQL / Dapper / a stored proc for the hot, complex 10%.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/ef-core-internals.html"><span class="rc-cat">.NET</span><span class="rc-title">EF Core Internals</span></a>
+            <a class="related-card" href="../database/execution-plans.html"><span class="rc-cat">Database</span><span class="rc-title">Reading Execution Plans</span></a>
+            <a class="related-card" href="../database/indexing.html"><span class="rc-cat">Database</span><span class="rc-title">Database Indexing</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Stored procedures or an ORM?”</em> Avoid dogma. Lay out the trade-offs (control/perf vs
+              productivity/testability), then give the senior answer: <strong>ORM by default, raw SQL/Dapper/sprocs
+              for performance-critical or complex queries</strong>. Mention the N+1 problem as the ORM pitfall to watch.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caching at Scale — DevLens</title>
+  <meta name="description" content="The layers of caching in a real system — browser, CDN, application, distributed (Redis/Memcached), and database — plus hit ratio, what to cache, and Redis vs Memcached." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="caching" data-title="Caching at Scale">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Caching at Scale</h1>
+          <p class="lede">
+            Caching isn’t one box — it’s a <strong>stack of layers</strong> from the browser to the database. Each
+            one you can serve from is latency and load you don’t pay below it.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#caching</span>
+            <span class="tag">#redis</span>
+            <span class="tag">#memcached</span>
+            <span class="tag">#hit-ratio</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            In a real system a request can be answered from several places, and the goal is to satisfy it as high
+            up the stack as possible:
+          </p>
+          <ul>
+            <li><strong>Browser cache</strong> — the response never leaves the device.</li>
+            <li><strong>CDN / edge</strong> — served near the user, never touches your servers.</li>
+            <li><strong>Application (in-process) cache</strong> — in-memory on the app server (e.g. <code>IMemoryCache</code>): fastest, but per-instance and lost on restart.</li>
+            <li><strong>Distributed cache</strong> — a shared store like <strong>Redis</strong> or <strong>Memcached</strong> all app servers hit: survives restarts, shared across the fleet, the workhorse cache layer.</li>
+            <li><strong>Database</strong> — the source of truth, and its own buffer cache.</li>
+          </ul>
+          <p>
+            The metric that matters is the <strong>cache hit ratio</strong> — the fraction of requests served from
+            cache. A few percentage points there can be the difference between a database that’s bored and one
+            that’s on fire. <strong>What to cache:</strong> data that’s read far more than it’s written and
+            expensive to compute (rendered pages, query results, session data, computed feeds).
+          </p>
+          <p>
+            <strong>Redis vs Memcached:</strong> Memcached is a simple, multi-threaded string cache — lean and
+            fast. Redis adds rich data structures, persistence, pub/sub, and clustering, so it doubles as a session
+            store, rate limiter, and leaderboard. Most teams reach for Redis for the extra power. (For <em>how</em>
+            you read/write through the cache — cache-aside, write-through, etc. — see Caching Strategies.)
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Facebook</strong> famously runs one of the largest Memcached deployments on earth, absorbing
+              the overwhelming majority of reads so its databases handle only a sliver of the load. A typical app
+              stacks all the layers: a CDN for assets, an in-process cache for hot config, and <strong>Redis</strong>
+              for shared data and sessions in front of SQL. The engineering work is mostly about <em>raising the hit
+              ratio</em> and keeping caches from going stale — because at scale the database simply cannot serve every
+              read.
+            </p>
+          </div>
+
+          <h2>The cache layers</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Caching layers from browser to database">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="14" y="60" width="96" height="44" rx="8"/><text class="dgm-sub" x="62" y="80" text-anchor="middle">browser</text><text class="dgm-sub" x="62" y="96" text-anchor="middle">cache</text>
+              <rect class="dgm-box" x="130" y="60" width="96" height="44" rx="8"/><text class="dgm-sub" x="178" y="80" text-anchor="middle">CDN</text><text class="dgm-sub" x="178" y="96" text-anchor="middle">edge</text>
+              <rect class="dgm-box" x="246" y="60" width="96" height="44" rx="8"/><text class="dgm-sub" x="294" y="80" text-anchor="middle">app</text><text class="dgm-sub" x="294" y="96" text-anchor="middle">in-memory</text>
+              <rect class="dgm-box-accent" x="362" y="60" width="110" height="44" rx="8"/><text class="dgm-sub" x="417" y="80" text-anchor="middle">Redis /</text><text class="dgm-sub" x="417" y="96" text-anchor="middle">Memcached</text>
+              <rect class="dgm-box" x="492" y="60" width="96" height="44" rx="8"/><text class="dgm-sub" x="540" y="86" text-anchor="middle">database</text>
+              <line class="dgm-line" x1="110" y1="82" x2="128" y2="82" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="226" y1="82" x2="244" y2="82" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="342" y1="82" x2="360" y2="82" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="472" y1="82" x2="490" y2="82" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="300" y="135" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">answer as high up as possible — every layer down costs more</text>
+            </svg>
+            <figcaption>Figure 1 — A request falls through layers until something can serve it.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// In-process cache: fastest, but per-server and lost on restart.
+builder.Services.AddMemoryCache();
+
+// Distributed cache (Redis): shared across all app servers, survives restarts.
+builder.Services.AddStackExchangeRedisCache(o =&gt; o.Configuration = "redis:6379");
+
+public class Catalog(IMemoryCache local, IDistributedCache shared)
+{
+    public async Task&lt;Product?&gt; GetAsync(int id)
+    {
+        // L1: process memory → L2: Redis → (else) the database.
+        if (local.TryGetValue($"p:{id}", out Product? p)) return p;
+        var bytes = await shared.GetAsync($"p:{id}");
+        // ... deserialize from Redis, or load DB + populate both layers ...
+        return p;
+    }
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Caching is layered: browser → CDN → in-process → distributed (Redis/Memcached) → DB. Serve as high as you can.</li>
+              <li>The hit ratio is the headline metric; cache read-heavy, expensive-to-compute data.</li>
+              <li>Memcached = simple fast string cache; Redis = data structures + persistence + extras (usually the pick).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/caching-strategies.html"><span class="rc-cat">Database</span><span class="rc-title">Caching Strategies</span></a>
+            <a class="related-card" href="../database/redis.html"><span class="rc-cat">Database</span><span class="rc-title">Redis Internals</span></a>
+            <a class="related-card" href="../system-design/cdn.html"><span class="rc-cat">System Design</span><span class="rc-title">CDNs</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              In a design question, add caching layers explicitly and justify each. Talk about <strong>hit
+              ratio</strong>, what’s safe to cache, and Redis vs Memcached. Pair this with a caching <em>strategy</em>
+              (cache-aside + TTL) and invalidation — that combination is what interviewers are listening for.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

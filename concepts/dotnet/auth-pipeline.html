@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authentication &amp; Authorization — DevLens</title>
+  <meta name="description" content="The ASP.NET Core auth pipeline: authentication (who are you?) builds a ClaimsPrincipal; authorization (what may you do?) enforces policies. Schemes, claims, 401 vs 403." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="auth-pipeline" data-title="Authentication &amp; Authorization">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Authentication &amp; Authorization</h1>
+          <p class="lede">
+            Two different jobs that always get confused: <strong>authentication</strong> proves
+            <em>who you are</em>; <strong>authorization</strong> decides <em>what you’re allowed to do</em>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#authentication</span>
+            <span class="tag">#authorization</span>
+            <span class="tag">#claims</span>
+            <span class="tag">#jwt</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            In ASP.NET Core these are two middleware steps that run in order:
+          </p>
+          <ul>
+            <li><strong><code>UseAuthentication</code></strong> reads the incoming credential — a cookie, or a <code>Bearer</code> JWT — validates it against the configured <em>scheme</em>, and if valid builds a <code>ClaimsPrincipal</code> onto <code>HttpContext.User</code>. A claim is just a key/value statement about the user (<code>sub=42</code>, <code>role=Admin</code>, <code>email=…</code>).</li>
+            <li><strong><code>UseAuthorization</code></strong> then checks that principal against the endpoint’s requirements — a <code>[Authorize]</code> attribute, a role, or a named <em>policy</em> — and lets the request through or blocks it.</li>
+          </ul>
+          <p>
+            The two failure modes map to two status codes: <strong>401 Unauthorized</strong> means “I don’t
+            know who you are” (authentication failed/missing); <strong>403 Forbidden</strong> means “I know
+            who you are, but you’re not allowed” (authorization failed). Authorization is expressed as
+            <strong>policies</strong> built from <em>requirements</em> and evaluated by <em>handlers</em>,
+            which is far more flexible than hard-coding role checks everywhere.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A <strong>GitHub</strong>-style API uses <strong>JWT bearer</strong> authentication: you sign
+              in through an OAuth/OIDC flow, receive a signed token, and every request carries
+              <code>Authorization: Bearer &lt;jwt&gt;</code>. The auth middleware validates the signature and
+              expiry and turns the token’s claims into a <code>ClaimsPrincipal</code>. An endpoint that
+              deletes a repo is guarded by a policy like <em>“must own the repo or be an org admin”</em> —
+              evaluated from the user’s claims — returning <code>403</code> if you’re a known user without that
+              right, and <code>401</code> if your token is missing or expired.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Authenticate, then authorize</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Authentication then authorization flow">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="14" y="66" width="110" height="50" rx="9" />
+              <text class="dgm-sub" x="69" y="88" text-anchor="middle">request +</text>
+              <text class="dgm-sub" x="69" y="104" text-anchor="middle">Bearer JWT</text>
+
+              <rect class="dgm-box-accent" x="150" y="60" width="150" height="62" rx="10" />
+              <text class="dgm-label" x="225" y="84" text-anchor="middle">Authentication</text>
+              <text class="dgm-sub"   x="225" y="102" text-anchor="middle">validate → ClaimsPrincipal</text>
+
+              <rect class="dgm-box-accent" x="330" y="60" width="150" height="62" rx="10" />
+              <text class="dgm-label" x="405" y="84" text-anchor="middle">Authorization</text>
+              <text class="dgm-sub"   x="405" y="102" text-anchor="middle">policy / role check</text>
+
+              <rect class="dgm-box" x="510" y="66" width="76" height="50" rx="9" />
+              <text class="dgm-sub" x="548" y="95" text-anchor="middle">Endpoint</text>
+
+              <line class="dgm-line" x1="124" y1="91" x2="148" y2="91" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="300" y1="91" x2="328" y2="91" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="480" y1="91" x2="508" y2="91" marker-end="url(#arrow)" />
+
+              <text class="dgm-sub" x="225" y="150" text-anchor="middle" fill="var(--c-warning)" style="font:600 12px var(--font-sans)">no/invalid identity → 401</text>
+              <text class="dgm-sub" x="405" y="150" text-anchor="middle" fill="var(--c-warning)" style="font:600 12px var(--font-sans)">known but not allowed → 403</text>
+            </svg>
+            <figcaption>Figure 1 — Authentication builds the identity; authorization rules on it.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — Program.cs</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =&gt;
+    {
+        o.Authority = "https://login.example.com"; // validates signature via the issuer's keys
+        o.Audience  = "devlens-api";
+    });
+
+builder.Services.AddAuthorization(o =&gt;
+{
+    o.AddPolicy("AdminsOnly", p =&gt; p.RequireRole("Admin"));
+    o.AddPolicy("Over18", p =&gt; p.RequireClaim("age_verified", "true"));
+});
+
+var app = builder.Build();
+app.UseAuthentication(); // 1) who are you?  → builds HttpContext.User
+app.UseAuthorization();  // 2) are you allowed? → enforces policies
+
+app.MapGet("/admin/stats", () =&gt; "secret")
+   .RequireAuthorization("AdminsOnly");      // 403 if authenticated but not Admin</code></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — reading claims</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">[Authorize]
+[HttpGet("me")]
+public IActionResult Me()
+{
+    string? userId = User.FindFirst("sub")?.Value;     // a claim from the token
+    bool isAdmin   = User.IsInRole("Admin");
+    return Ok(new { userId, isAdmin });
+}</code></pre>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Authentication = who you are (builds a <code>ClaimsPrincipal</code>); authorization = what you may do (policies/roles/claims).</li>
+              <li><code>UseAuthentication</code> must run before <code>UseAuthorization</code> in the pipeline.</li>
+              <li><strong>401</strong> = unknown/invalid identity; <strong>403</strong> = known but not permitted. Prefer policies over scattered role checks.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/middleware-pipeline.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Middleware Pipeline</span>
+            </a>
+            <a class="related-card" href="../system-design/sessions.html">
+              <span class="rc-cat">System Design</span><span class="rc-title">How Sessions Work</span>
+            </a>
+            <a class="related-card" href="../web-fundamentals/jwt.html">
+              <span class="rc-cat">Web Fundamentals</span><span class="rc-title">JWT &amp; Stateless Auth</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Difference between authentication and authorization — and 401 vs 403?”</em> Nail the
+              one-liner (who you are vs what you can do), map them to 401 vs 403, and mention that ASP.NET
+              Core models authorization as <strong>claims-based policies</strong> evaluated after the
+              identity is built. Don’t forget pipeline order.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

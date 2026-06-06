@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JIT Compilation — DevLens</title>
+  <meta name="description" content="How the .NET JIT turns IL into native code on first call, what tiered compilation and ReadyToRun do for startup and throughput, and how JIT differs from AOT." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="jit-compilation" data-title="JIT Compilation">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>JIT Compilation</h1>
+          <p class="lede">
+            The IL in your assembly can’t run on a CPU. The <strong>JIT</strong> compiles it to
+            native code <em>just in time</em> — the first time each method is called.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#jit</span>
+            <span class="tag">#tiered-compilation</span>
+            <span class="tag">#readytorun</span>
+            <span class="tag">#performance</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            IL is portable on purpose — the same assembly runs on x64, Arm64, Windows, or Linux.
+            The price is that <em>something</em> must translate IL into instructions for the
+            actual chip. That something is the <strong>Just-In-Time compiler</strong>. It works
+            method-by-method: the first time <code>Foo()</code> is called, the JIT compiles its
+            IL to native, caches the result, and every later call jumps straight to the cached
+            native code.
+          </p>
+          <p>
+            Compiling everything fully optimized up front would make startup crawl. So modern
+            .NET uses <strong>tiered compilation</strong>:
+          </p>
+          <ul>
+            <li><strong>Tier 0</strong> — a quick, lightly-optimized compile so the app starts fast.</li>
+            <li><strong>Tier 1</strong> — once a method proves “hot” (called often), the JIT recompiles it with full optimizations in the background and swaps it in.</li>
+          </ul>
+          <p>
+            <strong>ReadyToRun (R2R)</strong> goes further: it pre-JITs much of your code at
+            <em>publish</em> time and embeds native code in the assembly, so startup skips most
+            Tier 0 work. (At the far end sits <strong>Native AOT</strong>, which removes the JIT
+            entirely — see the related page.)
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A <strong>Netflix</strong>-style microservice that autoscales sees pods spin up and
+              down constantly, so <em>cold-start latency matters</em>. Teams publish with
+              ReadyToRun so a fresh pod serves its first requests without waiting on the JIT, while
+              tiered compilation keeps optimizing the hot request path (serialization, routing) to
+              Tier 1 for steady-state throughput. It’s the classic trade: fast to start
+              <em>and</em> fast once warm.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>How tiered compilation flows</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 200" role="img" aria-label="JIT tiered compilation flow">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="20" y="76" width="110" height="50" rx="9" />
+              <text class="dgm-label" x="75" y="98" text-anchor="middle">IL method</text>
+              <text class="dgm-sub"   x="75" y="116" text-anchor="middle">first call</text>
+
+              <rect class="dgm-box-accent" x="180" y="76" width="120" height="50" rx="9" />
+              <text class="dgm-label" x="240" y="98" text-anchor="middle">Tier 0 JIT</text>
+              <text class="dgm-sub"   x="240" y="116" text-anchor="middle">quick, runs now</text>
+
+              <rect class="dgm-box-accent" x="360" y="76" width="120" height="50" rx="9" />
+              <text class="dgm-label" x="420" y="98" text-anchor="middle">Tier 1 JIT</text>
+              <text class="dgm-sub"   x="420" y="116" text-anchor="middle">optimized (hot)</text>
+
+              <rect class="dgm-box" x="510" y="76" width="80" height="50" rx="9" />
+              <text class="dgm-label" x="550" y="105" text-anchor="middle">native</text>
+
+              <line class="dgm-line" x1="130" y1="101" x2="178" y2="101" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="300" y1="101" x2="358" y2="101" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="480" y1="101" x2="508" y2="101" marker-end="url(#arrow)" />
+
+              <text class="dgm-sub" x="330" y="58" text-anchor="middle">recompiled in the background once “hot”</text>
+              <path class="dgm-line" d="M240,76 C240,40 420,40 420,76" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Start fast with Tier 0; hot methods graduate to optimized Tier 1.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>Controlling the JIT</h2>
+          <p>
+            Tiered compilation is on by default. You tune it in <code>runtimeconfig</code> (or env
+            vars) — for example, a short-lived CLI tool might disable tiering to avoid background
+            recompilation:
+          </p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">JSON — runtimeconfig.json</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-json">{
+  "runtimeOptions": {
+    "configProperties": {
+      "System.Runtime.TieredCompilation": true,
+      "System.Runtime.TieredPGO": true        // profile-guided opt for even better Tier 1
+    }
+  }
+}</code></pre>
+          </div>
+          <p>Or publish with ReadyToRun so most code is pre-JITted before it ever ships:</p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">Bash</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-bash"># Pre-compile IL to native at publish time → faster cold start
+dotnet publish -c Release -r linux-x64 -p:PublishReadyToRun=true</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Don’t micro-benchmark cold methods</p>
+            <p>
+              The first call to a method includes its JIT time, and it may still be Tier 0. If you
+              measure performance, <strong>warm up</strong> first (or use BenchmarkDotNet, which
+              handles this) — otherwise you’re timing the compiler, not your code.
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The JIT compiles IL → native per method on first call, then caches it.</li>
+              <li>Tiered compilation starts fast (Tier 0) and re-optimizes hot methods (Tier 1) in the background.</li>
+              <li>ReadyToRun pre-JITs at publish for faster cold start; Native AOT removes the JIT entirely.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/clr.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">The CLR</span>
+            </a>
+            <a class="related-card" href="../dotnet/aot-compilation.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Native AOT</span>
+            </a>
+            <a class="related-card" href="../dotnet/assemblies.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Assemblies &amp; Metadata</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Why is the first request to a .NET service slower?”</em> The answer is JIT
+              compilation (often Tier 0) on the cold path. Mention <strong>tiered compilation</strong>,
+              <strong>ReadyToRun</strong>, and warm-up — and contrast JIT (optimizes using runtime
+              info) with AOT (faster start, no runtime re-optimization).
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

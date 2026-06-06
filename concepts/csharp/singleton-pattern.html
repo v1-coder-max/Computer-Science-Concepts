@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singleton Pattern — DevLens</title>
+  <meta name="description" content="The Singleton pattern in C#: guaranteeing one shared instance with a thread-safe Lazy<T>, why it's controversial, and why DI's singleton lifetime is usually better." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="singleton-pattern" data-title="Singleton Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Singleton Pattern</h1>
+          <p class="lede">
+            Guarantee a class has <strong>exactly one instance</strong> and give everyone a
+            single, shared way to reach it. Simple to state — surprisingly easy to get wrong.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#creational</span>
+            <span class="tag">#thread-safety</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1. PLAIN ENGLISH -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Some things should exist <strong>once</strong> for the whole process — a
+            configuration loaded from disk, a connection pool, an in-memory cache. The
+            Singleton pattern (one of the original GoF <em>creational</em> patterns) enforces
+            that: it makes the constructor <code>private</code> so nobody can <code>new</code>
+            it, holds the one instance in a <code>static</code> field, and exposes it through a
+            static <code>Instance</code> property.
+          </p>
+          <p>
+            The tricky part is doing it <strong>thread-safely and lazily</strong> — creating the
+            instance only when first needed, without two threads racing to build two of them.
+            The classic “double-checked locking” solves it but is fiddly; in C# the idiomatic
+            answer is <code>Lazy&lt;T&gt;</code>, which handles the locking for you.
+          </p>
+          <p>
+            One honest caveat up front: Singleton is the most <em>controversial</em> GoF
+            pattern. A hand-rolled singleton is global state — it hides dependencies and makes
+            unit testing painful. In modern .NET you usually want a <strong>DI container
+            singleton</strong> instead (more on that below).
+          </p>
+
+          <!-- 2. REAL WORLD -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              In a high-throughput service like <strong>Stripe</strong>’s payment API, you don’t
+              want every request spinning up its own <code>HttpClient</code> or logging pipeline
+              — that exhausts sockets and wastes memory. Those are created <strong>once</strong>
+              and shared process-wide. .NET itself does this everywhere: <code>HttpClient</code>
+              is designed to be a long-lived singleton, and a <code>ILogger</code> factory,
+              metrics collector, and config snapshot all live as one shared instance behind the
+              DI container.
+            </p>
+          </div>
+
+          <!-- 3. VISUAL -->
+          <h2>One instance, many callers</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 240" role="img" aria-label="Multiple clients sharing one singleton instance">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <!-- Clients -->
+              <rect class="dgm-box" x="30" y="24"  width="130" height="40" rx="8" />
+              <text class="dgm-label" x="95" y="49"  text-anchor="middle">Service A</text>
+              <rect class="dgm-box" x="30" y="100" width="130" height="40" rx="8" />
+              <text class="dgm-label" x="95" y="125" text-anchor="middle">Service B</text>
+              <rect class="dgm-box" x="30" y="176" width="130" height="40" rx="8" />
+              <text class="dgm-label" x="95" y="201" text-anchor="middle">Service C</text>
+
+              <!-- Singleton -->
+              <rect class="dgm-box-accent" x="350" y="70" width="220" height="100" rx="12" />
+              <text class="dgm-label" x="460" y="100" text-anchor="middle">AppConfig.Instance</text>
+              <text class="dgm-sub"   x="460" y="124" text-anchor="middle">private static readonly</text>
+              <text class="dgm-sub"   x="460" y="142" text-anchor="middle">private ctor()</text>
+              <text class="dgm-sub"   x="460" y="160" text-anchor="middle">one shared object</text>
+
+              <!-- Converging arrows -->
+              <line class="dgm-line" x1="160" y1="44"  x2="348" y2="104" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="160" y1="120" x2="348" y2="120" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="160" y1="196" x2="348" y2="136" marker-end="url(#arrow)" />
+
+              <text class="dgm-sub" x="255" y="222" text-anchor="middle" fill="var(--c-success)"
+                    style="font:600 12px var(--font-sans)">all callers share the same instance</text>
+            </svg>
+            <figcaption>Figure 1 — Every caller resolves the same object; no caller can create a second.</figcaption>
+          </figure>
+
+          <!-- 4. CODE -->
+          <h2>In C# — the thread-safe way</h2>
+          <p>
+            <code>Lazy&lt;T&gt;</code> gives you lazy <em>and</em> thread-safe initialization in
+            a few lines — no manual locking, no double-checked-locking bugs:
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public sealed class AppConfig          // sealed: nobody can subclass to break the guarantee
+{
+    // Thread-safe, lazy: the factory runs once, on first access to .Value.
+    private static readonly Lazy&lt;AppConfig&gt; _instance =
+        new(() =&gt; new AppConfig());
+
+    public static AppConfig Instance =&gt; _instance.Value;
+
+    private AppConfig()                // private ctor: only this class can construct it
+    {
+        // expensive one-time setup (read file, parse env, etc.)
+        Environment = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+                      ?? "Production";
+    }
+
+    public string Environment { get; }
+}
+
+// Usage anywhere in the process — always the same object:
+string env = AppConfig.Instance.Environment;</code></pre>
+          </div>
+
+          <p>But in modern .NET, prefer letting the <strong>DI container</strong> own the lifetime:</p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — DI singleton (preferred)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// One instance for the whole app — but injected, not globally reached.
+builder.Services.AddSingleton&lt;IAppConfig, AppConfig&gt;();
+
+// Consumers depend on the abstraction and stay testable (swap a fake in tests):
+public class PricingService(IAppConfig config)   // primary constructor
+{
+    public bool IsProd =&gt; config.Environment == "Production";
+}</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Singleton’s dark side</p>
+            <p>
+              A classic <code>X.Instance</code> singleton is <strong>global state</strong>:
+              callers reach for it directly, so dependencies become invisible and tests can’t
+              substitute a fake. It also breaks the <strong>Dependency Inversion</strong>
+              principle. Reach for the DI container’s singleton lifetime instead — same “one
+              instance,” but injected through an interface. Also: a singleton holding mutable
+              state must be internally thread-safe, since every thread shares it.
+            </p>
+          </div>
+
+          <!-- 5. TAKEAWAYS -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Singleton = private constructor + one static instance, exposed through a single access point.</li>
+              <li>Use <code>Lazy&lt;T&gt;</code> for correct lazy, thread-safe initialization — don’t hand-roll double-checked locking.</li>
+              <li>Prefer a DI container singleton (<code>AddSingleton</code>) over a global <code>X.Instance</code> — you get one instance <em>and</em> testability.</li>
+            </ul>
+          </div>
+
+          <!-- 6. RELATED -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../oop/solid.html">
+              <span class="rc-cat">OOP</span>
+              <span class="rc-title">SOLID Principles</span>
+            </a>
+            <a class="related-card" href="../dotnet/dependency-injection.html">
+              <span class="rc-cat">.NET</span>
+              <span class="rc-title">Dependency Injection</span>
+            </a>
+            <a class="related-card" href="../csharp/factory-pattern.html">
+              <span class="rc-cat">C#</span>
+              <span class="rc-title">Factory Pattern</span>
+            </a>
+          </div>
+
+          <!-- 7. INTERVIEW TIP -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              “Write a thread-safe singleton” is a staple. Reach for <code>Lazy&lt;T&gt;</code>
+              and explain <em>why</em> it’s thread-safe (the runtime guarantees the factory runs
+              once). Then earn the senior nod: mention that you’d usually prefer a DI-managed
+              singleton because the hand-rolled version is global state that hurts testability.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

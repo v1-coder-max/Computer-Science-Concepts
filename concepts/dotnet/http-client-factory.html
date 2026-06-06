@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HttpClientFactory — DevLens</title>
+  <meta name="description" content="Why newing HttpClient per request exhausts sockets and a forever-singleton goes stale on DNS — and how IHttpClientFactory pools handlers and adds Polly resilience." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="http-client-factory" data-title="HttpClientFactory">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>HttpClientFactory</h1>
+          <p class="lede">
+            <code>HttpClient</code> looks simple and is famously easy to misuse. The factory fixes both
+            the “new it every time” bug <em>and</em> the “singleton forever” bug.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#httpclient</span>
+            <span class="tag">#socket-exhaustion</span>
+            <span class="tag">#resilience</span>
+            <span class="tag">#polly</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            <code>HttpClient</code> is meant to be reused, but it sits on top of an
+            <code>HttpMessageHandler</code> that owns the underlying TCP connections. That creates a trap
+            with two jaws:
+          </p>
+          <ul>
+            <li><strong>New one per request</strong> (<code>using var c = new HttpClient()</code>) → each disposed handler leaves sockets stuck in <code>TIME_WAIT</code>. Under load you hit <strong>socket exhaustion</strong> (<code>SocketException</code>).</li>
+            <li><strong>One static singleton forever</strong> → it never picks up <strong>DNS changes</strong> (failovers, blue/green), happily sending traffic to an IP that moved.</li>
+          </ul>
+          <p>
+            <strong><code>IHttpClientFactory</code></strong> threads the needle. It maintains a
+            <em>pool of handlers</em> and rotates them on a lifetime (default ~2 minutes): connections are
+            reused for efficiency, but handlers are recycled often enough to respect DNS. On top of that it
+            gives you <strong>named</strong> and <strong>typed</strong> clients (pre-configured base
+            address, headers) and a clean place to plug in <strong>Polly</strong> resilience policies —
+            retries, timeouts, circuit breakers.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A checkout service calling <strong>Stripe</strong> and a shipping API can’t afford
+              <code>SocketException</code>s during a flash sale, nor can it keep hammering an instance that
+              just failed over. With a typed client per downstream and a Polly retry + circuit-breaker
+              policy attached, transient blips are retried with backoff, a struggling dependency is given
+              breathing room by the open circuit, and connection reuse keeps latency low — all without the
+              calling code knowing any of it happened.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Pooled, rotated handlers</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 190" role="img" aria-label="HttpClientFactory handler pool">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="20" y="74" width="130" height="46" rx="9" />
+              <text class="dgm-sub" x="85" y="96" text-anchor="middle">CreateClient()</text>
+              <text class="dgm-sub" x="85" y="112" text-anchor="middle">per request</text>
+
+              <rect class="dgm-box-accent" x="200" y="50" width="180" height="96" rx="11" />
+              <text class="dgm-label" x="290" y="74" text-anchor="middle">Handler pool</text>
+              <rect class="dgm-box" x="218" y="86" width="144" height="24" rx="5" />
+              <text class="dgm-sub" x="290" y="103" text-anchor="middle">handler (reused)</text>
+              <rect class="dgm-box" x="218" y="114" width="144" height="24" rx="5" />
+              <text class="dgm-sub" x="290" y="131" text-anchor="middle">rotated ~2 min → DNS fresh</text>
+
+              <rect class="dgm-box" x="440" y="74" width="140" height="46" rx="9" />
+              <text class="dgm-sub" x="510" y="96" text-anchor="middle">downstream API</text>
+              <text class="dgm-sub" x="510" y="112" text-anchor="middle">+ Polly policies</text>
+
+              <line class="dgm-line" x1="150" y1="97" x2="198" y2="97" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="380" y1="97" x2="438" y2="97" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Lightweight clients front a pooled, periodically-rotated handler.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C# — a typed client with resilience</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// A typed client encapsulates the base address, headers, and calls.
+public class CatalogClient(HttpClient http)
+{
+    public Task&lt;Product?&gt; GetAsync(int id) =&gt;
+        http.GetFromJsonAsync&lt;Product&gt;($"/products/{id}");
+}
+
+// Register it + attach resilience (Microsoft.Extensions.Http.Resilience / Polly):
+builder.Services.AddHttpClient&lt;CatalogClient&gt;(c =&gt;
+{
+    c.BaseAddress = new Uri("https://catalog.internal");
+    c.Timeout = TimeSpan.FromSeconds(10);
+})
+.AddStandardResilienceHandler(); // retries, timeout, circuit breaker out of the box
+
+// Consumers just inject CatalogClient — no HttpClient lifecycle to worry about.</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Stop writing <code>new HttpClient()</code></p>
+            <p>
+              The per-request <code>new HttpClient()</code> in a <code>using</code> is the canonical bug —
+              it exhausts sockets under load. Don’t replace it with one eternal static instance either
+              (stale DNS). Inject a typed/named client from the factory and let it manage handler lifetime.
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><code>new HttpClient()</code> per request → socket exhaustion; one forever-singleton → stale DNS. The factory avoids both by pooling and rotating handlers.</li>
+              <li>Prefer <strong>typed clients</strong> (base address + calls in one class) injected via DI.</li>
+              <li>Attach Polly/standard resilience (retry, timeout, circuit breaker) at registration — transparent to callers.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/dependency-injection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Dependency Injection</span>
+            </a>
+            <a class="related-card" href="../microservices/circuit-breaker.html">
+              <span class="rc-cat">Microservices</span><span class="rc-title">Circuit Breaker</span>
+            </a>
+            <a class="related-card" href="../dotnet/grpc.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">gRPC</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“What’s wrong with newing up an HttpClient per request?”</em> Answer: socket exhaustion
+              from handlers stuck in <code>TIME_WAIT</code>. Then show you know the <em>other</em> half —
+              a permanent singleton ignores DNS changes — and that <code>IHttpClientFactory</code> solves
+              both via handler pooling and rotation, with a natural home for Polly policies.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

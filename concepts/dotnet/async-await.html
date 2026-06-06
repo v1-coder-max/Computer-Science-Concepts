@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Async / Await Internals — DevLens</title>
+  <meta name="description" content="What async/await really does in .NET: the compiler-generated state machine, why awaiting I/O frees the thread instead of blocking it, and the deadlock traps." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="async-await" data-title="Async / Await Internals">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Async / Await Internals</h1>
+          <p class="lede">
+            <code>async/await</code> isn’t about running things in parallel — it’s about
+            <strong>not blocking a thread while you wait</strong>. Here’s the machinery
+            underneath.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#async</span>
+            <span class="tag">#tasks</span>
+            <span class="tag">#threading</span>
+            <span class="tag">#state-machine</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1. PLAIN ENGLISH -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Most of what a web app does is <strong>wait</strong> — for a database, an HTTP
+            call, a file. With old blocking code, the thread handling your request just
+            <em>sits there</em> doing nothing until the I/O returns. Threads are expensive
+            (~1&nbsp;MB of stack each, plus scheduling), so a server that blocks a thread per
+            in-flight request falls over under load.
+          </p>
+          <p>
+            <code>await</code> changes the deal. When you await an operation that hasn’t
+            finished, your method <strong>pauses and returns the thread to the pool</strong>
+            so it can serve someone else. When the I/O completes, the runtime grabs <em>a</em>
+            thread (not necessarily the same one) and resumes your method right where it left
+            off. No thread was held hostage during the wait.
+          </p>
+          <p>
+            The magic is a compiler trick. An <code>async</code> method is rewritten into a
+            <strong>state machine</strong>: each <code>await</code> becomes a checkpoint. Your
+            local variables are lifted into a struct so they survive the pause, and a
+            “continuation” is registered to fire when the awaited <code>Task</code> completes.
+            <strong>Async is about concurrency (juggling waits), not parallelism (using many
+            cores).</strong>
+          </p>
+
+          <!-- 2. REAL WORLD -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A <strong>Netflix</strong>-style API gateway fans a single page request out to
+              dozens of backend microservices. If each of those calls blocked a thread while
+              waiting on the network, a handful of slow downstream services would exhaust the
+              thread pool and stall <em>everyone</em>. With <code>async/await</code>, those
+              threads are released during every network wait, so one box can keep tens of
+              thousands of requests in flight on a small pool of threads. This is exactly why
+              ASP.NET Core controllers, EF Core, and <code>HttpClient</code> are async to the
+              core.
+            </p>
+          </div>
+
+          <!-- 3. VISUAL -->
+          <h2>What happens to the thread</h2>
+          <p>
+            The difference isn’t speed of the I/O — it’s whether a thread is wasted standing
+            guard over it.
+          </p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 230" role="img" aria-label="Blocking vs async thread usage timeline">
+              <!-- Row 1: synchronous/blocking -->
+              <text class="dgm-label" x="10" y="34">Blocking (sync)</text>
+              <rect class="dgm-box-accent" x="60"  y="46" width="110" height="34" rx="6" />
+              <text class="dgm-sub" x="115" y="68" text-anchor="middle">CPU work</text>
+              <rect x="170" y="46" width="250" height="34" rx="6"
+                    fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)" />
+              <text x="295" y="68" text-anchor="middle" fill="var(--c-warning)"
+                    style="font:600 12px var(--font-sans)">thread BLOCKED — wasted</text>
+              <rect class="dgm-box-accent" x="420" y="46" width="120" height="34" rx="6" />
+              <text class="dgm-sub" x="480" y="68" text-anchor="middle">resume</text>
+
+              <!-- Row 2: async -->
+              <text class="dgm-label" x="10" y="134">await (async)</text>
+              <rect class="dgm-box-accent" x="60"  y="146" width="110" height="34" rx="6" />
+              <text class="dgm-sub" x="115" y="168" text-anchor="middle">CPU work</text>
+              <rect x="170" y="146" width="250" height="34" rx="6"
+                    fill="none" stroke="var(--c-success)" stroke-dasharray="5 4" />
+              <text x="295" y="168" text-anchor="middle" fill="var(--c-success)"
+                    style="font:600 12px var(--font-sans)">thread freed → serves others</text>
+              <rect class="dgm-box-accent" x="420" y="146" width="120" height="34" rx="6" />
+              <text class="dgm-sub" x="480" y="168" text-anchor="middle">continuation</text>
+
+              <!-- I/O bar -->
+              <rect class="dgm-box" x="170" y="196" width="250" height="22" rx="5" />
+              <text class="dgm-sub" x="295" y="211" text-anchor="middle">I/O in flight (DB / network / disk)</text>
+            </svg>
+            <figcaption>Figure 1 — Same I/O wait; the async thread is released instead of parked.</figcaption>
+          </figure>
+
+          <!-- 4. CODE -->
+          <h2>In C#</h2>
+          <p>
+            Read the comments as the timeline: synchronous until the first <code>await</code>,
+            paused during the I/O, resumed afterward with locals intact.
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public async Task&lt;decimal&gt; GetPriceAsync(int productId)
+{
+    // 1. Runs synchronously on the caller's thread up to the first await.
+    HttpClient http = _httpFactory.CreateClient("catalog");
+
+    // 2. The Task isn't done yet → this method RETURNS to its caller here.
+    //    The thread goes back to the pool. Nothing is blocked.
+    HttpResponseMessage res = await http.GetAsync($"/price/{productId}");
+
+    // 3. When the network responds, the runtime resumes HERE (the "continuation").
+    //    productId and http were saved in the state machine, so they're still valid.
+    string body = await res.Content.ReadAsStringAsync();
+
+    return decimal.Parse(body);
+}</code></pre>
+          </div>
+
+          <p>
+            Roughly, the compiler turns that into a state machine the runtime drives:
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — generated (simplified)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// The compiler lifts locals into a struct and tracks a 'state' (-1, 0, 1, ...).
+// On each await it: stores state, hooks a continuation via awaiter.OnCompleted,
+// and returns. MoveNext() is called again when the awaited task completes.
+struct GetPriceStateMachine : IAsyncStateMachine
+{
+    public int _state;
+    public int productId;                 // hoisted local
+    private TaskAwaiter&lt;HttpResponseMessage&gt; _awaiter;
+
+    public void MoveNext()
+    {
+        if (_state == 0) goto resumePoint; // jump back in on resume
+        // ... start GetAsync, get awaiter ...
+        if (!_awaiter.IsCompleted)
+        {
+            _state = 0;
+            _awaiter.OnCompleted(MoveNext); // resume later, don't block now
+            return;
+        }
+        resumePoint:
+        var res = _awaiter.GetResult();      // throws here if the task faulted
+        // ... continue ...
+    }
+}</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Never block on async (the classic deadlock)</p>
+            <p>
+              Calling <code>.Result</code> or <code>.Wait()</code> on a Task blocks the
+              current thread <em>and</em>, in UI/legacy <code>SynchronizationContext</code>s,
+              the continuation needs that very thread to resume — so it never can. Result:
+              deadlock, or thread-pool starvation under load. Go <strong>async all the way
+              down</strong>, and use <code>ConfigureAwait(false)</code> in library code that
+              doesn’t need the original context.
+            </p>
+          </div>
+
+          <!-- 5. TAKEAWAYS -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><code>await</code> frees the thread during I/O — it’s concurrency, not parallelism, and uses no thread while waiting.</li>
+              <li>The compiler rewrites each <code>async</code> method into a state machine; locals are hoisted so they survive the pause and resume.</li>
+              <li>Never <code>.Result</code>/<code>.Wait()</code> on async code — go async end-to-end and use <code>ConfigureAwait(false)</code> in libraries.</li>
+            </ul>
+          </div>
+
+          <!-- 6. RELATED -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/task-vs-thread.html">
+              <span class="rc-cat">.NET</span>
+              <span class="rc-title">Task vs Thread</span>
+            </a>
+            <a class="related-card" href="../dotnet/threadpool.html">
+              <span class="rc-cat">.NET</span>
+              <span class="rc-title">The Thread Pool</span>
+            </a>
+            <a class="related-card" href="../csharp/yield-iterators.html">
+              <span class="rc-cat">C#</span>
+              <span class="rc-title">yield &amp; Iterators</span>
+            </a>
+          </div>
+
+          <!-- 7. INTERVIEW TIP -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The trap question is <em>“does <code>await</code> create a new thread?”</em> —
+              the answer is <strong>no</strong>. For pure I/O there’s no thread during the
+              wait at all; the OS notifies completion and a pool thread runs the continuation.
+              Say “state machine,” “the thread is returned to the pool,” and “async ≠ parallel”
+              and you’re ahead of most candidates.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

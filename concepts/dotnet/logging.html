@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logging (Serilog / NLog) — DevLens</title>
+  <meta name="description" content="Structured logging in .NET: the ILogger abstraction, providers and sinks, log levels, and why message templates with named properties beat string interpolation." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="logging" data-title="Logging">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Logging (Serilog / NLog)</h1>
+          <p class="lede">
+            Log <strong>structured events</strong>, not formatted strings. The <code>ILogger</code>
+            abstraction captures named properties you can later search and aggregate.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#logging</span>
+            <span class="tag">#structured-logging</span>
+            <span class="tag">#serilog</span>
+            <span class="tag">#observability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            .NET ships a logging abstraction — <code>ILogger&lt;T&gt;</code> — that your code writes to
+            without caring where the logs go. Behind it sit <strong>providers/sinks</strong> (Console,
+            Debug, and third-party Serilog or NLog targets like files, Seq, or Elasticsearch). Swap the
+            sink without touching your code.
+          </p>
+          <p>
+            The big idea is <strong>structured logging</strong>. Instead of baking values into a string,
+            you log a <em>message template</em> with named placeholders and pass the values separately:
+          </p>
+          <ul>
+            <li><code>logger.LogInformation("Order {OrderId} placed by {User}", id, user)</code> — captures <code>OrderId</code> and <code>User</code> as <strong>queryable fields</strong>.</li>
+            <li><code>logger.LogInformation($"Order {id} placed by {user}")</code> — flattens to text; you lose the fields.</li>
+          </ul>
+          <p>
+            With structured logs you can later ask “show me all events where <code>OrderId = 5512</code>”
+            across millions of lines. <strong>Log levels</strong> (Trace → Debug → Information → Warning →
+            Error → Critical) let you filter by severity, and <strong>scopes</strong> attach context (like a
+            correlation ID) to every log inside a block.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              At observability-heavy shops like <strong>Netflix</strong>, services emit structured logs
+              enriched with a request/correlation ID and ship them to a central store (Elasticsearch/Kibana
+              or Seq). When something breaks, an engineer filters by <code>CorrelationId</code> to follow a
+              single request across services, or aggregates by <code>StatusCode</code> to spot a spike — none
+              of which is possible if the values were smeared into free-text strings. Serilog’s
+              <em>enrichers</em> add machine name, environment, and trace IDs automatically.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>One API, many sinks</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 190" role="img" aria-label="ILogger to multiple sinks">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box-accent" x="20" y="70" width="150" height="54" rx="10" />
+              <text class="dgm-label" x="95" y="94" text-anchor="middle">ILogger&lt;T&gt;</text>
+              <text class="dgm-sub"   x="95" y="112" text-anchor="middle">structured event</text>
+
+              <rect class="dgm-box" x="240" y="14"  width="150" height="30" rx="7" />
+              <text class="dgm-sub" x="315" y="34" text-anchor="middle">Console</text>
+              <rect class="dgm-box" x="240" y="54"  width="150" height="30" rx="7" />
+              <text class="dgm-sub" x="315" y="74" text-anchor="middle">File (rolling)</text>
+              <rect class="dgm-box" x="240" y="94"  width="150" height="30" rx="7" />
+              <text class="dgm-sub" x="315" y="114" text-anchor="middle">Seq</text>
+              <rect class="dgm-box" x="240" y="134" width="150" height="30" rx="7" />
+              <text class="dgm-sub" x="315" y="154" text-anchor="middle">Elasticsearch</text>
+
+              <line class="dgm-line" x1="170" y1="92" x2="238" y2="29"  marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="170" y1="95" x2="238" y2="69"  marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="170" y1="99" x2="238" y2="109" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="170" y1="103" x2="238" y2="149" marker-end="url(#arrow)" />
+
+              <rect class="dgm-box" x="440" y="74" width="140" height="46" rx="9" />
+              <text class="dgm-sub" x="510" y="95" text-anchor="middle">query by field:</text>
+              <text class="dgm-sub" x="510" y="111" text-anchor="middle">OrderId = 5512</text>
+              <line class="dgm-line" x1="390" y1="120" x2="438" y2="100" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Write once to ILogger; fan out to sinks; query by captured properties.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class OrderService(ILogger&lt;OrderService&gt; logger)
+{
+    public async Task PlaceAsync(Order o)
+    {
+        // ✅ Structured: OrderId & Total are captured as fields you can query.
+        logger.LogInformation("Order {OrderId} placed, total {Total:C}", o.Id, o.Total);
+
+        // Scopes attach context to every log inside the block:
+        using (logger.BeginScope("Correlation:{CorrelationId}", o.CorrelationId))
+        {
+            try { await _repo.SaveAsync(o); }
+            catch (Exception ex)
+            {
+                // Always pass the exception as the first arg — captures the stack trace.
+                logger.LogError(ex, "Failed to save order {OrderId}", o.Id);
+                throw;
+            }
+        }
+
+        // ❌ Avoid: interpolation flattens to text and loses the fields.
+        // logger.LogInformation($"Order {o.Id} placed");
+    }
+}</code></pre>
+          </div>
+          <p>Wiring Serilog as the sink takes a few lines and replaces the default providers:</p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — Program.cs (Serilog)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">builder.Host.UseSerilog((ctx, cfg) =&gt; cfg
+    .ReadFrom.Configuration(ctx.Configuration)  // levels/sinks from appsettings
+    .Enrich.FromLogContext()                    // pulls in scope properties
+    .WriteTo.Console()
+    .WriteTo.Seq("http://localhost:5341"));</code></pre>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Use message templates with named placeholders — structured properties are queryable; string interpolation is not.</li>
+              <li><code>ILogger</code> is the abstraction; providers/sinks (Serilog, NLog) decide where logs go and can be swapped freely.</li>
+              <li>Pass the exception object to <code>LogError(ex, …)</code> and use scopes for correlation context.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/configuration.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Configuration System</span>
+            </a>
+            <a class="related-card" href="../dotnet/health-checks.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Health Checks</span>
+            </a>
+            <a class="related-card" href="../dotnet/dependency-injection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Dependency Injection</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“What is structured logging and why does it matter?”</em> Contrast a message template
+              (<code>"User {UserId} …"</code>) with string interpolation, and explain that captured
+              properties make logs <strong>searchable and aggregatable</strong> in a central store —
+              essential for debugging distributed systems. Mention correlation IDs via scopes.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

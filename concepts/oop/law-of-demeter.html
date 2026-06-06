@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Law of Demeter — DevLens</title>
+  <meta name="description" content="The Law of Demeter (principle of least knowledge): only talk to your immediate friends. Avoid train-wreck chains like a.GetB().GetC().Do() to cut coupling — with a C# example." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="oop" data-concept="law-of-demeter" data-title="Law of Demeter">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Law of Demeter</h1>
+          <p class="lede">
+            “Only talk to your immediate friends.” Don’t reach <em>through</em> one object to fiddle with another’s
+            internals — it quietly couples you to a whole object graph.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#oop</span>
+            <span class="tag">#law-of-demeter</span>
+            <span class="tag">#least-knowledge</span>
+            <span class="tag">#coupling</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            The Law of Demeter (a.k.a. the <strong>principle of least knowledge</strong>) says a method should only
+            call methods on a small circle of “friends”:
+          </p>
+          <ul>
+            <li>the object itself (<code>this</code>),</li>
+            <li>objects passed in as parameters,</li>
+            <li>objects it creates,</li>
+            <li>its own direct fields/components.</li>
+          </ul>
+          <p>
+            What it warns against is the <strong>“train wreck”</strong>:
+            <code>order.GetCustomer().GetAddress().GetCity().ToUpper()</code>. Each <code>.</code> reaches one level
+            deeper into someone else’s structure, so your code now silently depends on <code>Customer</code>
+            <em>and</em> <code>Address</code> <em>and</em> <code>City</code>. Change any of their shapes and this
+            line breaks. It’s coupling by chaining.
+          </p>
+          <p>
+            The fix is usually <strong>“tell, don’t ask”</strong>: instead of asking an object for its parts and
+            doing the work yourself, ask the object to do it. Add a method where the data lives
+            (<code>order.GetShippingCity()</code>) so callers talk only to <code>order</code>. (Caveat: fluent
+            builders and LINQ chains aren’t violations — those return the <em>same</em> kind of object, not
+            someone else’s internals.)
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A pricing service that digs <code>cart.GetUser().GetAccount().GetTier().GetDiscount()</code> is one
+              refactor away from a cascade of breakages — rename anything in that chain and every caller shatters.
+              Teams that respect Demeter expose intent-revealing methods (<code>cart.GetApplicableDiscount()</code>)
+              so the traversal stays hidden inside the objects that own the data. The result is fewer ripple-effect
+              changes and tests that don’t need to build a five-level-deep object graph just to exercise one rule.
+            </p>
+          </div>
+
+          <h2>Train wreck vs delegation</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Train wreck chain versus delegation">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <text class="dgm-label" x="20" y="24" fill="var(--c-warning)">Train wreck ✗</text>
+              <rect class="dgm-box" x="20" y="40" width="70" height="32" rx="6"/><text class="dgm-sub" x="55" y="60" text-anchor="middle">order</text>
+              <rect class="dgm-box" x="120" y="40" width="80" height="32" rx="6"/><text class="dgm-sub" x="160" y="60" text-anchor="middle">customer</text>
+              <rect class="dgm-box" x="230" y="40" width="80" height="32" rx="6"/><text class="dgm-sub" x="270" y="60" text-anchor="middle">address</text>
+              <rect class="dgm-box" x="340" y="40" width="70" height="32" rx="6"/><text class="dgm-sub" x="375" y="60" text-anchor="middle">city</text>
+              <line class="dgm-line" x1="90" y1="56" x2="118" y2="56" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="200" y1="56" x2="228" y2="56" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="310" y1="56" x2="338" y2="56" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="210" y="92" text-anchor="middle">coupled to 4 types</text>
+
+              <text class="dgm-label" x="20" y="124" fill="var(--c-success)">Delegate ✓</text>
+              <rect class="dgm-box-accent" x="20" y="132" width="160" height="30" rx="7"/><text class="dgm-sub" x="100" y="152" text-anchor="middle">order.ShippingCity()</text>
+              <text class="dgm-sub" x="300" y="152" text-anchor="middle">talks to one friend; traversal hidden inside</text>
+            </svg>
+            <figcaption>Figure 1 — Replace the deep chain with a method on the object that owns the data.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ Violation: this method knows the entire object graph's shape.
+string city = order.Customer.Address.City.ToUpper();
+// breaks if Customer, Address, or City changes structure or nullability
+
+// ✅ Tell, don't ask: expose intent on the object that owns the data.
+public class Order
+{
+    private readonly Customer _customer;
+    public string ShippingCityUpper() =&gt; _customer.ShippingCityUpper();  // delegate inward
+}
+public class Customer
+{
+    private readonly Address _address;
+    public string ShippingCityUpper() =&gt; _address.City.ToUpperInvariant();
+}
+
+// Caller now depends only on Order:
+string city2 = order.ShippingCityUpper();
+
+// Not a violation — LINQ/fluent chains return the same kind of thing:
+var names = people.Where(p =&gt; p.IsActive).Select(p =&gt; p.Name).ToList();</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Talk only to immediate friends (self, parameters, things you create, your fields) — not their friends.</li>
+              <li>Train-wreck chains (<code>a.GetB().GetC().Do()</code>) couple you to a whole object graph; “tell, don’t ask” instead.</li>
+              <li>Fluent/LINQ chains returning the same type aren’t violations — it’s about reaching into <em>others’</em> internals.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../oop/coupling-cohesion.html"><span class="rc-cat">OOP</span><span class="rc-title">Coupling &amp; Cohesion</span></a>
+            <a class="related-card" href="../oop/encapsulation.html"><span class="rc-cat">OOP</span><span class="rc-title">Encapsulation</span></a>
+            <a class="related-card" href="../oop/solid.html"><span class="rc-cat">OOP</span><span class="rc-title">SOLID Principles</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Recognize a <strong>“train wreck”</strong> when asked to spot a smell: a long
+              <code>a.b.c.d</code> chain. Explain it couples the caller to every type in the chain and fix it with
+              <strong>“tell, don’t ask.”</strong> Knowing the LINQ/fluent exception shows you understand the
+              <em>why</em>, not just the rule.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

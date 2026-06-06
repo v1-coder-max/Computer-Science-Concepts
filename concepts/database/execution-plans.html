@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reading Execution Plans — DevLens</title>
+  <meta name="description" content="How the query optimizer turns SQL into an execution plan using statistics, how to read it (seek vs scan, join types, key lookups), and why stale stats and parameter sniffing cause slow queries." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="execution-plans" data-title="Reading Execution Plans">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Reading Execution Plans</h1>
+          <p class="lede">
+            SQL says <em>what</em> you want; the optimizer decides <em>how</em> to get it. The execution plan is
+            that decision — and reading it is how you fix slow queries.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#execution-plan</span>
+            <span class="tag">#query-optimization</span>
+            <span class="tag">#statistics</span>
+            <span class="tag">#performance</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            SQL is <strong>declarative</strong> — you describe the result, not the steps. The
+            <strong>query optimizer</strong> takes your query and produces an <strong>execution plan</strong>: a
+            tree of physical operators (scans, seeks, joins, sorts) it’ll run. It’s <strong>cost-based</strong> —
+            it estimates how many rows each step produces using <strong>statistics</strong> (histograms of column
+            values) and picks the cheapest plan.
+          </p>
+          <p>What to look for when you read one:</p>
+          <ul>
+            <li><strong>Index Seek vs Scan</strong> — a seek jumps to the rows (good); a scan reads the whole table/index (often the smoking gun).</li>
+            <li><strong>Join type</strong> — nested loops (small inputs), hash join (large unsorted), merge join (sorted inputs).</li>
+            <li><strong>Key Lookups</strong> — the index found the row but had to go back to the table for more columns (a covering index removes these).</li>
+            <li><strong>Estimated vs actual rows</strong> — a big mismatch means <strong>bad cardinality estimates</strong>, usually from stale statistics.</li>
+          </ul>
+          <p>
+            Two classic traps: <strong>stale statistics</strong> mislead the optimizer into a bad plan, and
+            <strong>parameter sniffing</strong> — the plan cached for one parameter value performs terribly for
+            another with a very different data distribution. The fix flow is always: <em>read the plan first</em>,
+            then act.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When a dashboard query that ran in 50&nbsp;ms suddenly takes 8 seconds, a DBA pulls the
+              <strong>actual execution plan</strong> before touching anything. Nine times out of ten the story is
+              there: a <em>Table Scan</em> where a seek should be (missing/!sargable index), a fat <em>Key
+              Lookup</em> loop, or estimated-vs-actual rows off by 1000× because statistics went stale after a bulk
+              load. Sometimes it’s parameter sniffing — fast for one customer, slow for the whale account. The plan
+              turns guesswork into a diagnosis.
+            </p>
+          </div>
+
+          <h2>SQL → optimizer → plan</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Query optimizer produces a plan from statistics">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="70" width="110" height="46" rx="9"/><text class="dgm-sub" x="75" y="97" text-anchor="middle">SQL query</text>
+              <rect class="dgm-box-accent" x="180" y="60" width="150" height="66" rx="10"/><text class="dgm-label" x="255" y="86" text-anchor="middle">Optimizer</text><text class="dgm-sub" x="255" y="104" text-anchor="middle">cost-based + stats</text>
+              <rect class="dgm-box" x="200" y="14" width="110" height="30" rx="7"/><text class="dgm-sub" x="255" y="34" text-anchor="middle">statistics</text>
+              <line class="dgm-line" x1="255" y1="44" x2="255" y2="58" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="130" y1="93" x2="178" y2="93" marker-end="url(#arrow)"/>
+
+              <rect class="dgm-box" x="380" y="40" width="200" height="30" rx="7"/><text class="dgm-sub" x="480" y="60" text-anchor="middle">Hash Join</text>
+              <rect x="380" y="80" width="95" height="30" rx="7" fill="var(--c-success)" fill-opacity="0.14" stroke="var(--c-success)"/><text x="427" y="100" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Index Seek ✓</text>
+              <rect x="485" y="80" width="95" height="30" rx="7" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)"/><text x="532" y="100" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">Table Scan ✗</text>
+              <line class="dgm-line" x1="427" y1="80" x2="460" y2="70"/><line class="dgm-line" x1="532" y1="80" x2="500" y2="70"/>
+              <line class="dgm-line" x1="330" y1="93" x2="378" y2="55" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="480" y="135" text-anchor="middle">read the plan tree bottom-up</text>
+            </svg>
+            <figcaption>Figure 1 — Operators form a tree; scans and lookups are where time usually hides.</figcaption>
+          </figure>
+
+          <h2>In SQL</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">SQL</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-sql">-- SQL Server: see I/O and the actual plan
+SET STATISTICS IO, TIME ON;          -- logical reads per table
+-- (SSMS) enable "Include Actual Execution Plan", then run:
+SELECT o.Id, o.Total, c.Name
+FROM Orders o
+JOIN Customers c ON c.Id = o.CustomerId
+WHERE o.CreatedUtc &gt;= '2026-01-01';
+-- Look for: Index Seek vs Table Scan, Key Lookups, estimated vs actual rows.
+
+-- PostgreSQL: EXPLAIN ANALYZE shows estimated AND real timings/rows
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM orders WHERE customer_id = 42;
+
+-- Keep stats fresh so estimates stay accurate:
+UPDATE STATISTICS Orders;            -- SQL Server   ( ANALYZE orders;  in Postgres )</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The optimizer is cost-based and statistics-driven; the execution plan is the operator tree it chose.</li>
+              <li>Hunt for scans-instead-of-seeks, key lookups, and big estimated-vs-actual row gaps.</li>
+              <li>Stale statistics and parameter sniffing are the usual culprits behind a suddenly-slow query.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/indexing.html"><span class="rc-cat">Database</span><span class="rc-title">Database Indexing</span></a>
+            <a class="related-card" href="../database/transactions-acid.html"><span class="rc-cat">Database</span><span class="rc-title">Transactions &amp; ACID</span></a>
+            <a class="related-card" href="../dotnet/ef-core-internals.html"><span class="rc-cat">.NET</span><span class="rc-title">EF Core Internals</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“A query is slow — how do you debug it?”</em> The senior answer leads with <strong>read the
+              execution plan</strong>, not “add an index.” Mention seek vs scan, statistics/cardinality estimates,
+              and parameter sniffing. Only <em>then</em> propose a covering index — and verify it changed the plan.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

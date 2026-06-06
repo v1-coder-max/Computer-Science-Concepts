@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOLID Principles — DevLens</title>
+  <meta name="description" content="The five SOLID principles explained in plain English with C# — Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="oop" data-concept="solid" data-title="SOLID Principles">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>SOLID Principles</h1>
+          <p class="lede">
+            Five design rules that keep object-oriented code <strong>easy to change</strong> —
+            the thing software actually has to do well over its lifetime.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#oop</span>
+            <span class="tag">#solid</span>
+            <span class="tag">#design</span>
+            <span class="tag">#maintainability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1. PLAIN ENGLISH -->
+          <h2>The idea in plain English</h2>
+          <p>
+            SOLID is five principles (coined by Robert C. Martin) that together fight the one
+            thing that rots a codebase: <strong>rigidity</strong> — where a small change ripples
+            into ten files and breaks two you forgot about. None of them are laws; they’re
+            pressure that pushes you toward classes that are small, swappable, and safe to
+            extend.
+          </p>
+          <ul>
+            <li><strong>S — Single Responsibility:</strong> a class should have one reason to change. Mixing “calculate payroll” with “format a PDF” means a report tweak can break payroll.</li>
+            <li><strong>O — Open/Closed:</strong> open for extension, closed for modification. Add behavior by adding a class, not by editing a working one (and re-testing everything).</li>
+            <li><strong>L — Liskov Substitution:</strong> a subtype must work anywhere its base type is expected. If <code>Square : Rectangle</code> breaks code that sets width and height independently, the inheritance is a lie.</li>
+            <li><strong>I — Interface Segregation:</strong> many small, focused interfaces beat one fat one. Don’t force a class to implement <code>Fax()</code> just because it’s a <code>IMachine</code>.</li>
+            <li><strong>D — Dependency Inversion:</strong> depend on abstractions, not concretions. High-level policy shouldn’t hard-wire a low-level detail like SMTP.</li>
+          </ul>
+
+          <!-- 2. REAL WORLD -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Amazon</strong>’s checkout doesn’t hard-code a single payment provider.
+              It depends on a <code>IPaymentProvider</code> abstraction (Dependency Inversion),
+              and each new method — card, gift card, Pay-Later — is a <em>new</em> implementation
+              dropped in without touching the order pipeline (Open/Closed). Because every
+              provider honors the same contract (Liskov), the checkout code never needs an
+              <code>if (provider is PayPal)</code> branch. That’s why they can launch a payment
+              method in one region without risking the global cart.
+            </p>
+          </div>
+
+          <!-- 3. VISUAL -->
+          <h2>The five at a glance</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 300" role="img" aria-label="The five SOLID principles">
+              <!-- S -->
+              <rect x="20" y="14"  width="40" height="40" rx="9" fill="var(--cat-system-design)" fill-opacity="0.9"/>
+              <text x="40" y="42"  text-anchor="middle" fill="#04122b" style="font:800 22px var(--font-sans)">S</text>
+              <text class="dgm-label" x="76" y="33">Single Responsibility</text>
+              <text class="dgm-sub"   x="76" y="51">One class, one reason to change.</text>
+
+              <!-- O -->
+              <rect x="20" y="72"  width="40" height="40" rx="9" fill="var(--cat-oop)" fill-opacity="0.9"/>
+              <text x="40" y="100" text-anchor="middle" fill="#04122b" style="font:800 22px var(--font-sans)">O</text>
+              <text class="dgm-label" x="76" y="91">Open / Closed</text>
+              <text class="dgm-sub"   x="76" y="109">Extend by adding code, not editing it.</text>
+
+              <!-- L -->
+              <rect x="20" y="130" width="40" height="40" rx="9" fill="var(--cat-database)" fill-opacity="0.9"/>
+              <text x="40" y="158" text-anchor="middle" fill="#04122b" style="font:800 22px var(--font-sans)">L</text>
+              <text class="dgm-label" x="76" y="149">Liskov Substitution</text>
+              <text class="dgm-sub"   x="76" y="167">Subtypes must stand in for their base.</text>
+
+              <!-- I -->
+              <rect x="20" y="188" width="40" height="40" rx="9" fill="var(--cat-microservices)" fill-opacity="0.9"/>
+              <text x="40" y="216" text-anchor="middle" fill="#04122b" style="font:800 22px var(--font-sans)">I</text>
+              <text class="dgm-label" x="76" y="207">Interface Segregation</text>
+              <text class="dgm-sub"   x="76" y="225">Many small interfaces &gt; one fat one.</text>
+
+              <!-- D -->
+              <rect x="20" y="246" width="40" height="40" rx="9" fill="var(--cat-csharp)" fill-opacity="0.9"/>
+              <text x="40" y="274" text-anchor="middle" fill="#04122b" style="font:800 22px var(--font-sans)">D</text>
+              <text class="dgm-label" x="76" y="265">Dependency Inversion</text>
+              <text class="dgm-sub"   x="76" y="283">Depend on abstractions, not concretions.</text>
+            </svg>
+            <figcaption>Figure 1 — All five aim at one goal: code you can change without fear.</figcaption>
+          </figure>
+
+          <!-- 4. CODE -->
+          <h2>In C# — Dependency Inversion</h2>
+          <p>
+            The most impactful one day-to-day. Watch the high-level <code>OrderService</code> stop
+            hard-wiring a concrete email sender and depend on an abstraction instead:
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ Rigid: high-level policy is welded to a low-level detail (SMTP).
+//    Impossible to unit-test without sending real email; can't swap channels.
+public class OrderService
+{
+    private readonly SmtpEmailSender _email = new();
+    public void Place(Order o) =&gt; _email.Send(o.CustomerEmail, "Thanks!");
+}
+
+// ✅ Both sides now depend on the abstraction, not each other.
+public interface INotifier
+{
+    Task NotifyAsync(string to, string message);
+}
+
+public class OrderService                       // high-level policy
+{
+    private readonly INotifier _notifier;
+    public OrderService(INotifier notifier) =&gt;  // injected (Dependency Injection)
+        _notifier = notifier;
+
+    public async Task PlaceAsync(Order o)
+    {
+        // ... persist the order (its single responsibility) ...
+        await _notifier.NotifyAsync(o.CustomerEmail, "Thanks for your order!");
+    }
+}
+
+// New channels are *added*, never edited in (Open/Closed).
+public class EmailNotifier : INotifier { /* ... */ public Task NotifyAsync(string t, string m) =&gt; Task.CompletedTask; }
+public class SmsNotifier   : INotifier { /* ... */ public Task NotifyAsync(string t, string m) =&gt; Task.CompletedTask; }</code></pre>
+          </div>
+
+          <p>
+            Now tests inject a fake <code>INotifier</code>, and switching email→SMS is a
+            one-line registration change — no edit to <code>OrderService</code>.
+          </p>
+
+          <!-- 5. TAKEAWAYS -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>SOLID exists for one reason: keep code cheap and safe to change. Every principle attacks rigidity from a different angle.</li>
+              <li>Dependency Inversion + Open/Closed are the workhorses — program to interfaces and add behavior by adding types, not editing old ones.</li>
+              <li>They’re heuristics, not commandments. Over-applying SOLID creates its own mess (a factory for every class) — use judgment.</li>
+            </ul>
+          </div>
+
+          <!-- 6. RELATED -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/singleton-pattern.html">
+              <span class="rc-cat">C#</span>
+              <span class="rc-title">Singleton Pattern</span>
+            </a>
+            <a class="related-card" href="../oop/composition-vs-inheritance.html">
+              <span class="rc-cat">OOP</span>
+              <span class="rc-title">Composition vs Inheritance</span>
+            </a>
+            <a class="related-card" href="../dotnet/async-await.html">
+              <span class="rc-cat">.NET</span>
+              <span class="rc-title">Async / Await Internals</span>
+            </a>
+          </div>
+
+          <!-- 7. INTERVIEW TIP -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Don’t just recite the acronym — interviewers want <em>“give me a real example
+              where you applied one.”</em> Have a Dependency-Inversion story ready (swapping an
+              implementation behind an interface to make code testable). Bonus points for
+              admitting where SOLID can be <em>over</em>-applied — it signals seniority, not
+              dogma.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

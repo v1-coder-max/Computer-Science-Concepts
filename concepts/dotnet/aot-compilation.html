@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Native AOT — DevLens</title>
+  <meta name="description" content="Native AOT compiles a .NET app to a self-contained native binary ahead of time — no JIT, instant startup, low memory — and the trade-offs: limited reflection, trimming, platform-specific builds." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="aot-compilation" data-title="Native AOT">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Native AOT</h1>
+          <p class="lede">
+            Compile the whole app to a <strong>native binary at build time</strong> — no JIT, no IL at runtime.
+            Instant startup and tiny memory, in exchange for some flexibility.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#aot</span>
+            <span class="tag">#native</span>
+            <span class="tag">#startup</span>
+            <span class="tag">#trimming</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Normally a .NET app ships IL and the <strong>JIT</strong> compiles it to native code on first use
+            (see the JIT page). <strong>Native AOT</strong> (Ahead-Of-Time) does all that compilation
+            <em>before</em> you ship: the toolchain produces a single, self-contained <strong>native
+            executable</strong> with the runtime and your code baked in. There’s no IL and no JIT at runtime —
+            the OS just runs machine code.
+          </p>
+          <p>What you gain:</p>
+          <ul>
+            <li><strong>Near-instant startup</strong> — nothing to JIT, so cold start drops dramatically.</li>
+            <li><strong>Lower memory</strong> and a <strong>smaller, dependency-free</strong> deployable (no shared runtime needed).</li>
+          </ul>
+          <p>What you give up — because there’s no runtime code generation:</p>
+          <ul>
+            <li><strong>Limited reflection</strong> and <strong>no <code>Reflection.Emit</code></strong> / runtime IL.</li>
+            <li><strong>Trimming is mandatory</strong>: unused code is cut to shrink the binary, which breaks libraries that reflect over types not seen at build time.</li>
+            <li>Builds are <strong>platform-specific</strong> (you compile per OS/architecture) and take longer.</li>
+          </ul>
+          <p>
+            This is why <strong>source generators</strong> matter for AOT: they replace reflection-based JSON,
+            regex, and DI wiring with build-time code that survives trimming. Native AOT is opt-in and best for
+            specific workloads — not every app needs (or can use) it.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Serverless</strong> functions (AWS Lambda, Azure Functions) and autoscaling
+              <strong>containers</strong> live and die by cold-start time and memory footprint — you pay for both,
+              and users feel the latency on a cold invocation. A trimmed Native AOT build of a small ASP.NET Core
+              API or a CLI tool starts in single-digit milliseconds and ships as one small binary with no runtime
+              to install, which is exactly what a “scale to zero” function or a distributed CLI wants. Heavy,
+              reflection-laden apps (some ORMs, plugin hosts) stay on the JIT.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>JIT vs AOT</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="JIT versus Native AOT">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <!-- JIT -->
+              <text class="dgm-label" x="20" y="30">JIT</text>
+              <rect class="dgm-box" x="20" y="40" width="90" height="36" rx="7" /><text class="dgm-sub" x="65" y="62" text-anchor="middle">IL ships</text>
+              <rect x="130" y="40" width="150" height="36" rx="7" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)" />
+              <text x="205" y="62" text-anchor="middle" fill="var(--c-warning)" style="font:600 12px var(--font-sans)">JIT at startup (slower)</text>
+              <rect class="dgm-box-accent" x="300" y="40" width="90" height="36" rx="7" /><text class="dgm-sub" x="345" y="62" text-anchor="middle">native</text>
+              <line class="dgm-line" x1="110" y1="58" x2="128" y2="58" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="280" y1="58" x2="298" y2="58" marker-end="url(#arrow)" />
+              <text class="dgm-sub" x="430" y="62">flexible · reflection OK</text>
+
+              <!-- AOT -->
+              <text class="dgm-label" x="20" y="120">Native AOT</text>
+              <rect class="dgm-box" x="20" y="130" width="120" height="36" rx="7" /><text class="dgm-sub" x="80" y="152" text-anchor="middle">compile at build</text>
+              <rect class="dgm-box-accent" x="160" y="130" width="150" height="36" rx="7" />
+              <text x="235" y="152" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">native exe (instant start)</text>
+              <line class="dgm-line" x1="140" y1="148" x2="158" y2="148" marker-end="url(#arrow)" />
+              <text class="dgm-sub" x="430" y="152">trimmed · limited reflection</text>
+            </svg>
+            <figcaption>Figure 1 — JIT defers compilation to runtime; AOT does it all at build for instant start.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In code</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">XML — .csproj</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+  &lt;PublishAot&gt;true&lt;/PublishAot&gt;          &lt;!-- opt in to Native AOT --&gt;
+  &lt;InvariantGlobalization&gt;true&lt;/InvariantGlobalization&gt;
+&lt;/PropertyGroup&gt;</code></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">Bash</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-bash"># Produces one self-contained native binary for the target platform.
+dotnet publish -c Release -r linux-x64
+
+# The output is an executable with no .NET runtime dependency — just run it.
+./bin/Release/net8.0/linux-x64/publish/myapp</code></pre>
+          </div>
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Reflection-heavy code won’t survive trimming</p>
+            <p>
+              Anything that reflects over types the trimmer can’t see at build time (some serializers, DI
+              auto-scanning, dynamic plugin loading) can fail at runtime under AOT. The fix is to use
+              <strong>source-generated</strong> equivalents (e.g. <code>System.Text.Json</code> source-gen) and
+              heed the AOT/trim analyzer warnings — don’t flip <code>PublishAot</code> on blindly.
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Native AOT compiles to a self-contained native binary at build — no JIT, instant startup, low memory.</li>
+              <li>The cost: limited reflection, mandatory trimming, and platform-specific builds.</li>
+              <li>Use source generators to replace reflection; ideal for serverless, containers, and CLIs — not reflection-heavy apps.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/jit-compilation.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">JIT Compilation</span>
+            </a>
+            <a class="related-card" href="../dotnet/source-generators.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Source Generators</span>
+            </a>
+            <a class="related-card" href="../dotnet/clr.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">The CLR</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“JIT vs AOT — when would you choose Native AOT?”</em> AOT for fast cold start and small
+              footprint (serverless, containers, CLIs); accept the loss of runtime reflection and the trimming
+              requirement. Tie it together: <strong>source generators</strong> are what make modern libraries
+              AOT-compatible by removing reflection.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

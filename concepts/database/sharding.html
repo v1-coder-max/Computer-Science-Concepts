@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partitioning &amp; Sharding — DevLens</title>
+  <meta name="description" content="Scaling a database by splitting data: vertical vs horizontal partitioning, sharding across nodes by a shard key, choosing a good key to avoid hotspots, and the cost of cross-shard queries." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="sharding" data-title="Partitioning & Sharding">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Partitioning &amp; Sharding</h1>
+          <p class="lede">
+            When one database can’t hold or serve all your data, you <strong>split it</strong>. Sharding spreads
+            the rows across many servers — powerful, but it changes the rules.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#sharding</span>
+            <span class="tag">#partitioning</span>
+            <span class="tag">#scaling</span>
+            <span class="tag">#shard-key</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            You scale a single box vertically (more CPU/RAM) only so far. Past that you <strong>partition</strong>
+            the data:
+          </p>
+          <ul>
+            <li><strong>Vertical partitioning</strong> — split by <em>columns</em> (rarely-used or huge columns into their own table).</li>
+            <li><strong>Horizontal partitioning</strong> — split by <em>rows</em> (e.g. orders by date range), still within one server.</li>
+            <li><strong>Sharding</strong> — horizontal partitioning spread across <em>multiple servers/nodes</em>, each holding a disjoint subset. Now you scale writes and storage, not just reads.</li>
+          </ul>
+          <p>
+            Each row goes to a shard based on its <strong>shard key</strong> (e.g. <code>user_id</code>), via range,
+            hash, or directory mapping. The shard key is the most important decision you’ll make:
+          </p>
+          <ul>
+            <li>It must <strong>distribute evenly</strong> — a bad key creates a <strong>hotspot</strong> (one shard swamped while others idle). Hashing the key spreads load; range keys can hotspot on “recent.”</li>
+            <li>It should match your access pattern, because <strong>cross-shard queries are expensive</strong>: joins and transactions <em>across</em> shards are hard or unsupported, and a query without the shard key may have to fan out to every node.</li>
+          </ul>
+          <p>
+            Sharding adds real operational complexity (rebalancing/resharding, no easy global joins), so it’s a
+            <em>last resort</em> after indexing, caching, and read replicas. <strong>Consistent hashing</strong> is
+            the usual technique for distributing keys so adding/removing a node moves minimal data.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Instagram</strong> famously sharded its Postgres by user ID across thousands of logical
+              shards, so each user’s data lives on one shard and the system scales horizontally with the user base.
+              Multi-tenant SaaS often shards by <code>tenant_id</code> so each customer maps cleanly to a shard.
+              The recurring lesson everyone learns the hard way: <strong>pick the shard key for your dominant query
+              and even distribution</strong> — getting it wrong means painful resharding and a hot node taking all
+              the traffic.
+            </p>
+          </div>
+
+          <h2>Rows split by shard key</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Sharding by key across nodes">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="220" y="20" width="160" height="40" rx="9"/><text class="dgm-label" x="300" y="38" text-anchor="middle">router</text><text class="dgm-sub" x="300" y="54" text-anchor="middle">hash(user_id) % N</text>
+              <rect class="dgm-box" x="30" y="100" width="150" height="44" rx="9"/><text class="dgm-sub" x="105" y="120" text-anchor="middle">Shard 0</text><text class="dgm-sub" x="105" y="136" text-anchor="middle">users A–H</text>
+              <rect class="dgm-box" x="225" y="100" width="150" height="44" rx="9"/><text class="dgm-sub" x="300" y="120" text-anchor="middle">Shard 1</text><text class="dgm-sub" x="300" y="136" text-anchor="middle">users I–P</text>
+              <rect class="dgm-box" x="420" y="100" width="150" height="44" rx="9"/><text class="dgm-sub" x="495" y="120" text-anchor="middle">Shard 2</text><text class="dgm-sub" x="495" y="136" text-anchor="middle">users Q–Z</text>
+              <line class="dgm-line" x1="270" y1="60" x2="120" y2="98" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="300" y1="60" x2="300" y2="98" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="330" y1="60" x2="480" y2="98" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — The shard key routes each row to one node; query without it and you fan out to all.</figcaption>
+          </figure>
+
+          <h2>In practice</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — shard routing (conceptual)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Pick the connection by the shard key — queries WITH the key hit one shard.
+string ConnFor(int userId) =&gt; _shards[Math.Abs(userId.GetHashCode()) % _shards.Count];
+
+await using var conn = new SqlConnection(ConnFor(userId));   // single-shard, fast
+
+// ❌ A report across ALL users must fan out to every shard and merge — expensive,
+//    and there's no cross-shard JOIN or transaction. Design the key to avoid this.</code></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">SQL — single-server table partitioning (a lighter step)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-sql">-- Horizontal partitioning by date keeps one server but prunes scans to one partition.
+-- (PostgreSQL declarative partitioning)
+CREATE TABLE orders (id bigint, created date, ...) PARTITION BY RANGE (created);
+CREATE TABLE orders_2026 PARTITION OF orders
+    FOR VALUES FROM ('2026-01-01') TO ('2027-01-01');</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Sharding = horizontal partitioning across multiple servers, scaling writes and storage, not just reads.</li>
+              <li>The shard key is everything: even distribution (no hotspots) and alignment with your main query.</li>
+              <li>Cross-shard joins/transactions are hard — shard only after indexing, caching, and replicas fall short.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/replication.html"><span class="rc-cat">Database</span><span class="rc-title">Replication</span></a>
+            <a class="related-card" href="../system-design/consistent-hashing.html"><span class="rc-cat">System Design</span><span class="rc-title">Consistent Hashing</span></a>
+            <a class="related-card" href="../system-design/cap-theorem.html"><span class="rc-cat">System Design</span><span class="rc-title">CAP Theorem</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              In a scaling question, distinguish <strong>partitioning</strong> (within a server) from
+              <strong>sharding</strong> (across servers), and make the <strong>shard-key choice</strong> the
+              centerpiece — even distribution to avoid hotspots, plus the pain of cross-shard queries. Mention
+              consistent hashing for rebalancing, and that sharding is a last resort.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

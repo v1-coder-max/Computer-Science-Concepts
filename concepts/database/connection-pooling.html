@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connection Pooling — DevLens</title>
+  <meta name="description" content="Why opening a database connection is expensive, how a connection pool reuses open connections across requests, what causes pool exhaustion, and why disposing connections matters." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="connection-pooling" data-title="Connection Pooling">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Connection Pooling</h1>
+          <p class="lede">
+            Opening a database connection is slow. A pool keeps a handful open and <strong>hands them out and
+            takes them back</strong>, so requests reuse connections instead of building new ones.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#connection-pool</span>
+            <span class="tag">#performance</span>
+            <span class="tag">#ado-net</span>
+            <span class="tag">#exhaustion</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Establishing a DB connection isn’t free: a TCP handshake, TLS, authentication, and server-side session
+            setup — easily milliseconds each. Under web load (hundreds of requests/second) opening a fresh
+            connection per request would crush both the app and the database.
+          </p>
+          <p>
+            A <strong>connection pool</strong> solves it. The driver keeps a set of already-open connections. When
+            your code “opens” a connection it actually <strong>borrows</strong> one from the pool; when you
+            “close”/dispose it, the connection is <strong>returned</strong> (reset, not torn down) for the next
+            caller. In ADO.NET / EF Core this is on by default, keyed by the exact connection string — so reusing
+            the same string is what lets connections be shared.
+          </p>
+          <p>The things that bite:</p>
+          <ul>
+            <li><strong>Pool exhaustion</strong> — if all connections are checked out (often because someone forgot to dispose, or a slow query holds one too long), new requests <em>wait</em> and then time out. Symptom: “Timeout expired… all pooled connections were in use.”</li>
+            <li><strong>Always dispose</strong> — a <code>using</code> returns the connection promptly. A leaked connection is gone from the pool until GC finalizes it.</li>
+            <li><strong>Size it sanely</strong> — <code>Max Pool Size</code> caps concurrency to the DB; bigger isn’t always better (the database has its own connection limits).</li>
+          </ul>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A classic outage: a code path opens a <code>SqlConnection</code> but an exception skips the
+              <code>Close()</code>, so under traffic the pool drains and <em>every</em> request starts timing out —
+              the app looks down though the database is fine. The fix is boring and reliable: wrap connections in
+              <code>using</code> (or let EF Core’s scoped <code>DbContext</code> manage it), keep transactions
+              short so connections return fast, and size <code>Max Pool Size</code> to what the database can
+              actually handle. This is the DB-tier cousin of thread-pool starvation.
+            </p>
+          </div>
+
+          <h2>Borrow and return</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Connection pool borrow and return">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="30" width="120" height="30" rx="6"/><text class="dgm-sub" x="80" y="50" text-anchor="middle">request 1</text>
+              <rect class="dgm-box" x="20" y="72" width="120" height="30" rx="6"/><text class="dgm-sub" x="80" y="92" text-anchor="middle">request 2</text>
+              <rect class="dgm-box" x="20" y="114" width="120" height="30" rx="6"/><text class="dgm-sub" x="80" y="134" text-anchor="middle">request 3</text>
+
+              <rect class="dgm-box-accent" x="220" y="40" width="160" height="96" rx="11"/>
+              <text class="dgm-label" x="300" y="62" text-anchor="middle">Pool</text>
+              <rect class="dgm-box" x="236" y="74" width="128" height="22" rx="5"/><text class="dgm-sub" x="300" y="90" text-anchor="middle">conn (open, reused)</text>
+              <rect class="dgm-box" x="236" y="102" width="128" height="22" rx="5"/><text class="dgm-sub" x="300" y="118" text-anchor="middle">conn (open, reused)</text>
+
+              <rect class="dgm-box" x="460" y="64" width="120" height="48" rx="9"/><text class="dgm-label" x="520" y="92" text-anchor="middle">Database</text>
+
+              <line class="dgm-line" x1="140" y1="45" x2="218" y2="80" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="140" y1="87" x2="218" y2="92" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="380" y1="88" x2="458" y2="88" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="180" y="158" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">all checked out → new requests wait → timeout</text>
+            </svg>
+            <figcaption>Figure 1 — Requests share a small set of open connections; leaks shrink the pool.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Pooling is ON by default; tune it in the connection string.
+var cs = "Server=db;Database=Shop;Pooling=true;Max Pool Size=100;Min Pool Size=5;";
+
+// 'using' RETURNS the connection to the pool at the end of scope — don't skip it.
+await using var conn = new SqlConnection(cs);
+await conn.OpenAsync();          // borrow from the pool (cheap if one's free)
+await using var cmd = new SqlCommand("SELECT 1", conn);
+await cmd.ExecuteScalarAsync();
+// conn disposed here → returned to the pool, ready for the next request
+
+// EF Core pools automatically; a scoped DbContext borrows/returns per request.
+// Heavy multi-threaded apps can also pool DbContext instances: AddDbContextPool&lt;T&gt;().</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Opening connections is expensive; the pool reuses open ones, keyed by the connection string.</li>
+              <li>Forgetting to dispose (or holding connections in long operations) causes <strong>pool exhaustion</strong> and timeouts.</li>
+              <li>Always <code>using</code>/dispose, keep work short, and size <code>Max Pool Size</code> to the DB’s limits.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/transactions-acid.html"><span class="rc-cat">Database</span><span class="rc-title">Transactions &amp; ACID</span></a>
+            <a class="related-card" href="../dotnet/threadpool.html"><span class="rc-cat">.NET</span><span class="rc-title">The Thread Pool</span></a>
+            <a class="related-card" href="../dotnet/ef-core-internals.html"><span class="rc-cat">.NET</span><span class="rc-title">EF Core Internals</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Why pool connections, and what is pool exhaustion?”</em> Opening a connection is costly, so the
+              driver reuses them; exhaustion happens when all are checked out (often a <strong>leak</strong> from a
+              missing dispose) and new requests time out. The fix: <code>using</code>, short transactions, sane max
+              pool size.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

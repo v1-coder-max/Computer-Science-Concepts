@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Middleware Pipeline — DevLens</title>
+  <meta name="description" content="How ASP.NET Core processes every request through an ordered pipeline of middleware — the 'onion' model, short-circuiting, and why order matters." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="middleware-pipeline" data-title="The Middleware Pipeline">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>The Middleware Pipeline</h1>
+          <p class="lede">
+            Every ASP.NET Core request flows through an <strong>ordered chain of middleware</strong> —
+            each one can act on the way in, the way out, or stop the request entirely.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#middleware</span>
+            <span class="tag">#aspnetcore</span>
+            <span class="tag">#pipeline</span>
+            <span class="tag">#request</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            ASP.NET Core doesn’t hand a request straight to your controller. It runs the request through
+            a <strong>pipeline</strong> you assemble in <code>Program.cs</code>: a sequence of
+            <em>middleware</em> components. Each one receives the request, optionally does something, and
+            calls <code>next()</code> to pass control to the component behind it. When the inner
+            components finish, control unwinds back out — so each middleware can also touch the
+            <strong>response</strong> on the way back.
+          </p>
+          <p>
+            That’s the “<strong>onion</strong>” model: the request travels inward through each layer to a
+            terminal <strong>endpoint</strong> (your controller / minimal API), then the response travels
+            back outward through the same layers in reverse.
+          </p>
+          <p>
+            Two consequences you must internalize:
+          </p>
+          <ul>
+            <li><strong>Order matters.</strong> Put exception handling first (so it wraps everything), authentication before authorization, and routing before endpoints.</li>
+            <li><strong>Middleware can short-circuit.</strong> If it doesn’t call <code>next()</code> — say auth rejects the request — the rest of the pipeline never runs.</li>
+          </ul>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A typical API request to a service like <strong>GitHub</strong>’s passes through layers of
+              cross-cutting concerns before any business code runs: a request-logging/correlation-ID
+              middleware, HTTPS redirection, rate limiting, CORS, authentication, then authorization —
+              and only then the endpoint. Each is a reusable middleware, decoupled from the controllers.
+              If rate limiting decides you’re over budget, it short-circuits with <code>429</code> and the
+              expensive downstream work never executes.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>The onion: in, then back out</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 200" role="img" aria-label="Middleware onion pipeline">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="20"  y="40" width="540" height="120" rx="14" />
+              <text class="dgm-sub" x="40" y="32">Exception handler</text>
+              <rect class="dgm-box" x="80"  y="58" width="420" height="86" rx="12" />
+              <text class="dgm-sub" x="98" y="52">Routing</text>
+              <rect class="dgm-box" x="140" y="74" width="300" height="56" rx="10" />
+              <text class="dgm-sub" x="158" y="68">Auth</text>
+              <rect class="dgm-box-accent" x="230" y="88" width="120" height="30" rx="8" />
+              <text class="dgm-sub" x="290" y="108" text-anchor="middle">Endpoint</text>
+
+              <text class="dgm-sub" x="20" y="184" fill="var(--c-info)" style="font:600 12px var(--font-sans)">▶ request flows inward</text>
+              <text class="dgm-sub" x="560" y="184" text-anchor="end" fill="var(--c-success)" style="font:600 12px var(--font-sans)">response flows back out ◀</text>
+              <line class="dgm-line" x1="14" y1="100" x2="60" y2="100" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="586" y1="118" x2="540" y2="118" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Each layer runs on the way in and the way out; the endpoint is the core.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <p>The pipeline is just an ordered list of <code>Use…</code> calls — order is the program:</p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — Program.cs</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">var app = builder.Build();
+
+app.UseExceptionHandler("/error"); // outermost: wraps everything below
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthentication();           // must come before authorization
+app.UseAuthorization();
+
+// Inline middleware: do work, call next, then touch the response on the way out.
+app.Use(async (ctx, next) =&gt;
+{
+    var sw = Stopwatch.StartNew();
+    await next();                  // hand off to the rest of the pipeline
+    ctx.Response.Headers["X-Elapsed-ms"] = sw.ElapsedMilliseconds.ToString();
+});
+
+app.MapControllers();              // terminal: the endpoint
+app.Run();</code></pre>
+          </div>
+          <p>Reusable middleware is usually a small class with an <code>InvokeAsync</code> method:</p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class CorrelationIdMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext ctx)
+    {
+        ctx.Response.Headers["X-Correlation-ID"] =
+            ctx.Request.Headers["X-Correlation-ID"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+        await next(ctx);           // omit this call to short-circuit the request
+    }
+}
+// app.UseMiddleware&lt;CorrelationIdMiddleware&gt;();</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Order bugs are silent</p>
+            <p>
+              Putting <code>UseAuthorization</code> before <code>UseAuthentication</code>, or anything
+              after <code>UseRouting</code> that needs to run before it, fails quietly — requests just
+              behave wrong. When something “isn’t being authenticated/CORS’d,” suspect pipeline order first.
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A request flows through ordered middleware (the onion): inward to the endpoint, then back out through each layer.</li>
+              <li><strong>Order matters</strong> — exception handling first, auth before authz, routing before endpoints.</li>
+              <li>Middleware that skips <code>next()</code> short-circuits the request (e.g. auth rejection, rate limiting).</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/auth-pipeline.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Auth Pipeline</span>
+            </a>
+            <a class="related-card" href="../dotnet/dependency-injection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Dependency Injection</span>
+            </a>
+            <a class="related-card" href="../dotnet/minimal-apis.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Minimal APIs</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Walk me through the ASP.NET Core request pipeline.”</em> Describe the onion, name the
+              canonical order (exception → routing → auth → endpoint), and explain
+              <strong>short-circuiting</strong>. Mentioning <code>Use</code> vs <code>Run</code> (terminal)
+              vs <code>Map</code> (branch) shows real familiarity.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

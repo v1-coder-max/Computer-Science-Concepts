@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coupling &amp; Cohesion — DevLens</title>
+  <meta name="description" content="The two forces behind maintainable design: keep coupling (dependency between modules) low and cohesion (focus within a module) high — with C# before/after examples." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="oop" data-concept="coupling-cohesion" data-title="Coupling & Cohesion">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Coupling &amp; Cohesion</h1>
+          <p class="lede">
+            Two forces that decide how maintainable your code is: how <strong>dependent</strong> modules are on
+            each other (coupling) and how <strong>focused</strong> each one is (cohesion).
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#oop</span>
+            <span class="tag">#coupling</span>
+            <span class="tag">#cohesion</span>
+            <span class="tag">#design</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Coupling</strong> measures how tightly two modules depend on each other. When class A directly
+            news up a concrete class B, knows its internals, and breaks when B changes, that’s <em>tight</em>
+            coupling. <strong>Loose</strong> coupling means A depends only on a small, stable contract (an
+            interface), so B can change freely behind it. <em>Goal: low coupling.</em>
+          </p>
+          <p>
+            <strong>Cohesion</strong> measures how well the parts of a single module belong together. A class that
+            does one well-defined job — and everything in it serves that job — is <em>highly</em> cohesive. A
+            “god class” that handles parsing, persistence, emailing, and formatting has <em>low</em> cohesion.
+            <em>Goal: high cohesion.</em>
+          </p>
+          <p>
+            The mantra is <strong>“loose coupling, high cohesion.”</strong> They reinforce each other: a focused
+            class naturally has fewer, cleaner dependencies. This is also why Single Responsibility (cohesion) and
+            Dependency Inversion (coupling) from SOLID are so central — they’re these two forces with names.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Well-designed microservices are the macro version of this: each service owns one bounded capability
+              (high cohesion) and talks to others only through versioned APIs/events (loose coupling), so a team
+              can rewrite their service’s internals without coordinating a big-bang release. The same instinct at
+              the class level — splitting a sprawling <code>OrderManager</code> into focused
+              <code>OrderValidator</code>, <code>OrderRepository</code>, and <code>OrderNotifier</code> classes,
+              wired by interfaces — is what keeps a codebase changeable as it grows.
+            </p>
+          </div>
+
+          <h2>The two dials</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Coupling and cohesion comparison">
+              <text class="dgm-label" x="20" y="24" fill="var(--c-warning)">Tight coupling · low cohesion ✗</text>
+              <circle class="dgm-box" cx="60" cy="80" r="16" /><circle class="dgm-box" cx="130" cy="60" r="16" /><circle class="dgm-box" cx="120" cy="120" r="16" /><circle class="dgm-box" cx="200" cy="100" r="16" />
+              <line class="dgm-line" x1="60" y1="80" x2="130" y2="60"/><line class="dgm-line" x1="130" y1="60" x2="120" y2="120"/><line class="dgm-line" x1="60" y1="80" x2="120" y2="120"/><line class="dgm-line" x1="130" y1="60" x2="200" y2="100"/><line class="dgm-line" x1="120" y1="120" x2="200" y2="100"/><line class="dgm-line" x1="60" y1="80" x2="200" y2="100"/>
+              <text class="dgm-sub" x="130" y="160" text-anchor="middle">a tangle — change one, break many</text>
+
+              <text class="dgm-label" x="330" y="24" fill="var(--c-success)">Loose coupling · high cohesion ✓</text>
+              <rect class="dgm-box-accent" x="350" y="50" width="90" height="60" rx="9" /><text class="dgm-sub" x="395" y="84" text-anchor="middle">Module A</text>
+              <rect class="dgm-box-accent" x="480" y="50" width="90" height="60" rx="9" /><text class="dgm-sub" x="525" y="84" text-anchor="middle">Module B</text>
+              <line class="dgm-line" x1="440" y1="80" x2="480" y2="80" stroke-dasharray="4 4"/>
+              <text class="dgm-sub" x="460" y="72" text-anchor="middle">contract</text>
+              <text class="dgm-sub" x="460" y="160" text-anchor="middle">focused units, thin seams</text>
+            </svg>
+            <figcaption>Figure 1 — Aim away from the tangle: focused modules connected by thin, stable contracts.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ Tight coupling + low cohesion: one class does everything and hard-wires concretes.
+public class OrderManager
+{
+    private readonly SqlConnection _db = new("...");
+    private readonly SmtpClient _smtp = new();
+    public void Place(Order o) { /* validate + save SQL + send email + format receipt */ }
+}
+
+// ✅ High cohesion (each class, one job) + loose coupling (depend on interfaces).
+public interface IOrderRepository { Task AddAsync(Order o); }
+public interface INotifier        { Task NotifyAsync(string to, string msg); }
+
+public class OrderService(IOrderRepository repo, INotifier notifier)  // depends on contracts
+{
+    public async Task PlaceAsync(Order o)
+    {
+        await repo.AddAsync(o);
+        await notifier.NotifyAsync(o.Email, "Thanks!");
+    }
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Coupling = inter-module dependence (want it <strong>low</strong>); cohesion = intra-module focus (want it <strong>high</strong>).</li>
+              <li>“Loose coupling, high cohesion” — focused classes wired by stable contracts are easy to change and test.</li>
+              <li>SRP attacks cohesion; Dependency Inversion attacks coupling — SOLID is largely about these two forces.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../oop/solid.html"><span class="rc-cat">OOP</span><span class="rc-title">SOLID Principles</span></a>
+            <a class="related-card" href="../oop/law-of-demeter.html"><span class="rc-cat">OOP</span><span class="rc-title">Law of Demeter</span></a>
+            <a class="related-card" href="../oop/encapsulation.html"><span class="rc-cat">OOP</span><span class="rc-title">Encapsulation</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define both crisply and state the goal in one breath: <strong>low coupling, high cohesion</strong>.
+              Give the “god class” as the low-cohesion smell and “depends on a concrete type” as the tight-coupling
+              smell, then connect them to SRP and Dependency Inversion.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

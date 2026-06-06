@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pattern Matching — DevLens</title>
+  <meta name="description" content="C# pattern matching: switch expressions, type and property patterns, relational and logical (and/or/not) patterns, and list patterns — replacing verbose if/else and casts." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="pattern-matching" data-title="Pattern Matching">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Pattern Matching</h1>
+          <p class="lede">
+            Test a value’s <strong>shape</strong> and pull data out of it in one expression — replacing towers
+            of <code>if/else</code>, casts, and null checks.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#pattern-matching</span>
+            <span class="tag">#switch-expression</span>
+            <span class="tag">#csharp</span>
+            <span class="tag">#readability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Pattern matching lets you ask “does this value match <em>this shape</em>?” and, if so, bind parts of
+            it to variables — all in a compact, expression-oriented way. It started small (the <code>is</code>
+            type check with a variable) and has grown into a rich mini-language:
+          </p>
+          <ul>
+            <li><strong>Type pattern</strong> — <code>obj is Customer c</code> (test + cast + bind in one).</li>
+            <li><strong>Property pattern</strong> — <code>order is { Status: "Open", Total: &gt; 100 }</code>.</li>
+            <li><strong>Relational &amp; logical</strong> — <code>&gt;</code>, <code>&lt;=</code>, and <code>and</code>/<code>or</code>/<code>not</code>: <code>age is &gt;= 13 and &lt; 20</code>.</li>
+            <li><strong>List pattern</strong> (C# 11) — <code>arr is [1, _, .., 9]</code>.</li>
+            <li><strong>Positional pattern</strong> — deconstructs records/tuples: <code>p is (0, 0)</code>.</li>
+          </ul>
+          <p>
+            The headline syntax is the <strong>switch expression</strong> — it <em>returns a value</em>, so
+            mapping an input to an output becomes one clean block instead of a mutable variable assigned across
+            branches. The compiler also warns when a switch isn’t <strong>exhaustive</strong>, nudging you to
+            handle every case.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Anywhere you map a “kind of thing” to a decision — pricing tiers, shipping rules, a small state
+              machine, handling a discriminated set of events — pattern matching collapses sprawling
+              <code>if/else if</code> chains into a readable table. A payments service that picks a fee based on
+              method, amount, and region reads almost like a spec when written as a switch expression with
+              property and relational patterns, and the exhaustiveness warning catches the case someone forgot
+              when a new payment type is added.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Input → matched pattern → result</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Switch expression pattern matching">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box-accent" x="20" y="62" width="120" height="46" rx="9" />
+              <text class="dgm-sub" x="80" y="84" text-anchor="middle">order</text>
+              <text class="dgm-sub" x="80" y="100" text-anchor="middle">switch { … }</text>
+
+              <rect class="dgm-box" x="220" y="14"  width="220" height="30" rx="7" />
+              <text class="dgm-sub" x="330" y="34" text-anchor="middle">{ Total: &gt; 100 } → "free shipping"</text>
+              <rect class="dgm-box" x="220" y="54"  width="220" height="30" rx="7" />
+              <text class="dgm-sub" x="330" y="74" text-anchor="middle">{ Region: "EU" } → "eu rate"</text>
+              <rect class="dgm-box" x="220" y="94"  width="220" height="30" rx="7" />
+              <text class="dgm-sub" x="330" y="114" text-anchor="middle">_ → "standard"</text>
+
+              <line class="dgm-line" x1="140" y1="78" x2="218" y2="30"  marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="140" y1="84" x2="218" y2="69"  marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="140" y1="90" x2="218" y2="108" marker-end="url(#arrow)" />
+
+              <rect x="480" y="54" width="100" height="46" rx="9" fill="var(--c-success)" fill-opacity="0.14" stroke="var(--c-success)" />
+              <text x="530" y="82" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">a value</text>
+              <line class="dgm-line" x1="440" y1="77" x2="478" y2="77" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — First matching arm wins; the switch expression evaluates to its result.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Switch expression with property + relational + logical patterns.
+string Shipping(Order o) =&gt; o switch
+{
+    { Total: &gt; 100 }                         =&gt; "free",
+    { Region: "EU" or "UK" }                 =&gt; "eu-rate",
+    { Weight: &gt;= 0 and &lt; 1 }                  =&gt; "light",
+    null                                     =&gt; "no order",
+    _                                        =&gt; "standard"    // default arm
+};
+
+// Type pattern: test, cast, and bind in one go.
+if (shape is Circle { Radius: var r })
+    Console.WriteLine(Math.PI * r * r);
+
+// List pattern (C# 11) with slice and discards.
+static string Describe(int[] a) =&gt; a switch
+{
+    []            =&gt; "empty",
+    [var only]    =&gt; $"one: {only}",
+    [var first, .., var last] =&gt; $"{first}…{last}",
+};</code></pre>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Patterns test shape and bind data at once — type, property, relational/logical, positional, and list patterns.</li>
+              <li>The <strong>switch expression</strong> returns a value, turning branchy mapping logic into one readable block.</li>
+              <li>The compiler warns on non-exhaustive switches — lean on it, and use <code>_</code> for the default arm.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/records.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Records</span>
+            </a>
+            <a class="related-card" href="../dotnet/nullable-reference-types.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Nullable Reference Types</span>
+            </a>
+            <a class="related-card" href="../dotnet/span.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Span&lt;T&gt; &amp; Memory&lt;T&gt;</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              You may be asked to <em>refactor an <code>if/else</code> chain</em> or a <code>switch</code>
+              statement. Reach for a <strong>switch expression</strong> with property/relational patterns — it’s
+              shorter and the compiler checks exhaustiveness. Pairing records (deconstruction) with positional
+              patterns is a clean way to show fluency.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

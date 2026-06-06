@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP Fundamentals — DevLens</title>
+  <meta name="description" content="How HTTP works: the stateless request/response model, methods and idempotency, headers, and the evolution from HTTP/1.1 to HTTP/2 multiplexing and HTTP/3 over QUIC." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="web-fundamentals" data-concept="http" data-title="HTTP Fundamentals">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>HTTP Fundamentals</h1>
+          <p class="lede">
+            The request/response protocol the entire web runs on — <strong>stateless</strong>, text-shaped,
+            and built around methods, headers, and status codes.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#http</span>
+            <span class="tag">#methods</span>
+            <span class="tag">#idempotency</span>
+            <span class="tag">#http2</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            HTTP is a <strong>request/response</strong> conversation. A client sends a request — a
+            <strong>method</strong> (verb), a <strong>path</strong>, <strong>headers</strong>, and optionally a
+            <strong>body</strong> — and the server sends back a <strong>status code</strong>, headers, and a body.
+            That’s it. Loading one web page fires dozens of these for the HTML, CSS, images, and API calls.
+          </p>
+          <p>
+            HTTP is <strong>stateless</strong>: each request is independent and the server doesn’t inherently
+            remember the last one (which is why we add cookies/sessions/tokens). The methods carry meaning you’re
+            expected to honor:
+          </p>
+          <ul>
+            <li><strong>GET</strong> — read; <em>safe</em> (no side effects) and <em>idempotent</em>.</li>
+            <li><strong>POST</strong> — create/act; not idempotent (calling twice may create two things).</li>
+            <li><strong>PUT</strong> — replace; <em>idempotent</em> (same result if repeated). <strong>PATCH</strong> — partial update. <strong>DELETE</strong> — remove; idempotent.</li>
+          </ul>
+          <p>
+            The wire format evolved without changing that model: <strong>HTTP/1.1</strong> is text with one
+            request at a time per connection (head-of-line blocking); <strong>HTTP/2</strong> is binary and
+            <strong>multiplexes</strong> many streams over one connection with header compression;
+            <strong>HTTP/3</strong> runs over <strong>QUIC</strong> (UDP) to dodge TCP-level blocking.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When you open a media-heavy site like <strong>YouTube</strong>, the browser needs to fetch hundreds
+              of resources. Over HTTP/1.1 they’d queue behind a handful of connections; over <strong>HTTP/2</strong>
+              they stream in parallel over a single connection, and HTTP/3 keeps things flowing even on a flaky
+              mobile network where a dropped packet would stall TCP. The idempotency rules matter too: a payment
+              gateway makes “charge” a POST (don’t retry blindly) but “get order status” a GET (retry freely).
+            </p>
+          </div>
+
+          <h2>Anatomy of a request &amp; response</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="HTTP request and response">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="60" width="130" height="60" rx="10" />
+              <text class="dgm-label" x="85" y="86" text-anchor="middle">Client</text>
+              <text class="dgm-sub"   x="85" y="104" text-anchor="middle">browser / app</text>
+
+              <rect class="dgm-box-accent" x="450" y="60" width="130" height="60" rx="10" />
+              <text class="dgm-label" x="515" y="86" text-anchor="middle">Server</text>
+
+              <line class="dgm-line" x1="150" y1="78" x2="448" y2="78" marker-end="url(#arrow)" />
+              <text class="dgm-sub" x="300" y="70" text-anchor="middle">GET /api/orders/42  ·  Host, Accept, Authorization</text>
+              <line class="dgm-line" x1="448" y1="104" x2="152" y2="104" marker-end="url(#arrow)" />
+              <text class="dgm-sub" x="300" y="124" text-anchor="middle">200 OK  ·  Content-Type: application/json  ·  { … }</text>
+              <text class="dgm-sub" x="300" y="156" text-anchor="middle">stateless: the server doesn't remember the previous request</text>
+            </svg>
+            <figcaption>Figure 1 — Method + path + headers (+ body) up; status + headers + body down.</figcaption>
+          </figure>
+
+          <h2>On the wire &amp; in C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">HTTP — raw</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-http">GET /api/orders/42 HTTP/1.1
+Host: shop.example.com
+Accept: application/json
+Authorization: Bearer eyJhbGci...
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{ "id": 42, "status": "Shipped" }</code></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">using var http = new HttpClient();
+// GET is safe + idempotent → fine to retry.
+var order = await http.GetFromJsonAsync&lt;Order&gt;("https://shop.example.com/api/orders/42");
+
+// POST is NOT idempotent → use an idempotency key if you might retry.
+var resp = await http.PostAsJsonAsync("https://shop.example.com/api/orders", newOrder);
+resp.EnsureSuccessStatusCode();</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>HTTP is a stateless request/response protocol: method + path + headers + body ↔ status + headers + body.</li>
+              <li>Honor method semantics: GET is safe/idempotent, PUT/DELETE idempotent, POST is not.</li>
+              <li>HTTP/2 multiplexes streams over one connection; HTTP/3 runs on QUIC/UDP — same model, faster transport.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/http-status-codes.html"><span class="rc-cat">Web</span><span class="rc-title">HTTP Status Codes</span></a>
+            <a class="related-card" href="../web-fundamentals/rest.html"><span class="rc-cat">Web</span><span class="rc-title">REST API Design</span></a>
+            <a class="related-card" href="../web-fundamentals/https-tls.html"><span class="rc-cat">Web</span><span class="rc-title">HTTPS &amp; TLS</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Expect <em>“which HTTP methods are idempotent?”</em> and <em>“HTTP/2 vs HTTP/1.1?”</em> Nail
+              safe vs idempotent (GET safe+idempotent, PUT/DELETE idempotent, POST neither) and explain HTTP/2
+              <strong>multiplexing</strong> solving head-of-line blocking. Mentioning HTTP/3 over QUIC marks you as current.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

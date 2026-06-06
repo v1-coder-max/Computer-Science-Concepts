@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blazor Basics — DevLens</title>
+  <meta name="description" content="Blazor lets you build interactive web UI in C# with components. The two hosting models — Blazor Server (UI over SignalR) and WebAssembly (C# in the browser) — and .NET 8 render modes." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="blazor" data-title="Blazor Basics">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Blazor Basics</h1>
+          <p class="lede">
+            Build interactive web UI in <strong>C# instead of JavaScript</strong>, using reusable
+            components — running either on the server or right in the browser via WebAssembly.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#blazor</span>
+            <span class="tag">#components</span>
+            <span class="tag">#webassembly</span>
+            <span class="tag">#spa</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Blazor is a UI framework built around <strong>components</strong> — <code>.razor</code> files
+            that mix HTML markup with C# logic (in an <code>@code</code> block), with data binding, events,
+            and a lifecycle. The headline is that you write the interactivity in <strong>C#</strong>, sharing
+            models and validation with your backend, and skipping most JavaScript.
+          </p>
+          <p>The same component can run under different <strong>hosting models</strong>:</p>
+          <ul>
+            <li><strong>Blazor Server</strong> — the component runs <em>on the server</em>. UI events are sent up over a <strong>SignalR</strong> connection, the server computes the DOM diff, and just the changes are pushed back. Tiny download, instant start, full server power — but every interaction is a network round trip and it needs a live connection.</li>
+            <li><strong>Blazor WebAssembly</strong> — your C# is compiled to <strong>WASM</strong> and runs <em>in the browser</em>. Works offline, no per-click latency, scales like static files — but a bigger initial download and the browser’s sandbox limits.</li>
+          </ul>
+          <p>
+            .NET 8 unified these under <strong>render modes</strong>: a page can be statically server-rendered
+            (SSR) for speed/SEO, then “light up” interactivity per-component as <code>InteractiveServer</code>,
+            <code>InteractiveWebAssembly</code>, or <code>InteractiveAuto</code> (start on the server, switch
+            to WASM once it’s downloaded).
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Blazor shines for <strong>line-of-business apps and internal tools</strong> — admin portals,
+              dashboards, back-office systems — where a .NET team wants one language top to bottom and doesn’t
+              want to staff a separate JavaScript front-end. A back-office portal might use Blazor Server for an
+              instant-start, server-secured experience on the corporate network, while a customer-installable
+              tool uses WebAssembly so it runs offline. The component model and shared C# DTOs mean validation
+              rules live in exactly one place.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Two ways to run the same component</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Blazor Server vs WebAssembly hosting models">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <!-- Server -->
+              <text class="dgm-label" x="20" y="28">Blazor Server</text>
+              <rect class="dgm-box" x="20" y="40" width="120" height="44" rx="9" />
+              <text class="dgm-sub" x="80" y="66" text-anchor="middle">Browser (thin)</text>
+              <rect class="dgm-box-accent" x="240" y="40" width="150" height="44" rx="9" />
+              <text class="dgm-sub" x="315" y="60" text-anchor="middle">Component runs here</text>
+              <text class="dgm-sub" x="315" y="76" text-anchor="middle">on the server</text>
+              <line class="dgm-line" x1="140" y1="62" x2="238" y2="62" marker-end="url(#arrow)" />
+              <text class="dgm-sub" x="190" y="34" text-anchor="middle">SignalR: events ↔ DOM diffs</text>
+
+              <!-- WASM -->
+              <text class="dgm-label" x="20" y="128">Blazor WebAssembly</text>
+              <rect class="dgm-box-accent" x="20" y="138" width="200" height="34" rx="9" />
+              <text class="dgm-sub" x="120" y="159" text-anchor="middle">Component runs in the browser (WASM)</text>
+              <rect class="dgm-box" x="380" y="138" width="160" height="34" rx="9" />
+              <text class="dgm-sub" x="460" y="159" text-anchor="middle">API calls only</text>
+              <line class="dgm-line" x1="220" y1="155" x2="378" y2="155" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Server: thin client + SignalR. WebAssembly: the app itself runs in the browser.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In code — a component</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">Razor — Counter.razor</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-cshtml">@page "/counter"
+@rendermode InteractiveServer   @* or InteractiveWebAssembly / InteractiveAuto *@
+
+&lt;h3&gt;Counter&lt;/h3&gt;
+&lt;p&gt;Current count: @count&lt;/p&gt;
+
+@* @onclick wires a DOM event straight to a C# method *@
+&lt;button class="btn" @onclick="Increment"&gt;Click me&lt;/button&gt;
+
+@code {
+    private int count;                 // component state
+
+    private void Increment() =&gt; count++; // re-renders automatically after the event
+}</code></pre>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Blazor builds web UI from C# components (<code>.razor</code>) — markup plus an <code>@code</code> block, with binding and events.</li>
+              <li><strong>Server</strong> runs UI on the server over SignalR (tiny download, needs a live connection); <strong>WebAssembly</strong> runs C# in the browser (offline-capable, bigger download).</li>
+              <li>.NET 8 unifies them with per-component render modes (Server / WebAssembly / Auto) on top of static SSR.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/signalr.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">SignalR</span>
+            </a>
+            <a class="related-card" href="../dotnet/minimal-apis.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Minimal APIs</span>
+            </a>
+            <a class="related-card" href="../dotnet/aot-compilation.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Native AOT</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Blazor Server vs WebAssembly — trade-offs?”</em> Server = small download, instant start,
+              server-side secrets, but latency per interaction and a stateful SignalR connection (scaling cost).
+              WebAssembly = offline, no round-trips, scales like static hosting, but larger initial load and
+              browser sandbox. Mentioning .NET 8 render modes (<code>InteractiveAuto</code>) shows you’re current.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

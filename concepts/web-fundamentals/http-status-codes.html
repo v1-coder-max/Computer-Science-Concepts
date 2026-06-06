@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP Status Codes — DevLens</title>
+  <meta name="description" content="The five classes of HTTP status codes and the ones that matter: 200/201/204, 301 vs 302, 304, 400/401/403/404/409/422/429, and 500/502/503 — with correct usage in REST." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="web-fundamentals" data-concept="http-status-codes" data-title="HTTP Status Codes">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>HTTP Status Codes</h1>
+          <p class="lede">
+            A three-digit code is the server’s one-word verdict on every request. Returning the
+            <strong>right</strong> one is half of good API design.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#http</span>
+            <span class="tag">#status-codes</span>
+            <span class="tag">#rest</span>
+            <span class="tag">#api</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>The first digit puts every response in one of five buckets:</p>
+          <ul>
+            <li><strong>1xx Informational</strong> — rare (e.g. <code>100 Continue</code>).</li>
+            <li><strong>2xx Success</strong> — <code>200 OK</code>, <code>201 Created</code> (with a <code>Location</code> header), <code>204 No Content</code> (success, nothing to return).</li>
+            <li><strong>3xx Redirection</strong> — <code>301</code> permanent vs <code>302</code>/<code>307</code> temporary; <code>304 Not Modified</code> (use your cache).</li>
+            <li><strong>4xx Client error</strong> — <em>you</em> messed up: <code>400</code> bad request, <code>401</code> unauthenticated, <code>403</code> forbidden, <code>404</code> not found, <code>409</code> conflict, <code>422</code> unprocessable, <code>429</code> too many requests.</li>
+            <li><strong>5xx Server error</strong> — <em>the server</em> messed up: <code>500</code> internal error, <code>502</code> bad gateway, <code>503</code> service unavailable.</li>
+          </ul>
+          <p>
+            The pairs people confuse: <strong>401 vs 403</strong> (“who are you?” vs “you can’t do that”),
+            <strong>301 vs 302</strong> (permanent move — caches/SEO update — vs temporary), and <strong>400 vs
+            422</strong> (malformed request vs well-formed but semantically invalid). Picking correctly lets
+            clients, caches, and crawlers react properly without parsing your error text.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Status codes drive real behavior. A <strong>Google</strong> crawler treats a <code>301</code> as
+              “update your index to the new URL” but a <code>302</code> as “keep the old one” — get it wrong and
+              your SEO suffers. A CDN serves cached content on <code>304</code> to save bandwidth. A rate limiter
+              returns <code>429</code> with a <code>Retry-After</code> header so well-behaved clients back off, and
+              a load balancer pulls a node out of rotation when it starts returning <code>503</code>. The number is
+              an API contract, not decoration.
+            </p>
+          </div>
+
+          <h2>The five classes</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="The five HTTP status code classes">
+              <rect x="14"  y="40" width="108" height="70" rx="10" fill="var(--text-faint)" fill-opacity="0.14" stroke="var(--text-faint)"/>
+              <text x="68" y="70" text-anchor="middle" style="font:800 18px var(--font-sans)" fill="var(--text-muted)">1xx</text>
+              <text class="dgm-sub" x="68" y="92" text-anchor="middle">info</text>
+              <rect x="132" y="40" width="108" height="70" rx="10" fill="var(--c-success)" fill-opacity="0.14" stroke="var(--c-success)"/>
+              <text x="186" y="70" text-anchor="middle" style="font:800 18px var(--font-sans)" fill="var(--c-success)">2xx</text>
+              <text class="dgm-sub" x="186" y="92" text-anchor="middle">success</text>
+              <rect x="250" y="40" width="108" height="70" rx="10" fill="var(--c-info)" fill-opacity="0.14" stroke="var(--c-info)"/>
+              <text x="304" y="70" text-anchor="middle" style="font:800 18px var(--font-sans)" fill="var(--c-info)">3xx</text>
+              <text class="dgm-sub" x="304" y="92" text-anchor="middle">redirect</text>
+              <rect x="368" y="40" width="108" height="70" rx="10" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)"/>
+              <text x="422" y="70" text-anchor="middle" style="font:800 18px var(--font-sans)" fill="var(--c-warning)">4xx</text>
+              <text class="dgm-sub" x="422" y="92" text-anchor="middle">you erred</text>
+              <rect x="486" y="40" width="108" height="70" rx="10" fill="#ff6b6b" fill-opacity="0.16" stroke="#ff6b6b"/>
+              <text x="540" y="70" text-anchor="middle" style="font:800 18px var(--font-sans)" fill="#ff6b6b">5xx</text>
+              <text class="dgm-sub" x="540" y="92" text-anchor="middle">server erred</text>
+            </svg>
+            <figcaption>Figure 1 — The first digit tells the client how to react before reading the body.</figcaption>
+          </figure>
+
+          <h2>In C# (ASP.NET Core)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">app.MapPost("/orders", async (CreateOrder dto, IOrders orders) =&gt;
+{
+    if (!dto.IsValid)        return Results.BadRequest("Missing fields");      // 400
+    if (await orders.Exists(dto.Id)) return Results.Conflict("Already exists"); // 409
+
+    int id = await orders.AddAsync(dto);
+    return Results.Created($"/orders/{id}", new { id });                        // 201 + Location
+});
+
+app.MapGet("/orders/{id:int}", async (int id, IOrders orders) =&gt;
+{
+    var order = await orders.FindAsync(id);
+    return order is null ? Results.NotFound()      // 404
+                         : Results.Ok(order);      // 200
+});
+
+app.MapDelete("/orders/{id:int}", async (int id, IOrders orders) =&gt;
+{
+    await orders.DeleteAsync(id);
+    return Results.NoContent();                    // 204 — success, nothing to return
+});</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The first digit = the class: 2xx success, 3xx redirect, 4xx client error, 5xx server error.</li>
+              <li>Know the confusable pairs: 401 (who are you?) vs 403 (not allowed); 301 (permanent) vs 302 (temporary).</li>
+              <li>Use 201 + <code>Location</code> for creates, 204 for empty successes, 409 for conflicts, 429 for rate limits.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/http.html"><span class="rc-cat">Web</span><span class="rc-title">HTTP Fundamentals</span></a>
+            <a class="related-card" href="../web-fundamentals/rest.html"><span class="rc-cat">Web</span><span class="rc-title">REST API Design</span></a>
+            <a class="related-card" href="../dotnet/auth-pipeline.html"><span class="rc-cat">.NET</span><span class="rc-title">Auth Pipeline</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The classics: <em>401 vs 403</em> and <em>301 vs 302</em>. Add value by knowing <code>201</code>
+              needs a <code>Location</code> header, <code>204</code> for empty success, and <code>429</code> pairs
+              with <code>Retry-After</code>. Returning <code>200</code> with an error in the body is a red flag.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

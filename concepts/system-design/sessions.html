@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How Sessions Work — DevLens</title>
+  <meta name="description" content="HTTP forgets you the moment a request ends. Sessions are how a server remembers who you are across stateless requests — using an opaque ID in a cookie." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="sessions" data-title="How Sessions Work">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>How Sessions Work</h1>
+          <p class="lede">
+            HTTP forgets you the instant a request ends. A <strong>session</strong> is
+            how a server remembers who you are across many stateless requests.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#sessions</span>
+            <span class="tag">#cookies</span>
+            <span class="tag">#authentication</span>
+            <span class="tag">#state</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1. PLAIN ENGLISH -->
+          <h2>The idea in plain English</h2>
+          <p>
+            HTTP is <strong>stateless</strong>: every request stands alone. The server
+            has no built-in way to know that the request asking for <code>/account</code>
+            came from the same person who logged in two seconds ago. Each request is a
+            stranger knocking on the door.
+          </p>
+          <p>
+            A <strong>session</strong> fixes this. When you log in, the server creates a
+            little pile of memory about you — your user id, your cart, your permissions —
+            and tags it with a long, unguessable <strong>session ID</strong>. It keeps
+            the pile <em>server-side</em> and hands you only the ID, wrapped in a cookie.
+            Your browser sends that cookie back on every subsequent request, the server
+            looks the ID up in its store, and says “ah — it’s Alice.”
+          </p>
+          <p>
+            Three things people constantly conflate:
+          </p>
+          <ul>
+            <li><strong>Session</strong> — the data, living on the server (RAM, Redis, a DB).</li>
+            <li><strong>Cookie</strong> — the envelope that carries the opaque session ID to and from the browser.</li>
+            <li><strong>Token (JWT)</strong> — a <em>stateless</em> alternative where the data lives in the client’s hands, signed so it can’t be tampered with.</li>
+          </ul>
+
+          <!-- 2. REAL WORLD -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When you sign into <strong>Gmail</strong>, Google sets a session cookie.
+              Every click — opening an email, searching, switching labels — silently
+              ships that cookie back, so Google knows it’s still you without asking for
+              your password again. <strong>Amazon</strong> goes further: it gives even
+              <em>anonymous</em> visitors a session so the cart you fill before logging
+              in survives until you check out. At their scale the session data can’t live
+              in one server’s memory — any of thousands of servers must be able to serve
+              your next request — so it’s kept in a shared store like <strong>Redis</strong>,
+              keyed by the session ID.
+            </p>
+          </div>
+
+          <!-- 3. VISUAL -->
+          <h2>How it works</h2>
+          <p>
+            The login hands you an ID; every later request replays it so the server can
+            re-hydrate your state from the store.
+          </p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 300" role="img" aria-label="Session login and lookup sequence">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <!-- Lane headers -->
+              <rect class="dgm-box" x="20"  y="16" width="120" height="40" rx="9" />
+              <text class="dgm-label" x="80"  y="41" text-anchor="middle">Browser</text>
+              <rect class="dgm-box-accent" x="240" y="16" width="120" height="40" rx="9" />
+              <text class="dgm-label" x="300" y="41" text-anchor="middle">Server</text>
+              <rect class="dgm-box" x="460" y="16" width="120" height="40" rx="9" />
+              <text class="dgm-label" x="520" y="41" text-anchor="middle">Session store</text>
+
+              <!-- Lifelines -->
+              <line class="dgm-line" x1="80"  y1="56" x2="80"  y2="288" stroke-dasharray="4 5" />
+              <line class="dgm-line" x1="300" y1="56" x2="300" y2="288" stroke-dasharray="4 5" />
+              <line class="dgm-line" x1="520" y1="56" x2="520" y2="288" stroke-dasharray="4 5" />
+
+              <!-- 1 -->
+              <text class="dgm-sub" x="190" y="84"  text-anchor="middle">1. POST /login (user, password)</text>
+              <line class="dgm-line" x1="80"  y1="92"  x2="298" y2="92"  marker-end="url(#arrow)" />
+              <!-- 2 -->
+              <text class="dgm-sub" x="410" y="120" text-anchor="middle">2. store { sid → userId }</text>
+              <line class="dgm-line" x1="300" y1="128" x2="518" y2="128" marker-end="url(#arrow)" />
+              <!-- 3 -->
+              <text class="dgm-sub" x="190" y="156" text-anchor="middle">3. Set-Cookie: sid=a1b2c3 (HttpOnly)</text>
+              <line class="dgm-line" x1="300" y1="164" x2="82"  y2="164" marker-end="url(#arrow)" />
+              <!-- 4 -->
+              <text class="dgm-sub" x="190" y="200" text-anchor="middle">4. GET /account — Cookie: sid=a1b2c3</text>
+              <line class="dgm-line" x1="80"  y1="208" x2="298" y2="208" marker-end="url(#arrow)" />
+              <!-- 5 -->
+              <text class="dgm-sub" x="410" y="236" text-anchor="middle">5. look up sid → who is this?</text>
+              <line class="dgm-line" x1="300" y1="244" x2="518" y2="244" marker-end="url(#arrow)" />
+              <!-- 6 -->
+              <text class="dgm-sub" x="410" y="272" text-anchor="middle">6. { userId, cart, roles }</text>
+              <line class="dgm-line" x1="520" y1="280" x2="302" y2="280" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — The cookie only ever carries the opaque ID; the real data stays in the store.</figcaption>
+          </figure>
+
+          <!-- 4. CODE -->
+          <h2>In C# (ASP.NET Core)</h2>
+          <p>
+            ASP.NET Core ships session middleware. Back it with a <em>distributed</em>
+            cache (Redis) and any server in your fleet can resolve the same session.
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Program.cs — distributed sessions backed by Redis
+builder.Services.AddStackExchangeRedisCache(o =&gt;
+    o.Configuration = "localhost:6379");
+
+builder.Services.AddSession(o =&gt;
+{
+    o.Cookie.Name = ".DevLens.Session";
+    o.Cookie.HttpOnly = true;                       // JS can't read it → mitigates XSS theft
+    o.Cookie.SecurePolicy = CookieSecurePolicy.Always; // send over HTTPS only
+    o.Cookie.SameSite = SameSiteMode.Lax;           // basic CSRF hardening
+    o.IdleTimeout = TimeSpan.FromMinutes(30);       // sliding expiry
+});
+
+var app = builder.Build();
+app.UseSession(); // must run before any endpoint that touches the session
+
+app.MapPost("/cart/add", (HttpContext ctx, string sku) =&gt;
+{
+    // Only the opaque session id travels in the cookie; data stays server-side.
+    var count = ctx.Session.GetInt32("cartCount") ?? 0;
+    ctx.Session.SetInt32("cartCount", count + 1);
+    return Results.Ok(new { items = count + 1 });
+});</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Don’t put secrets or large blobs in the cookie</p>
+            <p>
+              The cookie should hold <em>only</em> the session ID. Anything sensitive
+              (roles, balances) lives server-side where the user can’t edit it. Always
+              set <code>HttpOnly</code> and <code>Secure</code>, and regenerate the
+              session ID on login to defend against session fixation.
+            </p>
+          </div>
+
+          <!-- 5. TAKEAWAYS -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>HTTP is stateless; a session adds server-side memory keyed by an opaque ID carried in a cookie.</li>
+              <li>To scale horizontally, move that memory into a shared store (Redis) so any server can resolve any session.</li>
+              <li>Sessions are <em>stateful</em> on the server — JWTs trade that for client-held, signed state (no server lookup, harder to revoke).</li>
+            </ul>
+          </div>
+
+          <!-- 6. RELATED -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/jwt.html">
+              <span class="rc-cat">Web Fundamentals</span>
+              <span class="rc-title">JWT &amp; Stateless Auth</span>
+            </a>
+            <a class="related-card" href="../web-fundamentals/cookies.html">
+              <span class="rc-cat">Web Fundamentals</span>
+              <span class="rc-title">How Cookies Work</span>
+            </a>
+            <a class="related-card" href="../system-design/caching.html">
+              <span class="rc-cat">System Design</span>
+              <span class="rc-title">Caching with Redis</span>
+            </a>
+          </div>
+
+          <!-- 7. INTERVIEW TIP -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Expect <em>“sessions vs JWT — which would you pick and why?”</em> A strong
+              answer names the real trade-off: sessions are trivially revocable but need
+              a shared store and a lookup per request; JWTs are stateless and fast but
+              hard to revoke before expiry. Mention sticky sessions vs a distributed
+              store the moment you say “multiple servers.”
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

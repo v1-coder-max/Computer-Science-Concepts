@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gRPC — DevLens</title>
+  <meta name="description" content="gRPC in .NET: schema-first RPC over HTTP/2 with Protocol Buffers — strongly-typed contracts, four streaming modes, and when to choose it over REST/JSON." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="grpc" data-title="gRPC">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>gRPC</h1>
+          <p class="lede">
+            A high-performance, <strong>schema-first RPC</strong> framework: define a service in a
+            <code>.proto</code> file, generate strongly-typed clients and servers, talk over HTTP/2.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#grpc</span>
+            <span class="tag">#protobuf</span>
+            <span class="tag">#http2</span>
+            <span class="tag">#rpc</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Instead of designing URLs and JSON shapes, with gRPC you write a <strong>contract</strong> in a
+            <code>.proto</code> file — the service, its methods, and the message types. Tooling generates a
+            typed <strong>client stub</strong> and a server base class in C#, so calling a remote method
+            feels like calling a local one: <code>await client.GetPriceAsync(request)</code>.
+          </p>
+          <p>Two technologies make it fast:</p>
+          <ul>
+            <li><strong>Protocol Buffers</strong> — a compact <em>binary</em> serialization. Much smaller and quicker to encode/decode than JSON, with a strict schema and built-in versioning.</li>
+            <li><strong>HTTP/2</strong> — multiplexed streams over one connection, header compression, and native support for <strong>streaming</strong>.</li>
+          </ul>
+          <p>That streaming gives four call shapes:</p>
+          <ul>
+            <li><strong>Unary</strong> — one request, one response (like a normal call).</li>
+            <li><strong>Server streaming</strong> — one request, a stream of responses.</li>
+            <li><strong>Client streaming</strong> — a stream of requests, one response.</li>
+            <li><strong>Bidirectional</strong> — both stream at once.</li>
+          </ul>
+          <p>
+            The trade-off: it’s binary and uses HTTP/2 trailers, so browsers can’t call it directly without
+            <strong>gRPC-Web</strong>. That makes gRPC ideal for <strong>internal service-to-service</strong>
+            calls, and REST/JSON still the easy choice for public, browser-facing APIs.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Google</strong> created gRPC, and it’s the lingua franca of internal microservice
+              meshes there and at companies like <strong>Netflix</strong>. When dozens of services call each
+              other millions of times a second, the binary payloads and HTTP/2 multiplexing cut latency and
+              bandwidth dramatically versus JSON over HTTP/1.1, and the generated contracts eliminate a whole
+              class of “the field was renamed” integration bugs. The browser-facing edge still speaks REST;
+              the chatter <em>behind</em> the gateway is gRPC.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Contract → codegen → typed calls</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="gRPC contract, codegen, and HTTP/2 call">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box-accent" x="20" y="64" width="120" height="50" rx="9" />
+              <text class="dgm-label" x="80" y="86" text-anchor="middle">.proto</text>
+              <text class="dgm-sub"   x="80" y="104" text-anchor="middle">the contract</text>
+
+              <rect class="dgm-box" x="180" y="20" width="160" height="44" rx="9" />
+              <text class="dgm-sub" x="260" y="40" text-anchor="middle">client stub (C#)</text>
+              <text class="dgm-sub" x="260" y="56" text-anchor="middle">generated</text>
+              <rect class="dgm-box" x="180" y="114" width="160" height="44" rx="9" />
+              <text class="dgm-sub" x="260" y="134" text-anchor="middle">server base (C#)</text>
+              <text class="dgm-sub" x="260" y="150" text-anchor="middle">generated</text>
+
+              <line class="dgm-line" x1="140" y1="80" x2="178" y2="48"  marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="140" y1="98" x2="178" y2="130" marker-end="url(#arrow)" />
+
+              <rect class="dgm-box" x="420" y="64" width="160" height="50" rx="9" />
+              <text class="dgm-label" x="500" y="84" text-anchor="middle">HTTP/2 + protobuf</text>
+              <text class="dgm-sub"   x="500" y="102" text-anchor="middle">unary / streaming</text>
+              <line class="dgm-line" x1="340" y1="42"  x2="418" y2="80"  marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="340" y1="136" x2="418" y2="98"  marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — One schema generates both ends; calls travel as binary over HTTP/2.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In code</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">Protobuf — catalog.proto</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-protobuf">syntax = "proto3";
+
+service Catalog {
+  rpc GetPrice (PriceRequest) returns (PriceReply);          // unary
+  rpc StreamPrices (PriceRequest) returns (stream PriceReply); // server streaming
+}
+
+message PriceRequest { int32 product_id = 1; }
+message PriceReply   { double amount = 1; string currency = 2; }</code></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — server &amp; client</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Server: override the generated base class.
+public class CatalogService : Catalog.CatalogBase
+{
+    public override Task&lt;PriceReply&gt; GetPrice(PriceRequest req, ServerCallContext ctx)
+        =&gt; Task.FromResult(new PriceReply { Amount = 9.99, Currency = "USD" });
+}
+// Program.cs:  builder.Services.AddGrpc();   app.MapGrpcService&lt;CatalogService&gt;();
+
+// Client: a typed stub — calling remote feels local.
+var channel = GrpcChannel.ForAddress("https://catalog.internal");
+var client  = new Catalog.CatalogClient(channel);
+PriceReply reply = await client.GetPriceAsync(new PriceRequest { ProductId = 42 });</code></pre>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>gRPC is schema-first RPC: a <code>.proto</code> generates typed clients/servers; messages are binary Protocol Buffers over HTTP/2.</li>
+              <li>It’s faster and smaller than JSON/REST and supports four streaming modes — ideal for internal service-to-service traffic.</li>
+              <li>Browsers can’t call it directly (need gRPC-Web); keep REST for public, browser-facing APIs.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/minimal-apis.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Minimal APIs</span>
+            </a>
+            <a class="related-card" href="../dotnet/signalr.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">SignalR</span>
+            </a>
+            <a class="related-card" href="../microservices/inter-service-comms.html">
+              <span class="rc-cat">Microservices</span><span class="rc-title">Inter-Service Communication</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“gRPC vs REST — when would you use each?”</em> gRPC for low-latency, high-volume
+              <strong>internal</strong> calls (binary protobuf, HTTP/2, typed contracts, streaming); REST for
+              public/browser-facing APIs (human-readable, cache-friendly, no gRPC-Web needed). Naming the four
+              streaming modes shows real depth.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

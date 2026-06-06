@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>REST API Design — DevLens</title>
+  <meta name="description" content="REST as an architectural style: resources as nouns identified by URIs, HTTP methods as actions, statelessness, proper status codes, and the Richardson maturity model." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="web-fundamentals" data-concept="rest" data-title="REST API Design">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>REST API Design</h1>
+          <p class="lede">
+            REST is a style, not a framework: model your API as <strong>resources</strong> (nouns) acted on by
+            HTTP <strong>methods</strong> (verbs), and let the protocol do the talking.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#rest</span>
+            <span class="tag">#api-design</span>
+            <span class="tag">#resources</span>
+            <span class="tag">#stateless</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            REST (Representational State Transfer) organizes an API around <strong>resources</strong> — things
+            like orders, users, products — each identified by a URI. You don’t invent action URLs; you use the
+            HTTP method as the verb on a noun:
+          </p>
+          <ul>
+            <li><code>GET /orders</code> — list; <code>GET /orders/42</code> — read one.</li>
+            <li><code>POST /orders</code> — create; <code>PUT /orders/42</code> — replace; <code>PATCH</code> — partial update; <code>DELETE /orders/42</code> — remove.</li>
+            <li>Nest relationships: <code>GET /orders/42/items</code>.</li>
+          </ul>
+          <p>Its core constraints:</p>
+          <ul>
+            <li><strong>Resource-based</strong> URIs are <em>nouns</em> — <code>/orders/42/cancel</code> as a verb-URL is the classic anti-pattern (use a state change or a sub-resource).</li>
+            <li><strong>Stateless</strong> — every request carries everything needed (auth token, etc.); the server keeps no per-client session between calls. That’s what lets you scale horizontally.</li>
+            <li><strong>Uniform interface</strong> — consistent methods, status codes, and representations (usually JSON).</li>
+          </ul>
+          <p>
+            The <strong>Richardson Maturity Model</strong> grades how “RESTful” an API is (resources → HTTP verbs →
+            hypermedia/HATEOAS). Most real-world APIs stop at level 2 (proper resources + verbs + status codes),
+            which is perfectly fine.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              The <strong>GitHub</strong> and <strong>Stripe</strong> APIs are textbook REST: predictable
+              resource URLs (<code>/repos/{owner}/{repo}/issues</code>, <code>/v1/charges/{id}</code>), correct
+              verbs and status codes, JSON representations, and statelessness so any server in their fleet can
+              handle any request. That consistency is why you can guess a Stripe endpoint and be right — the
+              uniform interface means once you’ve learned one resource, you’ve learned them all.
+            </p>
+          </div>
+
+          <h2>Methods map onto resources</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="REST methods mapped to a resource">
+              <rect class="dgm-box-accent" x="210" y="20" width="180" height="40" rx="9" />
+              <text class="dgm-label" x="300" y="45" text-anchor="middle">/orders/42  (a resource)</text>
+
+              <rect class="dgm-box" x="20"  y="100" width="125" height="50" rx="8" /><text class="dgm-sub" x="82"  y="122" text-anchor="middle">GET</text><text class="dgm-sub" x="82" y="140" text-anchor="middle">read</text>
+              <rect class="dgm-box" x="160" y="100" width="125" height="50" rx="8" /><text class="dgm-sub" x="222" y="122" text-anchor="middle">PUT/PATCH</text><text class="dgm-sub" x="222" y="140" text-anchor="middle">update</text>
+              <rect class="dgm-box" x="300" y="100" width="125" height="50" rx="8" /><text class="dgm-sub" x="362" y="122" text-anchor="middle">DELETE</text><text class="dgm-sub" x="362" y="140" text-anchor="middle">remove</text>
+              <rect class="dgm-box" x="440" y="100" width="140" height="50" rx="8" /><text class="dgm-sub" x="510" y="122" text-anchor="middle">POST /orders</text><text class="dgm-sub" x="510" y="140" text-anchor="middle">create</text>
+
+              <line class="dgm-line" x1="280" y1="60" x2="100" y2="98" stroke-dasharray="3 3"/>
+              <line class="dgm-line" x1="295" y1="60" x2="222" y2="98" stroke-dasharray="3 3"/>
+              <line class="dgm-line" x1="320" y1="60" x2="362" y2="98" stroke-dasharray="3 3"/>
+            </svg>
+            <figcaption>Figure 1 — One noun, four verbs — no <code>/createOrder</code> or <code>/deleteOrder</code> action URLs.</figcaption>
+          </figure>
+
+          <h2>In C# (ASP.NET Core)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">var orders = app.MapGroup("/api/orders");
+
+orders.MapGet("/",        (IOrders o) =&gt; o.ListAsync());                 // GET  /api/orders
+orders.MapGet("/{id:int}",async (int id, IOrders o) =&gt;
+    await o.FindAsync(id) is { } x ? Results.Ok(x) : Results.NotFound()); // 200 / 404
+orders.MapPost("/",       async (CreateOrder dto, IOrders o) =&gt;
+    Results.Created($"/api/orders/{await o.AddAsync(dto)}", null));       // 201 + Location
+orders.MapPut("/{id:int}",async (int id, Order dto, IOrders o) =&gt;
+    { await o.ReplaceAsync(id, dto); return Results.NoContent(); });      // 204 (idempotent)
+orders.MapDelete("/{id:int}", async (int id, IOrders o) =&gt;
+    { await o.DeleteAsync(id); return Results.NoContent(); });
+
+// ❌ Avoid action URLs:  POST /api/orders/42/cancel-and-refund-now
+// ✅ Prefer:             POST /api/orders/42/cancellation   (a sub-resource)</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Model resources as nouns with URIs; use HTTP methods as the verbs — no action URLs.</li>
+              <li>Be stateless and use correct status codes — that’s “level 2” REST and what most great APIs ship.</li>
+              <li>Uniform, predictable interfaces make an API learnable; HATEOAS is optional and rarely used.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/http.html"><span class="rc-cat">Web</span><span class="rc-title">HTTP Fundamentals</span></a>
+            <a class="related-card" href="../web-fundamentals/http-status-codes.html"><span class="rc-cat">Web</span><span class="rc-title">HTTP Status Codes</span></a>
+            <a class="related-card" href="../dotnet/grpc.html"><span class="rc-cat">.NET</span><span class="rc-title">gRPC</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“What makes an API RESTful?”</em> — resources as nouns, HTTP verbs, statelessness, correct status
+              codes, a uniform interface. Flag the verb-in-URL anti-pattern and statelessness (no server-side
+              session between calls). Contrast REST (resource-oriented, public) with gRPC (RPC, internal) for bonus depth.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

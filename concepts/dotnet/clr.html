@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The CLR (Common Language Runtime) — DevLens</title>
+  <meta name="description" content="The CLR is .NET's virtual machine: it loads assemblies, JIT-compiles IL to native code, manages memory with the GC, and enforces type safety so your C# runs safely." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="clr" data-title="The CLR">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>The CLR (Common Language Runtime)</h1>
+          <p class="lede">
+            The CLR is .NET’s <strong>virtual machine</strong> — the engine that turns your
+            compiled C# into running, memory-safe native code.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#clr</span>
+            <span class="tag">#runtime</span>
+            <span class="tag">#il</span>
+            <span class="tag">#managed-code</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            You never ship machine code in .NET. The C# compiler (Roslyn) emits
+            <strong>Intermediate Language</strong> (IL) — a compact, CPU-agnostic
+            bytecode — plus <strong>metadata</strong> describing every type, packaged into an
+            <strong>assembly</strong> (a <code>.dll</code> or <code>.exe</code>). The CLR is
+            what runs it.
+          </p>
+          <p>
+            At launch the CLR loads the needed assemblies, and the moment a method is first
+            called, the <strong>JIT</strong> compiles its IL into native instructions for
+            <em>your</em> CPU. While the code runs, the CLR provides the services that make
+            .NET feel safe and productive:
+          </p>
+          <ul>
+            <li><strong>Memory management</strong> — the garbage collector reclaims unreachable objects, so no manual <code>free()</code>.</li>
+            <li><strong>Type safety</strong> — the verifier rejects IL that would read memory it shouldn’t.</li>
+            <li><strong>Exception handling</strong>, <strong>thread management</strong>, and the <strong>Common Type System</strong> that lets C#, F#, and VB share types.</li>
+          </ul>
+          <p>
+            Code the CLR manages is called <strong>managed code</strong>; raw native/interop
+            code is <strong>unmanaged</strong>. (Modern .NET — formerly “.NET Core” — runs on
+            <strong>CoreCLR</strong>; the .NET Framework had a similar but Windows-only runtime.)
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When your ASP.NET Core API boots on an <strong>Azure</strong> App Service, the CLR
+              loads your assemblies, JIT-compiles controller methods as the first requests hit
+              them, and the GC quietly recycles the millions of short-lived objects each request
+              creates. The same managed runtime is why a malformed input can throw a clean
+              <code>Exception</code> instead of corrupting memory like a C buffer overflow — the
+              CLR is enforcing the rules underneath every line you wrote.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>From C# to running code</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 210" role="img" aria-label="Compilation and execution pipeline">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="20" y="20" width="120" height="50" rx="9" />
+              <text class="dgm-label" x="80" y="42" text-anchor="middle">C# source</text>
+              <text class="dgm-sub"   x="80" y="60" text-anchor="middle">.cs files</text>
+
+              <rect class="dgm-box" x="180" y="20" width="120" height="50" rx="9" />
+              <text class="dgm-label" x="240" y="42" text-anchor="middle">Roslyn</text>
+              <text class="dgm-sub"   x="240" y="60" text-anchor="middle">C# compiler</text>
+
+              <rect class="dgm-box" x="340" y="20" width="120" height="50" rx="9" />
+              <text class="dgm-label" x="400" y="42" text-anchor="middle">Assembly</text>
+              <text class="dgm-sub"   x="400" y="60" text-anchor="middle">IL + metadata</text>
+
+              <!-- CLR box -->
+              <rect class="dgm-box-accent" x="180" y="120" width="340" height="70" rx="12" />
+              <text class="dgm-label" x="350" y="146" text-anchor="middle">CLR (CoreCLR)</text>
+              <text class="dgm-sub"   x="350" y="166" text-anchor="middle">class loader → JIT → native · GC · type safety</text>
+
+              <rect class="dgm-box" x="20" y="128" width="120" height="54" rx="9" />
+              <text class="dgm-label" x="80" y="160" text-anchor="middle">CPU</text>
+
+              <line class="dgm-line" x1="140" y1="45" x2="178" y2="45" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="300" y1="45" x2="338" y2="45" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="400" y1="70" x2="400" y2="118" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="178" y1="155" x2="142" y2="155" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — C# compiles to IL ahead of time; the CLR JITs IL to native at runtime.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C# (and the IL underneath)</h2>
+          <p>This ordinary method…</p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">int Add(int a, int b) =&gt; a + b;</code></pre>
+          </div>
+          <p>…is stored in the assembly as IL the JIT will later turn into native code:</p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">IL (ildasm)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code>.method private hidebysig instance int32 Add(int32 a, int32 b) cil managed
+{
+  ldarg.1      // push a
+  ldarg.2      // push b
+  add          // pop both, push a + b
+  ret          // return the result
+}</code></pre>
+          </div>
+          <p>You can inspect what the CLR is hosting at runtime through reflection:</p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">using System.Runtime.InteropServices;
+
+Console.WriteLine(RuntimeInformation.FrameworkDescription); // e.g. ".NET 8.0.6"
+Console.WriteLine(RuntimeInformation.ProcessArchitecture);  // X64 / Arm64
+// Managed runtime services in action: this object is GC-tracked, not freed by you.</code></pre>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>C# → IL + metadata (compile time); the CLR JITs IL → native and runs it (runtime).</li>
+              <li>The CLR provides GC, type safety, exceptions, and threading — that’s what “managed code” buys you.</li>
+              <li>Modern .NET runs on CoreCLR, cross-platform; the old .NET Framework CLR was Windows-only.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/jit-compilation.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">JIT Compilation</span>
+            </a>
+            <a class="related-card" href="../dotnet/garbage-collection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Garbage Collection</span>
+            </a>
+            <a class="related-card" href="../dotnet/assemblies.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Assemblies &amp; Metadata</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“What does the CLR do?”</em> Don’t just say “runs C#.” List its jobs —
+              JIT compilation, garbage collection, type safety, exception handling — and draw
+              the line between <strong>managed</strong> and <strong>unmanaged</strong> code.
+              Mentioning IL and CoreCLR vs .NET Framework signals you know the layers.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

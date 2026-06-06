@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP Caching — DevLens</title>
+  <meta name="description" content="How HTTP caching avoids re-fetching: Cache-Control freshness, ETag/Last-Modified validation and 304 Not Modified, the difference between no-cache and no-store, and cache busting." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="web-fundamentals" data-concept="http-caching" data-title="HTTP Caching">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>HTTP Caching</h1>
+          <p class="lede">
+            The cheapest request is the one you never make. HTTP caching lets browsers, CDNs, and proxies
+            <strong>reuse</strong> responses instead of re-downloading them.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#caching</span>
+            <span class="tag">#cache-control</span>
+            <span class="tag">#etag</span>
+            <span class="tag">#performance</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            HTTP caching works on two ideas — <strong>freshness</strong> and <strong>validation</strong>.
+          </p>
+          <ul>
+            <li><strong>Freshness</strong> — the server stamps a response with <code>Cache-Control: max-age=N</code>. For N seconds, the cache serves the stored copy <em>without contacting the server at all</em>. Fastest path.</li>
+            <li><strong>Validation</strong> — once stale, the cache doesn’t blindly re-download. It asks “is my copy still good?” using a validator: an <strong>ETag</strong> (a content fingerprint) with <code>If-None-Match</code>, or <code>Last-Modified</code> with <code>If-Modified-Since</code>. If unchanged, the server replies <strong><code>304 Not Modified</code></strong> with no body — saving the bandwidth.</li>
+          </ul>
+          <p>The <code>Cache-Control</code> directives people confuse:</p>
+          <ul>
+            <li><strong><code>no-cache</code></strong> — you <em>may</em> store it, but must <strong>revalidate</strong> before each use (not “don’t cache”!).</li>
+            <li><strong><code>no-store</code></strong> — never store it (for sensitive data).</li>
+            <li><strong><code>private</code></strong> vs <strong><code>public</code></strong> — only the user’s browser may cache vs shared caches/CDNs may too.</li>
+          </ul>
+          <p>
+            For assets that <em>can</em> change, the trick is <strong>cache busting</strong>: cache aggressively
+            (a year) but put a content hash in the filename (<code>app.9f3a.js</code>), so a new build = a new URL
+            = a guaranteed fresh fetch.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every fast site does this. <strong>YouTube</strong>/<strong>Netflix</strong> serve images, JS, and CSS
+              with <code>Cache-Control: max-age=31536000, immutable</code> and fingerprinted filenames, so repeat
+              visits load instantly from the browser/CDN cache and a deploy still ships new code (new hash, new URL).
+              API responses that change use ETags so the client revalidates cheaply — a <code>304</code> on an
+              unchanged resource is a few header bytes instead of a full payload, which at CDN scale saves enormous
+              bandwidth.
+            </p>
+          </div>
+
+          <h2>Fresh, or revalidate</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Cache freshness and validation flow">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="230" y="20" width="140" height="36" rx="9"/><text class="dgm-sub" x="300" y="43" text-anchor="middle">request a resource</text>
+
+              <rect x="40" y="92" width="220" height="56" rx="10" fill="var(--c-success)" fill-opacity="0.12" stroke="var(--c-success)"/>
+              <text class="dgm-sub" x="150" y="114" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">within max-age → FRESH</text>
+              <text class="dgm-sub" x="150" y="132" text-anchor="middle">serve from cache, no network</text>
+
+              <rect x="340" y="92" width="220" height="56" rx="10" fill="var(--c-info)" fill-opacity="0.12" stroke="var(--c-info)"/>
+              <text class="dgm-sub" x="450" y="114" text-anchor="middle" fill="var(--c-info)" style="font:600 12px var(--font-sans)">stale → REVALIDATE (ETag)</text>
+              <text class="dgm-sub" x="450" y="132" text-anchor="middle">304 reuse, or 200 new copy</text>
+
+              <line class="dgm-line" x1="280" y1="56" x2="150" y2="90" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="320" y1="56" x2="450" y2="90" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Fresh = serve instantly; stale = a cheap <code>If-None-Match</code> → likely <code>304</code>.</figcaption>
+          </figure>
+
+          <h2>On the wire &amp; in C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">HTTP</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-http">HTTP/1.1 200 OK
+Cache-Control: public, max-age=31536000, immutable
+ETag: "9f3a1c"
+
+# Later, once stale, the browser revalidates:
+GET /app.js HTTP/1.1
+If-None-Match: "9f3a1c"
+
+HTTP/1.1 304 Not Modified        # unchanged → no body, reuse the cached copy</code></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — ASP.NET Core</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">app.MapGet("/products", () =&gt;
+{
+    var body = Serialize(products);
+    return Results.Text(body, "application/json")
+        .WithHeaders(h =&gt; h.CacheControl = new() { Public = true, MaxAge = TimeSpan.FromMinutes(5) });
+});
+
+// Static files: long max-age + fingerprinted names (asp-append-version) = safe cache busting.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Freshness (<code>max-age</code>) serves from cache with no network; validation (ETag/Last-Modified) yields a cheap <code>304</code> when unchanged.</li>
+              <li><code>no-cache</code> = revalidate before use (not “don’t cache”); <code>no-store</code> = never store.</li>
+              <li>Cache static assets hard and bust the cache with content-hashed filenames.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/http.html"><span class="rc-cat">Web</span><span class="rc-title">HTTP Fundamentals</span></a>
+            <a class="related-card" href="../web-fundamentals/http-status-codes.html"><span class="rc-cat">Web</span><span class="rc-title">HTTP Status Codes</span></a>
+            <a class="related-card" href="../system-design/cdn.html"><span class="rc-cat">System Design</span><span class="rc-title">CDNs</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The gotcha: <em>“what does <code>no-cache</code> mean?”</em> — it means <strong>revalidate before
+              use</strong>, not “never cache” (that’s <code>no-store</code>). Explain freshness vs validation, the
+              <code>304</code> round trip, and content-hash cache busting for static assets.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

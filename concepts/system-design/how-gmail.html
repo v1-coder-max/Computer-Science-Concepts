@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How Gmail Works — DevLens</title>
+  <meta name="description" content="The system design behind webmail at scale: massive sharded storage, an inverted index for instant search, real-time push delivery, label-based organization, and ML spam filtering." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="how-gmail" data-title="How Gmail Works">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>How Gmail Works</h1>
+          <p class="lede">
+            Webmail looks simple, but at a billion-plus users it’s a master class in <strong>storage at scale,
+            instant search, and real-time delivery</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#email</span>
+            <span class="tag">#search-index</span>
+            <span class="tag">#storage</span>
+            <span class="tag">#case-study</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Gmail has a few hard problems happening at once:
+          </p>
+          <ul>
+            <li><strong>Storage</strong> — astronomical volumes of mail, <strong>sharded by user</strong> across many servers so each user’s mailbox is self-contained and the system scales horizontally. Attachments live in object storage; messages are deduplicated where possible.</li>
+            <li><strong>Search</strong> — “instant” search across years of mail is powered by an <strong>inverted index</strong> (word → list of messages containing it), built per user as mail arrives. You’re not scanning your mailbox; you’re looking up a pre-built index.</li>
+            <li><strong>Real-time delivery</strong> — new mail appears without refreshing because the client holds a <strong>long-lived connection</strong> (long polling / push) and the server pushes updates the instant they land.</li>
+            <li><strong>Labels, not folders</strong> — a message is stored <em>once</em> and tagged with many <strong>labels</strong> (Inbox, Work, Important). A “folder” move is just a label change — far more flexible than copying files between folders.</li>
+            <li><strong>Spam filtering</strong> — incoming mail runs through <strong>ML classifiers</strong> (and reputation/SPF/DKIM checks) before it ever reaches your inbox.</li>
+          </ul>
+          <p>
+            Sending vs receiving are different paths: outbound goes through SMTP to other mail servers; inbound is
+            received, filtered, indexed, stored, and pushed to your open clients. State (your auth) rides on a
+            <strong>session</strong>; everything syncs across your devices from the same server-side mailbox.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When someone emails you, <strong>Gmail</strong> receives it, runs spam/phishing ML, updates your
+              personal <strong>inverted index</strong> so it’s instantly searchable, applies labels (maybe
+              auto-categorizing it as “Promotions”), and <strong>pushes</strong> it to your open tab and phone in
+              real time — all in well under a second. Search “invoice from 2019” and it’s an index lookup, not a
+              scan. The label model is why the same message can appear under Inbox <em>and</em> Important <em>and</em>
+              a custom label without ever being duplicated.
+            </p>
+          </div>
+
+          <h2>Receive → filter → index → push</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Gmail inbound pipeline">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="10" y="60" width="96" height="44" rx="8"/><text class="dgm-sub" x="58" y="86" text-anchor="middle">incoming</text>
+              <rect class="dgm-box-accent" x="124" y="60" width="96" height="44" rx="8"/><text class="dgm-sub" x="172" y="80" text-anchor="middle">spam ML</text><text class="dgm-sub" x="172" y="96" text-anchor="middle">+ checks</text>
+              <rect class="dgm-box" x="238" y="60" width="100" height="44" rx="8"/><text class="dgm-sub" x="288" y="80" text-anchor="middle">store (shard)</text><text class="dgm-sub" x="288" y="96" text-anchor="middle">+ labels</text>
+              <rect class="dgm-box" x="356" y="60" width="100" height="44" rx="8"/><text class="dgm-sub" x="406" y="80" text-anchor="middle">index</text><text class="dgm-sub" x="406" y="96" text-anchor="middle">(inverted)</text>
+              <rect class="dgm-box-accent" x="474" y="60" width="110" height="44" rx="8"/><text class="dgm-sub" x="529" y="80" text-anchor="middle">push to</text><text class="dgm-sub" x="529" y="96" text-anchor="middle">open clients</text>
+              <line class="dgm-line" x1="106" y1="82" x2="122" y2="82" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="220" y1="82" x2="236" y2="82" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="338" y1="82" x2="354" y2="82" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="456" y1="82" x2="472" y2="82" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Inbound mail is filtered, stored with labels, indexed for search, then pushed live.</figcaption>
+          </figure>
+
+          <h2>Search = inverted index</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">Inverted index (conceptual)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-json">// Per user: word → message ids containing it. Search is a lookup, not a scan.
+{
+  "invoice": [ "msg-1042", "msg-2087", "msg-9931" ],
+  "2019":    [ "msg-2087", "msg-3310" ]
+}
+// Query "invoice 2019" → intersect the two posting lists → [ "msg-2087" ]  (instant)</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Storage is sharded by user (horizontal scale); attachments go to object storage.</li>
+              <li>Instant search is an <strong>inverted index</strong> (word → messages), not a mailbox scan; delivery is real-time push over a long-lived connection.</li>
+              <li>Labels (one message, many tags) beat folders; inbound mail is ML-spam-filtered before it lands.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/sessions.html"><span class="rc-cat">System Design</span><span class="rc-title">How Sessions Work</span></a>
+            <a class="related-card" href="../system-design/message-queues.html"><span class="rc-cat">System Design</span><span class="rc-title">Message Queues</span></a>
+            <a class="related-card" href="../database/sharding.html"><span class="rc-cat">Database</span><span class="rc-title">Partitioning &amp; Sharding</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              “Design Gmail/an email system” → hit four pillars: <strong>sharded storage</strong>, an
+              <strong>inverted index</strong> for search, <strong>real-time push</strong> delivery, and the
+              <strong>label</strong> model (one message, many tags). Adding spam ML and the SMTP send vs push
+              receive split shows breadth.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

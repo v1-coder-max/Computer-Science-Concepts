@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inheritance — DevLens</title>
+  <meta name="description" content="Inheritance models an 'is-a' relationship: a derived class reuses and extends a base. virtual/override, sealed, single-class inheritance in C# — and why to favor composition." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="oop" data-concept="inheritance" data-title="Inheritance">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Inheritance</h1>
+          <p class="lede">
+            A class can <strong>derive</strong> from another, reusing its members and specializing its behavior —
+            an <strong>“is-a”</strong> relationship.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#oop</span>
+            <span class="tag">#inheritance</span>
+            <span class="tag">#is-a</span>
+            <span class="tag">#virtual-override</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Inheritance lets a <strong>derived</strong> (child) class take everything a <strong>base</strong>
+            (parent) class has and add to or change it. A <code>Dog</code> <em>is an</em> <code>Animal</code>, so
+            <code>Dog</code> inherits <code>Name</code> and <code>Eat()</code> and adds <code>Fetch()</code>. The
+            child can also <strong>override</strong> a base behavior marked <code>virtual</code> to specialize it,
+            and call back into the base with <code>base.Method()</code>.
+          </p>
+          <p>Key C# rules:</p>
+          <ul>
+            <li><strong>Single class inheritance</strong> — a class has at most one base class (but can implement many interfaces).</li>
+            <li><code>virtual</code> + <code>override</code> enable specialization; <code>sealed</code> stops further overriding/inheriting.</li>
+            <li><code>abstract</code> members force derived classes to provide an implementation.</li>
+          </ul>
+          <p>
+            Inheritance is powerful but easy to overuse. Deep hierarchies become rigid, and a change to the base
+            can break every child (the <strong>fragile base class</strong> problem). The modern guidance —
+            <em>“favor composition over inheritance”</em> — says use inheritance for true is-a specialization, and
+            assemble behavior from parts when you’re really just reusing code.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              The .NET framework itself is built on inheritance hierarchies: every exception derives from
+              <code>System.Exception</code>, every stream from <code>Stream</code>, and UI toolkits model
+              <code>Button</code> → <code>ButtonBase</code> → <code>Control</code>. That shared base lets a
+              <code>catch (Exception)</code> handle any error and a method accepting a <code>Stream</code> work
+              with files, memory, or sockets. It’s genuine is-a specialization — exactly where inheritance shines.
+            </p>
+          </div>
+
+          <h2>A base and its specializations</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Inheritance hierarchy">
+              <defs>
+                <marker id="tri" markerWidth="14" markerHeight="12" refX="12" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="none" stroke="var(--text-faint)" stroke-width="1.4" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="230" y="20" width="140" height="46" rx="9" />
+              <text class="dgm-label" x="300" y="42" text-anchor="middle">Animal</text>
+              <text class="dgm-sub"   x="300" y="58" text-anchor="middle">Eat() · virtual Speak()</text>
+
+              <rect class="dgm-box" x="60"  y="120" width="130" height="46" rx="9" />
+              <text class="dgm-label" x="125" y="142" text-anchor="middle">Dog</text>
+              <text class="dgm-sub"   x="125" y="158" text-anchor="middle">override Speak()</text>
+              <rect class="dgm-box" x="235" y="120" width="130" height="46" rx="9" />
+              <text class="dgm-label" x="300" y="142" text-anchor="middle">Cat</text>
+              <text class="dgm-sub"   x="300" y="158" text-anchor="middle">override Speak()</text>
+              <rect class="dgm-box" x="410" y="120" width="130" height="46" rx="9" />
+              <text class="dgm-label" x="475" y="142" text-anchor="middle">Bird</text>
+              <text class="dgm-sub"   x="475" y="158" text-anchor="middle">+ Fly()</text>
+
+              <line class="dgm-line" x1="125" y1="120" x2="270" y2="66" marker-end="url(#tri)" />
+              <line class="dgm-line" x1="300" y1="120" x2="300" y2="66" marker-end="url(#tri)" />
+              <line class="dgm-line" x1="475" y1="120" x2="330" y2="66" marker-end="url(#tri)" />
+              <text class="dgm-sub" x="300" y="100" text-anchor="middle">"is-a" Animal</text>
+            </svg>
+            <figcaption>Figure 1 — Children inherit the base and override <code>Speak()</code> to specialize.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class Animal
+{
+    public string Name { get; init; } = "";
+    public void Eat() =&gt; Console.WriteLine($"{Name} eats.");
+    public virtual string Speak() =&gt; "...";   // virtual: children may override
+}
+
+public class Dog : Animal                      // Dog IS-A Animal
+{
+    public override string Speak() =&gt; "Woof";  // specialize
+    public void Fetch() =&gt; Console.WriteLine($"{Name} fetches.");
+}
+
+public sealed class ServiceDog : Dog           // sealed: no further subclassing
+{
+    public override string Speak() =&gt; base.Speak() + " (on duty)"; // reuse + extend
+}
+
+Animal a = new Dog { Name = "Rex" };
+a.Eat();                 // inherited from Animal
+Console.WriteLine(a.Speak()); // "Woof" — dispatched to Dog's override</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Don’t inherit just to reuse code</p>
+            <p>
+              If the relationship isn’t a real “is-a,” inheritance creates tight coupling and fragile hierarchies.
+              Needing only a helper method from a base class is a sign you want <strong>composition</strong> (hold
+              an instance) instead. See the composition-vs-inheritance page.
+            </p>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Inheritance models is-a: a derived class reuses and specializes a base via <code>virtual</code>/<code>override</code>.</li>
+              <li>C# allows one base class but many interfaces; <code>sealed</code> stops the chain, <code>abstract</code> forces implementation.</li>
+              <li>Favor composition when you’re only reusing code — deep hierarchies are rigid and fragile.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../oop/polymorphism.html"><span class="rc-cat">OOP</span><span class="rc-title">Polymorphism</span></a>
+            <a class="related-card" href="../oop/composition-vs-inheritance.html"><span class="rc-cat">OOP</span><span class="rc-title">Composition vs Inheritance</span></a>
+            <a class="related-card" href="../oop/abstract-vs-interface.html"><span class="rc-cat">OOP</span><span class="rc-title">Abstract Class vs Interface</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Expect <em>“inheritance vs composition”</em> and questions on <code>virtual</code>/<code>override</code>
+              vs <code>new</code> (hiding). Stress that inheritance is for genuine is-a relationships and that
+              overusing it leads to the <strong>fragile base class</strong> problem — which is why the industry
+              leans toward composition.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

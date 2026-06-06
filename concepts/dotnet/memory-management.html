@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Management — DevLens</title>
+  <meta name="description" content="Stack vs heap, value vs reference types, boxing, and how to cut allocations in .NET with structs, Span<T>, stackalloc and ArrayPool to reduce GC pressure." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="memory-management" data-title="Memory Management">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Memory Management</h1>
+          <p class="lede">
+            Where your data lives — stack or heap, value or reference — decides how fast it is and
+            how much pressure it puts on the GC.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#memory</span>
+            <span class="tag">#stack-vs-heap</span>
+            <span class="tag">#boxing</span>
+            <span class="tag">#allocations</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            .NET has two places to put data. The <strong>stack</strong> is a fast, per-thread
+            scratchpad that grows and shrinks with method calls — allocation is a pointer move and
+            cleanup is automatic when the method returns. The <strong>heap</strong> is the shared,
+            GC-managed pool where objects live until they’re collected.
+          </p>
+          <p>
+            Which one is used depends on the type:
+          </p>
+          <ul>
+            <li><strong>Value types</strong> (<code>int</code>, <code>bool</code>, <code>struct</code>, <code>enum</code>) hold their data <em>inline</em>. A local value type sits on the stack; a value-type <em>field</em> lives wherever its container lives.</li>
+            <li><strong>Reference types</strong> (<code>class</code>, <code>string</code>, arrays, delegates) live on the heap; the variable holds a <em>reference</em> (a pointer) to it.</li>
+          </ul>
+          <p>
+            That distinction drives <strong>copy semantics</strong> (values copy the data; references copy the pointer) and the cost of <strong>boxing</strong> — wrapping a value type in a heap object so it can be treated as <code>object</code>. Boxing allocates and pressures the GC, and it’s easy to do by accident.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Kestrel</strong> — the web server inside ASP.NET Core that powers high-traffic
+              sites — is engineered to allocate almost nothing on the request hot path. It parses
+              HTTP using <code>Span&lt;T&gt;</code> over pooled buffers (<code>ArrayPool</code>,
+              <code>System.IO.Pipelines</code>) instead of slicing strings, so millions of requests
+              don’t bury the GC in gen-0 garbage. Less allocation → fewer collections → lower, more
+              predictable tail latency.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Stack, heap, and boxing</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 220" role="img" aria-label="Stack vs heap and boxing">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <!-- Stack -->
+              <rect class="dgm-box" x="20" y="30" width="240" height="170" rx="10" />
+              <text class="dgm-label" x="140" y="52" text-anchor="middle">Stack (per thread)</text>
+              <rect class="dgm-box-accent" x="40" y="68"  width="200" height="34" rx="6" />
+              <text class="dgm-sub" x="140" y="90" text-anchor="middle">int n = 5  (value, inline)</text>
+              <rect class="dgm-box-accent" x="40" y="112" width="200" height="34" rx="6" />
+              <text class="dgm-sub" x="140" y="134" text-anchor="middle">Order o  → ref ●</text>
+              <rect class="dgm-box-accent" x="40" y="156" width="200" height="34" rx="6" />
+              <text class="dgm-sub" x="140" y="178" text-anchor="middle">object box → ref ●</text>
+
+              <!-- Heap -->
+              <rect class="dgm-box" x="340" y="30" width="240" height="170" rx="10" />
+              <text class="dgm-label" x="460" y="52" text-anchor="middle">Heap (GC-managed)</text>
+              <rect class="dgm-box-accent" x="360" y="112" width="200" height="34" rx="6" />
+              <text class="dgm-sub" x="460" y="134" text-anchor="middle">Order { … }  (object)</text>
+              <rect x="360" y="156" width="200" height="34" rx="6"
+                    fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)" />
+              <text x="460" y="178" text-anchor="middle" fill="var(--c-warning)"
+                    style="font:600 12px var(--font-sans)">boxed int (5)  ← allocation!</text>
+
+              <line class="dgm-line" x1="240" y1="129" x2="358" y2="129" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="240" y1="173" x2="358" y2="173" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Boxing a value type creates a heap object the GC must later collect.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C# — copy semantics, boxing, low-alloc tools</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Value semantics: 'b' is an independent copy.
+struct Point { public int X, Y; }
+var a = new Point { X = 1, Y = 2 };
+var b = a;            // copies the data
+b.X = 99;             // a.X is still 1
+
+// Accidental boxing: the int is wrapped in a heap object to become 'object'.
+int n = 42;
+object boxed = n;     // ← allocation
+int back = (int)boxed; // unboxing (a copy back out)
+
+// Avoid allocations on hot paths:
+Span&lt;byte&gt; buffer = stackalloc byte[256];   // on the stack, no GC involvement
+byte[] rented = ArrayPool&lt;byte&gt;.Shared.Rent(4096); // reuse instead of new[]
+try { /* ... use rented ... */ }
+finally { ArrayPool&lt;byte&gt;.Shared.Return(rented); }</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ “Value type = stack” is a myth</p>
+            <p>
+              It’s not that simple. A value type that’s a <em>field of a class</em> lives on the heap
+              with that object; a captured local can be hoisted into a closure object. The reliable
+              rule is about <strong>type semantics</strong> (copy vs reference), not a fixed memory
+              location.
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Value types copy their data and are often stack-allocated; reference types live on the heap and copy a pointer.</li>
+              <li>Boxing turns a value type into a heap allocation — avoid it on hot paths (watch <code>object</code>/non-generic APIs).</li>
+              <li>Cut allocations with <code>struct</code>, <code>Span&lt;T&gt;</code>/<code>stackalloc</code>, and <code>ArrayPool&lt;T&gt;</code> to lighten the GC.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/garbage-collection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Garbage Collection</span>
+            </a>
+            <a class="related-card" href="../dotnet/span.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Span&lt;T&gt; &amp; Memory&lt;T&gt;</span>
+            </a>
+            <a class="related-card" href="../dotnet/records.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Records</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Difference between a struct and a class?”</em> Lead with value vs reference
+              semantics and the allocation/copy implications, not just “struct is on the stack” —
+              that oversimplification is a tell. Mention boxing as the classic hidden allocation.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

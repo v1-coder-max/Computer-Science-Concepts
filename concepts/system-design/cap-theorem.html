@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAP Theorem — DevLens</title>
+  <meta name="description" content="Why a distributed system must choose between Consistency and Availability when a network partition happens — CP vs AP with real database examples, and the PACELC extension." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="cap-theorem" data-title="CAP Theorem">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>CAP Theorem</h1>
+          <p class="lede">
+            When the network splits, a distributed datastore can keep answering <em>or</em> keep every answer
+            correct — <strong>not both</strong>. CAP is the rule that forces the choice.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#cap</span>
+            <span class="tag">#distributed-systems</span>
+            <span class="tag">#consistency</span>
+            <span class="tag">#availability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            CAP names three properties a distributed system might want:
+          </p>
+          <ul>
+            <li><strong>Consistency</strong> — every read sees the most recent write (all nodes agree).</li>
+            <li><strong>Availability</strong> — every request gets a (non-error) response.</li>
+            <li><strong>Partition tolerance</strong> — the system keeps working when the network between nodes drops messages.</li>
+          </ul>
+          <p>
+            The theorem: during a <strong>network partition</strong> you can guarantee at most <em>two</em> of the
+            three. And here’s the practical bit — in any real distributed system, <strong>partitions will
+            happen</strong> (networks fail), so P isn’t optional. That collapses the choice to: <strong>when a
+            partition occurs, do you favor Consistency or Availability?</strong>
+          </p>
+          <ul>
+            <li><strong>CP (consistency over availability)</strong> — on a partition, refuse requests it can’t answer correctly rather than return stale/conflicting data. Think bank balances. (e.g. traditional RDBMS clusters, MongoDB defaults, HBase, ZooKeeper.)</li>
+            <li><strong>AP (availability over consistency)</strong> — keep serving on both sides of the split and reconcile later (<em>eventual consistency</em>). Think a social feed or shopping cart. (e.g. Cassandra, DynamoDB, Riak.)</li>
+          </ul>
+          <p>
+            The common myth is “pick any 2 of 3.” More accurately: <strong>P is mandatory, so it’s CP vs AP</strong>.
+            And when there’s <em>no</em> partition, you still trade <strong>latency vs consistency</strong> — which
+            is what the <strong>PACELC</strong> extension captures (“else, Latency or Consistency”).
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              The choice maps directly to “how bad is wrong data here?” A <strong>banking ledger</strong> picks
+              <strong>CP</strong>: during a network split it would rather reject a transaction than risk a double
+              spend. <strong>Amazon’s</strong> shopping cart famously picks <strong>AP</strong> (the Dynamo paper) —
+              the cart must always accept adds even during a partition, and conflicting versions get merged later
+              (you might briefly see a re-added item). Same company, opposite CAP decisions, because the cost of
+              being temporarily inconsistent is wildly different.
+            </p>
+          </div>
+
+          <h2>Partition forces a choice</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="CAP: partition forces CP or AP">
+              <rect class="dgm-box" x="40" y="60" width="120" height="56" rx="10"/><text class="dgm-label" x="100" y="84" text-anchor="middle">Node 1</text><text class="dgm-sub" x="100" y="102" text-anchor="middle">client A</text>
+              <rect class="dgm-box" x="440" y="60" width="120" height="56" rx="10"/><text class="dgm-label" x="500" y="84" text-anchor="middle">Node 2</text><text class="dgm-sub" x="500" y="102" text-anchor="middle">client B</text>
+              <line x1="270" y1="40" x2="330" y2="140" stroke="var(--c-warning)" stroke-width="3" stroke-dasharray="6 5"/>
+              <text class="dgm-sub" x="300" y="32" text-anchor="middle" fill="var(--c-warning)" style="font:600 12px var(--font-sans)">✂ network partition</text>
+
+              <rect x="170" y="130" width="120" height="34" rx="7" fill="var(--c-info)" fill-opacity="0.14" stroke="var(--c-info)"/>
+              <text x="230" y="151" text-anchor="middle" fill="var(--c-info)" style="font:600 12px var(--font-sans)">CP: reject (stay correct)</text>
+              <rect x="310" y="130" width="120" height="34" rx="7" fill="var(--c-success)" fill-opacity="0.14" stroke="var(--c-success)"/>
+              <text x="370" y="151" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">AP: answer (maybe stale)</text>
+            </svg>
+            <figcaption>Figure 1 — With the link cut, each side either refuses (CP) or keeps serving possibly-stale data (AP).</figcaption>
+          </figure>
+
+          <h2>How it shows up in config</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">Cassandra (AP, tunable consistency)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-sql">-- Tunable per query: trade consistency for availability/latency.
+CONSISTENCY ONE;     -- AP-leaning: any one replica answers (fast, may be stale)
+CONSISTENCY QUORUM;  -- stronger: majority must agree (more consistent, less available)
+-- If (reads + writes) consistency &gt; replicas, you get strong consistency — at a cost.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Consistency, Availability, Partition tolerance — during a partition you can keep at most two.</li>
+              <li>Partitions are unavoidable, so the real choice is <strong>CP</strong> (correct, may refuse) vs <strong>AP</strong> (available, may be stale).</li>
+              <li>It’s decided per use case (bank = CP, cart/feed = AP); PACELC adds the latency-vs-consistency trade when there’s no partition.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/replication.html"><span class="rc-cat">Database</span><span class="rc-title">Replication</span></a>
+            <a class="related-card" href="../database/sql-vs-nosql.html"><span class="rc-cat">Database</span><span class="rc-title">SQL vs NoSQL</span></a>
+            <a class="related-card" href="../database/isolation-levels.html"><span class="rc-cat">Database</span><span class="rc-title">Isolation Levels</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Don’t recite “pick 2 of 3.” Say <strong>P is mandatory</strong>, so it’s <strong>CP vs AP</strong>
+              during a partition, and tie the choice to the use case (bank → CP, cart/feed → AP, eventual
+              consistency). Mentioning <strong>PACELC</strong> (latency vs consistency without a partition) marks a
+              strong answer.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

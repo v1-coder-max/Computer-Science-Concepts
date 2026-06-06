@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deadlocks — DevLens</title>
+  <meta name="description" content="Why two transactions can lock each other forever: the circular wait, how the database detects and kills a victim, and how to prevent deadlocks with lock ordering, short transactions and retries." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="deadlocks" data-title="Deadlocks">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Deadlocks</h1>
+          <p class="lede">
+            Two transactions, each holding the lock the other needs, each waiting forever. The database breaks the
+            tie by <strong>killing one</strong> — and your job is to make that rare and recoverable.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#deadlock</span>
+            <span class="tag">#locking</span>
+            <span class="tag">#concurrency</span>
+            <span class="tag">#retry</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Transactions take <strong>locks</strong> on rows they read/write so others don’t interfere. A
+            <strong>deadlock</strong> is a <em>circular wait</em>: transaction <strong>T1</strong> locks row A and
+            wants row B; <strong>T2</strong> locks row B and wants row A. Neither can proceed, and neither will
+            give up its lock. Unlike a slow query, this never resolves on its own.
+          </p>
+          <p>
+            Databases handle it automatically with a <strong>deadlock detector</strong> (a background process that
+            looks for cycles in the wait-for graph). When it finds one, it picks a <strong>victim</strong> —
+            usually the cheaper transaction to roll back — aborts it with an error (SQL Server <code>1205</code>),
+            and lets the other proceed. The victim’s app sees a failure and should <strong>retry</strong>.
+          </p>
+          <p>Most deadlocks trace to a few causes, each with a fix:</p>
+          <ul>
+            <li><strong>Inconsistent lock order</strong> → always access tables/rows in the <em>same order</em> everywhere.</li>
+            <li><strong>Long transactions</strong> holding locks → keep transactions short; do slow work outside them.</li>
+            <li><strong>Excessive locking / missing indexes</strong> (scans lock more rows) → index the predicates; use the lowest correct isolation.</li>
+            <li><strong>It will still happen occasionally</strong> → add <em>retry logic</em> for the deadlock error.</li>
+          </ul>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              The textbook case is two money transfers running at once: one transfers A→B, the other B→A, and each
+              locks its first account then waits on the second — instant deadlock. A payments team fixes it by
+              <strong>always locking accounts in ascending ID order</strong>, so a cycle can’t form, and wraps the
+              operation in a retry so the rare remaining deadlock just re-runs transparently. High-write tables
+              (inventory, counters) are the usual hot spots, which is why short transactions and good indexing
+              matter so much there.
+            </p>
+          </div>
+
+          <h2>The circular wait</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Deadlock circular wait">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="60" y="60" width="130" height="50" rx="10"/><text class="dgm-label" x="125" y="82" text-anchor="middle">T1</text><text class="dgm-sub" x="125" y="100" text-anchor="middle">holds A, wants B</text>
+              <rect class="dgm-box-accent" x="410" y="60" width="130" height="50" rx="10"/><text class="dgm-label" x="475" y="82" text-anchor="middle">T2</text><text class="dgm-sub" x="475" y="100" text-anchor="middle">holds B, wants A</text>
+              <rect class="dgm-box" x="270" y="20" width="60" height="34" rx="7"/><text class="dgm-sub" x="300" y="42" text-anchor="middle">row A</text>
+              <rect class="dgm-box" x="270" y="116" width="60" height="34" rx="7"/><text class="dgm-sub" x="300" y="138" text-anchor="middle">row B</text>
+
+              <line class="dgm-line" x1="190" y1="78" x2="268" y2="42" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="215" y="50" text-anchor="middle">wants B</text>
+              <line class="dgm-line" x1="410" y1="98" x2="332" y2="132" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="385" y="128" text-anchor="middle">wants A</text>
+              <line class="dgm-line" x1="270" y1="37" x2="190" y2="68" stroke-dasharray="3 3"/>
+              <line class="dgm-line" x1="330" y1="133" x2="410" y2="100" stroke-dasharray="3 3"/>
+              <text class="dgm-sub" x="300" y="165" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">cycle detected → DB kills a victim (error 1205) → retry</text>
+            </svg>
+            <figcaption>Figure 1 — A wait cycle the engine resolves by aborting the cheaper transaction.</figcaption>
+          </figure>
+
+          <h2>In SQL &amp; C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">SQL — the trap vs the fix</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-sql">-- ❌ Different order in two sessions → deadlock risk
+-- Session 1: UPDATE Accounts SET ... WHERE Id = 1;  then  WHERE Id = 2;
+-- Session 2: UPDATE Accounts SET ... WHERE Id = 2;  then  WHERE Id = 1;
+
+-- ✅ Always touch rows in a consistent order (e.g. ascending Id) in BOTH paths.
+BEGIN TRAN;
+    UPDATE Accounts SET Balance = Balance - 100 WHERE Id = 1;   -- lower id first
+    UPDATE Accounts SET Balance = Balance + 100 WHERE Id = 2;
+COMMIT;</code></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — retry the victim</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">for (int attempt = 1; attempt &lt;= 3; attempt++)
+{
+    try { await DoTransferAsync(); break; }
+    catch (SqlException ex) when (ex.Number == 1205)   // chosen as deadlock victim
+    {
+        if (attempt == 3) throw;
+        await Task.Delay(50 * attempt);                // brief backoff, then retry
+    }
+}
+// EF Core: builder.UseSqlServer(cs, o =&gt; o.EnableRetryOnFailure()); also retries deadlocks.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A deadlock is a circular lock wait; the DB detects it and aborts a victim transaction.</li>
+              <li>Prevent it with consistent lock ordering, short transactions, and good indexes (less locking).</li>
+              <li>They can’t be eliminated entirely — wrap write transactions in retry-on-deadlock logic.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/transactions-acid.html"><span class="rc-cat">Database</span><span class="rc-title">Transactions &amp; ACID</span></a>
+            <a class="related-card" href="../database/isolation-levels.html"><span class="rc-cat">Database</span><span class="rc-title">Isolation Levels</span></a>
+            <a class="related-card" href="../database/connection-pooling.html"><span class="rc-cat">Database</span><span class="rc-title">Connection Pooling</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“What causes a deadlock and how do you prevent it?”</em> Draw the circular wait, say the DB
+              kills a victim, and give the prevention trio: <strong>consistent lock ordering</strong>, short
+              transactions, and <strong>retry</strong> logic. Bonus: missing indexes cause scans that lock extra
+              rows and make deadlocks more likely.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

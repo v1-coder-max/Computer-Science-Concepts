@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimal APIs — DevLens</title>
+  <meta name="description" content="ASP.NET Core Minimal APIs: define endpoints as lambdas with no controllers, how parameter binding from route/query/body/DI works, IResult, route groups and filters." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="minimal-apis" data-title="Minimal APIs">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Minimal APIs</h1>
+          <p class="lede">
+            Define HTTP endpoints as <strong>lambdas right on the app</strong> — no controllers, no
+            attributes, far less ceremony. Ideal for small services.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#minimal-apis</span>
+            <span class="tag">#endpoints</span>
+            <span class="tag">#aspnetcore</span>
+            <span class="tag">#microservices</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Classic ASP.NET Core MVC needs a controller class, base types, and attributes to expose a
+            route. <strong>Minimal APIs</strong> (introduced in .NET 6, matured since) cut that to a single
+            call: <code>app.MapGet("/products/{id}", handler)</code>. The handler is a plain lambda or
+            method, and the framework figures out the rest.
+          </p>
+          <p>
+            The clever part is <strong>parameter binding</strong>. For each parameter the framework infers
+            the source: route values (matching the template), query string, the request body (for complex
+            types, deserialized from JSON), and — crucially — the <strong>DI container</strong> for your
+            services. You return a value (serialized to JSON) or an <code>IResult</code>
+            (<code>Results.Ok</code>, <code>Results.NotFound</code>, <code>Results.Created</code>) to control
+            the status code.
+          </p>
+          <p>
+            You still get the full pipeline (auth, middleware), plus <strong>route groups</strong>
+            (<code>MapGroup</code>) to share a prefix and policies, and <strong>endpoint filters</strong> for
+            cross-cutting logic like validation. Reach for controllers when you want their richer
+            conventions (model binding attributes, filters, large surface area); reach for minimal APIs for
+            lean microservices and lower startup overhead.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A focused microservice — say a <strong>URL-shortener</strong> or a <em>pricing</em> service
+              with a handful of endpoints — is a perfect fit. There’s no need for the MVC machinery; a
+              dozen <code>Map…</code> calls grouped under <code>/api/v1</code> give a clean, fast service
+              with minimal boilerplate and a smaller, quicker-to-start app. Teams building lots of small
+              services lean on minimal APIs precisely because there’s less to read and less to boot.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>From route to result</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Minimal API request binding flow">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="14" y="60" width="110" height="50" rx="9" />
+              <text class="dgm-sub" x="69" y="82" text-anchor="middle">GET /products/5</text>
+              <text class="dgm-sub" x="69" y="98" text-anchor="middle">?fields=name</text>
+
+              <rect class="dgm-box-accent" x="160" y="50" width="180" height="70" rx="10" />
+              <text class="dgm-label" x="250" y="74" text-anchor="middle">binding</text>
+              <text class="dgm-sub"   x="250" y="92" text-anchor="middle">id ← route · fields ← query</text>
+              <text class="dgm-sub"   x="250" y="108" text-anchor="middle">ICatalog ← DI</text>
+
+              <rect class="dgm-box" x="370" y="50" width="130" height="70" rx="10" />
+              <text class="dgm-label" x="435" y="80" text-anchor="middle">lambda</text>
+              <text class="dgm-sub"   x="435" y="98" text-anchor="middle">your handler</text>
+
+              <rect class="dgm-box" x="520" y="60" width="66" height="50" rx="9" />
+              <text class="dgm-sub" x="553" y="82" text-anchor="middle">IResult</text>
+              <text class="dgm-sub" x="553" y="98" text-anchor="middle">200/404</text>
+
+              <line class="dgm-line" x1="124" y1="85" x2="158" y2="85" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="340" y1="85" x2="368" y2="85" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="500" y1="85" x2="518" y2="85" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Parameters are bound from route, query, body and DI; the result sets the response.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — Program.cs</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">var app = builder.Build();
+
+// Group shares a prefix + policies + filters.
+var products = app.MapGroup("/api/v1/products").RequireAuthorization();
+
+// id ← route, catalog ← DI; return an IResult to control the status code.
+products.MapGet("/{id:int}", async (int id, ICatalog catalog) =&gt;
+{
+    Product? p = await catalog.FindAsync(id);
+    return p is null ? Results.NotFound() : Results.Ok(p);
+});
+
+// Complex type ← JSON body; returns 201 Created with a Location header.
+products.MapPost("/", async (CreateProduct dto, ICatalog catalog) =&gt;
+{
+    int id = await catalog.AddAsync(dto);
+    return Results.Created($"/api/v1/products/{id}", new { id });
+})
+.AddEndpointFilter&lt;ValidationFilter&lt;CreateProduct&gt;&gt;(); // cross-cutting validation
+
+app.Run();</code></pre>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Minimal APIs define endpoints as lambdas via <code>MapGet/MapPost</code> — no controllers, minimal boilerplate.</li>
+              <li>Parameters bind automatically from route, query, JSON body, and DI; return a value or an <code>IResult</code> for the status code.</li>
+              <li>Use <code>MapGroup</code> for shared prefixes/policies and endpoint filters for cross-cutting concerns; pick controllers when you want MVC’s richer conventions.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/middleware-pipeline.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Middleware Pipeline</span>
+            </a>
+            <a class="related-card" href="../dotnet/dependency-injection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Dependency Injection</span>
+            </a>
+            <a class="related-card" href="../dotnet/grpc.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">gRPC</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Minimal APIs vs controllers — when would you choose each?”</em> Minimal APIs for small,
+              focused services (less ceremony, faster startup); controllers when you want MVC conventions,
+              filters, and a large, structured surface. Show you understand <strong>parameter binding from
+              DI</strong> — it’s the part that surprises people.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

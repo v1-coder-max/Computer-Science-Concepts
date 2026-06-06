@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Load Balancers &amp; Reverse Proxies — DevLens</title>
+  <meta name="description" content="How load balancers spread traffic across servers for scale and high availability — Layer 4 vs Layer 7, balancing algorithms, health checks, sticky sessions, and the reverse proxy role." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="load-balancers" data-title="Load Balancers & Reverse Proxies">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Load Balancers &amp; Reverse Proxies</h1>
+          <p class="lede">
+            One server can’t serve everyone — and shouldn’t be a single point of failure. A load balancer spreads
+            traffic across many servers and quietly routes around the dead ones.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#load-balancer</span>
+            <span class="tag">#reverse-proxy</span>
+            <span class="tag">#scaling</span>
+            <span class="tag">#high-availability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>load balancer</strong> sits in front of a pool of identical servers and distributes incoming
+            requests among them. It buys you two things at once: <strong>scale</strong> (add servers to handle more
+            traffic) and <strong>high availability</strong> (if one server dies, traffic just goes to the others).
+            It runs continuous <strong>health checks</strong> and pulls unhealthy servers out of rotation
+            automatically.
+          </p>
+          <p>It works at one of two layers:</p>
+          <ul>
+            <li><strong>Layer 4 (transport)</strong> — routes by IP/port without looking inside the request. Very fast, protocol-agnostic.</li>
+            <li><strong>Layer 7 (application)</strong> — understands HTTP, so it can route by URL/header/cookie, terminate TLS, and do content-based routing. More flexible, slightly more work.</li>
+          </ul>
+          <p>How it picks a server — the <strong>algorithm</strong>:</p>
+          <ul>
+            <li><strong>Round-robin</strong> — next server each time (simple, even).</li>
+            <li><strong>Least connections</strong> — the least-busy server (good for uneven request costs).</li>
+            <li><strong>IP hash</strong> — same client → same server (a form of stickiness).</li>
+            <li><strong>Weighted</strong> — bigger servers get more traffic.</li>
+          </ul>
+          <p>
+            A closely related concept is the <strong>reverse proxy</strong> (nginx, HAProxy): it fronts your
+            servers and can also do TLS termination, caching, compression, and routing — load balancing is one of
+            its jobs. (Contrast a <em>forward</em> proxy, which sits in front of <em>clients</em>.) If your app
+            keeps server-side session state, you’ll need <strong>sticky sessions</strong> or, better, a shared
+            session store so any server can handle any request.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every large site runs behind load balancers — an AWS <strong>ALB</strong>, nginx, or HAProxy — spreading
+              millions of requests across fleets of stateless app servers. During a deploy, new servers are added to
+              the pool and pass health checks before receiving traffic (zero-downtime rollout); a crashing server is
+              ejected within seconds so users never notice. This is also why apps push session state into Redis: with
+              no sticky requirement, the balancer is free to send each request to <em>any</em> healthy server.
+            </p>
+          </div>
+
+          <h2>One door, many servers</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Load balancer distributing to a server pool">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="64" width="100" height="44" rx="9"/><text class="dgm-sub" x="70" y="90" text-anchor="middle">clients</text>
+              <rect class="dgm-box-accent" x="200" y="58" width="150" height="56" rx="10"/><text class="dgm-label" x="275" y="82" text-anchor="middle">Load Balancer</text><text class="dgm-sub" x="275" y="100" text-anchor="middle">+ health checks</text>
+              <rect class="dgm-box" x="430" y="14" width="150" height="34" rx="8"/><text class="dgm-sub" x="505" y="36" text-anchor="middle">server 1 ✓</text>
+              <rect class="dgm-box" x="430" y="62" width="150" height="34" rx="8"/><text class="dgm-sub" x="505" y="84" text-anchor="middle">server 2 ✓</text>
+              <rect x="430" y="110" width="150" height="34" rx="8" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)"/><text x="505" y="132" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">server 3 ✗ (ejected)</text>
+              <line class="dgm-line" x1="120" y1="86" x2="198" y2="86" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="350" y1="78" x2="428" y2="32" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="350" y1="86" x2="428" y2="79" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="350" y1="94" x2="428" y2="127" stroke-dasharray="3 3"/>
+            </svg>
+            <figcaption>Figure 1 — Traffic spreads across healthy servers; unhealthy ones are removed automatically.</figcaption>
+          </figure>
+
+          <h2>In config (nginx reverse proxy + LB)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">nginx</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-nginx">upstream app {
+    least_conn;                      # algorithm: send to the least-busy server
+    server 10.0.0.11:8080;
+    server 10.0.0.12:8080;
+    server 10.0.0.13:8080 weight=2;  # bigger box gets more traffic
+}
+
+server {
+    listen 443 ssl;                  # L7: terminate TLS here
+    location / {
+        proxy_pass http://app;       # reverse-proxy + load-balance to the pool
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A load balancer gives scale + high availability and ejects unhealthy servers via health checks.</li>
+              <li>L4 (fast, IP/port) vs L7 (HTTP-aware: route by URL/header, TLS termination); algorithms: round-robin, least-connections, IP hash, weighted.</li>
+              <li>Keep servers stateless (shared session store) so you don’t need sticky sessions.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/cdn.html"><span class="rc-cat">System Design</span><span class="rc-title">CDNs</span></a>
+            <a class="related-card" href="../system-design/sessions.html"><span class="rc-cat">System Design</span><span class="rc-title">How Sessions Work</span></a>
+            <a class="related-card" href="../dotnet/health-checks.html"><span class="rc-cat">.NET</span><span class="rc-title">Health Checks</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              In any “design a scalable system” question, the load balancer is your first box. Know <strong>L4 vs
+              L7</strong>, name a couple of algorithms, and raise <strong>health checks</strong> and statelessness
+              (shared session store vs sticky sessions). Distinguishing reverse vs forward proxy is a nice extra.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

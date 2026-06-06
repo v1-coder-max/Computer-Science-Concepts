@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encapsulation — DevLens</title>
+  <meta name="description" content="Encapsulation bundles data with the methods that guard it and hides internal state behind a controlled public surface — protecting invariants with access modifiers and properties." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="oop" data-concept="encapsulation" data-title="Encapsulation">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Encapsulation</h1>
+          <p class="lede">
+            Bundle data with the code that protects it, and expose only a controlled surface — so an object
+            can <strong>guarantee its own rules</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#oop</span>
+            <span class="tag">#encapsulation</span>
+            <span class="tag">#invariants</span>
+            <span class="tag">#access-modifiers</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Encapsulation is the first pillar of OOP: keep an object’s <strong>state private</strong> and let
+            the outside world touch it only through methods/properties the object controls. The fields are the
+            object’s business; the public surface is the contract. That control is what lets a class enforce an
+            <strong>invariant</strong> — a rule that must always hold (a balance can’t go negative, an email is
+            always valid).
+          </p>
+          <p>
+            In C# you express it with <strong>access modifiers</strong> (<code>private</code>,
+            <code>protected</code>, <code>internal</code>, <code>public</code>) and <strong>properties</strong>
+            that wrap fields with validation. If anyone could reach in and set the field directly, the rule could
+            be broken from anywhere; with encapsulation, every change funnels through one place you can trust.
+          </p>
+          <p>
+            It’s often confused with <strong>abstraction</strong>. Encapsulation hides the <em>data and how
+            it’s protected</em>; abstraction hides <em>complexity</em> behind a simpler model. They work together
+            but answer different questions.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A banking core at any fintech models an account so that <code>Balance</code> can never be set
+              directly — you call <code>Deposit</code> or <code>Withdraw</code>, which reject negative amounts and
+              overdrafts <em>in one place</em>. Multiply that across a system: every rule lives with the data it
+              guards, so a careless caller elsewhere physically can’t corrupt the balance. That’s the same reason
+              .NET’s own types (<code>List&lt;T&gt;</code> hiding its internal array, <code>DateTime</code> being
+              immutable) keep their fields private.
+            </p>
+          </div>
+
+          <h2>A guarded object</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Encapsulation: private state behind a public surface">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="200" y="30" width="200" height="120" rx="12" />
+              <text class="dgm-label" x="300" y="54" text-anchor="middle">BankAccount</text>
+              <rect x="224" y="70" width="152" height="26" rx="5" fill="var(--c-warning)" fill-opacity="0.14" stroke="var(--c-warning)" />
+              <text x="300" y="88" text-anchor="middle" fill="var(--c-warning)" style="font:600 12px var(--font-sans)">private _balance 🔒</text>
+              <rect class="dgm-box" x="224" y="104" width="152" height="24" rx="5" />
+              <text class="dgm-sub" x="300" y="121" text-anchor="middle">Deposit() / Withdraw()</text>
+
+              <rect class="dgm-box" x="20" y="78" width="120" height="40" rx="9" />
+              <text class="dgm-sub" x="80" y="102" text-anchor="middle">caller</text>
+              <line class="dgm-line" x1="140" y1="98" x2="222" y2="116" marker-end="url(#arrow)" />
+              <text class="dgm-sub" x="170" y="86" text-anchor="middle">only door ✓</text>
+
+              <line class="dgm-line" x1="140" y1="80" x2="222" y2="83" stroke-dasharray="4 4" />
+              <text class="dgm-sub" x="175" y="64" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">direct write ✗</text>
+            </svg>
+            <figcaption>Figure 1 — State stays private; all changes go through methods that enforce the rules.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class BankAccount
+{
+    private decimal _balance;                 // hidden state — no one can poke it directly
+
+    public decimal Balance =&gt; _balance;       // read-only to the outside
+
+    public void Deposit(decimal amount)
+    {
+        if (amount &lt;= 0) throw new ArgumentOutOfRangeException(nameof(amount));
+        _balance += amount;                   // the invariant is enforced in ONE place
+    }
+
+    public void Withdraw(decimal amount)
+    {
+        if (amount &lt;= 0) throw new ArgumentOutOfRangeException(nameof(amount));
+        if (amount &gt; _balance) throw new InvalidOperationException("Insufficient funds");
+        _balance -= amount;
+    }
+}
+
+var acct = new BankAccount();
+acct.Deposit(100);
+// acct._balance = -50;   // ❌ won't compile: the field is private, the rule can't be bypassed</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Keep state <code>private</code> and expose a controlled surface so the object enforces its own invariants.</li>
+              <li>Properties + access modifiers funnel every change through one trustworthy place.</li>
+              <li>Encapsulation hides <em>data</em>; abstraction hides <em>complexity</em> — related but distinct.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../oop/abstraction.html"><span class="rc-cat">OOP</span><span class="rc-title">Abstraction</span></a>
+            <a class="related-card" href="../oop/coupling-cohesion.html"><span class="rc-cat">OOP</span><span class="rc-title">Coupling &amp; Cohesion</span></a>
+            <a class="related-card" href="../oop/solid.html"><span class="rc-cat">OOP</span><span class="rc-title">SOLID Principles</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Encapsulation vs abstraction?”</em> Encapsulation = hiding state and bundling it with the
+              code that protects it (the <em>how</em> and the data); abstraction = exposing a simple model and
+              hiding complexity (the <em>what</em>). Mention that the real payoff is <strong>enforcing invariants
+              in one place</strong>.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

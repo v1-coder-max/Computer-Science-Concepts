@@ -1,0 +1,548 @@
+[
+  {
+    "title": "HTTP Fundamentals",
+    "category": "web-fundamentals",
+    "tags": ["http", "methods", "idempotency", "http2", "http3", "request-response"],
+    "description": "The stateless request/response model, methods and idempotency, headers, and the evolution from HTTP/1.1 to HTTP/2 and HTTP/3.",
+    "url": "concepts/web-fundamentals/http.html"
+  },
+  {
+    "title": "HTTP Status Codes",
+    "category": "web-fundamentals",
+    "tags": ["http", "status-codes", "rest", "api", "401-403", "301-302"],
+    "description": "The five classes of status codes and the ones that matter: 200/201/204, 301 vs 302, 304, 400/401/403/404/409/422/429, and 5xx.",
+    "url": "concepts/web-fundamentals/http-status-codes.html"
+  },
+  {
+    "title": "HTTPS & TLS",
+    "category": "web-fundamentals",
+    "tags": ["https", "tls", "certificates", "encryption", "handshake", "mitm"],
+    "description": "How TLS secures the web: the handshake that uses asymmetric keys to agree a symmetric session key, certificates, and stopping man-in-the-middle.",
+    "url": "concepts/web-fundamentals/https-tls.html"
+  },
+  {
+    "title": "How Cookies Work",
+    "category": "web-fundamentals",
+    "tags": ["cookies", "httponly", "samesite", "secure", "state", "csrf"],
+    "description": "How Set-Cookie and the Cookie header carry small key/values per request, and the attributes that matter: HttpOnly, Secure, SameSite, expiry.",
+    "url": "concepts/web-fundamentals/cookies.html"
+  },
+  {
+    "title": "JWT & Stateless Auth",
+    "category": "web-fundamentals",
+    "tags": ["jwt", "stateless-auth", "claims", "bearer-token", "signature", "oauth"],
+    "description": "The header.payload.signature structure, why a JWT is signed (not encrypted), stateless validation with no lookup, and the revocation trade-off.",
+    "url": "concepts/web-fundamentals/jwt.html"
+  },
+  {
+    "title": "CORS",
+    "category": "web-fundamentals",
+    "tags": ["cors", "same-origin-policy", "preflight", "browser-security", "options", "spa"],
+    "description": "The same-origin policy, why the browser (not the server) blocks cross-origin reads, the preflight OPTIONS request, and configuring CORS in ASP.NET Core.",
+    "url": "concepts/web-fundamentals/cors.html"
+  },
+  {
+    "title": "REST API Design",
+    "category": "web-fundamentals",
+    "tags": ["rest", "api-design", "resources", "stateless", "richardson", "uniform-interface"],
+    "description": "REST as a style: resources as nouns identified by URIs, HTTP methods as actions, statelessness, status codes, and the Richardson maturity model.",
+    "url": "concepts/web-fundamentals/rest.html"
+  },
+  {
+    "title": "How DNS Works",
+    "category": "web-fundamentals",
+    "tags": ["dns", "resolution", "records", "ttl", "nameserver", "geodns"],
+    "description": "How a domain resolves to an IP through resolver, root, TLD and authoritative servers, the common record types, and the role of TTL and caching.",
+    "url": "concepts/web-fundamentals/dns.html"
+  },
+  {
+    "title": "OAuth 2.0 & OpenID Connect",
+    "category": "web-fundamentals",
+    "tags": ["oauth", "oidc", "authorization", "pkce", "access-token", "scopes"],
+    "description": "Delegated authorization without sharing your password: the Authorization Code flow with PKCE, scopes, tokens, and how OpenID Connect adds identity.",
+    "url": "concepts/web-fundamentals/oauth.html"
+  },
+  {
+    "title": "WebSockets vs Polling vs SSE",
+    "category": "web-fundamentals",
+    "tags": ["websockets", "sse", "polling", "real-time", "full-duplex", "signalr"],
+    "description": "Four ways to push real-time data to the browser — short polling, long polling, Server-Sent Events, and WebSockets — and when to choose each.",
+    "url": "concepts/web-fundamentals/websockets.html"
+  },
+  {
+    "title": "HTTP Caching",
+    "category": "web-fundamentals",
+    "tags": ["caching", "cache-control", "etag", "performance", "304", "cache-busting"],
+    "description": "How HTTP caching avoids re-fetching: Cache-Control freshness, ETag/Last-Modified validation and 304, no-cache vs no-store, and cache busting.",
+    "url": "concepts/web-fundamentals/http-caching.html"
+  },
+  {
+    "title": "Content Negotiation",
+    "category": "web-fundamentals",
+    "tags": ["content-negotiation", "accept", "compression", "vary", "media-types", "gzip"],
+    "description": "How client and server agree on the best response representation using Accept headers — media types, compression, and the Vary header.",
+    "url": "concepts/web-fundamentals/content-negotiation.html"
+  },
+  {
+    "title": "How Sessions Work",
+    "category": "system-design",
+    "tags": ["sessions", "cookies", "authentication", "state", "http", "redis"],
+    "description": "How a server remembers who you are across stateless HTTP requests using an opaque session ID in a cookie.",
+    "url": "concepts/system-design/sessions.html"
+  },
+  {
+    "title": "Load Balancers & Reverse Proxies",
+    "category": "system-design",
+    "tags": ["load-balancer", "reverse-proxy", "scaling", "high-availability", "layer-7", "health-checks"],
+    "description": "How load balancers spread traffic for scale and HA — Layer 4 vs Layer 7, balancing algorithms, health checks, sticky sessions, and the reverse proxy role.",
+    "url": "concepts/system-design/load-balancers.html"
+  },
+  {
+    "title": "CDNs",
+    "category": "system-design",
+    "tags": ["cdn", "edge-caching", "latency", "origin-offload", "geodns", "static-assets"],
+    "description": "How a CDN caches content on edge servers close to users to cut latency and offload the origin — edge caching, push vs pull, invalidation, and routing.",
+    "url": "concepts/system-design/cdn.html"
+  },
+  {
+    "title": "Caching at Scale",
+    "category": "system-design",
+    "tags": ["caching", "redis", "memcached", "hit-ratio", "distributed-cache", "layers"],
+    "description": "The layers of caching in a real system — browser, CDN, application, distributed (Redis/Memcached), database — plus hit ratio and Redis vs Memcached.",
+    "url": "concepts/system-design/caching.html"
+  },
+  {
+    "title": "Message Queues (RabbitMQ & Kafka)",
+    "category": "system-design",
+    "tags": ["message-queue", "kafka", "rabbitmq", "async", "decoupling", "idempotency"],
+    "description": "How message queues decouple producers from consumers, smooth spikes and add resilience, plus queue (RabbitMQ) vs log/stream (Kafka) and delivery guarantees.",
+    "url": "concepts/system-design/message-queues.html"
+  },
+  {
+    "title": "Rate Limiting Algorithms",
+    "category": "system-design",
+    "tags": ["rate-limiting", "token-bucket", "throttling", "429", "leaky-bucket", "sliding-window"],
+    "description": "How to cap request rates fairly: fixed window, sliding window, token bucket and leaky bucket, returning 429 with Retry-After, and distributed limits with Redis.",
+    "url": "concepts/system-design/rate-limiting.html"
+  },
+  {
+    "title": "Consistent Hashing",
+    "category": "system-design",
+    "tags": ["consistent-hashing", "distribution", "sharding", "virtual-nodes", "ring", "rebalancing"],
+    "description": "Why hash(key) % N falls apart when N changes, and how consistent hashing maps keys and nodes onto a ring so resizing moves only a small fraction of keys.",
+    "url": "concepts/system-design/consistent-hashing.html"
+  },
+  {
+    "title": "CAP Theorem",
+    "category": "system-design",
+    "tags": ["cap", "distributed-systems", "consistency", "availability", "cp-vs-ap", "pacelc"],
+    "description": "Why a distributed system must choose between Consistency and Availability during a network partition — CP vs AP with examples, plus PACELC.",
+    "url": "concepts/system-design/cap-theorem.html"
+  },
+  {
+    "title": "Horizontal vs Vertical Scaling",
+    "category": "system-design",
+    "tags": ["scaling", "scale-out", "scale-up", "stateless", "elasticity", "autoscaling"],
+    "description": "Scale up (a bigger machine) vs scale out (more machines): the ceiling and single point of failure of vertical, why horizontal needs stateless services.",
+    "url": "concepts/system-design/horizontal-vs-vertical-scaling.html"
+  },
+  {
+    "title": "How Twitter's Timeline Works",
+    "category": "system-design",
+    "tags": ["fan-out", "timeline", "feed", "case-study", "push-vs-pull", "celebrity-problem"],
+    "description": "The fan-out problem behind a home timeline: fan-out-on-write (push) vs fan-out-on-read (pull), the celebrity problem, and the hybrid approach.",
+    "url": "concepts/system-design/how-twitter-timeline.html"
+  },
+  {
+    "title": "How Instagram's Feed Works",
+    "category": "system-design",
+    "tags": ["feed", "ranking", "cdn", "case-study", "ml-ranking", "sharded-ids"],
+    "description": "Beyond fan-out: a ranked feed from candidate generation, ML ranking and CDN-delivered media, plus sharded time-sortable ID generation and caching.",
+    "url": "concepts/system-design/how-instagram-feed.html"
+  },
+  {
+    "title": "How Netflix Streaming Works",
+    "category": "system-design",
+    "tags": ["streaming", "adaptive-bitrate", "cdn", "case-study", "hls", "transcoding"],
+    "description": "Video at scale: adaptive bitrate streaming with chunked multi-bitrate encodes, a CDN at the edge, a transcoding pipeline, and a microservices control plane.",
+    "url": "concepts/system-design/how-netflix-streaming.html"
+  },
+  {
+    "title": "How Gmail Works",
+    "category": "system-design",
+    "tags": ["email", "search-index", "storage", "case-study", "inverted-index", "labels"],
+    "description": "Webmail at scale: sharded storage, an inverted index for instant search, real-time push delivery, the label model, and ML spam filtering.",
+    "url": "concepts/system-design/how-gmail.html"
+  },
+  {
+    "title": "Async / Await Internals",
+    "category": "dotnet",
+    "tags": ["async", "await", "task", "threading", "state-machine", "concurrency"],
+    "description": "What async/await really does in .NET: the compiler state machine, freeing the thread on I/O, and avoiding deadlocks.",
+    "url": "concepts/dotnet/async-await.html"
+  },
+  {
+    "title": "The CLR (Common Language Runtime)",
+    "category": "dotnet",
+    "tags": ["clr", "runtime", "il", "managed-code", "coreclr", "cts"],
+    "description": ".NET's virtual machine: loads assemblies, JIT-compiles IL to native, runs the GC, and enforces type safety.",
+    "url": "concepts/dotnet/clr.html"
+  },
+  {
+    "title": "JIT Compilation",
+    "category": "dotnet",
+    "tags": ["jit", "tiered-compilation", "readytorun", "performance", "startup"],
+    "description": "How the .NET JIT turns IL into native code on first call, plus tiered compilation, ReadyToRun and how JIT differs from AOT.",
+    "url": "concepts/dotnet/jit-compilation.html"
+  },
+  {
+    "title": "Garbage Collection",
+    "category": "dotnet",
+    "tags": ["gc", "memory", "generations", "idisposable", "loh", "server-gc"],
+    "description": "How the .NET GC reclaims memory: the generational heap (gen0/1/2), mark-sweep-compact, the LOH, and IDisposable.",
+    "url": "concepts/dotnet/garbage-collection.html"
+  },
+  {
+    "title": "Memory Management",
+    "category": "dotnet",
+    "tags": ["memory", "stack-vs-heap", "boxing", "allocations", "span", "value-types"],
+    "description": "Stack vs heap, value vs reference types, boxing, and cutting allocations with structs, Span<T>, stackalloc and ArrayPool.",
+    "url": "concepts/dotnet/memory-management.html"
+  },
+  {
+    "title": "Assemblies & Metadata",
+    "category": "dotnet",
+    "tags": ["assemblies", "metadata", "reflection", "manifest", "assemblyloadcontext", "dll"],
+    "description": "What a .NET assembly is — IL, metadata and a manifest in a .dll — the unit of deployment, plus reflection and AssemblyLoadContext.",
+    "url": "concepts/dotnet/assemblies.html"
+  },
+  {
+    "title": "Task vs Thread",
+    "category": "dotnet",
+    "tags": ["task", "thread", "tpl", "concurrency", "task-run", "thread-pool"],
+    "description": "Why a Task isn't a Thread: Thread is a heavy OS resource you manage; Task is a lightweight future that often uses no thread for I/O.",
+    "url": "concepts/dotnet/task-vs-thread.html"
+  },
+  {
+    "title": "The Thread Pool",
+    "category": "dotnet",
+    "tags": ["thread-pool", "starvation", "scalability", "concurrency", "task-run", "workers"],
+    "description": "How .NET reuses worker threads for short work items, how the pool grows under load, and why blocking causes thread-pool starvation.",
+    "url": "concepts/dotnet/threadpool.html"
+  },
+  {
+    "title": "IHostedService & BackgroundService",
+    "category": "dotnet",
+    "tags": ["hosted-service", "background-worker", "generic-host", "graceful-shutdown", "worker", "cancellation"],
+    "description": "Running background work tied to the app lifetime with BackgroundService: the ExecuteAsync loop, graceful shutdown, and scoped services.",
+    "url": "concepts/dotnet/ihostedservice.html"
+  },
+  {
+    "title": "The Middleware Pipeline",
+    "category": "dotnet",
+    "tags": ["middleware", "aspnetcore", "pipeline", "request", "onion", "short-circuit"],
+    "description": "How ASP.NET Core runs every request through an ordered middleware pipeline — the onion model, short-circuiting, and why order matters.",
+    "url": "concepts/dotnet/middleware-pipeline.html"
+  },
+  {
+    "title": "Dependency Injection",
+    "category": "dotnet",
+    "tags": ["di", "ioc", "lifetimes", "singleton", "scoped", "transient", "testability"],
+    "description": "How the .NET DI container resolves dependency graphs, the singleton/scoped/transient lifetimes, and the captive-dependency trap.",
+    "url": "concepts/dotnet/dependency-injection.html"
+  },
+  {
+    "title": "The Configuration System",
+    "category": "dotnet",
+    "tags": ["configuration", "options-pattern", "appsettings", "environments", "ioptions", "secrets"],
+    "description": "How .NET layers configuration from JSON, environment files, env vars and secrets into one IConfiguration, with the typed Options pattern.",
+    "url": "concepts/dotnet/configuration.html"
+  },
+  {
+    "title": "Logging (Serilog / NLog)",
+    "category": "dotnet",
+    "tags": ["logging", "structured-logging", "serilog", "nlog", "observability", "ilogger"],
+    "description": "Structured logging in .NET: the ILogger abstraction, providers and sinks, log levels, and why message templates beat string interpolation.",
+    "url": "concepts/dotnet/logging.html"
+  },
+  {
+    "title": "Health Checks",
+    "category": "dotnet",
+    "tags": ["health-checks", "liveness", "readiness", "kubernetes", "probes", "observability"],
+    "description": "How ASP.NET Core health checks tell orchestrators if the app is alive and ready — liveness vs readiness, dependency checks, the /health endpoint.",
+    "url": "concepts/dotnet/health-checks.html"
+  },
+  {
+    "title": "HttpClientFactory",
+    "category": "dotnet",
+    "tags": ["httpclient", "socket-exhaustion", "resilience", "polly", "typed-client", "dns"],
+    "description": "Why newing HttpClient per request exhausts sockets and a forever-singleton goes stale on DNS, and how IHttpClientFactory pools handlers and adds Polly resilience.",
+    "url": "concepts/dotnet/http-client-factory.html"
+  },
+  {
+    "title": "Authentication & Authorization",
+    "category": "dotnet",
+    "tags": ["authentication", "authorization", "claims", "jwt", "policies", "401-403"],
+    "description": "The ASP.NET Core auth pipeline: authentication builds a ClaimsPrincipal; authorization enforces policies. Schemes, claims, and 401 vs 403.",
+    "url": "concepts/dotnet/auth-pipeline.html"
+  },
+  {
+    "title": "Minimal APIs",
+    "category": "dotnet",
+    "tags": ["minimal-apis", "endpoints", "aspnetcore", "microservices", "routing", "iresult"],
+    "description": "ASP.NET Core Minimal APIs: endpoints as lambdas with no controllers, parameter binding from route/query/body/DI, IResult, route groups and filters.",
+    "url": "concepts/dotnet/minimal-apis.html"
+  },
+  {
+    "title": "EF Core Internals",
+    "category": "dotnet",
+    "tags": ["ef-core", "orm", "change-tracking", "n+1", "iqueryable", "asnotracking"],
+    "description": "How EF Core works: the DbContext as a unit of work, the change tracker, LINQ-to-SQL translation, the N+1 problem, and AsNoTracking.",
+    "url": "concepts/dotnet/ef-core-internals.html"
+  },
+  {
+    "title": "SignalR",
+    "category": "dotnet",
+    "tags": ["signalr", "real-time", "websockets", "hubs", "backplane", "push"],
+    "description": "Real-time server-to-client push in .NET: hubs as RPC, transport negotiation (WebSockets first), groups, and the Redis backplane for scale-out.",
+    "url": "concepts/dotnet/signalr.html"
+  },
+  {
+    "title": "gRPC",
+    "category": "dotnet",
+    "tags": ["grpc", "protobuf", "http2", "rpc", "streaming", "microservices"],
+    "description": "Schema-first RPC over HTTP/2 with Protocol Buffers — strongly-typed contracts, four streaming modes, and when to choose it over REST/JSON.",
+    "url": "concepts/dotnet/grpc.html"
+  },
+  {
+    "title": "Blazor Basics",
+    "category": "dotnet",
+    "tags": ["blazor", "components", "webassembly", "spa", "render-modes", "signalr"],
+    "description": "Build interactive web UI in C# with components. Blazor Server (UI over SignalR) vs WebAssembly (C# in the browser), and .NET 8 render modes.",
+    "url": "concepts/dotnet/blazor.html"
+  },
+  {
+    "title": "Span<T> & Memory<T>",
+    "category": "dotnet",
+    "tags": ["span", "memory", "performance", "zero-allocation", "ref-struct", "stackalloc"],
+    "description": "Span<T> is a zero-copy, bounds-checked window over contiguous memory. Why it's allocation-free, the ref-struct rules, and when to use Memory<T>.",
+    "url": "concepts/dotnet/span.html"
+  },
+  {
+    "title": "Records",
+    "category": "dotnet",
+    "tags": ["records", "immutability", "value-equality", "dto", "with-expression", "record-struct"],
+    "description": "C# records: compiler-generated value equality, concise syntax, init-only immutability, and non-destructive 'with' copies for DTOs and value objects.",
+    "url": "concepts/dotnet/records.html"
+  },
+  {
+    "title": "Nullable Reference Types",
+    "category": "dotnet",
+    "tags": ["nullable", "null-safety", "compiler", "flow-analysis", "null-forgiving", "csharp-8"],
+    "description": "How C# nullable reference types track null at compile time — string vs string?, flow analysis, the null-forgiving operator, and why it's not runtime enforcement.",
+    "url": "concepts/dotnet/nullable-reference-types.html"
+  },
+  {
+    "title": "Global Usings",
+    "category": "dotnet",
+    "tags": ["global-usings", "implicit-usings", "csharp-10", "boilerplate", "namespaces"],
+    "description": "How C# 10 global using directives and the SDK's ImplicitUsings remove repeated imports from every file — plus global using static and aliases.",
+    "url": "concepts/dotnet/global-usings.html"
+  },
+  {
+    "title": "Pattern Matching",
+    "category": "dotnet",
+    "tags": ["pattern-matching", "switch-expression", "csharp", "property-pattern", "list-pattern", "type-pattern"],
+    "description": "C# pattern matching: switch expressions, type/property/relational/logical and list patterns — replacing verbose if/else and casts.",
+    "url": "concepts/dotnet/pattern-matching.html"
+  },
+  {
+    "title": "Source Generators",
+    "category": "dotnet",
+    "tags": ["source-generators", "roslyn", "compile-time", "performance", "reflection", "aot"],
+    "description": "Roslyn source generators run at compile time and emit extra C# — replacing runtime reflection for JSON, regex and logging, and enabling AOT.",
+    "url": "concepts/dotnet/source-generators.html"
+  },
+  {
+    "title": "Native AOT",
+    "category": "dotnet",
+    "tags": ["aot", "native", "startup", "trimming", "serverless", "jit"],
+    "description": "Native AOT compiles a .NET app to a self-contained native binary ahead of time — no JIT, instant startup, low memory — and its trade-offs.",
+    "url": "concepts/dotnet/aot-compilation.html"
+  },
+  {
+    "title": "Database Indexing",
+    "category": "database",
+    "tags": ["indexing", "b-tree", "query-performance", "sql", "clustered", "covering-index"],
+    "description": "How an index turns a full table scan (O(n)) into a B-tree seek (O(log n)) — clustered, non-clustered and covering indexes.",
+    "url": "concepts/database/indexing.html"
+  },
+  {
+    "title": "Reading Execution Plans",
+    "category": "database",
+    "tags": ["execution-plan", "query-optimization", "statistics", "performance", "seek-vs-scan", "parameter-sniffing"],
+    "description": "How the optimizer turns SQL into a plan using statistics, how to read it (seek vs scan, joins, key lookups), and why stale stats and parameter sniffing hurt.",
+    "url": "concepts/database/execution-plans.html"
+  },
+  {
+    "title": "Transactions & ACID",
+    "category": "database",
+    "tags": ["transactions", "acid", "durability", "atomicity", "consistency", "wal"],
+    "description": "What a transaction guarantees — Atomicity, Consistency, Isolation, Durability — and how commit/rollback and the write-ahead log survive a crash.",
+    "url": "concepts/database/transactions-acid.html"
+  },
+  {
+    "title": "Isolation Levels",
+    "category": "database",
+    "tags": ["isolation", "concurrency", "mvcc", "acid", "dirty-read", "phantom"],
+    "description": "The four SQL isolation levels and the read phenomena they prevent (dirty, non-repeatable, phantom), plus snapshot/MVCC and the consistency-vs-concurrency trade-off.",
+    "url": "concepts/database/isolation-levels.html"
+  },
+  {
+    "title": "Deadlocks",
+    "category": "database",
+    "tags": ["deadlock", "locking", "concurrency", "retry", "lock-ordering", "victim"],
+    "description": "Why two transactions can lock each other forever: the circular wait, how the DB kills a victim, and prevention via lock ordering, short transactions and retries.",
+    "url": "concepts/database/deadlocks.html"
+  },
+  {
+    "title": "Normalization vs Denormalization",
+    "category": "database",
+    "tags": ["normalization", "schema-design", "denormalization", "trade-offs", "3nf", "update-anomaly"],
+    "description": "Normalization removes redundancy for write integrity (1NF-3NF); denormalization duplicates data for read speed. The trade-off and when to use each.",
+    "url": "concepts/database/normalization.html"
+  },
+  {
+    "title": "Connection Pooling",
+    "category": "database",
+    "tags": ["connection-pool", "performance", "ado-net", "exhaustion", "timeout", "dispose"],
+    "description": "Why opening a DB connection is expensive, how a pool reuses open connections, what causes pool exhaustion, and why disposing matters.",
+    "url": "concepts/database/connection-pooling.html"
+  },
+  {
+    "title": "Partitioning & Sharding",
+    "category": "database",
+    "tags": ["sharding", "partitioning", "scaling", "shard-key", "hotspot", "consistent-hashing"],
+    "description": "Scaling by splitting data: vertical vs horizontal partitioning, sharding across nodes by a shard key, avoiding hotspots, and the cost of cross-shard queries.",
+    "url": "concepts/database/sharding.html"
+  },
+  {
+    "title": "Replication",
+    "category": "database",
+    "tags": ["replication", "read-replicas", "high-availability", "consistency", "replication-lag", "failover"],
+    "description": "Leader-follower vs multi-leader, synchronous vs asynchronous, replication lag and eventual consistency, read replicas for scaling reads, and failover.",
+    "url": "concepts/database/replication.html"
+  },
+  {
+    "title": "Caching Strategies",
+    "category": "database",
+    "tags": ["caching", "cache-aside", "write-through", "write-back", "invalidation", "ttl"],
+    "description": "The main caching patterns — cache-aside, read-through, write-through, write-back, write-around — how they trade freshness for speed, and invalidation.",
+    "url": "concepts/database/caching-strategies.html"
+  },
+  {
+    "title": "NoSQL Patterns",
+    "category": "database",
+    "tags": ["nosql", "document", "key-value", "graph", "wide-column", "base"],
+    "description": "The four NoSQL families — document, key-value, wide-column, graph — what each is good at, denormalization and horizontal scale, and ACID vs BASE.",
+    "url": "concepts/database/nosql-patterns.html"
+  },
+  {
+    "title": "Redis Internals",
+    "category": "database",
+    "tags": ["redis", "in-memory", "data-structures", "cache", "sorted-set", "single-threaded"],
+    "description": "Why Redis is fast: an in-memory, single-threaded data-structure store. Strings, hashes, lists, sets, sorted sets, streams, persistence, and common uses.",
+    "url": "concepts/database/redis.html"
+  },
+  {
+    "title": "SQL vs NoSQL",
+    "category": "database",
+    "tags": ["sql-vs-nosql", "acid-vs-base", "scaling", "decision", "polyglot-persistence", "relational"],
+    "description": "When to choose relational vs NoSQL: structure, relationships and ACID vs flexible schema, horizontal scale and BASE — and why the answer is usually both.",
+    "url": "concepts/database/sql-vs-nosql.html"
+  },
+  {
+    "title": "Stored Procedures vs ORMs",
+    "category": "database",
+    "tags": ["stored-procedures", "orm", "ef-core", "trade-offs", "dapper", "n+1"],
+    "description": "The trade-offs between stored procedures (precompiled SQL in the DB) and ORMs like EF Core, plus the pragmatic middle ground of a micro-ORM for hot paths.",
+    "url": "concepts/database/stored-procedures-vs-orm.html"
+  },
+  {
+    "title": "SOLID Principles",
+    "category": "oop",
+    "tags": ["oop", "solid", "design", "maintainability", "dependency-inversion", "srp"],
+    "description": "The five SOLID principles explained in plain English with C# examples that keep code easy to change.",
+    "url": "concepts/oop/solid.html"
+  },
+  {
+    "title": "Encapsulation",
+    "category": "oop",
+    "tags": ["oop", "encapsulation", "invariants", "access-modifiers", "pillar", "information-hiding"],
+    "description": "Bundling data with the methods that guard it and hiding state behind a controlled surface to protect invariants.",
+    "url": "concepts/oop/encapsulation.html"
+  },
+  {
+    "title": "Abstraction",
+    "category": "oop",
+    "tags": ["oop", "abstraction", "interfaces", "contracts", "pillar", "decoupling"],
+    "description": "Exposing the essential 'what' and hiding the complex 'how' behind a contract so callers depend on a simple surface.",
+    "url": "concepts/oop/abstraction.html"
+  },
+  {
+    "title": "Inheritance",
+    "category": "oop",
+    "tags": ["oop", "inheritance", "is-a", "virtual-override", "pillar", "base-class"],
+    "description": "Modeling an is-a relationship where a derived class reuses and specializes a base — virtual/override, sealed, and favoring composition.",
+    "url": "concepts/oop/inheritance.html"
+  },
+  {
+    "title": "Polymorphism",
+    "category": "oop",
+    "tags": ["oop", "polymorphism", "dynamic-dispatch", "open-closed", "pillar", "overriding"],
+    "description": "One interface, many behaviors: runtime dispatch via virtual/override versus compile-time overloading and generics.",
+    "url": "concepts/oop/polymorphism.html"
+  },
+  {
+    "title": "Composition vs Inheritance",
+    "category": "oop",
+    "tags": ["oop", "composition", "has-a", "design", "fragile-base-class", "strategy"],
+    "description": "Why favor composition over inheritance: has-a beats is-a for flexibility, avoids fragile base classes, and swaps behavior at runtime.",
+    "url": "concepts/oop/composition-vs-inheritance.html"
+  },
+  {
+    "title": "Abstract Class vs Interface",
+    "category": "oop",
+    "tags": ["oop", "interface", "abstract-class", "design", "default-interface-methods", "contracts"],
+    "description": "When to use an abstract class vs an interface in C#: shared implementation and state vs a pure capability contract, and single vs multiple inheritance.",
+    "url": "concepts/oop/abstract-vs-interface.html"
+  },
+  {
+    "title": "Coupling & Cohesion",
+    "category": "oop",
+    "tags": ["oop", "coupling", "cohesion", "design", "god-class", "maintainability"],
+    "description": "Keep coupling (dependency between modules) low and cohesion (focus within a module) high — the two forces behind maintainable design.",
+    "url": "concepts/oop/coupling-cohesion.html"
+  },
+  {
+    "title": "Law of Demeter",
+    "category": "oop",
+    "tags": ["oop", "law-of-demeter", "least-knowledge", "coupling", "train-wreck", "tell-dont-ask"],
+    "description": "The principle of least knowledge: only talk to immediate friends and avoid train-wreck chains like a.GetB().GetC().Do() to cut coupling.",
+    "url": "concepts/oop/law-of-demeter.html"
+  },
+  {
+    "title": "DRY, KISS & YAGNI",
+    "category": "oop",
+    "tags": ["dry", "kiss", "yagni", "pragmatism", "design", "over-engineering"],
+    "description": "Three pragmatic heuristics: one source of truth (DRY), keep it simple (KISS), don't build for imagined futures (YAGNI) — and their tension.",
+    "url": "concepts/oop/dry-kiss-yagni.html"
+  },
+  {
+    "title": "Singleton Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "creational", "singleton", "thread-safety", "gof", "lazy"],
+    "description": "Guaranteeing one shared instance in C# with a thread-safe Lazy<T> — and why DI's singleton lifetime is usually better.",
+    "url": "concepts/csharp/singleton-pattern.html"
+  }
+]

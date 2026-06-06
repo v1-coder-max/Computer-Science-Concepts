@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How Netflix Streaming Works — DevLens</title>
+  <meta name="description" content="How video streams at scale: adaptive bitrate streaming with chunked, multi-bitrate encodes, a purpose-built CDN at the edge, a transcoding pipeline, and a microservices control plane." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="how-netflix-streaming" data-title="How Netflix Streaming Works">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>How Netflix Streaming Works</h1>
+          <p class="lede">
+            Delivering smooth 4K video to hundreds of millions of devices on wildly varying networks comes down to
+            two ideas: <strong>adaptive bitrate streaming</strong> and a <strong>CDN at the edge</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#streaming</span>
+            <span class="tag">#adaptive-bitrate</span>
+            <span class="tag">#cdn</span>
+            <span class="tag">#case-study</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            You can’t ship one giant video file — networks vary by the second and devices differ. The solution is
+            <strong>Adaptive Bitrate Streaming (ABR)</strong>, used by formats like <strong>HLS</strong> and
+            <strong>DASH</strong>:
+          </p>
+          <ul>
+            <li><strong>Encode once into many versions</strong> — each title is transcoded into multiple resolutions/bitrates (e.g. 240p … 4K).</li>
+            <li><strong>Split into small chunks</strong> — each version is cut into a few-second <strong>segments</strong>, listed in a <strong>manifest</strong> file.</li>
+            <li><strong>The client adapts</strong> — the player measures your bandwidth and, for each chunk, requests the highest quality it can sustain. Network dips → it drops to a lower bitrate mid-stream; recovers → it bumps back up. That’s why quality fluctuates but playback rarely stalls.</li>
+          </ul>
+          <p>
+            The chunks are served from a <strong>CDN edge</strong> close to you (Netflix runs its own,
+            <strong>Open Connect</strong>, with appliances inside ISPs), and popular titles are
+            <strong>pre-positioned</strong> at the edge before peak hours. Behind all this, a <strong>microservices
+            control plane</strong> handles the parts that aren’t the video bytes — login, the browse/recommendations
+            UI, playback authorization, DRM, and telemetry — so the heavy lifting (serving video) is decoupled from
+            the smart bits (deciding what to play).
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Netflix</strong> at peak is a double-digit percentage of global internet traffic, which is only
+              possible because the video doesn’t come from Netflix’s data centers — it comes from
+              <strong>Open Connect</strong> boxes <em>inside your ISP</em>. Their cloud (famously on AWS) runs the
+              microservices control plane: recommendations, account, playback tokens, and the encoding pipeline that
+              turns each new title into dozens of bitrate/resolution variants. When your show momentarily blurs then
+              sharpens, you’re watching ABR pick a lower-then-higher chunk in real time.
+            </p>
+          </div>
+
+          <h2>Adaptive bitrate over a CDN</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Adaptive bitrate streaming pipeline">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="14" y="60" width="110" height="44" rx="9"/><text class="dgm-sub" x="69" y="80" text-anchor="middle">source video</text><text class="dgm-sub" x="69" y="96" text-anchor="middle">transcode</text>
+              <rect class="dgm-box-accent" x="160" y="26" width="150" height="22" rx="5"/><text class="dgm-sub" x="235" y="42" text-anchor="middle">4K  · chunks ▭▭▭</text>
+              <rect class="dgm-box-accent" x="160" y="72" width="150" height="22" rx="5"/><text class="dgm-sub" x="235" y="88" text-anchor="middle">720p · chunks ▭▭▭</text>
+              <rect class="dgm-box-accent" x="160" y="118" width="150" height="22" rx="5"/><text class="dgm-sub" x="235" y="134" text-anchor="middle">240p · chunks ▭▭▭</text>
+              <rect class="dgm-box" x="350" y="60" width="100" height="44" rx="9"/><text class="dgm-sub" x="400" y="86" text-anchor="middle">CDN edge</text>
+              <rect class="dgm-box" x="486" y="60" width="100" height="44" rx="9"/><text class="dgm-sub" x="536" y="80" text-anchor="middle">player</text><text class="dgm-sub" x="536" y="96" text-anchor="middle">adapts</text>
+              <line class="dgm-line" x1="124" y1="78" x2="158" y2="55" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="124" y1="82" x2="158" y2="83" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="124" y1="86" x2="158" y2="129" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="310" y1="83" x2="348" y2="83" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="450" y1="82" x2="484" y2="82" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="536" y="130" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">picks bitrate per chunk</text>
+            </svg>
+            <figcaption>Figure 1 — One title becomes many bitrate variants of small chunks; the player picks per chunk from the edge.</figcaption>
+          </figure>
+
+          <h2>The manifest the player reads</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">HLS manifest (conceptual)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml">#EXTM3U
+#EXT-X-STREAM-INF:BANDWIDTH=400000,RESOLUTION=320x180     # the player chooses a variant
+low/index.m3u8                                            # ...by measured bandwidth
+#EXT-X-STREAM-INF:BANDWIDTH=2000000,RESOLUTION=1280x720
+mid/index.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=8000000,RESOLUTION=3840x2160
+high/index.m3u8
+# each variant playlist lists ~4s .ts/.mp4 segments served from the nearest CDN edge</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>ABR encodes each title into many bitrates, chunked into small segments; the player adapts per chunk to current bandwidth.</li>
+              <li>Chunks are served from CDN edges (Netflix’s Open Connect, inside ISPs), with popular content pre-positioned.</li>
+              <li>A microservices control plane handles browse/recommendations/auth/DRM — decoupled from serving the video bytes.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/cdn.html"><span class="rc-cat">System Design</span><span class="rc-title">CDNs</span></a>
+            <a class="related-card" href="../microservices/monolith-vs-microservices.html"><span class="rc-cat">Microservices</span><span class="rc-title">Monolith vs Microservices</span></a>
+            <a class="related-card" href="../system-design/message-queues.html"><span class="rc-cat">System Design</span><span class="rc-title">Message Queues</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              “Design a video streaming service” → lead with <strong>ABR</strong> (multi-bitrate, chunked, client
+              adapts) and a <strong>CDN</strong> for delivery (why the origin can’t serve the bytes). Mention the
+              transcoding pipeline and that the control plane (recommendations/auth) is separate from streaming —
+              that separation is the architectural insight.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

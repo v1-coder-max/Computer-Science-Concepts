@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OAuth 2.0 &amp; OpenID Connect — DevLens</title>
+  <meta name="description" content="OAuth 2.0 is delegated authorization — granting an app limited access without sharing your password. The Authorization Code flow with PKCE, scopes, tokens, and how OpenID Connect adds identity." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="web-fundamentals" data-concept="oauth" data-title="OAuth 2.0 & OpenID Connect">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>OAuth 2.0 &amp; OpenID Connect</h1>
+          <p class="lede">
+            OAuth lets an app act on your behalf <strong>without ever seeing your password</strong>. OpenID
+            Connect adds a standard way to prove <em>who you are</em> on top of it.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#oauth</span>
+            <span class="tag">#oidc</span>
+            <span class="tag">#authorization</span>
+            <span class="tag">#pkce</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            OAuth 2.0 is about <strong>delegated authorization</strong>. You want a photo-printing app to read
+            your Google Photos — but you don’t want to hand it your Google password. OAuth solves this: you log in
+            <em>at Google</em>, approve specific access, and the app receives a limited <strong>access token</strong>
+            instead of your credentials. Four roles:
+          </p>
+          <ul>
+            <li><strong>Resource owner</strong> — you.</li>
+            <li><strong>Client</strong> — the app wanting access.</li>
+            <li><strong>Authorization server</strong> — issues tokens (Google, Auth0, Azure AD).</li>
+            <li><strong>Resource server</strong> — the API holding your data.</li>
+          </ul>
+          <p>
+            The recommended flow is the <strong>Authorization Code flow with PKCE</strong>: the client redirects you
+            to the auth server, you authenticate and consent, it hands the client a short-lived
+            <strong>code</strong>, and the client exchanges that code (plus a PKCE secret it generated) for an
+            <strong>access token</strong> (+ a <strong>refresh token</strong> to get new ones). <strong>Scopes</strong>
+            limit what the token can do (<code>photos.read</code>, not <code>photos.delete</code>).
+          </p>
+          <p>
+            OAuth is for <em>authorization</em>, not login per se. <strong>OpenID Connect (OIDC)</strong> is a thin
+            identity layer on top: it adds an <strong>ID token</strong> (a JWT describing the user) so apps can do
+            “Sign in with Google” properly. Rule of thumb: <strong>OAuth = access; OIDC = identity.</strong>
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every “<strong>Sign in with Google/GitHub/Apple</strong>” button is OIDC over OAuth. You click it,
+              get bounced to the provider, approve, and your app receives an ID token (who you are) and an access
+              token (what it may call). A calendar-scheduling app like Calendly uses the access token + scopes to
+              read your Google Calendar availability — and only that — without ever knowing your password, and you
+              can revoke its access from your Google account at any time.
+            </p>
+          </div>
+
+          <h2>Authorization Code flow (with PKCE)</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 200" role="img" aria-label="OAuth authorization code flow">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="20" width="110" height="34" rx="8"/><text class="dgm-sub" x="75" y="42" text-anchor="middle">You + Client</text>
+              <rect class="dgm-box-accent" x="240" y="20" width="140" height="34" rx="8"/><text class="dgm-sub" x="310" y="42" text-anchor="middle">Auth server</text>
+              <rect class="dgm-box" x="470" y="20" width="110" height="34" rx="8"/><text class="dgm-sub" x="525" y="42" text-anchor="middle">Resource API</text>
+              <line class="dgm-line" x1="75" y1="54" x2="75" y2="190" stroke-dasharray="4 5"/>
+              <line class="dgm-line" x1="310" y1="54" x2="310" y2="190" stroke-dasharray="4 5"/>
+              <line class="dgm-line" x1="525" y1="54" x2="525" y2="190" stroke-dasharray="4 5"/>
+
+              <text class="dgm-sub" x="190" y="76" text-anchor="middle">1. redirect to log in + consent (scopes)</text>
+              <line class="dgm-line" x1="75" y1="84" x2="308" y2="84" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="190" y="108" text-anchor="middle">2. authorization code</text>
+              <line class="dgm-line" x1="310" y1="116" x2="77" y2="116" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="190" y="140" text-anchor="middle">3. exchange code + PKCE → tokens</text>
+              <line class="dgm-line" x1="75" y1="148" x2="308" y2="148" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="418" y="180" text-anchor="middle">4. call API with access token</text>
+              <line class="dgm-line" x1="75" y1="186" x2="523" y2="186" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — You authenticate at the auth server; the client only ever gets tokens, never your password.</figcaption>
+          </figure>
+
+          <h2>In C# (ASP.NET Core)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">builder.Services.AddAuthentication(o =&gt;
+{
+    o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    o.DefaultChallengeScheme = "oidc";
+})
+.AddCookie()
+.AddOpenIdConnect("oidc", o =&gt;
+{
+    o.Authority = "https://accounts.google.com";   // the OIDC provider
+    o.ClientId = clientId;
+    o.ClientSecret = clientSecret;
+    o.ResponseType = "code";                        // Authorization Code flow
+    o.UsePkce = true;                               // PKCE — required for public clients
+    o.Scope.Add("openid");                          // OIDC identity
+    o.Scope.Add("email");                           // request only the scopes you need
+    o.GetClaimsFromUserInfoEndpoint = true;
+});</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>OAuth 2.0 = delegated authorization: an app gets a scoped access token, never your password.</li>
+              <li>Use the Authorization Code flow with PKCE; scopes limit access, refresh tokens renew it.</li>
+              <li>OpenID Connect adds an ID token for identity — OAuth = access, OIDC = login.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/jwt.html"><span class="rc-cat">Web</span><span class="rc-title">JWT &amp; Stateless Auth</span></a>
+            <a class="related-card" href="../system-design/sessions.html"><span class="rc-cat">System Design</span><span class="rc-title">How Sessions Work</span></a>
+            <a class="related-card" href="../dotnet/auth-pipeline.html"><span class="rc-cat">.NET</span><span class="rc-title">Auth Pipeline</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Difference between OAuth and OpenID Connect?”</em> OAuth = <strong>authorization</strong>
+              (delegated access via tokens/scopes); OIDC = <strong>authentication</strong> (adds an ID token).
+              Name the Authorization Code + PKCE flow and explain why you never send the password to the client —
+              that’s the whole point of delegation.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

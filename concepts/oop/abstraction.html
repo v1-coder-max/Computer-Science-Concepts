@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abstraction — DevLens</title>
+  <meta name="description" content="Abstraction exposes only the essential 'what' and hides the complex 'how' behind a contract — interfaces and abstract classes let callers depend on a simple surface." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="oop" data-concept="abstraction" data-title="Abstraction">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Abstraction</h1>
+          <p class="lede">
+            Show the essential <strong>what</strong>, hide the messy <strong>how</strong>. Callers depend on a
+            simple contract and never see the complexity behind it.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#oop</span>
+            <span class="tag">#abstraction</span>
+            <span class="tag">#interfaces</span>
+            <span class="tag">#contracts</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Abstraction is modeling a thing by the <strong>operations that matter</strong>, while hiding the
+            implementation. You drive a car with a wheel and two pedals — you don’t think about fuel injection.
+            The pedals are the abstraction; the engine is the hidden detail. In code, an
+            <strong>interface</strong> or <strong>abstract class</strong> is that simplified surface: it declares
+            <em>what</em> can be done (<code>Pay(amount)</code>) without saying <em>how</em> (Stripe? PayPal?
+            cash?).
+          </p>
+          <p>
+            The practical win is that the rest of your system depends on the <strong>contract</strong>, not a
+            concrete type. Swap the implementation, add a new one, or fake it in a test — callers don’t change.
+            That’s abstraction enabling the Dependency Inversion and Open/Closed ideas from SOLID.
+          </p>
+          <p>
+            Don’t over-abstract, though: an interface with one implementation that will never have another is
+            just ceremony. Abstraction earns its keep when there’s genuine variation to hide.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              .NET’s <code>Stream</code> is abstraction done right: your code reads and writes bytes through one
+              simple surface, whether the bytes live in a file (<code>FileStream</code>), memory
+              (<code>MemoryStream</code>), or over the network (<code>NetworkStream</code>). A logging library
+              exposes <code>ILogger</code> so <strong>Netflix</strong>-scale services can swap the sink
+              (console, file, Elasticsearch) without touching a single call site. The complexity is real; the
+              caller just never has to see it.
+            </p>
+          </div>
+
+          <h2>One contract, hidden details</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Abstraction hides complexity behind a contract">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="70" width="120" height="44" rx="9" />
+              <text class="dgm-sub" x="80" y="96" text-anchor="middle">caller</text>
+
+              <rect class="dgm-box-accent" x="200" y="64" width="160" height="56" rx="10" />
+              <text class="dgm-label" x="280" y="88" text-anchor="middle">IPaymentProcessor</text>
+              <text class="dgm-sub"   x="280" y="106" text-anchor="middle">Pay(amount)</text>
+
+              <rect class="dgm-box" x="430" y="18"  width="150" height="34" rx="7" /><text class="dgm-sub" x="505" y="40" text-anchor="middle">StripeProcessor</text>
+              <rect class="dgm-box" x="430" y="64"  width="150" height="34" rx="7" /><text class="dgm-sub" x="505" y="86" text-anchor="middle">PayPalProcessor</text>
+              <rect class="dgm-box" x="430" y="110" width="150" height="34" rx="7" /><text class="dgm-sub" x="505" y="132" text-anchor="middle">CashProcessor</text>
+
+              <line class="dgm-line" x1="140" y1="92" x2="198" y2="92" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="360" y1="84" x2="428" y2="36"  stroke-dasharray="4 4" />
+              <line class="dgm-line" x1="360" y1="92" x2="428" y2="81"  stroke-dasharray="4 4" />
+              <line class="dgm-line" x1="360" y1="100" x2="428" y2="127" stroke-dasharray="4 4" />
+              <text class="dgm-sub" x="170" y="80" text-anchor="middle">depends on the "what"</text>
+            </svg>
+            <figcaption>Figure 1 — Callers bind to the contract; the concrete “how” stays hidden and swappable.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// The abstraction: WHAT can be done, not HOW.
+public interface IPaymentProcessor
+{
+    Task&lt;Receipt&gt; PayAsync(decimal amount, string currency);
+}
+
+// Implementations hide wildly different complexity behind the same surface.
+public class StripeProcessor : IPaymentProcessor
+{
+    public async Task&lt;Receipt&gt; PayAsync(decimal amount, string currency)
+    {
+        // tokens, idempotency keys, HTTP calls, retries… none of it leaks out
+        return new Receipt(/* ... */);
+    }
+}
+
+// The caller depends only on the abstraction — swap or fake freely.
+public class Checkout(IPaymentProcessor payments)
+{
+    public Task&lt;Receipt&gt; CompleteAsync(decimal total) =&gt;
+        payments.PayAsync(total, "USD");
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Abstraction exposes the essential operations and hides the implementation behind a contract.</li>
+              <li>Interfaces/abstract classes let callers depend on the “what,” so implementations are swappable and testable.</li>
+              <li>Only abstract where there’s real variation — an interface with one forever-implementation is noise.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../oop/encapsulation.html"><span class="rc-cat">OOP</span><span class="rc-title">Encapsulation</span></a>
+            <a class="related-card" href="../oop/abstract-vs-interface.html"><span class="rc-cat">OOP</span><span class="rc-title">Abstract Class vs Interface</span></a>
+            <a class="related-card" href="../oop/solid.html"><span class="rc-cat">OOP</span><span class="rc-title">SOLID Principles</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Be ready to distinguish abstraction from encapsulation crisply: abstraction hides
+              <strong>complexity</strong> behind a model (the <em>what</em>); encapsulation hides
+              <strong>state</strong> and bundles it with its guards. Give a concrete contract example
+              (<code>Stream</code>, <code>ILogger</code>) and note it powers Dependency Inversion.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

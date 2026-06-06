@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abstract Class vs Interface — DevLens</title>
+  <meta name="description" content="When to use an abstract class versus an interface in C#: shared implementation and state versus a pure capability contract, single vs multiple inheritance, and default interface methods." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="oop" data-concept="abstract-vs-interface" data-title="Abstract Class vs Interface">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Abstract Class vs Interface</h1>
+          <p class="lede">
+            Both define a contract — but an <strong>abstract class</strong> can also carry shared code and state,
+            while an <strong>interface</strong> is a pure capability you can mix into any type.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#oop</span>
+            <span class="tag">#interface</span>
+            <span class="tag">#abstract-class</span>
+            <span class="tag">#design</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            An <strong>interface</strong> says “a type that implements me <em>can do</em> these things” —
+            historically with no implementation at all. A class can implement <strong>many</strong> interfaces, so
+            interfaces are perfect for capabilities shared across otherwise-unrelated types (<code>IDisposable</code>,
+            <code>IComparable</code>, <code>IEnumerable</code>).
+          </p>
+          <p>
+            An <strong>abstract class</strong> is a partial base class: it can hold <em>fields and state</em>,
+            <em>constructors</em>, and a mix of <em>concrete</em> and <em>abstract</em> members. It’s for an is-a
+            family that shares real implementation. But a class can derive from only <strong>one</strong> abstract
+            class.
+          </p>
+          <p>The decision boils down to:</p>
+          <ul>
+            <li><strong>Interface</strong> — a contract/capability, no shared code, mixable into many types.</li>
+            <li><strong>Abstract class</strong> — a base with common implementation and/or state for a related family.</li>
+          </ul>
+          <p>
+            Modern C# blurs the line a bit: <strong>default interface methods</strong> (C# 8) let an interface
+            ship a default body. Still, interfaces can’t hold instance state, so the rule of thumb holds — reach
+            for an interface unless you need shared <em>implementation/state</em>.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              .NET shows both clearly. <code>IDisposable</code> and <code>IComparable</code> are
+              <strong>interfaces</strong> — capabilities a <code>FileStream</code>, a <code>SqlConnection</code>,
+              and your own type can all advertise independently. <code>Stream</code> is an
+              <strong>abstract class</strong> — it provides shared buffering/async plumbing and leaves the raw
+              <code>Read</code>/<code>Write</code> abstract for <code>FileStream</code>/<code>MemoryStream</code> to
+              fill in. Capability across unrelated types → interface; shared machinery for a family → abstract base.
+            </p>
+          </div>
+
+          <h2>Two kinds of contract</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Interface versus abstract class">
+              <rect class="dgm-box-accent" x="20" y="24" width="260" height="130" rx="11" />
+              <text class="dgm-label" x="150" y="48" text-anchor="middle">Interface</text>
+              <text class="dgm-sub" x="40" y="74">• contract / capability</text>
+              <text class="dgm-sub" x="40" y="96">• no instance state</text>
+              <text class="dgm-sub" x="40" y="118">• implement MANY</text>
+              <text class="dgm-sub" x="40" y="140">• IDisposable, IComparable</text>
+
+              <rect class="dgm-box" x="320" y="24" width="260" height="130" rx="11" />
+              <text class="dgm-label" x="450" y="48" text-anchor="middle">Abstract class</text>
+              <text class="dgm-sub" x="340" y="74">• shared code + state</text>
+              <text class="dgm-sub" x="340" y="96">• constructors, fields</text>
+              <text class="dgm-sub" x="340" y="118">• inherit ONE</text>
+              <text class="dgm-sub" x="340" y="140">• Stream, HttpContent</text>
+            </svg>
+            <figcaption>Figure 1 — Interface = mixable capability; abstract class = shared base for an is-a family.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Interface: a capability any type can advertise; can have a default method.
+public interface INotifier
+{
+    Task SendAsync(string to, string message);
+    bool IsAvailable =&gt; true;                 // default interface method (C# 8+)
+}
+
+// Abstract class: shared state + code, plus a member subclasses MUST implement.
+public abstract class RepositoryBase&lt;T&gt;
+{
+    protected readonly DbContext Db;          // shared STATE — interfaces can't do this
+    protected RepositoryBase(DbContext db) =&gt; Db = db;  // constructor
+
+    public async Task SaveAsync() =&gt; await Db.SaveChangesAsync(); // shared code
+    public abstract Task&lt;T?&gt; FindAsync(int id);                   // each must implement
+}
+
+// A class can implement many interfaces but inherit only one base class:
+public class SmsRepo : RepositoryBase&lt;Message&gt;, INotifier, IDisposable
+{
+    public SmsRepo(DbContext db) : base(db) { }
+    public override Task&lt;Message?&gt; FindAsync(int id) =&gt; Db.Set&lt;Message&gt;().FindAsync(id).AsTask();
+    public Task SendAsync(string to, string msg) =&gt; Task.CompletedTask;
+    public void Dispose() { }
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Interface = a contract/capability with no instance state, implementable by many unrelated types.</li>
+              <li>Abstract class = a partial base with shared code, state, and constructors — single inheritance only.</li>
+              <li>Default rule: prefer an interface unless you need shared implementation/state; default interface methods narrow but don’t erase the gap.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../oop/abstraction.html"><span class="rc-cat">OOP</span><span class="rc-title">Abstraction</span></a>
+            <a class="related-card" href="../oop/inheritance.html"><span class="rc-cat">OOP</span><span class="rc-title">Inheritance</span></a>
+            <a class="related-card" href="../oop/polymorphism.html"><span class="rc-cat">OOP</span><span class="rc-title">Polymorphism</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Interface vs abstract class — when do you pick which?”</em> Interface for a capability mixed
+              across unrelated types and to get “multiple inheritance” of contracts; abstract class for shared
+              implementation/state in an is-a family. Bonus: note default interface methods (C# 8) and that
+              interfaces still can’t hold instance state.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

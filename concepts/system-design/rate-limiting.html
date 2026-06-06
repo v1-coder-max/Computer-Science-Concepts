@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rate Limiting Algorithms — DevLens</title>
+  <meta name="description" content="How to cap request rates fairly: fixed window, sliding window, token bucket and leaky bucket algorithms, returning 429 with Retry-After, and distributed rate limiting with Redis." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="rate-limiting" data-title="Rate Limiting Algorithms">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Rate Limiting Algorithms</h1>
+          <p class="lede">
+            Cap how fast a client can hit your API — to stop abuse, prevent overload, and keep things fair. The
+            algorithm you choose decides how bursts are handled.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#rate-limiting</span>
+            <span class="tag">#token-bucket</span>
+            <span class="tag">#throttling</span>
+            <span class="tag">#429</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Rate limiting enforces a quota like “100 requests per minute per user.” It protects you from abusive
+            clients, runaway loops, and accidental DDoS, and ensures one heavy user can’t starve everyone else. When
+            a client exceeds the limit you return <strong><code>429 Too Many Requests</code></strong> with a
+            <code>Retry-After</code> header. The four classic algorithms:
+          </p>
+          <ul>
+            <li><strong>Fixed window</strong> — count requests per clock window (e.g. per minute). Simple, but allows a <em>double burst</em> at the boundary (full quota at 0:59 and again at 1:00).</li>
+            <li><strong>Sliding window</strong> — track a rolling time window so the rate is smooth across boundaries. More accurate, a bit more state.</li>
+            <li><strong>Token bucket</strong> — a bucket holds up to N tokens, refilled at a steady rate; each request spends one. <strong>Allows short bursts</strong> (spend saved tokens) while bounding the average rate. The most popular.</li>
+            <li><strong>Leaky bucket</strong> — requests enter a queue that drains at a fixed rate, <em>smoothing</em> output to a constant pace (overflow is dropped).</li>
+          </ul>
+          <p>
+            Across multiple servers you need <strong>distributed rate limiting</strong> — a shared counter in
+            <strong>Redis</strong> (atomic <code>INCR</code> + TTL, or a token-bucket Lua script) so the limit is
+            global, not per-instance.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>GitHub</strong> and <strong>Stripe</strong> rate-limit their public APIs and return
+              <code>429</code> with headers telling you your remaining quota and when it resets — so well-behaved
+              clients back off automatically. Login endpoints throttle attempts to blunt credential-stuffing, and an
+              API gateway (or Cloudflare) rate-limits per IP/key to absorb abuse before it reaches your app. Token
+              bucket is the common choice because it tolerates legitimate bursts (a page firing several calls at once)
+              while still capping the sustained rate.
+            </p>
+          </div>
+
+          <h2>Token bucket</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Token bucket rate limiting">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <text class="dgm-sub" x="150" y="24" text-anchor="middle">refill: +1 token / interval</text>
+              <line class="dgm-line" x1="150" y1="28" x2="150" y2="56" marker-end="url(#arrow)"/>
+              <rect class="dgm-box-accent" x="100" y="58" width="100" height="74" rx="9"/>
+              <circle cx="125" cy="80" r="7" class="dgm-box"/><circle cx="150" cy="80" r="7" class="dgm-box"/><circle cx="175" cy="80" r="7" class="dgm-box"/>
+              <circle cx="137" cy="104" r="7" class="dgm-box"/><circle cx="163" cy="104" r="7" class="dgm-box"/>
+              <text class="dgm-sub" x="150" y="148" text-anchor="middle">bucket (capacity N)</text>
+
+              <rect class="dgm-box" x="300" y="74" width="120" height="40" rx="8"/><text class="dgm-sub" x="360" y="98" text-anchor="middle">request</text>
+              <line class="dgm-line" x1="300" y1="94" x2="202" y2="94" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="250" y="86" text-anchor="middle">spend 1</text>
+
+              <rect x="460" y="60" width="120" height="30" rx="7" fill="var(--c-success)" fill-opacity="0.14" stroke="var(--c-success)"/><text x="520" y="80" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">token? → allow</text>
+              <rect x="460" y="98" width="120" height="30" rx="7" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)"/><text x="520" y="118" text-anchor="middle" fill="var(--c-warning)" style="font:600 12px var(--font-sans)">empty? → 429</text>
+              <line class="dgm-line" x1="420" y1="88" x2="458" y2="76" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="420" y1="100" x2="458" y2="112" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Tokens refill steadily; saved tokens allow bursts, an empty bucket means 429.</figcaption>
+          </figure>
+
+          <h2>In C# (ASP.NET Core rate limiter)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">builder.Services.AddRateLimiter(o =&gt;
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;   // 429
+    o.AddTokenBucketLimiter("per-user", b =&gt;
+    {
+        b.TokenLimit = 100;                       // bucket capacity (burst)
+        b.TokensPerPeriod = 100;                  // refill amount...
+        b.ReplenishmentPeriod = TimeSpan.FromMinutes(1);  // ...per minute
+        b.QueueLimit = 0;                         // no queueing: reject immediately
+    });
+});
+
+var app = builder.Build();
+app.UseRateLimiter();
+app.MapGet("/api/data", () =&gt; "ok").RequireRateLimiting("per-user");
+// For multiple servers, back the limiter with Redis so the count is global.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Rate limiting prevents abuse/overload and ensures fairness; over-limit → <code>429</code> + <code>Retry-After</code>.</li>
+              <li>Fixed window (simple, boundary bursts), sliding window (smooth), token bucket (allows bursts — most common), leaky bucket (smooths output).</li>
+              <li>For multiple servers, use a shared store (Redis) so the limit is global, not per-instance.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/redis.html"><span class="rc-cat">Database</span><span class="rc-title">Redis Internals</span></a>
+            <a class="related-card" href="../web-fundamentals/http-status-codes.html"><span class="rc-cat">Web</span><span class="rc-title">HTTP Status Codes</span></a>
+            <a class="related-card" href="../microservices/api-gateway.html"><span class="rc-cat">Microservices</span><span class="rc-title">API Gateway</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Be ready to compare the four algorithms and pick <strong>token bucket</strong> as a sensible default
+              (handles bursts, bounds average). Mention the fixed-window boundary-burst flaw, the <code>429</code> +
+              <code>Retry-After</code> contract, and <strong>Redis</strong> for distributed limits — that’s the
+              complete answer.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

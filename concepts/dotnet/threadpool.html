@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Thread Pool — DevLens</title>
+  <meta name="description" content="How .NET's thread pool reuses a small set of worker threads for short work items, how it grows under load, and why blocking pool threads causes thread-pool starvation." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="threadpool" data-title="The Thread Pool">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>The Thread Pool</h1>
+          <p class="lede">
+            Creating threads is expensive, so .NET keeps a <strong>pool of reusable worker
+            threads</strong> and feeds them a queue of short work items.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#thread-pool</span>
+            <span class="tag">#starvation</span>
+            <span class="tag">#scalability</span>
+            <span class="tag">#concurrency</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Spinning up an OS thread costs memory and time, and a thread that finishes a tiny job and
+            dies has wasted most of that cost. The <strong>thread pool</strong> fixes this: it keeps a
+            set of long-lived worker threads alive and hands them <em>work items</em> from a queue.
+            When a worker finishes one item, it grabs the next instead of dying.
+          </p>
+          <p>
+            Almost everything concurrent rides this pool: <code>Task.Run</code>, async continuations,
+            <code>Timer</code> callbacks, and I/O completions. It has two kinds of threads — general
+            <strong>worker threads</strong> and <strong>I/O completion threads</strong> — and it
+            <strong>self-tunes</strong>: a “hill-climbing” heuristic slowly injects more threads if the
+            queue backs up and trims them when demand falls.
+          </p>
+          <p>
+            The catch is that injection is <em>deliberately slow</em> (roughly one new thread at a
+            time). So if you <strong>block</strong> pool threads — e.g. calling <code>.Result</code> on
+            async work — they can’t pick up new items, the queue grows faster than threads are added,
+            and you get <strong>thread-pool starvation</strong>: latency spikes, then a stall.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              ASP.NET Core dispatches every incoming request as a work item on the thread pool. Under a
+              traffic spike, a service that does <code>db.GetAsync().Result</code> (sync-over-async)
+              blocks pool threads waiting on I/O; new requests pile up in the queue while the pool adds
+              threads one-per-~half-second. The symptom teams see on the dashboard is a sudden cliff in
+              throughput and a climbing <code>ThreadPool</code> queue length — the classic
+              <strong>starvation</strong> incident. Going fully async keeps those threads free and the
+              pool small.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Queue in, workers out</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 200" role="img" aria-label="Thread pool work queue and workers">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <text class="dgm-sub" x="100" y="28" text-anchor="middle">work item queue</text>
+              <rect class="dgm-box" x="30" y="40" width="36" height="34" rx="5" />
+              <rect class="dgm-box" x="72" y="40" width="36" height="34" rx="5" />
+              <rect class="dgm-box" x="114" y="40" width="36" height="34" rx="5" />
+              <rect class="dgm-box" x="156" y="40" width="36" height="34" rx="5" />
+
+              <line class="dgm-line" x1="200" y1="57" x2="270" y2="57" marker-end="url(#arrow)" />
+
+              <rect class="dgm-box-accent" x="290" y="20" width="150" height="30" rx="7" />
+              <text class="dgm-sub" x="365" y="40" text-anchor="middle">worker 1</text>
+              <rect class="dgm-box-accent" x="290" y="56" width="150" height="30" rx="7" />
+              <text class="dgm-sub" x="365" y="76" text-anchor="middle">worker 2</text>
+              <rect class="dgm-box-accent" x="290" y="92" width="150" height="30" rx="7" />
+              <text class="dgm-sub" x="365" y="112" text-anchor="middle">worker 3 …</text>
+
+              <rect class="dgm-box" x="470" y="44" width="110" height="54" rx="9" />
+              <text class="dgm-label" x="525" y="68" text-anchor="middle">done</text>
+              <text class="dgm-sub"   x="525" y="86" text-anchor="middle">thread reused</text>
+              <line class="dgm-line" x1="440" y1="71" x2="468" y2="71" marker-end="url(#arrow)" />
+
+              <text class="dgm-sub" x="300" y="160" fill="var(--c-warning)"
+                    style="font:600 12px var(--font-sans)">⚠ a BLOCKED worker can't take the next item → queue grows → starvation</text>
+              <text class="dgm-sub" x="300" y="182">the pool injects new threads slowly (~1 at a time), so blocking hurts fast</text>
+            </svg>
+            <figcaption>Figure 1 — Workers pull items and are reused. Blocking them is what starves the pool.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Queue work directly (rarely needed; Task.Run is the friendly wrapper):
+ThreadPool.QueueUserWorkItem(_ =&gt; DoBackgroundWork());
+
+// The everyday way to offload CPU work onto a pool thread:
+await Task.Run(() =&gt; CrunchNumbers());
+
+// Inspect the pool (useful when diagnosing starvation):
+ThreadPool.GetAvailableThreads(out int worker, out int io);
+ThreadPool.GetMinThreads(out int minWorker, out int minIo);
+Console.WriteLine($"available workers: {worker}, min: {minWorker}");
+
+// ❌ The starvation trigger — blocking a pool thread on async work:
+// var data = httpClient.GetStringAsync(url).Result;  // never do this on the hot path</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Don’t “fix” starvation by raising min threads</p>
+            <p>
+              <code>ThreadPool.SetMinThreads</code> can paper over a spike, but the real fix is to stop
+              blocking: go <strong>async all the way down</strong> so workers are never parked on I/O.
+              Bumping min threads just trades one bottleneck for higher memory and context-switching.
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The pool reuses a small set of worker threads for short work items — <code>Task.Run</code>, continuations, timers, I/O callbacks all use it.</li>
+              <li>It grows slowly under load, so <strong>blocking</strong> pool threads causes thread-pool starvation (latency cliff).</li>
+              <li>The cure is async-all-the-way, not raising min threads.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/task-vs-thread.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Task vs Thread</span>
+            </a>
+            <a class="related-card" href="../dotnet/async-await.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Async / Await Internals</span>
+            </a>
+            <a class="related-card" href="../dotnet/ihostedservice.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">IHostedService</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“What is thread-pool starvation and how do you avoid it?”</em> Explain that blocking
+              pool threads (sync-over-async) while the pool injects threads slowly drains available
+              workers. The fix interviewers want to hear: async end-to-end — not cranking
+              <code>SetMinThreads</code>.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

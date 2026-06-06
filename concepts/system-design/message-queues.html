@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Message Queues (RabbitMQ &amp; Kafka) — DevLens</title>
+  <meta name="description" content="How message queues decouple producers from consumers, smooth load spikes, and add resilience — plus the difference between a traditional queue (RabbitMQ) and a log/stream (Kafka), and delivery guarantees." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="message-queues" data-title="Message Queues">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Message Queues (RabbitMQ &amp; Kafka)</h1>
+          <p class="lede">
+            Put a <strong>broker</strong> between services so the sender doesn’t wait for the receiver. It decouples
+            components, absorbs spikes, and makes work resilient to failure.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#message-queue</span>
+            <span class="tag">#kafka</span>
+            <span class="tag">#rabbitmq</span>
+            <span class="tag">#async</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            With direct (synchronous) calls, a slow or down dependency takes the caller with it. A
+            <strong>message queue</strong> breaks that coupling: a <strong>producer</strong> drops a message into a
+            broker and moves on; a <strong>consumer</strong> picks it up when it’s ready. Three payoffs:
+          </p>
+          <ul>
+            <li><strong>Decoupling</strong> — producer and consumer don’t need to be up at the same time or know about each other.</li>
+            <li><strong>Load smoothing (buffering)</strong> — a traffic spike fills the queue instead of overwhelming the consumer; it drains at a steady pace.</li>
+            <li><strong>Resilience</strong> — if a consumer crashes, messages wait; failed messages can be retried or sent to a <strong>dead-letter queue</strong>.</li>
+          </ul>
+          <p>Two broad shapes, often both called “queues”:</p>
+          <ul>
+            <li><strong>Traditional queue / broker</strong> (RabbitMQ, SQS) — a message is delivered to <em>one</em> consumer and removed once acknowledged. Great for task/work distribution.</li>
+            <li><strong>Log / stream</strong> (Kafka) — an append-only, <strong>partitioned</strong>, <strong>replayable</strong> log. Messages are retained (not deleted on read), and many independent consumer groups can read the same stream at their own offset. Built for event streaming and huge throughput.</li>
+          </ul>
+          <p>
+            <strong>Delivery guarantees</strong> matter: most systems are <strong>at-least-once</strong> (a message
+            may be redelivered), so consumers should be <strong>idempotent</strong>. Exactly-once is hard and
+            usually approximated. (See Event-Driven Architecture and the Outbox pattern for how this fits microservices.)
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When you place an order, the web request just publishes an <code>OrderPlaced</code> message and returns
+              instantly; background consumers then charge payment, reserve inventory, and send the confirmation email
+              — independently and retried on failure. <strong>Kafka</strong> was built at <strong>LinkedIn</strong>
+              and powers event pipelines at <strong>Uber</strong>/<strong>Netflix</strong>, where the same event
+              stream feeds analytics, fraud detection, and notifications from one replayable log. A flash sale that
+              would melt a synchronous system just deepens the queue instead.
+            </p>
+          </div>
+
+          <h2>Producer → broker → consumers</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Producer, broker, consumers">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="60" width="110" height="44" rx="9"/><text class="dgm-sub" x="75" y="86" text-anchor="middle">producer</text>
+              <rect class="dgm-box-accent" x="200" y="48" width="180" height="68" rx="10"/><text class="dgm-label" x="290" y="72" text-anchor="middle">broker (queue/log)</text>
+              <rect class="dgm-box" x="218" y="84" width="40" height="22" rx="4"/><rect class="dgm-box" x="262" y="84" width="40" height="22" rx="4"/><rect class="dgm-box" x="306" y="84" width="40" height="22" rx="4"/>
+              <rect class="dgm-box" x="450" y="30" width="130" height="34" rx="8"/><text class="dgm-sub" x="515" y="52" text-anchor="middle">consumer A</text>
+              <rect class="dgm-box" x="450" y="98" width="130" height="34" rx="8"/><text class="dgm-sub" x="515" y="120" text-anchor="middle">consumer B</text>
+              <line class="dgm-line" x1="130" y1="82" x2="198" y2="82" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="380" y1="74" x2="448" y2="48" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="380" y1="90" x2="448" y2="114" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="290" y="142" text-anchor="middle">buffers spikes · retries on failure · consume at own pace</text>
+            </svg>
+            <figcaption>Figure 1 — The broker absorbs bursts and lets consumers work independently and resiliently.</figcaption>
+          </figure>
+
+          <h2>In C# (MassTransit over a broker)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public record OrderPlaced(Guid OrderId, decimal Total);   // a message/event
+
+// Producer: publish and move on — the web request doesn't wait for processing.
+await _bus.Publish(new OrderPlaced(order.Id, order.Total));
+
+// Consumer: handle asynchronously; keep it IDEMPOTENT (at-least-once delivery).
+public class OrderPlacedConsumer : IConsumer&lt;OrderPlaced&gt;
+{
+    public async Task Consume(ConsumeContext&lt;OrderPlaced&gt; ctx)
+    {
+        if (await _payments.AlreadyCharged(ctx.Message.OrderId)) return; // idempotency
+        await _payments.ChargeAsync(ctx.Message.OrderId, ctx.Message.Total);
+        // unhandled exceptions → retry → eventually dead-letter queue
+    }
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Queues decouple producer/consumer, buffer spikes, and add resilience (retries, dead-letter queues).</li>
+              <li>Traditional queue (RabbitMQ): one consumer, message removed on ack. Log/stream (Kafka): retained, partitioned, replayable, many consumer groups.</li>
+              <li>Delivery is usually at-least-once → make consumers idempotent.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/event-driven.html"><span class="rc-cat">Microservices</span><span class="rc-title">Event-Driven Architecture</span></a>
+            <a class="related-card" href="../microservices/outbox-pattern.html"><span class="rc-cat">Microservices</span><span class="rc-title">Outbox Pattern</span></a>
+            <a class="related-card" href="../dotnet/ihostedservice.html"><span class="rc-cat">.NET</span><span class="rc-title">IHostedService</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              When a design needs async work or buffering, introduce a queue and state the three benefits
+              (decoupling, load smoothing, resilience). Then differentiate <strong>RabbitMQ</strong> (work queue)
+              from <strong>Kafka</strong> (replayable, partitioned log), and mention at-least-once delivery →
+              <strong>idempotent consumers</strong>.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

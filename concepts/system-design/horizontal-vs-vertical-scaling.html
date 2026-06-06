@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horizontal vs Vertical Scaling — DevLens</title>
+  <meta name="description" content="Scale up (a bigger machine) vs scale out (more machines): the ceiling and single-point-of-failure of vertical scaling, why horizontal scaling needs stateless services, and when to use each." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="system-design" data-concept="horizontal-vs-vertical-scaling" data-title="Horizontal vs Vertical Scaling">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Horizontal vs Vertical Scaling</h1>
+          <p class="lede">
+            Two ways to handle more load: a <strong>bigger</strong> machine, or <strong>more</strong> machines.
+            The second is harder but it’s how the internet actually scales.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#scaling</span>
+            <span class="tag">#scale-out</span>
+            <span class="tag">#stateless</span>
+            <span class="tag">#elasticity</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Vertical scaling (scale up)</strong> = give one server more power — more CPU, RAM, faster
+            disks. It’s the simplest fix: no code changes, no distribution. But it has hard limits: there’s a
+            biggest-machine-you-can-buy <strong>ceiling</strong>, the cost curve gets steep, you usually need
+            downtime to resize, and that one box is a <strong>single point of failure</strong>.
+          </p>
+          <p>
+            <strong>Horizontal scaling (scale out)</strong> = add more servers and spread load across them with a
+            load balancer. It’s effectively unlimited, <strong>elastic</strong> (autoscale up/down with demand),
+            and <strong>fault-tolerant</strong> (lose one node, the rest carry on). The catch: your application has
+            to be designed for it — chiefly, it must be <strong>stateless</strong>. Any per-user state (sessions,
+            uploaded files, in-memory caches) has to move to a <em>shared</em> store (Redis, a database, object
+            storage) so any server can handle any request.
+          </p>
+          <p>
+            The pragmatic path most teams take: <strong>start vertical</strong> (cheap and simple while small),
+            then <strong>go horizontal</strong> once you hit the ceiling or need real availability. The database is
+            usually the hardest tier to scale out — which is exactly why replication, sharding, and caching exist.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Cloud autoscaling <em>is</em> horizontal scaling: Kubernetes or an AWS Auto Scaling Group watches CPU/
+              traffic and spins up more stateless app pods during a spike, then removes them when it passes — you pay
+              for what you use and survive node failures. A <strong>Black Friday</strong> surge is absorbed by adding
+              instances, not by buying one mega-server. The reason this works is the discipline of statelessness:
+              sessions live in Redis and uploads live in S3, so a brand-new instance can serve any user immediately.
+            </p>
+          </div>
+
+          <h2>Up vs out</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Vertical versus horizontal scaling">
+              <text class="dgm-label" x="20" y="24">Vertical (scale up)</text>
+              <rect class="dgm-box-accent" x="60" y="40" width="60" height="40" rx="6"/>
+              <rect class="dgm-box-accent" x="50" y="40" width="80" height="90" rx="8" fill-opacity="0.15"/>
+              <text class="dgm-sub" x="90" y="105" text-anchor="middle">bigger box</text>
+              <text class="dgm-sub" x="90" y="150" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">ceiling · single point of failure</text>
+
+              <text class="dgm-label" x="330" y="24">Horizontal (scale out)</text>
+              <rect class="dgm-box-accent" x="330" y="50" width="50" height="34" rx="6"/>
+              <rect class="dgm-box-accent" x="390" y="50" width="50" height="34" rx="6"/>
+              <rect class="dgm-box-accent" x="450" y="50" width="50" height="34" rx="6"/>
+              <rect class="dgm-box-accent" x="510" y="50" width="50" height="34" rx="6"/>
+              <text class="dgm-sub" x="445" y="110" text-anchor="middle">more boxes + load balancer</text>
+              <text class="dgm-sub" x="445" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">elastic · fault-tolerant · needs stateless apps</text>
+            </svg>
+            <figcaption>Figure 1 — Scaling up hits a wall; scaling out keeps going if your services hold no local state.</figcaption>
+          </figure>
+
+          <h2>Designing for scale-out</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — keep the app stateless</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ In-memory state pins a user to one server — breaks horizontal scaling.
+private static readonly Dictionary&lt;string, Cart&gt; _carts = new();
+
+// ✅ Push state to a SHARED store so any instance can serve any request.
+builder.Services.AddStackExchangeRedisCache(o =&gt; o.Configuration = "redis:6379"); // sessions/cache
+// uploads → object storage (S3/Blob), not local disk
+// → now you can add/remove instances freely behind a load balancer.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Vertical = bigger machine (simple, but a ceiling + single point of failure); horizontal = more machines (elastic + fault-tolerant).</li>
+              <li>Horizontal scaling requires <strong>stateless</strong> services — move state to a shared store (Redis, DB, object storage).</li>
+              <li>Start vertical, go horizontal at the ceiling; the database is usually the hardest tier (hence replication/sharding).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/load-balancers.html"><span class="rc-cat">System Design</span><span class="rc-title">Load Balancers</span></a>
+            <a class="related-card" href="../system-design/sessions.html"><span class="rc-cat">System Design</span><span class="rc-title">How Sessions Work</span></a>
+            <a class="related-card" href="../database/sharding.html"><span class="rc-cat">Database</span><span class="rc-title">Partitioning &amp; Sharding</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define both, then make the key point: horizontal scaling demands <strong>statelessness</strong>
+              (sessions/files in shared stores). Note the start-vertical-then-horizontal path and that the
+              <strong>database</strong> is the tricky tier — which naturally leads into replication, sharding, and caching.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

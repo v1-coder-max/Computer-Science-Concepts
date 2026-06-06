@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caching Strategies — DevLens</title>
+  <meta name="description" content="The main caching patterns — cache-aside, read-through, write-through, write-back, write-around — how they trade freshness for speed, and the hard problem of invalidation." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="caching-strategies" data-title="Caching Strategies">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Caching Strategies</h1>
+          <p class="lede">
+            A cache trades a little staleness for a lot of speed. <em>How</em> you read and write through it —
+            the strategy — decides the trade-offs you live with.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#caching</span>
+            <span class="tag">#cache-aside</span>
+            <span class="tag">#write-through</span>
+            <span class="tag">#invalidation</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A cache is a fast store (usually in-memory, like Redis) in front of a slower one (the database). The
+            strategies differ in who loads the cache and how writes are handled:
+          </p>
+          <ul>
+            <li><strong>Cache-aside (lazy loading)</strong> — the <em>app</em> checks the cache; on a miss it reads the DB, stores the result, and returns it. Most common. Only requested data is cached; a miss costs an extra round trip, and you must invalidate on writes.</li>
+            <li><strong>Read-through</strong> — the cache itself fetches from the DB on a miss (the app only talks to the cache). Same effect, logic moved into the cache layer.</li>
+            <li><strong>Write-through</strong> — writes go to the cache <em>and</em> DB synchronously. Cache always fresh; writes are slower.</li>
+            <li><strong>Write-back (write-behind)</strong> — write to the cache, flush to the DB asynchronously. Fastest writes, but you can <strong>lose data</strong> if the cache dies before flushing.</li>
+            <li><strong>Write-around</strong> — writes skip the cache and go straight to the DB (cache fills on later reads). Good when written data isn’t read soon.</li>
+          </ul>
+          <p>
+            The eternal hard part is <strong>invalidation</strong> — keeping the cache from serving stale data.
+            Tools: a <strong>TTL</strong> (expire after N seconds) and/or explicit eviction on write. Watch for the
+            <strong>thundering herd</strong>: a popular key expiring sends a flood of misses straight to the DB
+            (mitigate with locks/“request coalescing” or staggered TTLs).
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Nearly every high-traffic app puts <strong>Redis cache-aside</strong> in front of its database: a
+              product page first checks Redis, and only on a miss hits SQL and caches the result for a few minutes —
+              cutting database reads by an order of magnitude. Write-through suits data that must always be fresh
+              (a config flag); write-back suits high-volume metrics where losing the last few seconds is acceptable
+              for speed. Twitter/Facebook scale their reads almost entirely on cache hit rates.
+            </p>
+          </div>
+
+          <h2>Cache-aside read</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Cache-aside flow">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="62" width="110" height="44" rx="9"/><text class="dgm-sub" x="75" y="88" text-anchor="middle">App</text>
+              <rect class="dgm-box-accent" x="240" y="62" width="120" height="44" rx="9"/><text class="dgm-label" x="300" y="88" text-anchor="middle">Cache</text>
+              <rect class="dgm-box" x="470" y="62" width="110" height="44" rx="9"/><text class="dgm-sub" x="525" y="88" text-anchor="middle">Database</text>
+
+              <line class="dgm-line" x1="130" y1="78" x2="238" y2="78" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="184" y="70" text-anchor="middle">1. get key</text>
+              <line class="dgm-line" x1="360" y1="84" x2="468" y2="84" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="414" y="76" text-anchor="middle">2. miss → read DB</text>
+              <line class="dgm-line" x1="468" y1="100" x2="362" y2="100" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="300" y="130" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">3. app stores result in cache (TTL) → next read is a hit</text>
+            </svg>
+            <figcaption>Figure 1 — Hit = instant; miss = read DB, populate, return. Writes must invalidate the key.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — cache-aside with IDistributedCache (Redis)</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public async Task&lt;Product?&gt; GetProductAsync(int id)
+{
+    string key = $"product:{id}";
+
+    // 1. Try the cache.
+    var cached = await _cache.GetStringAsync(key);
+    if (cached is not null) return JsonSerializer.Deserialize&lt;Product&gt;(cached);
+
+    // 2. Miss → load from the DB.
+    var product = await _db.Products.FindAsync(id);
+    if (product is null) return null;
+
+    // 3. Populate the cache with a TTL (freshness vs load trade-off).
+    await _cache.SetStringAsync(key, JsonSerializer.Serialize(product),
+        new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+    return product;
+}
+
+// On update: write the DB, then INVALIDATE the key (or rewrite it).
+public async Task UpdateAsync(Product p)
+{
+    _db.Update(p); await _db.SaveChangesAsync();
+    await _cache.RemoveAsync($"product:{p.Id}");      // avoid stale reads
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Cache-aside (app loads on miss) is the default; read-through moves that into the cache layer.</li>
+              <li>Write-through keeps the cache fresh (slower writes); write-back is fastest but can lose data.</li>
+              <li>Invalidation is the hard part — use TTLs + eviction on write, and guard against thundering herds.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/redis.html"><span class="rc-cat">Database</span><span class="rc-title">Redis Internals</span></a>
+            <a class="related-card" href="../system-design/sessions.html"><span class="rc-cat">System Design</span><span class="rc-title">How Sessions Work</span></a>
+            <a class="related-card" href="../database/replication.html"><span class="rc-cat">Database</span><span class="rc-title">Replication</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“How would you cache this, and how do you keep it fresh?”</em> Default to <strong>cache-aside +
+              TTL</strong>, then compare write-through (fresh, slower) and write-back (fast, lossy). Naming the
+              <strong>thundering herd</strong> and cache invalidation as the hard problem signals you’ve run a
+              cache in production.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

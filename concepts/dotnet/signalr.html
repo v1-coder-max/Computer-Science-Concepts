@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SignalR — DevLens</title>
+  <meta name="description" content="How SignalR adds real-time, server-to-client push to .NET: hubs as RPC, transport negotiation (WebSockets first), groups, and the Redis backplane for scale-out." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="signalr" data-title="SignalR">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>SignalR</h1>
+          <p class="lede">
+            Real-time, two-way communication for .NET: the <strong>server can push to clients</strong> the
+            instant something happens — no polling.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#signalr</span>
+            <span class="tag">#real-time</span>
+            <span class="tag">#websockets</span>
+            <span class="tag">#hubs</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Plain HTTP is request/response — the client always asks first. For live features (chat,
+            notifications, dashboards) you want the <strong>server to push</strong>. SignalR is the .NET
+            library that makes that easy. Its central abstraction is the <strong>Hub</strong>: an
+            RPC-style class where clients call server methods and the server calls <em>client</em> methods
+            by name.
+          </p>
+          <p>
+            Under the hood SignalR <strong>negotiates the best transport</strong> available and falls back
+            gracefully:
+          </p>
+          <ul>
+            <li><strong>WebSockets</strong> — a persistent, full-duplex connection. The default and best option.</li>
+            <li><strong>Server-Sent Events</strong> — server→client streaming when WebSockets aren’t available.</li>
+            <li><strong>Long polling</strong> — the universal fallback.</li>
+          </ul>
+          <p>
+            It also gives you <strong>groups</strong> (broadcast to a subset, e.g. everyone in a chat room),
+            stable per-client <strong>connection IDs</strong>, and automatic reconnection. To run across
+            <em>multiple</em> servers you add a <strong>backplane</strong> (Redis), so a message published on
+            server A reaches clients connected to server B.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A <strong>Slack</strong>-style chat or a live ops dashboard is the canonical use. When a
+              teammate sends a message, the server pushes it to everyone in that channel’s group over their
+              open WebSocket — milliseconds, no refresh. Because the app runs on many instances behind a load
+              balancer, a <strong>Redis backplane</strong> fans each message out to all servers so a user on
+              instance 7 sees the message published from instance 2. Stock tickers, sports scores, and
+              collaborative editors work the same way.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Hubs, groups, and a backplane</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 200" role="img" aria-label="SignalR hubs with Redis backplane">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="20" y="24" width="110" height="34" rx="7" />
+              <text class="dgm-sub" x="75" y="46" text-anchor="middle">client A</text>
+              <rect class="dgm-box" x="20" y="140" width="110" height="34" rx="7" />
+              <text class="dgm-sub" x="75" y="162" text-anchor="middle">client B</text>
+
+              <rect class="dgm-box-accent" x="190" y="20" width="150" height="44" rx="9" />
+              <text class="dgm-label" x="265" y="40" text-anchor="middle">Server 1 · Hub</text>
+              <text class="dgm-sub"   x="265" y="56" text-anchor="middle">WebSocket</text>
+              <rect class="dgm-box-accent" x="190" y="134" width="150" height="44" rx="9" />
+              <text class="dgm-label" x="265" y="154" text-anchor="middle">Server 2 · Hub</text>
+              <text class="dgm-sub"   x="265" y="170" text-anchor="middle">WebSocket</text>
+
+              <rect class="dgm-box" x="420" y="78" width="150" height="44" rx="9" />
+              <text class="dgm-label" x="495" y="98" text-anchor="middle">Redis backplane</text>
+              <text class="dgm-sub"   x="495" y="114" text-anchor="middle">fans out to all</text>
+
+              <line class="dgm-line" x1="130" y1="41"  x2="188" y2="41"  marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="130" y1="157" x2="188" y2="157" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="340" y1="48"  x2="418" y2="90"  marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="340" y1="150" x2="418" y2="110" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — A message on one server reaches clients on every server via the backplane.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class ChatHub : Hub
+{
+    // Clients call this; the server pushes to others by calling a CLIENT method.
+    public async Task SendToRoom(string room, string user, string text)
+    {
+        await Clients.Group(room).SendAsync("messageReceived", user, text);
+    }
+
+    public Task JoinRoom(string room) =&gt;
+        Groups.AddToGroupAsync(Context.ConnectionId, room); // ConnectionId = this client
+}
+
+// Program.cs
+builder.Services.AddSignalR()
+    .AddStackExchangeRedis("localhost:6379"); // backplane for multi-server scale-out
+
+var app = builder.Build();
+app.MapHub&lt;ChatHub&gt;("/hubs/chat");</code></pre>
+          </div>
+          <p>A browser client subscribes to the server’s pushes and calls hub methods:</p>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">JavaScript</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-javascript">const conn = new signalR.HubConnectionBuilder().withUrl("/hubs/chat").build();
+conn.on("messageReceived", (user, text) =&gt; render(user, text)); // server → client push
+await conn.start();
+await conn.invoke("JoinRoom", "general");
+await conn.invoke("SendToRoom", "general", "vishal", "hello!");</code></pre>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>SignalR gives real-time, bidirectional push via <strong>Hubs</strong> (RPC both ways) over a persistent connection.</li>
+              <li>It negotiates the best transport (WebSockets → SSE → long polling) automatically.</li>
+              <li>Scaling to multiple servers requires a <strong>backplane</strong> (Redis) so messages reach clients on every instance.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/websockets.html">
+              <span class="rc-cat">Web Fundamentals</span><span class="rc-title">WebSockets vs Polling vs SSE</span>
+            </a>
+            <a class="related-card" href="../dotnet/grpc.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">gRPC</span>
+            </a>
+            <a class="related-card" href="../system-design/sessions.html">
+              <span class="rc-cat">System Design</span><span class="rc-title">How Sessions Work</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“How would you build live notifications/chat?”</em> Name SignalR and that it prefers
+              WebSockets with graceful fallback. The senior follow-up is scale: when you mention multiple
+              servers, immediately bring up the <strong>Redis backplane</strong> and sticky-session/affinity
+              considerations behind a load balancer.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

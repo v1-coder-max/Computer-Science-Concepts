@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<!--
+  ════════════════════════════════════════════════════════════════════
+  DevLens — CONCEPT PAGE TEMPLATE
+  --------------------------------------------------------------------
+  HOW TO USE
+  1. Copy this file to:  /concepts/<category>/<slug>.html
+     (e.g. /concepts/system-design/sessions.html)
+  2. Asset paths below use ../../ because real concept pages sit TWO
+     levels deep under the site root. Keep them as-is.
+  3. Fill in every section marked  <!-- ✏️ ... -->  and delete guidance.
+  4. Set the three <body data-*> attributes so the sidebar, breadcrumb
+     and "mark as read" all wire up automatically.
+  5. ADD A MATCHING ENTRY to /data/search-index.json  AND  register the
+     concept in assets/js/nav.js (SITE.categories[].concepts).
+
+  REQUIRED SECTIONS (every concept page must have all 7):
+    1. Plain-English explanation        5. Key takeaways (max 3)
+    2. Real-world example               6. Related concepts (linked)
+    3. Visual (inline SVG/HTML)         7. Interview tip (one line)
+    4. C# / relevant code example
+  ════════════════════════════════════════════════════════════════════
+-->
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ✏️ Title format: "Concept Name — DevLens" -->
+  <title>Concept Title — DevLens</title>
+  <!-- ✏️ 1–2 sentence meta description (also used in search-index.json) -->
+  <meta name="description" content="One-line description of this concept for search and SEO." />
+
+  <!-- Apply saved theme before paint (no FOUC) -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+
+  <!-- Prism.js — syntax highlighting (dark theme), loaded from CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<!--
+  ✏️ data-category : the category id from nav.js (dotnet, csharp, database,
+       oop, microservices, system-design, coding-problems, web-fundamentals)
+  ✏️ data-concept  : this page's slug (matches the filename without .html)
+  ✏️ data-title    : the H1 text (used in breadcrumb)
+-->
+<body data-category="system-design" data-concept="REPLACE-slug" data-title="Concept Title">
+
+  <!-- ===== Top bar (identical on every page) ===== -->
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <!-- ===== Shell: sidebar | content | TOC ===== -->
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"><!-- nav.js --></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"><!-- nav.js --></nav>
+
+        <article class="article">
+          <!-- ✏️ H1 + one-sentence lede -->
+          <h1>Concept Title</h1>
+          <p class="lede">
+            A single sentence that frames why a busy developer should care about this.
+          </p>
+
+          <div class="concept-meta">
+            <!-- ✏️ 2–4 tags -->
+            <span class="tag">#tag-one</span>
+            <span class="tag">#tag-two</span>
+            <span class="tag">#tag-three</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- ============ 1. PLAIN-ENGLISH EXPLANATION ============ -->
+          <h2>The idea in plain English</h2>
+          <p>
+            <!-- ✏️ Explain it the way you'd explain it to a sharp colleague at
+                 lunch. No jargon dumps. Define terms the first time you use them.
+                 2–4 short paragraphs is plenty. -->
+            Explain the concept simply here. Lead with the mental model, then add
+            precision. Use <strong>bold</strong> for the one phrase worth remembering
+            and <code>inline code</code> for identifiers, keywords or commands.
+          </p>
+          <p>
+            A second paragraph can introduce the “why it exists” — the problem this
+            concept solves and what life looked like before it.
+          </p>
+
+          <!-- ============ 2. REAL-WORLD EXAMPLE ============ -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <!-- ✏️ Tie it to a system the reader knows: Twitter, Gmail, Netflix,
+                   Amazon, Stripe, Uber… Be concrete about scale and trade-offs. -->
+              Describe how a well-known product (e.g. <strong>Netflix</strong>,
+              <strong>Gmail</strong>, <strong>Amazon</strong>) applies this concept,
+              and what it buys them at scale.
+            </p>
+          </div>
+
+          <!-- ============ 3. VISUAL (inline, responsive SVG) ============ -->
+          <h2>How it works</h2>
+          <p>Walk through the diagram in a sentence or two before showing it.</p>
+
+          <figure class="figure">
+            <!-- ✏️ Replace with a diagram for THIS concept. Use the reusable
+                 .dgm-* classes so it adapts to dark/light automatically.
+                 Keep viewBox width = 600 for consistent sizing. -->
+            <svg viewBox="0 0 600 180" role="img" aria-label="Example flow diagram">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3"
+                        orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="20"  y="60" width="140" height="60" rx="10" />
+              <text class="dgm-label" x="90"  y="86"  text-anchor="middle">Client</text>
+              <text class="dgm-sub"   x="90"  y="104" text-anchor="middle">sends request</text>
+
+              <rect class="dgm-box-accent" x="230" y="60" width="140" height="60" rx="10" />
+              <text class="dgm-label" x="300" y="86"  text-anchor="middle">Server</text>
+              <text class="dgm-sub"   x="300" y="104" text-anchor="middle">does the work</text>
+
+              <rect class="dgm-box" x="440" y="60" width="140" height="60" rx="10" />
+              <text class="dgm-label" x="510" y="86"  text-anchor="middle">Store</text>
+              <text class="dgm-sub"   x="510" y="104" text-anchor="middle">persists state</text>
+
+              <line class="dgm-line" x1="160" y1="90" x2="222" y2="90" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="370" y1="90" x2="432" y2="90" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — a one-line caption describing the diagram.</figcaption>
+          </figure>
+
+          <!-- ============ 4. C# / CODE EXAMPLE ============ -->
+          <h2>In C#</h2>
+          <p>A minimal, runnable-feeling snippet that shows the concept in practice.</p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ✏️ Replace with a focused example. Comment the line that matters.
+public sealed class Example
+{
+    public string Greet(string name) =&gt; $"Hello, {name}!";
+}
+
+var result = new Example().Greet("DevLens");
+Console.WriteLine(result); // Hello, DevLens!
+</code></pre>
+          </div>
+
+          <!-- ============ 5. KEY TAKEAWAYS (max 3) ============ -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><!-- ✏️ -->First thing worth remembering.</li>
+              <li><!-- ✏️ -->Second thing worth remembering.</li>
+              <li><!-- ✏️ -->Third thing worth remembering.</li>
+            </ul>
+          </div>
+
+          <!-- ============ 6. RELATED CONCEPTS (linked) ============ -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <!-- ✏️ Link to 2–4 sibling pages. Update href/category/title. -->
+            <a class="related-card" href="../system-design/sessions.html">
+              <span class="rc-cat">System Design</span>
+              <span class="rc-title">How Sessions Work</span>
+            </a>
+            <a class="related-card" href="../dotnet/async-await.html">
+              <span class="rc-cat">.NET</span>
+              <span class="rc-title">Async / Await Internals</span>
+            </a>
+          </div>
+
+          <!-- ============ 7. INTERVIEW TIP (one line) ============ -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <!-- ✏️ One crisp line: the question they'll actually ask and the
+                   distinction that separates a strong answer from a vague one. -->
+              The single sentence on how this appears in interviews and what a great
+              answer nails that an average one misses.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"><!-- nav.js builds from h2/h3 --></aside>
+  </div>
+
+  <!-- ===== Scripts ===== -->
+  <!-- Fuse.js (search) -->
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <!-- Prism core + autoloader (pulls language grammars on demand from CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <!-- DevLens app scripts -->
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

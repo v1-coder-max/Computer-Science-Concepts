@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IHostedService &amp; BackgroundService — DevLens</title>
+  <meta name="description" content="How .NET runs background work tied to the app lifetime with IHostedService and BackgroundService: StartAsync/StopAsync, the ExecuteAsync loop, graceful shutdown, and using scoped services." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="ihostedservice" data-title="IHostedService">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>IHostedService &amp; BackgroundService</h1>
+          <p class="lede">
+            The built-in way to run <strong>background work tied to your app’s lifetime</strong> —
+            started on boot, stopped gracefully on shutdown.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#hosted-service</span>
+            <span class="tag">#background-worker</span>
+            <span class="tag">#generic-host</span>
+            <span class="tag">#graceful-shutdown</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Sometimes you need work that runs <em>alongside</em> request handling: draining a message
+            queue, sending queued emails, refreshing a cache, running a scheduled cleanup. The .NET
+            <strong>Generic Host</strong> manages these through <code>IHostedService</code>, an
+            interface with two methods — <code>StartAsync</code> (called once when the app starts) and
+            <code>StopAsync</code> (called on graceful shutdown).
+          </p>
+          <p>
+            You rarely implement the interface directly. Instead you derive from
+            <strong><code>BackgroundService</code></strong>, which gives you a single method to
+            override — <code>ExecuteAsync(CancellationToken)</code> — for a long-running loop. The host
+            starts it, and on shutdown <strong>signals the cancellation token</strong> so your loop can
+            finish the current item and exit cleanly.
+          </p>
+          <p>
+            It runs <strong>in-process</strong> with your web app (or as a standalone Worker Service).
+            The host even waits, up to a timeout, for hosted services to stop — that’s what makes
+            rolling deploys drain in-flight work instead of dropping it.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              An order system at <strong>Amazon</strong>-style scale accepts an order on the web tier
+              (fast), then a <code>BackgroundService</code> consumes an <strong>order-processing
+              queue</strong> — charging payment, reserving inventory, emailing confirmation — off the
+              request path. When Kubernetes sends <code>SIGTERM</code> during a deploy, the host cancels
+              the token; the worker stops pulling new messages, finishes the one in flight, and exits
+              within the shutdown window. No half-processed orders.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>The hosted-service lifecycle</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 180" role="img" aria-label="Hosted service lifecycle">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box" x="14" y="60" width="104" height="50" rx="9" />
+              <text class="dgm-label" x="66" y="82" text-anchor="middle">Host.Run</text>
+              <text class="dgm-sub"   x="66" y="100" text-anchor="middle">app starts</text>
+
+              <rect class="dgm-box-accent" x="146" y="60" width="120" height="50" rx="9" />
+              <text class="dgm-label" x="206" y="82" text-anchor="middle">StartAsync</text>
+              <text class="dgm-sub"   x="206" y="100" text-anchor="middle">ExecuteAsync loop</text>
+
+              <rect class="dgm-box" x="294" y="60" width="120" height="50" rx="9" />
+              <text class="dgm-label" x="354" y="82" text-anchor="middle">running</text>
+              <text class="dgm-sub"   x="354" y="100" text-anchor="middle">does work</text>
+
+              <rect class="dgm-box-accent" x="442" y="60" width="140" height="50" rx="9" />
+              <text class="dgm-label" x="512" y="82" text-anchor="middle">StopAsync</text>
+              <text class="dgm-sub"   x="512" y="100" text-anchor="middle">token cancelled</text>
+
+              <line class="dgm-line" x1="118" y1="85" x2="144" y2="85" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="266" y1="85" x2="292" y2="85" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="414" y1="85" x2="440" y2="85" marker-end="url(#arrow)" />
+
+              <text class="dgm-sub" x="354" y="40" text-anchor="middle">SIGTERM (deploy / Ctrl+C) → graceful shutdown</text>
+              <path class="dgm-line" d="M354,60 C354,28 512,28 512,58" marker-end="url(#arrow)" />
+              <text class="dgm-sub" x="300" y="150" text-anchor="middle">host waits (HostOptions.ShutdownTimeout) for the loop to drain</text>
+            </svg>
+            <figcaption>Figure 1 — Start on boot, loop while running, drain on shutdown when the token is cancelled.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class QueueWorker(
+    IServiceScopeFactory scopeFactory,
+    ILogger&lt;QueueWorker&gt; logger) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // Loop until the host signals shutdown via the token.
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                Message msg = await _queue.DequeueAsync(stoppingToken);
+
+                // A BackgroundService is a SINGLETON — create a scope for scoped
+                // dependencies like a DbContext, per unit of work.
+                using IServiceScope scope = scopeFactory.CreateScope();
+                var handler = scope.ServiceProvider.GetRequiredService&lt;IOrderHandler&gt;();
+                await handler.HandleAsync(msg, stoppingToken);
+            }
+            catch (OperationCanceledException) { break; } // normal on shutdown
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to process message"); // don't let the loop die
+            }
+        }
+    }
+}
+
+// Registration:
+builder.Services.AddHostedService&lt;QueueWorker&gt;();</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Don’t inject scoped services into the constructor</p>
+            <p>
+              A hosted service is a <strong>singleton</strong>, so injecting a scoped service (like
+              <code>DbContext</code>) directly captures it for the whole app lifetime — a classic
+              <em>captive dependency</em> bug. Inject <code>IServiceScopeFactory</code> and create a
+              scope per work item, as above. Also: never let an unhandled exception escape
+              <code>ExecuteAsync</code> — it stops the service silently.
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><code>IHostedService</code> (<code>StartAsync</code>/<code>StopAsync</code>) runs background work tied to the host lifetime; <code>BackgroundService</code> wraps it in an <code>ExecuteAsync</code> loop.</li>
+              <li>On shutdown the host cancels the token — honor it to drain in-flight work gracefully.</li>
+              <li>It’s a singleton: create a DI scope per work item for scoped dependencies, and never let the loop throw out.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/task-vs-thread.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Task vs Thread</span>
+            </a>
+            <a class="related-card" href="../dotnet/dependency-injection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Dependency Injection</span>
+            </a>
+            <a class="related-card" href="../dotnet/logging.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Logging</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“How do you run background jobs in ASP.NET Core?”</em> Name <code>BackgroundService</code>,
+              then show depth: explain graceful shutdown via the <code>CancellationToken</code> and the
+              <strong>scoped-service-in-a-singleton</strong> gotcha (use <code>IServiceScopeFactory</code>).
+              That second point is what separates a senior answer.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

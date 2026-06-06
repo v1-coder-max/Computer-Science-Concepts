@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Normalization vs Denormalization — DevLens</title>
+  <meta name="description" content="Normalization removes redundancy for write integrity (1NF–3NF); denormalization deliberately duplicates data for read speed. The trade-off, update anomalies, and when to use each." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="normalization" data-title="Normalization vs Denormalization">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Normalization vs Denormalization</h1>
+          <p class="lede">
+            Normalize to keep data <strong>correct</strong>; denormalize to make reads <strong>fast</strong>.
+            Knowing when to break the rules is the real skill.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#normalization</span>
+            <span class="tag">#schema-design</span>
+            <span class="tag">#denormalization</span>
+            <span class="tag">#trade-offs</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Normalization</strong> organizes a schema so each fact lives in exactly <em>one</em> place,
+            eliminating redundancy. The normal forms build on each other:
+          </p>
+          <ul>
+            <li><strong>1NF</strong> — atomic columns, no repeating groups.</li>
+            <li><strong>2NF</strong> — no partial dependency on part of a composite key.</li>
+            <li><strong>3NF</strong> — no column depends on a non-key column (no transitive dependencies).</li>
+          </ul>
+          <p>
+            The payoff is integrity: change a customer’s name in one row and it’s correct everywhere — no
+            <strong>update anomalies</strong>. The cost is that answering a question often needs <strong>joins</strong>
+            across many tables.
+          </p>
+          <p>
+            <strong>Denormalization</strong> deliberately reintroduces redundancy — duplicating columns or
+            pre-joining data — to avoid those joins and make reads faster. The trade-off flips: faster reads, but
+            now you must keep the copies in sync on every write (more complex writes, risk of drift). The rule of
+            thumb: <strong>normalize for OLTP (transactional, write-heavy)</strong>; <strong>denormalize for
+            read-heavy/analytics (OLAP)</strong> via materialized views, read models, or wide tables. Normalize
+            first, then denormalize deliberately where a real read bottleneck proves it’s worth it.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Amazon</strong>’s order-writing system is normalized — customers, orders, and order-items in
+              separate tables — so a price or address is stored once and stays consistent. But the product page you
+              read serves from a <strong>denormalized</strong>, pre-joined read model (often cached or a separate
+              store) so it doesn’t join six tables on every view. This split — normalized source of truth +
+              denormalized read views — is exactly the CQRS idea, and it’s how high-traffic systems get both
+              correctness and speed.
+            </p>
+          </div>
+
+          <h2>Joins vs one wide row</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Normalized tables versus a denormalized table">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <text class="dgm-label" x="20" y="24" fill="var(--c-success)">Normalized (write-safe)</text>
+              <rect class="dgm-box" x="20" y="40" width="90" height="40" rx="7"/><text class="dgm-sub" x="65" y="64" text-anchor="middle">Customers</text>
+              <rect class="dgm-box" x="20" y="92" width="90" height="40" rx="7"/><text class="dgm-sub" x="65" y="116" text-anchor="middle">Orders</text>
+              <rect class="dgm-box" x="140" y="66" width="90" height="40" rx="7"/><text class="dgm-sub" x="185" y="90" text-anchor="middle">OrderItems</text>
+              <line class="dgm-line" x1="110" y1="60" x2="138" y2="80"/><line class="dgm-line" x1="110" y1="112" x2="138" y2="92"/>
+              <text class="dgm-sub" x="125" y="150" text-anchor="middle">read = JOIN across tables</text>
+
+              <text class="dgm-label" x="340" y="24" fill="var(--c-info)">Denormalized (read-fast)</text>
+              <rect class="dgm-box-accent" x="340" y="50" width="240" height="60" rx="9"/>
+              <text class="dgm-sub" x="460" y="74" text-anchor="middle">OrderView { id, customerName,</text>
+              <text class="dgm-sub" x="460" y="92" text-anchor="middle">total, items… }  (pre-joined)</text>
+              <text class="dgm-sub" x="460" y="150" text-anchor="middle">read = one row · writes must sync copies</text>
+            </svg>
+            <figcaption>Figure 1 — Normalized avoids duplication; denormalized avoids joins. Pick per workload.</figcaption>
+          </figure>
+
+          <h2>In SQL</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">SQL</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-sql">-- Normalized: customer name lives once, in Customers.
+SELECT o.Id, c.Name, o.Total
+FROM Orders o JOIN Customers c ON c.Id = o.CustomerId;   -- a join per read
+
+-- Denormalized read model: name copied onto the order row → no join.
+SELECT Id, CustomerName, Total FROM OrderReadModel;      -- fast, but...
+-- ...a customer rename must now update every OrderReadModel row (or rebuild it).
+
+-- A materialized view is a managed way to denormalize for reads:
+CREATE MATERIALIZED VIEW OrderSummary AS
+SELECT o.Id, c.Name AS CustomerName, o.Total
+FROM Orders o JOIN Customers c ON c.Id = o.CustomerId;   -- refreshed on a schedule</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Normalization (1NF–3NF) stores each fact once — write integrity, no update anomalies, but more joins.</li>
+              <li>Denormalization duplicates/pre-joins for read speed — faster reads, harder writes, risk of drift.</li>
+              <li>Normalize OLTP; denormalize read-heavy paths deliberately (read models, materialized views).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/indexing.html"><span class="rc-cat">Database</span><span class="rc-title">Database Indexing</span></a>
+            <a class="related-card" href="../database/sharding.html"><span class="rc-cat">Database</span><span class="rc-title">Partitioning &amp; Sharding</span></a>
+            <a class="related-card" href="../database/sql-vs-nosql.html"><span class="rc-cat">Database</span><span class="rc-title">SQL vs NoSQL</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“When would you denormalize?”</em> Show you default to normalized (correctness) and denormalize
+              only to fix a proven read bottleneck — and that you then own keeping the duplicates in sync.
+              Naming update anomalies and materialized views/read models signals real experience.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database Indexing — DevLens</title>
+  <meta name="description" content="Why an index turns a full-table scan (O(n)) into a seek (O(log n)), how B-tree indexes work, and the difference between clustered, non-clustered and covering indexes." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="indexing" data-title="Database Indexing">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Database Indexing</h1>
+          <p class="lede">
+            An index is the book’s index for your table: instead of reading every page to
+            find a row, the database jumps almost straight to it.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#indexing</span>
+            <span class="tag">#b-tree</span>
+            <span class="tag">#query-performance</span>
+            <span class="tag">#sql</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1. PLAIN ENGLISH -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Without an index, finding <code>WHERE CustomerId = 42</code> means a
+            <strong>full table scan</strong>: the engine reads <em>every</em> row and checks
+            each one. That’s <code>O(n)</code> — fine for 1,000 rows, catastrophic for 50
+            million.
+          </p>
+          <p>
+            An index is a separate, <strong>sorted</strong> structure — almost always a
+            <strong>B-tree</strong> — that maps column values to row locations. Because it’s
+            sorted and balanced, the engine navigates from the root down through a few branch
+            levels to the exact leaf, turning the lookup into a <strong><code>O(log n)</code>
+            seek</strong>. For 50 million rows that’s roughly 3–4 page reads instead of
+            millions.
+          </p>
+          <p>The flavors you’ll actually use:</p>
+          <ul>
+            <li><strong>Clustered</strong> — defines the physical order of the table itself; the leaf level <em>is</em> the row data. One per table (usually the primary key).</li>
+            <li><strong>Non-clustered</strong> — a separate structure whose leaves point back to the row (via the clustered key). Many per table.</li>
+            <li><strong>Composite</strong> — indexes several columns in order; great for multi-column filters and sorts (order matters — leftmost-prefix rule).</li>
+            <li><strong>Covering</strong> — <code>INCLUDE</code>s the extra columns a query needs so it’s answered entirely from the index, never touching the table.</li>
+          </ul>
+
+          <!-- 2. REAL WORLD -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When you open your <strong>Amazon</strong> orders page, the query is essentially
+              <code>SELECT … FROM Orders WHERE CustomerId = @you ORDER BY CreatedUtc DESC</code>.
+              Across billions of orders, a composite index on
+              <code>(CustomerId, CreatedUtc)</code> lets the database seek straight to your
+              slice <em>already sorted</em> — no scan, no sort step. The flip side: every index
+              must be updated on each insert/update, so Amazon doesn’t index everything — write-
+              heavy tables get only the indexes their read patterns actually justify.
+            </p>
+          </div>
+
+          <!-- 3. VISUAL -->
+          <h2>How a B-tree seek works</h2>
+          <p>
+            To find key <strong>50</strong>, the engine compares at each level and follows one
+            pointer down — three hops, not a scan of every row.
+          </p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 260" role="img" aria-label="B-tree index seek for key 50">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <!-- Root -->
+              <rect class="dgm-box-accent" x="240" y="20" width="120" height="40" rx="8" />
+              <text class="dgm-label" x="300" y="45" text-anchor="middle">30 | 60</text>
+              <text class="dgm-sub" x="300" y="12" text-anchor="middle">root</text>
+
+              <!-- Branch level -->
+              <rect class="dgm-box" x="60"  y="110" width="110" height="40" rx="8" />
+              <text class="dgm-label" x="115" y="135" text-anchor="middle">10 | 20</text>
+              <rect class="dgm-box-accent" x="245" y="110" width="110" height="40" rx="8" />
+              <text class="dgm-label" x="300" y="135" text-anchor="middle">40 | 50</text>
+              <rect class="dgm-box" x="430" y="110" width="110" height="40" rx="8" />
+              <text class="dgm-label" x="485" y="135" text-anchor="middle">70 | 80</text>
+              <text class="dgm-sub" x="115" y="102" text-anchor="middle">leaf</text>
+              <text class="dgm-sub" x="300" y="102" text-anchor="middle">leaf</text>
+              <text class="dgm-sub" x="485" y="102" text-anchor="middle">leaf</text>
+
+              <!-- Root -> branches -->
+              <line class="dgm-line" x1="285" y1="60" x2="120" y2="110" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="300" y1="60" x2="300" y2="110" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="315" y1="60" x2="480" y2="110" marker-end="url(#arrow)" />
+
+              <!-- Leaf -> row -->
+              <rect class="dgm-box" x="200" y="200" width="200" height="40" rx="8" />
+              <text class="dgm-sub" x="300" y="224" text-anchor="middle">Row: id=50, CustomerId=…, Total=…</text>
+              <line class="dgm-line" x1="300" y1="150" x2="300" y2="200" marker-end="url(#arrow)" />
+
+              <text class="dgm-sub" x="540" y="232" text-anchor="end" fill="var(--c-success)"
+                    style="font:600 12px var(--font-sans)">3 hops, not N rows · O(log n)</text>
+            </svg>
+            <figcaption>Figure 1 — “50 ≥ 30 and ≥ 60? no → take the 30–60 branch → find 50.” A few page reads.</figcaption>
+          </figure>
+
+          <!-- 4. CODE -->
+          <h2>In SQL &amp; EF Core</h2>
+          <p>Create a covering, non-clustered index so the hot query never touches the table:</p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">SQL</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-sql">-- Without an index: a full scan, O(n) over the whole Orders table.
+SELECT Total, CreatedUtc FROM Orders WHERE CustomerId = 42;
+
+-- A covering, non-clustered index turns it into a seek, O(log n).
+CREATE NONCLUSTERED INDEX IX_Orders_CustomerId
+    ON Orders (CustomerId)          -- the key the WHERE filters on
+    INCLUDE (Total, CreatedUtc);    -- carried in the leaf → query answered from the index alone
+
+-- Inspect what the optimizer actually chose:
+SET STATISTICS IO ON;               -- watch logical reads drop after the index exists
+-- (SQL Server) view the plan: look for "Index Seek" instead of "Table Scan".</code></pre>
+          </div>
+
+          <p>The same index, declared in EF Core so it travels with your migrations:</p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — EF Core</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">protected override void OnModelCreating(ModelBuilder b)
+{
+    b.Entity&lt;Order&gt;()
+        .HasIndex(o =&gt; o.CustomerId)               // key column
+        .IncludeProperties(o =&gt; new { o.Total, o.CreatedUtc }) // covering
+        .HasDatabaseName("IX_Orders_CustomerId");
+}</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Indexes aren’t free</p>
+            <p>
+              Every index is extra storage and a write tax — each <code>INSERT</code>,
+              <code>UPDATE</code>, and <code>DELETE</code> must keep it in sync. A function on
+              the column (<code>WHERE YEAR(CreatedUtc) = 2024</code>) makes the index
+              <em>non-sargable</em> and forces a scan. Index for your real query patterns, then
+              verify with the execution plan — don’t guess.
+            </p>
+          </div>
+
+          <!-- 5. TAKEAWAYS -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>An index is a sorted B-tree that turns a scan (<code>O(n)</code>) into a seek (<code>O(log n)</code>).</li>
+              <li>Clustered = the table’s physical order (one per table); non-clustered = a side structure pointing back to rows (many).</li>
+              <li>Indexes speed reads but tax writes and storage — and a function on the column disables them. Index deliberately.</li>
+            </ul>
+          </div>
+
+          <!-- 6. RELATED -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/execution-plans.html">
+              <span class="rc-cat">Database</span>
+              <span class="rc-title">Reading Execution Plans</span>
+            </a>
+            <a class="related-card" href="../database/transactions-acid.html">
+              <span class="rc-cat">Database</span>
+              <span class="rc-title">Transactions &amp; ACID</span>
+            </a>
+            <a class="related-card" href="../database/sharding.html">
+              <span class="rc-cat">Database</span>
+              <span class="rc-title">Partitioning &amp; Sharding</span>
+            </a>
+          </div>
+
+          <!-- 7. INTERVIEW TIP -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The classic is <em>“this query is slow — what do you do?”</em> Don’t jump to
+              “add an index.” Say you’d read the <strong>execution plan</strong> first, look for
+              a scan vs seek, check whether the predicate is <strong>sargable</strong>, and only
+              then add a <em>covering composite</em> index in the right column order — while
+              weighing the write cost.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EF Core Internals — DevLens</title>
+  <meta name="description" content="How EF Core really works: the DbContext as a unit of work, the change tracker and entity states, LINQ-to-SQL translation, the N+1 problem, and AsNoTracking." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="ef-core-internals" data-title="EF Core Internals">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>EF Core Internals</h1>
+          <p class="lede">
+            EF Core maps objects to tables — but to use it well you need to see the two engines inside:
+            the <strong>change tracker</strong> and the <strong>LINQ-to-SQL translator</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#ef-core</span>
+            <span class="tag">#orm</span>
+            <span class="tag">#change-tracking</span>
+            <span class="tag">#n+1</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            A <code>DbContext</code> is a <strong>unit of work</strong>. When you query, EF
+            <em>materializes</em> rows into entity objects and, by default, starts <strong>tracking</strong>
+            them: it keeps a snapshot and notes each entity’s state —
+            <code>Unchanged</code>, <code>Modified</code>, <code>Added</code>, or <code>Deleted</code>. You
+            mutate plain C# objects; when you call <code>SaveChanges</code>, EF diffs against the snapshots
+            and emits exactly the <code>INSERT</code>/<code>UPDATE</code>/<code>DELETE</code> statements
+            needed, in one transaction.
+          </p>
+          <p>
+            The other engine is <strong>query translation</strong>. A LINQ query over
+            <code>IQueryable</code> isn’t run in memory — EF builds an <em>expression tree</em> and
+            translates it into SQL that runs <strong>on the database</strong>. The crucial distinction:
+          </p>
+          <ul>
+            <li><strong><code>IQueryable</code></strong> — composable, translated to SQL, filtered server-side. <code>Where</code> runs in the database.</li>
+            <li><strong><code>IEnumerable</code></strong> — once you’ve pulled data into memory (e.g. <code>.ToList()</code>), further LINQ runs in your process.</li>
+          </ul>
+          <p>
+            Get that boundary wrong and you accidentally pull a whole table into memory. The other classic
+            trap is the <strong>N+1 problem</strong>: lazily loading a related entity inside a loop fires one
+            query per row. <code>Include</code> (eager loading) or a projection fixes it. For read-only
+            queries, <code>AsNoTracking</code> skips the snapshot overhead.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              An orders dashboard that lists 50 orders and each customer’s name is the textbook N+1 disaster:
+              1 query for the orders + 50 more for the customers = 51 round trips, and it gets worse under
+              load. The fix is one <code>Include</code> (or a projection to a DTO) so EF emits a single
+              joined query. Read-heavy API endpoints add <code>AsNoTracking</code> to drop change-tracking
+              cost — exactly how high-traffic .NET services keep their read paths cheap.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>Track, translate, save</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 200" role="img" aria-label="EF Core change tracker and query translation">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+
+              <rect class="dgm-box-accent" x="20" y="20" width="200" height="160" rx="12" />
+              <text class="dgm-label" x="120" y="42" text-anchor="middle">DbContext</text>
+              <text class="dgm-sub"   x="120" y="60" text-anchor="middle">change tracker</text>
+              <rect class="dgm-box" x="36" y="74"  width="168" height="24" rx="5" />
+              <text class="dgm-sub" x="120" y="91" text-anchor="middle">order #1 — Unchanged</text>
+              <rect x="36" y="102" width="168" height="24" rx="5" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)" />
+              <text x="120" y="119" text-anchor="middle" fill="var(--c-warning)" style="font:600 12px var(--font-sans)">order #2 — Modified</text>
+              <rect x="36" y="130" width="168" height="24" rx="5" fill="var(--c-success)" fill-opacity="0.14" stroke="var(--c-success)" />
+              <text x="120" y="147" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">order #3 — Added</text>
+
+              <rect class="dgm-box" x="280" y="40" width="150" height="50" rx="9" />
+              <text class="dgm-sub" x="355" y="62" text-anchor="middle">LINQ → expr tree</text>
+              <text class="dgm-sub" x="355" y="78" text-anchor="middle">→ SQL</text>
+              <rect class="dgm-box" x="280" y="120" width="150" height="50" rx="9" />
+              <text class="dgm-sub" x="355" y="142" text-anchor="middle">SaveChanges →</text>
+              <text class="dgm-sub" x="355" y="158" text-anchor="middle">INSERT/UPDATE</text>
+
+              <rect class="dgm-box" x="480" y="74" width="100" height="50" rx="9" />
+              <text class="dgm-label" x="530" y="104" text-anchor="middle">Database</text>
+
+              <line class="dgm-line" x1="220" y1="100" x2="278" y2="70" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="220" y1="120" x2="278" y2="145" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="430" y1="65" x2="478" y2="92" marker-end="url(#arrow)" />
+              <line class="dgm-line" x1="430" y1="145" x2="478" y2="108" marker-end="url(#arrow)" />
+            </svg>
+            <figcaption>Figure 1 — Queries become SQL run on the DB; SaveChanges diffs tracked entities into one transaction.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ N+1: lazy-loading Customer inside the loop → 1 + N queries.
+var orders = await db.Orders.Where(o =&gt; o.IsOpen).ToListAsync();
+foreach (var o in orders)
+    Console.WriteLine(o.Customer.Name); // each access may hit the DB
+
+// ✅ Eager-load in one round trip, read-only (no tracking), projected to a DTO.
+var rows = await db.Orders
+    .Where(o =&gt; o.IsOpen)               // translated to SQL WHERE (IQueryable)
+    .Include(o =&gt; o.Customer)           // JOIN, single query
+    .AsNoTracking()                     // skip snapshot cost for reads
+    .Select(o =&gt; new OrderRow(o.Id, o.Customer.Name, o.Total))
+    .ToListAsync();
+
+// Writes: mutate tracked entities, then one SaveChanges = one transaction.
+var order = await db.Orders.FindAsync(42);
+order!.Status = "Shipped";             // tracker marks it Modified
+db.Orders.Add(new Order { /* ... */ }); // marked Added
+await db.SaveChangesAsync();            // emits UPDATE + INSERT together</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ Watch the IQueryable → IEnumerable boundary</p>
+            <p>
+              Calling <code>.ToList()</code> (or any non-translatable method) <em>before</em> your filters
+              pulls the whole table into memory, then filters in C#. Keep <code>Where</code>/<code>Select</code>
+              on the <code>IQueryable</code> so they become SQL. And a <code>DbContext</code> is <strong>not
+              thread-safe</strong> — one per unit of work (scoped per request).
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The <code>DbContext</code> is a unit of work; the change tracker diffs entity states and <code>SaveChanges</code> emits batched SQL in a transaction.</li>
+              <li>LINQ over <code>IQueryable</code> becomes SQL on the server — don’t cross into <code>IEnumerable</code> too early.</li>
+              <li>Avoid N+1 with <code>Include</code>/projection, and use <code>AsNoTracking</code> for read-only queries.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/indexing.html">
+              <span class="rc-cat">Database</span><span class="rc-title">Database Indexing</span>
+            </a>
+            <a class="related-card" href="../dotnet/dependency-injection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Dependency Injection</span>
+            </a>
+            <a class="related-card" href="../dotnet/logging.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Logging</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“What’s the N+1 problem and how do you fix it?”</em> is near-guaranteed. Explain it, fix it
+              with <code>Include</code>/projection, and add depth: <code>AsNoTracking</code> for reads, the
+              <code>IQueryable</code> vs <code>IEnumerable</code> translation boundary, and that the change
+              tracker is what makes <code>SaveChanges</code> know what to write.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

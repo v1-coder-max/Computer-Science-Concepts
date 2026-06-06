@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Span&lt;T&gt; &amp; Memory&lt;T&gt; — DevLens</title>
+  <meta name="description" content="Span<T> is a zero-copy, bounds-checked window over contiguous memory — arrays, stack, or unmanaged. Why it's allocation-free, the ref-struct rules, and when to use Memory<T>." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dotnet" data-concept="span" data-title="Span<T> & Memory<T>">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Span&lt;T&gt; &amp; Memory&lt;T&gt;</h1>
+          <p class="lede">
+            A <code>Span&lt;T&gt;</code> is a type-safe <strong>window over memory you already have</strong> —
+            slice and read it without allocating or copying.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#span</span>
+            <span class="tag">#performance</span>
+            <span class="tag">#zero-allocation</span>
+            <span class="tag">#ref-struct</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <!-- 1 -->
+          <h2>The idea in plain English</h2>
+          <p>
+            Before <code>Span&lt;T&gt;</code>, working with “part of” a buffer usually meant copying:
+            <code>Substring</code>, <code>Array.Copy</code>, a new array. Each copy is an allocation the GC
+            later has to clean up. <code>Span&lt;T&gt;</code> removes the copy. It’s a tiny value
+            (a pointer + a length) that <strong>points into</strong> existing contiguous memory — a managed
+            array, a <code>stackalloc</code> block, or even unmanaged memory — and lets you read/write it with
+            <strong>bounds checking</strong>.
+          </p>
+          <p>
+            <strong>Slicing is free.</strong> <code>span.Slice(10, 4)</code> doesn’t copy four elements; it
+            returns another span pointing at the same memory with a new offset and length. That’s why
+            high-performance parsing chops a buffer into fields with zero allocations.
+          </p>
+          <p>
+            The catch is the safety mechanism: <code>Span&lt;T&gt;</code> is a <strong>ref struct</strong>, so
+            it must live on the stack. That means you <em>can’t</em> store it in a class field, capture it in a
+            lambda, use it across an <code>await</code>, or box it. When you need those (especially async),
+            reach for its heap-friendly sibling, <strong><code>Memory&lt;T&gt;</code></strong>, and get a span
+            from it (<code>memory.Span</code>) at the point of use.
+          </p>
+
+          <!-- 2 -->
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>System.Text.Json</strong> and <strong>Kestrel</strong> are built on spans. When Kestrel
+              parses an incoming HTTP request, it slices the raw byte buffer into method, path, and headers as
+              <code>ReadOnlySpan&lt;byte&gt;</code> windows — no intermediate strings, no garbage — which is a
+              big part of how ASP.NET Core handles millions of requests with minimal GC pressure. Any time you
+              replace <code>Substring</code> in a hot loop with <code>AsSpan().Slice()</code>, you’re doing the
+              same thing at small scale.
+            </p>
+          </div>
+
+          <!-- 3 -->
+          <h2>A window, not a copy</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Span as a window over an array">
+              <text class="dgm-sub" x="20" y="32">byte[] buffer (one allocation on the heap)</text>
+              <g>
+                <rect class="dgm-box" x="20"  y="44" width="48" height="40" rx="5" /><text class="dgm-sub" x="44"  y="69" text-anchor="middle">H</text>
+                <rect class="dgm-box" x="68"  y="44" width="48" height="40" rx="5" /><text class="dgm-sub" x="92"  y="69" text-anchor="middle">e</text>
+                <rect class="dgm-box-accent" x="116" y="44" width="48" height="40" rx="5" /><text class="dgm-sub" x="140" y="69" text-anchor="middle">l</text>
+                <rect class="dgm-box-accent" x="164" y="44" width="48" height="40" rx="5" /><text class="dgm-sub" x="188" y="69" text-anchor="middle">l</text>
+                <rect class="dgm-box-accent" x="212" y="44" width="48" height="40" rx="5" /><text class="dgm-sub" x="236" y="69" text-anchor="middle">o</text>
+                <rect class="dgm-box" x="260" y="44" width="48" height="40" rx="5" /><text class="dgm-sub" x="284" y="69" text-anchor="middle">!</text>
+              </g>
+
+              <rect x="116" y="104" width="144" height="40" rx="8" fill="none" stroke="var(--accent)" stroke-width="2" />
+              <text x="188" y="129" text-anchor="middle" fill="var(--accent)" style="font:600 13px var(--font-sans)">buffer.Slice(2, 3)</text>
+              <line class="dgm-line" x1="140" y1="104" x2="140" y2="86" />
+              <line class="dgm-line" x1="236" y1="104" x2="236" y2="86" />
+
+              <text class="dgm-sub" x="340" y="120" fill="var(--c-success)" style="font:600 12px var(--font-sans)">same memory · offset 2, length 3 · no allocation</text>
+            </svg>
+            <figcaption>Figure 1 — A span is an offset + length into existing memory; slicing copies nothing.</figcaption>
+          </figure>
+
+          <!-- 4 -->
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Slice without copying:
+int[] data = { 10, 20, 30, 40, 50 };
+Span&lt;int&gt; middle = data.AsSpan(1, 3);  // {20,30,40} — a window, not a copy
+middle[0] = 99;                         // writes through: data[1] is now 99
+
+// Stack buffer + span = zero heap allocation on a hot path:
+Span&lt;byte&gt; tmp = stackalloc byte[16];
+
+// Parse a substring with no Substring allocation:
+ReadOnlySpan&lt;char&gt; date = "2026-06-06".AsSpan();
+int year  = int.Parse(date.Slice(0, 4));
+int month = int.Parse(date.Slice(5, 2));
+
+// Need it across await / in a field? Use Memory&lt;T&gt; and get the span at use-site.
+async Task ConsumeAsync(Memory&lt;byte&gt; buffer)
+{
+    await Task.Yield();
+    Span&lt;byte&gt; span = buffer.Span;       // materialize the span here, after the await
+    span[0] = 1;
+}</code></pre>
+          </div>
+
+          <div class="callout warning">
+            <p class="callout-title">⚠️ <code>Span&lt;T&gt;</code> is stack-only</p>
+            <p>
+              Because it’s a <code>ref struct</code>, you can’t put a <code>Span&lt;T&gt;</code> in a class
+              field, capture it in a lambda/closure, use it as a generic type argument, or hold it across an
+              <code>await</code> or <code>yield</code>. The compiler enforces this. When any of those is needed,
+              use <code>Memory&lt;T&gt;</code> (heap-friendly) and slice to a span only where you actually touch
+              the bytes.
+            </p>
+          </div>
+
+          <!-- 5 -->
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><code>Span&lt;T&gt;</code> is a zero-copy, bounds-checked window over array/stack/unmanaged memory — slicing allocates nothing.</li>
+              <li>It’s a <code>ref struct</code> (stack-only): no fields, closures, or use across <code>await</code>.</li>
+              <li>For async or stored scenarios use <code>Memory&lt;T&gt;</code> and get its <code>.Span</code> at the point of use.</li>
+            </ul>
+          </div>
+
+          <!-- 6 -->
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/memory-management.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Memory Management</span>
+            </a>
+            <a class="related-card" href="../dotnet/garbage-collection.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Garbage Collection</span>
+            </a>
+            <a class="related-card" href="../dotnet/records.html">
+              <span class="rc-cat">.NET</span><span class="rc-title">Records</span>
+            </a>
+          </div>
+
+          <!-- 7 -->
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“What is <code>Span&lt;T&gt;</code> and why does it matter?”</em> Say it’s a no-copy view over
+              contiguous memory that eliminates allocations in parsing/slicing hot paths. Then prove depth: it’s
+              a <strong>ref struct</strong>, so stack-only — and that’s exactly why <code>Memory&lt;T&gt;</code>
+              exists for async/stored cases.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

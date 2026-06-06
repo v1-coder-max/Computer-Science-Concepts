@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL vs NoSQL — DevLens</title>
+  <meta name="description" content="When to choose a relational database versus NoSQL: structure and relationships and ACID versus flexible schema, horizontal scale and BASE — and why the answer is usually 'both'." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="database" data-concept="sql-vs-nosql" data-title="SQL vs NoSQL">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>SQL vs NoSQL</h1>
+          <p class="lede">
+            Not a religious war — a fit question. Relational databases and NoSQL optimize for different things;
+            pick by <strong>data shape, consistency needs, and scale</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#sql-vs-nosql</span>
+            <span class="tag">#acid-vs-base</span>
+            <span class="tag">#scaling</span>
+            <span class="tag">#decision</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Relational (SQL)</strong> databases — PostgreSQL, SQL Server, MySQL — store structured rows with
+            a fixed schema and enforce relationships. Their strengths: <strong>ACID</strong> transactions, powerful
+            ad-hoc queries and <strong>joins</strong>, and strong consistency. They traditionally scale
+            <em>vertically</em> (and via read replicas), and changing the schema is a deliberate migration.
+          </p>
+          <p>
+            <strong>NoSQL</strong> stores (document, key-value, wide-column, graph) trade some of that for
+            <strong>flexible schemas</strong>, easy <strong>horizontal scaling</strong>, and very high throughput —
+            usually with denormalized data and <strong>BASE</strong> (eventual) consistency rather than strict ACID.
+            They’re fast when the access pattern is known and singular, but weak at joins and multi-record transactions.
+          </p>
+          <p>Decide with a few questions:</p>
+          <ul>
+            <li><strong>Relationships &amp; transactions matter?</strong> (orders, payments, inventory) → SQL.</li>
+            <li><strong>Schema varies / evolves fast, entity read as a whole?</strong> (catalog, profile, CMS) → document NoSQL.</li>
+            <li><strong>Massive scale / one known query pattern / huge write volume?</strong> (feeds, time-series, cache) → key-value or wide-column.</li>
+            <li><strong>Deeply connected data?</strong> (social graph, recommendations) → graph.</li>
+          </ul>
+          <p>
+            The mature answer is rarely “one or the other.” It’s <strong>polyglot persistence</strong>: SQL for the
+            transactional core, plus the right NoSQL store for catalogs, caches, feeds, and relationships.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              <strong>Amazon</strong> keeps orders and payments in relational/ACID systems (you cannot “eventually”
+              charge a card), serves the product catalog from a denormalized document/NoSQL store, caches hot data
+              in Redis, and runs recommendations on graph-like systems. The takeaway from real architectures isn’t
+              “NoSQL replaced SQL” — it’s that each workload got the database that fits it, with the relational
+              store still guarding the data that must be exactly right.
+            </p>
+          </div>
+
+          <h2>Different optimizations</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="SQL versus NoSQL comparison">
+              <rect class="dgm-box-accent" x="20" y="24" width="260" height="120" rx="11"/>
+              <text class="dgm-label" x="150" y="48" text-anchor="middle">SQL (relational)</text>
+              <text class="dgm-sub" x="40" y="72">• fixed schema, relationships</text>
+              <text class="dgm-sub" x="40" y="92">• ACID, joins, ad-hoc queries</text>
+              <text class="dgm-sub" x="40" y="112">• strong consistency</text>
+              <text class="dgm-sub" x="40" y="132">• orders, payments, inventory</text>
+
+              <rect class="dgm-box" x="320" y="24" width="260" height="120" rx="11"/>
+              <text class="dgm-label" x="450" y="48" text-anchor="middle">NoSQL</text>
+              <text class="dgm-sub" x="340" y="72">• flexible schema</text>
+              <text class="dgm-sub" x="340" y="92">• horizontal scale, high throughput</text>
+              <text class="dgm-sub" x="340" y="112">• BASE / eventual consistency</text>
+              <text class="dgm-sub" x="340" y="132">• catalog, feed, cache, graph</text>
+            </svg>
+            <figcaption>Figure 1 — Consistency + relationships vs flexibility + scale. Match the store to the workload.</figcaption>
+          </figure>
+
+          <h2>Same data, two models</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">SQL vs document</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-sql">-- SQL: normalized, joined at read time (consistent, relational).
+SELECT o.Id, c.Name, i.Sku
+FROM Orders o
+JOIN Customers c ON c.Id = o.CustomerId
+JOIN OrderItems i ON i.OrderId = o.Id;
+
+-- Document NoSQL: one denormalized document, no joins, scales horizontally.
+-- { "_id": "o-1", "customer": "Ada", "items": [ { "sku": "KB-1" } ] }</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>SQL: structure, relationships, ACID, joins, strong consistency — choose for transactional/relational data.</li>
+              <li>NoSQL: flexible schema, horizontal scale, high throughput, BASE — choose by a known access pattern.</li>
+              <li>It’s usually <strong>both</strong> (polyglot persistence), with SQL guarding data that must be exact.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/nosql-patterns.html"><span class="rc-cat">Database</span><span class="rc-title">NoSQL Patterns</span></a>
+            <a class="related-card" href="../database/normalization.html"><span class="rc-cat">Database</span><span class="rc-title">Normalization</span></a>
+            <a class="related-card" href="../system-design/cap-theorem.html"><span class="rc-cat">System Design</span><span class="rc-title">CAP Theorem</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Would you use SQL or NoSQL for X?”</em> Never answer dogmatically. Ask about relationships,
+              transactions, query patterns, and scale, then justify — and mention <strong>polyglot persistence</strong>
+              (SQL for the money, NoSQL for catalog/cache/feed). Tie consistency to ACID vs BASE and the CAP theorem.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
