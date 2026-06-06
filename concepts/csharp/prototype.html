@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prototype Pattern — DevLens</title>
+  <meta name="description" content="The Prototype pattern: create new objects by cloning an existing one instead of building from scratch. Shallow vs deep copy, why ICloneable is discouraged, and records' with-expression in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="prototype" data-title="Prototype Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Prototype Pattern</h1>
+          <p class="lede">
+            Instead of building a new object from scratch, <strong>copy an existing one</strong> and tweak it —
+            handy when construction is expensive or you want a variant of something already configured.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#creational</span>
+            <span class="tag">#cloning</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            The <strong>Prototype</strong> pattern creates objects by <strong>cloning a prototype</strong> rather
+            than calling a constructor. It’s useful when: building an object is expensive (lots of setup, a DB hit, a
+            heavy parse), you need many near-identical objects, or you want a copy of an object whose exact type you
+            don’t know — just “give me another one like this.”
+          </p>
+          <p>The thing you must get right is <strong>how deep the copy goes</strong>:</p>
+          <ul>
+            <li><strong>Shallow copy</strong> — copies the top-level fields. Reference-type members (lists, nested objects) are <em>shared</em> with the original, so mutating the clone’s list also mutates the original’s. Often a bug.</li>
+            <li><strong>Deep copy</strong> — recursively copies nested objects too, so the clone is fully independent.</li>
+          </ul>
+          <p>
+            In C#, the old <code>ICloneable</code> interface is <strong>discouraged</strong> because it doesn’t
+            specify shallow vs deep — callers can’t tell what they’ll get. Prefer an explicit <strong>copy
+            constructor</strong> or a typed <code>Clone()</code> method, or — for immutable data — a
+            <strong>record</strong> with the <code>with</code> expression, which makes “a copy with these fields
+            changed” a language feature.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A game spawns hundreds of enemies that share most properties — cloning a fully-configured prototype is
+              far cheaper than re-running expensive setup per enemy. Document/template systems clone a base template
+              and customize it. In everyday C#, the cleanest version is records: an event-sourced system holds an
+              immutable state object and produces the next state with <code>state with { Balance = newBalance }</code> —
+              a deep-ish copy with one field changed, no mutation, no shared-reference bugs. That’s the prototype idea
+              baked into the language.
+            </p>
+          </div>
+
+          <h2>Clone, then tweak</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="Prototype cloning shallow vs deep">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="30" y="50" width="130" height="50" rx="9"/><text class="dgm-label" x="95" y="72" text-anchor="middle">prototype</text><text class="dgm-sub" x="95" y="90" text-anchor="middle">configured object</text>
+              <rect class="dgm-box" x="240" y="50" width="130" height="50" rx="9"/><text class="dgm-label" x="305" y="72" text-anchor="middle">Clone()</text><text class="dgm-sub" x="305" y="90" text-anchor="middle">+ tweak fields</text>
+              <rect class="dgm-box" x="450" y="50" width="120" height="50" rx="9"/><text class="dgm-sub" x="510" y="79" text-anchor="middle">new variant</text>
+              <line class="dgm-line" x1="160" y1="75" x2="238" y2="75" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="370" y1="75" x2="448" y2="75" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="300" y="130" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">deep copy nested refs — else clone &amp; original share them</text>
+            </svg>
+            <figcaption>Figure 1 — Copy a ready-made object; deep-copy its references so the clone is independent.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ✅ Explicit deep copy via a copy constructor — caller knows exactly what they get.
+public class Enemy
+{
+    public string Type { get; set; } = "";
+    public Stats Stats { get; set; } = new();          // reference type
+    public Enemy() { }
+    public Enemy(Enemy other)                           // copy constructor
+    {
+        Type  = other.Type;
+        Stats = new Stats(other.Stats);                 // DEEP copy the nested object
+    }
+}
+var template = new Enemy { Type = "Orc", Stats = new() { Hp = 100 } };
+var clone = new Enemy(template) { Type = "Orc Captain" };  // independent variant
+
+// ✅ Immutable data: records make "copy with changes" a language feature (prototype-ish).
+public record AccountState(string Owner, decimal Balance);
+var next = state with { Balance = state.Balance - 50 };   // new copy, original untouched
+
+// ⚠ Avoid ICloneable — it doesn't say whether the copy is shallow or deep.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Prototype creates objects by cloning a configured instance instead of constructing from scratch.</li>
+              <li>Mind <strong>shallow vs deep</strong> copy — shared nested references cause subtle bugs; deep-copy when you need independence.</li>
+              <li>Avoid <code>ICloneable</code> (ambiguous); prefer copy constructors or records’ <code>with</code> expression.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/builder.html"><span class="rc-cat">C#</span><span class="rc-title">Builder Pattern</span></a>
+            <a class="related-card" href="../dotnet/records.html"><span class="rc-cat">.NET</span><span class="rc-title">Records</span></a>
+            <a class="related-card" href="../dotnet/memory-management.html"><span class="rc-cat">.NET</span><span class="rc-title">Memory Management</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The real question hidden in “Prototype” is <strong>shallow vs deep copy</strong> — be able to explain
+              the shared-reference bug and how to deep-copy. Note that <code>ICloneable</code> is discouraged and
+              that records’ <code>with</code> is the idiomatic modern way to “clone with changes.”
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

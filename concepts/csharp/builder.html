@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Builder Pattern — DevLens</title>
+  <meta name="description" content="The Builder pattern: construct a complex object step by step with a fluent API, avoiding telescoping constructors — plus where C# object initializers and records make it unnecessary." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="builder" data-title="Builder Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Builder Pattern</h1>
+          <p class="lede">
+            Construct a complex object <strong>step by step</strong> with a readable, fluent API — instead of a
+            constructor with fifteen parameters you can’t tell apart.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#creational</span>
+            <span class="tag">#fluent</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            When an object has many optional parts, constructors get ugly. You end up with <strong>telescoping
+            constructors</strong> (a dozen overloads) or one giant constructor where <code>new Pizza(true, false,
+            true, 2, …)</code> is unreadable and easy to get wrong. The <strong>Builder</strong> pattern separates
+            <em>how</em> an object is assembled from the object itself: you call small, named steps
+            (<code>.AddCheese()</code>, <code>.SetSize(Large)</code>) and finish with <code>.Build()</code>.
+          </p>
+          <p>The wins:</p>
+          <ul>
+            <li><strong>Readable</strong> — each step is named, so intent is obvious.</li>
+            <li><strong>Flexible</strong> — set only the parts you need; defaults handle the rest.</li>
+            <li><strong>Safe</strong> — <code>Build()</code> can validate invariants and hand back an immutable result.</li>
+          </ul>
+          <p>
+            The classic GoF version adds a <em>director</em> that drives a builder through a fixed recipe, but in C#
+            the everyday form is a <strong>fluent builder</strong> (each step returns <code>this</code>). Note that
+            modern C# often makes a full builder unnecessary: <strong>object initializers</strong>, optional/named
+            parameters, and <strong>records with <code>init</code></strong> cover simple cases. Reach for a builder
+            when construction is genuinely complex, needs validation, or builds in stages.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Builders are everywhere in .NET itself. <code>StringBuilder</code> assembles a string efficiently in
+              steps; <code>WebApplication.CreateBuilder(args)</code> builds up your whole app
+              (<code>.Services.Add…</code>, <code>.Configuration…</code>) then <code>.Build()</code>s it; EF Core’s
+              <code>ModelBuilder</code> and the fluent configuration APIs are builders. Test code uses them too — a
+              <code>new OrderBuilder().WithItem(...).WithCustomer(...).Build()</code> keeps test setup readable.
+              Anywhere you see a long chain of <code>.Something(...)</code> ending in <code>.Build()</code>, that’s
+              this pattern.
+            </p>
+          </div>
+
+          <h2>Step by step, then build</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="Builder steps producing a product">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="14" y="56" width="100" height="38" rx="7"/><text class="dgm-sub" x="64" y="79" text-anchor="middle">.SetSize()</text>
+              <rect class="dgm-box-accent" x="134" y="56" width="110" height="38" rx="7"/><text class="dgm-sub" x="189" y="79" text-anchor="middle">.AddCheese()</text>
+              <rect class="dgm-box-accent" x="264" y="56" width="120" height="38" rx="7"/><text class="dgm-sub" x="324" y="79" text-anchor="middle">.AddTopping()</text>
+              <rect class="dgm-box" x="404" y="56" width="90" height="38" rx="7"/><text class="dgm-sub" x="449" y="79" text-anchor="middle">.Build()</text>
+              <rect class="dgm-box" x="510" y="52" width="76" height="46" rx="8"/><text class="dgm-sub" x="548" y="79" text-anchor="middle">Pizza</text>
+              <line class="dgm-line" x1="114" y1="75" x2="132" y2="75" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="244" y1="75" x2="262" y2="75" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="384" y1="75" x2="402" y2="75" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="494" y1="75" x2="508" y2="75" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="300" y="120" text-anchor="middle">each step returns the builder; Build() validates &amp; returns the object</text>
+            </svg>
+            <figcaption>Figure 1 — Named steps chain fluently; <code>Build()</code> produces a validated result.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class PizzaBuilder
+{
+    private string _size = "Medium";
+    private readonly List&lt;string&gt; _toppings = new();
+
+    public PizzaBuilder Size(string size) { _size = size; return this; }   // fluent: return this
+    public PizzaBuilder Add(string topping) { _toppings.Add(topping); return this; }
+
+    public Pizza Build()
+    {
+        if (_toppings.Count &gt; 10) throw new InvalidOperationException("Too many toppings");
+        return new Pizza(_size, _toppings.ToArray());   // validate, return immutable result
+    }
+}
+
+var pizza = new PizzaBuilder()
+    .Size("Large")
+    .Add("cheese")
+    .Add("mushroom")
+    .Build();           // readable intent, only the parts you need
+
+// For simple cases, modern C# may be enough — no builder needed:
+var order = new Order { Id = 1, Customer = "Ada", Priority = true };  // object initializer</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Builder constructs a complex object step by step, replacing telescoping constructors with a readable fluent API.</li>
+              <li>Each step returns the builder; <code>Build()</code> validates invariants and returns the (often immutable) result.</li>
+              <li>For simple objects, C# object initializers / records with <code>init</code> often make a builder unnecessary.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/factory-pattern.html"><span class="rc-cat">C#</span><span class="rc-title">Factory Pattern</span></a>
+            <a class="related-card" href="../csharp/prototype.html"><span class="rc-cat">C#</span><span class="rc-title">Prototype Pattern</span></a>
+            <a class="related-card" href="../dotnet/records.html"><span class="rc-cat">.NET</span><span class="rc-title">Records</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Motivate Builder with the <strong>telescoping constructor</strong> problem, then show the fluent API
+              and that <code>Build()</code> can validate + return immutable. Earn seniority by noting modern C#
+              (object initializers, records) often makes it unnecessary for simple objects — pattern knowledge plus
+              judgment.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

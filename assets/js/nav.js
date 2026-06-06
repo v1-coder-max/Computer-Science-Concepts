@@ -73,10 +73,16 @@
       },
       {
         id: "csharp", slug: "csharp", title: "C# & Design Patterns", icon: "🧩",
-        color: "var(--cat-csharp)", expected: 41,
-        blurb: "Language deep-dives plus all 23 GoF patterns and modern ones.",
+        color: "var(--cat-csharp)", expected: 28,
+        blurb: "Language deep-dives plus the key GoF patterns and modern ones.",
         concepts: [
-          { slug: "singleton-pattern", title: "Singleton Pattern" }
+          { slug: "singleton-pattern", title: "Singleton Pattern" },
+          { slug: "factory-pattern", title: "Factory Pattern" },
+          { slug: "abstract-factory", title: "Abstract Factory" },
+          { slug: "builder", title: "Builder Pattern" },
+          { slug: "prototype", title: "Prototype Pattern" },
+          { slug: "adapter", title: "Adapter Pattern" },
+          { slug: "decorator", title: "Decorator Pattern" }
         ]
       },
       {

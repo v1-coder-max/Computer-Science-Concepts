@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adapter Pattern — DevLens</title>
+  <meta name="description" content="The Adapter pattern: wrap an incompatible interface so it fits the one your code expects — integrating third-party or legacy code. Object vs class adapter, and how it differs from facade and decorator." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="adapter" data-title="Adapter Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Adapter Pattern</h1>
+          <p class="lede">
+            A translator between two interfaces that don’t fit. Your code expects one shape; a third-party library
+            speaks another — the <strong>adapter</strong> bridges them.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#structural</span>
+            <span class="tag">#integration</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Like a travel power adapter that lets a US plug fit a European socket, the <strong>Adapter</strong>
+            pattern wraps an existing class (the <em>adaptee</em>) so it satisfies the interface your code expects
+            (the <em>target</em>). Your app keeps depending on its own clean abstraction; the adapter does the
+            translating — mapping method names, reshaping arguments, converting return values.
+          </p>
+          <p>
+            It’s the go-to when you need to <strong>integrate incompatible code</strong> you can’t (or shouldn’t)
+            change: a third-party SDK, a legacy component, an external API. Instead of letting that foreign interface
+            leak through your codebase, you confine it behind one adapter that implements <em>your</em> interface.
+          </p>
+          <p>Two forms:</p>
+          <ul>
+            <li><strong>Object adapter</strong> (preferred) — the adapter <em>holds</em> an instance of the adaptee (composition) and delegates to it. Flexible; can adapt subclasses too.</li>
+            <li><strong>Class adapter</strong> — the adapter <em>inherits</em> from the adaptee. Limited in C# (single inheritance) and tighter coupling.</li>
+          </ul>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Your app logs through its own <code>IAppLogger</code> interface, but you adopt a third-party logging
+              library with a totally different API. Rather than rewrite every call site (or marry your code to the
+              vendor), you write one <code>SerilogAdapter : IAppLogger</code> that forwards to the library. Swap
+              vendors later? Write a new adapter; nothing else changes. The same move adapts payment gateways
+              (each SDK behind a common <code>IPaymentGateway</code>), and .NET itself adapts constantly — e.g.
+              <code>StreamReader</code> adapts a byte <code>Stream</code> into a text reader.
+            </p>
+          </div>
+
+          <h2>Translate between interfaces</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 140" role="img" aria-label="Adapter between client and adaptee">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="48" width="130" height="48" rx="9"/><text class="dgm-sub" x="85" y="68" text-anchor="middle">your code</text><text class="dgm-sub" x="85" y="84" text-anchor="middle">wants IAppLogger</text>
+              <rect class="dgm-box-accent" x="230" y="44" width="140" height="56" rx="10"/><text class="dgm-label" x="300" y="68" text-anchor="middle">Adapter</text><text class="dgm-sub" x="300" y="86" text-anchor="middle">: IAppLogger</text>
+              <rect class="dgm-box" x="450" y="48" width="130" height="48" rx="9"/><text class="dgm-sub" x="515" y="68" text-anchor="middle">3rd-party lib</text><text class="dgm-sub" x="515" y="84" text-anchor="middle">(other API)</text>
+              <line class="dgm-line" x1="150" y1="72" x2="228" y2="72" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="370" y1="72" x2="448" y2="72" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="300" y="124" text-anchor="middle">the adapter implements YOUR interface and delegates to theirs</text>
+            </svg>
+            <figcaption>Figure 1 — Your code talks to its own interface; the adapter confines the foreign one.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Target: the interface YOUR app depends on.
+public interface IAppLogger { void Info(string message); }
+
+// Adaptee: a third-party logger with an incompatible API (can't change it).
+public class AcmeLog { public void Write(int level, string text) { /* ... */ } }
+
+// Object adapter: implement YOUR interface, hold the adaptee, translate the call.
+public class AcmeLogAdapter : IAppLogger
+{
+    private readonly AcmeLog _acme;
+    public AcmeLogAdapter(AcmeLog acme) =&gt; _acme = acme;
+
+    public void Info(string message) =&gt; _acme.Write(level: 1, text: message); // map shapes
+}
+
+// The rest of the app never sees AcmeLog — only IAppLogger.
+IAppLogger logger = new AcmeLogAdapter(new AcmeLog());
+logger.Info("order placed");   // swap the vendor → swap the adapter, nothing else changes</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Adapter converts an incompatible interface (adaptee) into the one your code expects (target).</li>
+              <li>It’s for integrating third-party/legacy code you can’t change — confine the foreign API behind one adapter.</li>
+              <li>Prefer the object adapter (composition + delegation) over the class adapter (inheritance).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/decorator.html"><span class="rc-cat">C#</span><span class="rc-title">Decorator Pattern</span></a>
+            <a class="related-card" href="../csharp/facade.html"><span class="rc-cat">C#</span><span class="rc-title">Facade Pattern</span></a>
+            <a class="related-card" href="../csharp/proxy.html"><span class="rc-cat">C#</span><span class="rc-title">Proxy Pattern</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Be ready to separate the wrapper patterns: <strong>Adapter</strong> changes an interface to fit;
+              <strong>Decorator</strong> adds behavior while keeping the same interface; <strong>Facade</strong>
+              simplifies a complex subsystem behind one interface; <strong>Proxy</strong> controls access with the
+              same interface. Adapter’s keyword is <em>incompatible interface integration</em>.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

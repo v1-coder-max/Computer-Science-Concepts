@@ -642,5 +642,47 @@
     "tags": ["design-pattern", "creational", "singleton", "thread-safety", "gof", "lazy"],
     "description": "Guaranteeing one shared instance in C# with a thread-safe Lazy<T> — and why DI's singleton lifetime is usually better.",
     "url": "concepts/csharp/singleton-pattern.html"
+  },
+  {
+    "title": "Factory Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "creational", "factory-method", "gof", "decoupling", "open-closed"],
+    "description": "Create objects without hard-coding their concrete type — Simple Factory and Factory Method, decoupling creation from use and honoring Open/Closed.",
+    "url": "concepts/csharp/factory-pattern.html"
+  },
+  {
+    "title": "Abstract Factory",
+    "category": "csharp",
+    "tags": ["design-pattern", "creational", "families", "gof", "product-family", "consistency"],
+    "description": "Create whole families of related objects through one interface so products from the same family are always used together.",
+    "url": "concepts/csharp/abstract-factory.html"
+  },
+  {
+    "title": "Builder Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "creational", "fluent", "gof", "telescoping-constructor", "immutability"],
+    "description": "Construct a complex object step by step with a fluent API, avoiding telescoping constructors — and where C# initializers/records make it unnecessary.",
+    "url": "concepts/csharp/builder.html"
+  },
+  {
+    "title": "Prototype Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "creational", "cloning", "gof", "deep-copy", "icloneable"],
+    "description": "Create new objects by cloning an existing one. Shallow vs deep copy, why ICloneable is discouraged, and records' with-expression in C#.",
+    "url": "concepts/csharp/prototype.html"
+  },
+  {
+    "title": "Adapter Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "structural", "integration", "gof", "wrapper", "legacy"],
+    "description": "Wrap an incompatible interface so it fits the one your code expects — integrating third-party/legacy code. Object vs class adapter; vs facade/decorator.",
+    "url": "concepts/csharp/adapter.html"
+  },
+  {
+    "title": "Decorator Pattern",
+    "category": "csharp",
+    "tags": ["design-pattern", "structural", "composition", "gof", "wrapper", "streams"],
+    "description": "Add behavior to an object by wrapping it in another with the same interface — stackable, composition-over-inheritance extension, as in .NET Streams.",
+    "url": "concepts/csharp/decorator.html"
   }
 ]

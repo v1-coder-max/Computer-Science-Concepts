@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Factory Pattern — DevLens</title>
+  <meta name="description" content="The Factory Method and Simple Factory patterns in C#: create objects without hard-coding their concrete type, decoupling creation from use and honoring the Open/Closed principle." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="factory-pattern" data-title="Factory Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Factory Pattern</h1>
+          <p class="lede">
+            Create objects without hard-coding their concrete class. The caller asks a <strong>factory</strong> for
+            “a payment processor” and gets the right one — without ever writing <code>new StripeProcessor()</code>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#design-pattern</span>
+            <span class="tag">#creational</span>
+            <span class="tag">#factory-method</span>
+            <span class="tag">#gof</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            When code does <code>new ConcreteThing()</code>, it’s welded to that exact type — to swap or extend it you
+            must edit every call site. The <strong>factory</strong> patterns move that decision into one place so the
+            rest of your code depends only on an abstraction. Two common forms:
+          </p>
+          <ul>
+            <li><strong>Simple Factory</strong> — a single method (often static) that picks and returns a concrete type behind an interface, usually based on a parameter. Not a “real” GoF pattern but extremely common.</li>
+            <li><strong>Factory Method</strong> (GoF) — a base class defines a <code>virtual</code> creator method, and <em>subclasses decide</em> which concrete product to make. The base class works with the product through its interface, never knowing the concrete type.</li>
+          </ul>
+          <p>
+            The payoff is <strong>decoupling creation from use</strong> and honoring <strong>Open/Closed</strong>:
+            add a new product type by adding a class (and a branch/registration), without touching the code that
+            uses it. (DI containers are essentially configurable factories — that’s the modern default in .NET.)
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A checkout system needs a payment processor chosen at runtime — card, PayPal, gift card. Instead of
+              <code>if (method == "paypal") new PayPalProcessor()…</code> scattered everywhere, a
+              <code>PaymentProcessorFactory.Create(method)</code> returns the right <code>IPaymentProcessor</code>.
+              Adding “Apple Pay” means one new class and one factory entry — the checkout flow never changes. .NET’s
+              own <code>HttpClientFactory</code> and <code>ILoggerFactory</code> are exactly this idea, and the DI
+              container is the general-purpose version.
+            </p>
+          </div>
+
+          <h2>Caller asks, factory decides</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Factory creates one of several products">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="58" width="120" height="44" rx="9"/><text class="dgm-sub" x="80" y="84" text-anchor="middle">caller</text>
+              <rect class="dgm-box-accent" x="200" y="52" width="150" height="56" rx="10"/><text class="dgm-label" x="275" y="76" text-anchor="middle">Factory</text><text class="dgm-sub" x="275" y="94" text-anchor="middle">Create(kind)</text>
+              <rect class="dgm-box" x="430" y="14" width="150" height="30" rx="6"/><text class="dgm-sub" x="505" y="34" text-anchor="middle">CardProcessor</text>
+              <rect class="dgm-box" x="430" y="62" width="150" height="30" rx="6"/><text class="dgm-sub" x="505" y="82" text-anchor="middle">PayPalProcessor</text>
+              <rect class="dgm-box" x="430" y="110" width="150" height="30" rx="6"/><text class="dgm-sub" x="505" y="130" text-anchor="middle">GiftCardProcessor</text>
+              <line class="dgm-line" x1="140" y1="80" x2="198" y2="80" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="350" y1="74" x2="428" y2="30" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="350" y1="80" x2="428" y2="77" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="350" y1="86" x2="428" y2="124" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="170" y="70" text-anchor="middle">IPaymentProcessor</text>
+            </svg>
+            <figcaption>Figure 1 — The caller gets an interface back; the factory owns the concrete choice.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public interface IPaymentProcessor { Task PayAsync(decimal amount); }
+
+// Simple Factory: one place owns the concrete choice.
+public static class PaymentProcessorFactory
+{
+    public static IPaymentProcessor Create(string method) =&gt; method switch
+    {
+        "card"    =&gt; new CardProcessor(),
+        "paypal"  =&gt; new PayPalProcessor(),
+        "giftcard"=&gt; new GiftCardProcessor(),
+        _ =&gt; throw new NotSupportedException(method)
+    };
+}
+// Adding "applepay" = a new class + one arm here; callers below never change.
+var processor = PaymentProcessorFactory.Create(order.Method);
+await processor.PayAsync(order.Total);
+
+// Factory Method (GoF): subclasses decide the product.
+public abstract class Dialog
+{
+    protected abstract IButton CreateButton();   // the factory method
+    public void Render() =&gt; CreateButton().Paint(); // base works via the interface
+}
+public class WindowsDialog : Dialog
+{
+    protected override IButton CreateButton() =&gt; new WindowsButton();
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A factory decouples object <em>creation</em> from <em>use</em> — callers depend on an interface, not <code>new ConcreteType()</code>.</li>
+              <li>Simple Factory = one method picks the concrete type; Factory Method (GoF) = subclasses decide via a virtual creator.</li>
+              <li>It supports Open/Closed (add a type without editing callers); DI containers are the general-purpose factory.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/abstract-factory.html"><span class="rc-cat">C#</span><span class="rc-title">Abstract Factory</span></a>
+            <a class="related-card" href="../csharp/singleton-pattern.html"><span class="rc-cat">C#</span><span class="rc-title">Singleton Pattern</span></a>
+            <a class="related-card" href="../dotnet/dependency-injection.html"><span class="rc-cat">.NET</span><span class="rc-title">Dependency Injection</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Distinguish <strong>Simple Factory</strong> (a method picks a type) from <strong>Factory Method</strong>
+              (subclasses decide) and from <strong>Abstract Factory</strong> (families of products). The “why” is
+              decoupling + Open/Closed. Bonus: note that in modern .NET the <strong>DI container</strong> usually
+              replaces hand-written factories.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
