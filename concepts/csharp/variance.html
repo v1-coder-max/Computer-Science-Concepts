@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Covariance &amp; Contravariance — DevLens</title>
+  <meta name="description" content="How generic type parameters relate under inheritance: covariance (out, producer positions), contravariance (in, consumer positions), invariance by default, and why arrays are unsafely covariant." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="variance" data-title="Covariance & Contravariance">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Covariance &amp; Contravariance</h1>
+          <p class="lede">
+            If a <code>Cat</code> is an <code>Animal</code>, is an <code>IEnumerable&lt;Cat&gt;</code> an
+            <code>IEnumerable&lt;Animal&gt;</code>? Sometimes — and <strong>variance</strong> is the rule that says when.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#variance</span>
+            <span class="tag">#generics</span>
+            <span class="tag">#covariance</span>
+            <span class="tag">#contravariance</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Generics are <strong>invariant by default</strong>: <code>List&lt;Cat&gt;</code> is <em>not</em> a
+            <code>List&lt;Animal&gt;</code>, even though <code>Cat : Animal</code> — because you could then add a
+            <code>Dog</code> to your list of cats. <strong>Variance</strong> describes the cases where the
+            substitution <em>is</em> safe, decided by whether <code>T</code> is produced (output) or consumed (input):
+          </p>
+          <ul>
+            <li><strong>Covariance (<code>out</code>)</strong> — preserves the direction. An <code>IEnumerable&lt;Cat&gt;</code> <em>is</em> an <code>IEnumerable&lt;Animal&gt;</code>, because the interface only ever <strong>produces</strong> <code>T</code> (you take items out). Reading a cat as an animal is always safe.</li>
+            <li><strong>Contravariance (<code>in</code>)</strong> — reverses the direction. An <code>Action&lt;Animal&gt;</code> can be used where an <code>Action&lt;Cat&gt;</code> is expected, because it only <strong>consumes</strong> <code>T</code> (you pass items in) — a method that handles any animal can certainly handle a cat.</li>
+          </ul>
+          <p>
+            The mnemonic: <strong>out = producer (covariant), in = consumer (contravariant)</strong>. Library authors
+            mark interface/delegate type parameters with <code>out</code>/<code>in</code> to enable it; that’s why
+            <code>IEnumerable&lt;out T&gt;</code> is covariant and <code>Action&lt;in T&gt;</code>/
+            <code>IComparer&lt;in T&gt;</code> are contravariant. (A famous wart: <strong>arrays are covariant but
+            <em>unsafely</em></strong> — <code>Animal[] a = new Cat[2]; a[0] = new Dog();</code> compiles but throws at
+            runtime. Generics fixed that.)
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Variance is the quiet reason a lot of code “just works.” You can pass a <code>List&lt;Cat&gt;</code> to a
+              method taking <code>IEnumerable&lt;Animal&gt;</code> (covariance) — handy for LINQ and any read-only API.
+              You can register one <code>IComparer&lt;Animal&gt;</code> and use it to sort <code>Cat</code>s
+              (contravariance). Event handlers and <code>Action&lt;T&gt;</code> callbacks rely on contravariance so a
+              general handler accepts specific arguments. You mostly <em>consume</em> variance rather than declare it,
+              but understanding it explains otherwise-mysterious “cannot convert” compiler errors.
+            </p>
+          </div>
+
+          <h2>out preserves, in reverses</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 140" role="img" aria-label="Covariance and contravariance direction">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <text class="dgm-label" x="20" y="22" fill="var(--c-success)">Covariance (out) — produces T</text>
+              <rect class="dgm-box" x="30" y="34" width="150" height="26" rx="5"/><text class="dgm-sub" x="105" y="52" text-anchor="middle">IEnumerable&lt;Cat&gt;</text>
+              <rect class="dgm-box-accent" x="250" y="34" width="170" height="26" rx="5"/><text class="dgm-sub" x="335" y="52" text-anchor="middle">IEnumerable&lt;Animal&gt;</text>
+              <line class="dgm-line" x1="180" y1="47" x2="248" y2="47" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="460" y="51">Cat → Animal (same direction)</text>
+
+              <text class="dgm-label" x="20" y="92" fill="var(--c-info)">Contravariance (in) — consumes T</text>
+              <rect class="dgm-box-accent" x="30" y="104" width="150" height="26" rx="5"/><text class="dgm-sub" x="105" y="122" text-anchor="middle">Action&lt;Animal&gt;</text>
+              <rect class="dgm-box" x="250" y="104" width="150" height="26" rx="5"/><text class="dgm-sub" x="325" y="122" text-anchor="middle">Action&lt;Cat&gt;</text>
+              <line class="dgm-line" x1="180" y1="117" x2="248" y2="117" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="470" y="121">Animal → Cat (reversed)</text>
+            </svg>
+            <figcaption>Figure 1 — Output positions keep the inheritance direction; input positions reverse it.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">class Animal { }  class Cat : Animal { }  class Dog : Animal { }
+
+// Covariance (out): IEnumerable&lt;out T&gt; only PRODUCES T → Cat seq usable as Animal seq.
+IEnumerable&lt;Cat&gt; cats = new List&lt;Cat&gt;();
+IEnumerable&lt;Animal&gt; animals = cats;          // ✅ covariant
+
+// Contravariance (in): Action&lt;in T&gt; only CONSUMES T → handler of Animal handles Cat.
+Action&lt;Animal&gt; feedAnything = a =&gt; { /* feed any animal */ };
+Action&lt;Cat&gt; feedCat = feedAnything;           // ✅ contravariant
+
+// Invariant by default — and for good reason:
+// List&lt;Animal&gt; bad = new List&lt;Cat&gt;();        // ❌ won't compile (could Add a Dog)
+
+// ⚠ Arrays ARE covariant, but UNSAFELY (a historical wart):
+Animal[] arr = new Cat[2];
+// arr[0] = new Dog();                          // compiles, throws ArrayTypeMismatchException</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Generics are invariant by default; variance allows safe substitution based on producer/consumer roles.</li>
+              <li><strong>Covariance (<code>out</code>)</strong> = output/producer, preserves direction (<code>IEnumerable&lt;out T&gt;</code>); <strong>contravariance (<code>in</code>)</strong> = input/consumer, reverses it (<code>Action&lt;in T&gt;</code>).</li>
+              <li>Mnemonic: out = producer, in = consumer. Arrays are covariant but unsafely (runtime exception) — generics fixed that.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/generics.html"><span class="rc-cat">C#</span><span class="rc-title">Generics</span></a>
+            <a class="related-card" href="../csharp/delegates-events.html"><span class="rc-cat">C#</span><span class="rc-title">Delegates &amp; Events</span></a>
+            <a class="related-card" href="../oop/polymorphism.html"><span class="rc-cat">OOP</span><span class="rc-title">Polymorphism</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Use the mnemonic <strong>out = producer (covariant), in = consumer (contravariant)</strong> and give one
+              example of each (<code>IEnumerable&lt;out T&gt;</code>, <code>Action&lt;in T&gt;</code>). Mention generics
+              are invariant by default and that <strong>arrays are unsafely covariant</strong> — a favorite gotcha.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

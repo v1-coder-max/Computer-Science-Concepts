@@ -768,5 +768,68 @@
     "tags": ["repository", "data-access", "abstraction", "testability", "ef-core", "unit-of-work"],
     "description": "A collection-like abstraction over data access that hides the DB/ORM and aids testability — plus the caveat that EF Core's DbContext is already a repository.",
     "url": "concepts/csharp/repository.html"
+  },
+  {
+    "title": "Unit of Work",
+    "category": "csharp",
+    "tags": ["unit-of-work", "transaction", "data-access", "ef-core", "savechanges", "atomic"],
+    "description": "Track all changes in a business transaction and commit them atomically — and how EF Core's DbContext + SaveChanges already implement it.",
+    "url": "concepts/csharp/unit-of-work.html"
+  },
+  {
+    "title": "Specification Pattern",
+    "category": "csharp",
+    "tags": ["specification", "composable", "query", "modern-pattern", "expression", "ardalis"],
+    "description": "Encapsulate a business rule or query as a reusable, composable object combined with And/Or/Not — eliminating duplicated Where clauses in C#.",
+    "url": "concepts/csharp/specification.html"
+  },
+  {
+    "title": "Delegates & Events",
+    "category": "csharp",
+    "tags": ["delegates", "events", "func-action", "lambdas", "multicast", "callbacks"],
+    "description": "Delegates are type-safe function pointers (Func/Action, multicast, lambdas); events are a restricted delegate for pub/sub — the basis of callbacks, LINQ and observer.",
+    "url": "concepts/csharp/delegates-events.html"
+  },
+  {
+    "title": "LINQ Internals",
+    "category": "csharp",
+    "tags": ["linq", "deferred-execution", "iqueryable", "expression-trees", "ienumerable", "multiple-enumeration"],
+    "description": "How LINQ works: deferred execution, IEnumerable (delegates, in-memory) vs IQueryable (expression trees to SQL), and the multiple-enumeration trap.",
+    "url": "concepts/csharp/linq-internals.html"
+  },
+  {
+    "title": "Generics",
+    "category": "csharp",
+    "tags": ["generics", "type-safety", "constraints", "reuse", "boxing", "where"],
+    "description": "Type-safe, reusable code parameterized by type — no boxing, no casting. Generic classes and methods, constraints, and CLR specialization of value vs reference types.",
+    "url": "concepts/csharp/generics.html"
+  },
+  {
+    "title": "Covariance & Contravariance",
+    "category": "csharp",
+    "tags": ["variance", "generics", "covariance", "contravariance", "out-in", "arrays"],
+    "description": "How generic type parameters relate under inheritance: covariance (out, producers), contravariance (in, consumers), invariance by default, and unsafe array covariance.",
+    "url": "concepts/csharp/variance.html"
+  },
+  {
+    "title": "Reflection & Attributes",
+    "category": "csharp",
+    "tags": ["reflection", "metadata", "attributes", "runtime", "activator", "source-generators"],
+    "description": "Inspect and manipulate types at runtime — read metadata and attributes, create instances, invoke methods — powering DI, serializers and ORMs at a performance cost.",
+    "url": "concepts/csharp/reflection.html"
+  },
+  {
+    "title": "yield & Iterators",
+    "category": "csharp",
+    "tags": ["yield", "iterators", "lazy", "state-machine", "deferred-execution", "ienumerable"],
+    "description": "How yield return builds a lazy iterator: the compiler-generated state machine producing a sequence one element at a time, enabling deferred execution and streaming.",
+    "url": "concepts/csharp/yield-iterators.html"
+  },
+  {
+    "title": "Extension Methods",
+    "category": "csharp",
+    "tags": ["extension-methods", "syntactic-sugar", "linq", "fluent", "this-parameter", "static"],
+    "description": "Add methods to existing types you don't own (string, IEnumerable) without modifying or subclassing them — a static method with a this parameter, as LINQ uses.",
+    "url": "concepts/csharp/extension-methods.html"
   }
 ]

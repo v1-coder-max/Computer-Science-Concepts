@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>yield &amp; Iterators — DevLens</title>
+  <meta name="description" content="How yield return builds a lazy iterator in C#: the compiler-generated state machine that produces a sequence one element at a time, enabling deferred execution, memory efficiency and infinite sequences." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="yield-iterators" data-title="yield & Iterators">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>yield &amp; Iterators</h1>
+          <p class="lede">
+            <code>yield return</code> lets a method hand back a sequence <strong>one element at a time, on demand</strong> —
+            the compiler turns it into a state machine so you don’t build the whole list up front.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#yield</span>
+            <span class="tag">#iterators</span>
+            <span class="tag">#lazy</span>
+            <span class="tag">#state-machine</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Normally a method that returns a sequence builds the whole collection, then returns it. An
+            <strong>iterator</strong> method — one that uses <code>yield return</code> — is different: it produces
+            values <strong>lazily</strong>. Each time the consumer asks for the next item (every loop of a
+            <code>foreach</code>), the method runs until the next <code>yield return</code>, hands back that value,
+            and <strong>pauses</strong> — remembering exactly where it was, including local variables. <code>yield
+            break</code> ends the sequence.
+          </p>
+          <p>
+            The compiler makes this work by rewriting your method into a <strong>state machine</strong> that
+            implements <code>IEnumerator&lt;T&gt;</code> (<code>MoveNext()</code> + <code>Current</code>) — the very
+            same machinery as <code>async/await</code>, just for sequences instead of awaits. You write simple
+            sequential code; the compiler generates the suspend/resume bookkeeping.
+          </p>
+          <p>Why it matters:</p>
+          <ul>
+            <li><strong>Deferred execution</strong> — nothing runs until you enumerate (this is what powers LINQ).</li>
+            <li><strong>Memory efficiency</strong> — you never materialize the whole sequence; stream millions of rows one at a time.</li>
+            <li><strong>Infinite/early-stop sequences</strong> — generate forever and let the consumer <code>Take(10)</code> or <code>break</code>.</li>
+          </ul>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Streaming a huge file or query results row-by-row uses iterators so you never load the whole dataset
+              into memory — process line 1, then line 2, holding just one at a time. LINQ’s operators
+              (<code>Where</code>, <code>Select</code>) are iterators, which is exactly why LINQ is lazy and
+              composable. Generators of infinite sequences (Fibonacci, ids, retry delays) rely on <code>yield</code>
+              plus a consumer that stops when it has enough. Anytime you want to produce a sequence without paying for
+              the whole thing up front, <code>yield</code> is the tool.
+            </p>
+          </div>
+
+          <h2>Produce on demand, pause between</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 130" role="img" aria-label="Iterator yielding values one at a time">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="20" y="48" width="120" height="40" rx="9"/><text class="dgm-sub" x="80" y="72" text-anchor="middle">foreach</text>
+              <rect class="dgm-box-accent" x="220" y="40" width="160" height="56" rx="10"/><text class="dgm-label" x="300" y="62" text-anchor="middle">iterator (state machine)</text><text class="dgm-sub" x="300" y="80" text-anchor="middle">MoveNext → yield → pause</text>
+              <rect class="dgm-box" x="440" y="20" width="60" height="26" rx="5"/><text class="dgm-sub" x="470" y="38" text-anchor="middle">item 1</text>
+              <rect class="dgm-box" x="440" y="52" width="60" height="26" rx="5"/><text class="dgm-sub" x="470" y="70" text-anchor="middle">item 2</text>
+              <rect class="dgm-box" x="440" y="84" width="60" height="26" rx="5"/><text class="dgm-sub" x="470" y="102" text-anchor="middle">item 3…</text>
+              <line class="dgm-line" x1="140" y1="68" x2="218" y2="68" marker-end="url(#arrow)"/><text class="dgm-sub" x="178" y="60" text-anchor="middle">next?</text>
+              <line class="dgm-line" x1="380" y1="60" x2="438" y2="33" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="380" y1="68" x2="438" y2="65" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="380" y1="76" x2="438" y2="97" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Each request runs to the next <code>yield</code> and pauses, preserving state.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Lazy: produces values on demand — nothing runs until enumerated.
+public static IEnumerable&lt;int&gt; EvensUpTo(int max)
+{
+    for (int i = 0; i &lt;= max; i += 2)
+        yield return i;     // hand back i, then PAUSE here until the next MoveNext
+}
+
+// Infinite sequence + consumer stops early — only computes what's needed.
+public static IEnumerable&lt;long&gt; Fibonacci()
+{
+    long a = 0, b = 1;
+    while (true) { yield return a; (a, b) = (b, a + b); }   // never-ending
+}
+var first10 = Fibonacci().Take(10).ToList();   // computes exactly 10
+
+// Memory-efficient streaming — one line in memory at a time, not the whole file.
+public static IEnumerable&lt;string&gt; ReadLines(string path)
+{
+    using var reader = new StreamReader(path);
+    string? line;
+    while ((line = reader.ReadLine()) is not null)
+        yield return line;
+}
+// The compiler rewrites each of these into an IEnumerator&lt;T&gt; state machine.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><code>yield return</code> produces a sequence lazily, one item at a time; the compiler generates an <code>IEnumerator&lt;T&gt;</code> state machine (same idea as async).</li>
+              <li>It enables deferred execution, memory-efficient streaming, and infinite/early-stop sequences.</li>
+              <li>LINQ operators are iterators — which is why LINQ is lazy and composable.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/linq-internals.html"><span class="rc-cat">C#</span><span class="rc-title">LINQ Internals</span></a>
+            <a class="related-card" href="../dotnet/async-await.html"><span class="rc-cat">.NET</span><span class="rc-title">Async / Await Internals</span></a>
+            <a class="related-card" href="../csharp/extension-methods.html"><span class="rc-cat">C#</span><span class="rc-title">Extension Methods</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Explain <code>yield</code> as a <strong>lazy iterator</strong> compiled into a <strong>state machine</strong>
+              (call out the parallel to async/await). Emphasize deferred execution and memory efficiency (stream
+              instead of materialize), and that LINQ is built on iterators — that ties several deep-dive topics
+              together.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

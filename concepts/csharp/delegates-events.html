@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delegates &amp; Events — DevLens</title>
+  <meta name="description" content="Delegates are type-safe function pointers (Func/Action, multicast, lambdas); events are a restricted delegate a class exposes for pub/sub. The foundation of callbacks, LINQ and the observer pattern in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="delegates-events" data-title="Delegates & Events">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Delegates &amp; Events</h1>
+          <p class="lede">
+            A delegate is a <strong>type-safe reference to a method</strong> — a function you can store in a variable
+            and pass around. An event is a delegate a class exposes for others to subscribe to.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#delegates</span>
+            <span class="tag">#events</span>
+            <span class="tag">#func-action</span>
+            <span class="tag">#lambdas</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>delegate</strong> is a type-safe function pointer: a variable that holds a reference to a method
+            with a matching signature, so you can pass behavior around like data and call it later. You rarely declare
+            delegate types by hand anymore — the built-ins cover almost everything:
+          </p>
+          <ul>
+            <li><code>Action</code> / <code>Action&lt;T&gt;</code> — a method that returns <code>void</code>.</li>
+            <li><code>Func&lt;…, TResult&gt;</code> — a method that returns a value.</li>
+            <li><code>Predicate&lt;T&gt;</code> — a <code>Func&lt;T, bool&gt;</code> (a test).</li>
+          </ul>
+          <p>
+            A <strong>lambda</strong> (<code>x =&gt; x * 2</code>) is just a concise way to create a delegate instance.
+            Delegates are also <strong>multicast</strong>: one delegate can hold an invocation list of several methods
+            and call them all (this is what events use).
+          </p>
+          <p>
+            An <strong>event</strong> is a <em>restricted</em> delegate that a class publishes. Outside code can only
+            <strong>subscribe</strong> (<code>+=</code>) and <strong>unsubscribe</strong> (<code>-=</code>); only the
+            declaring class can <em>raise</em> (invoke) it. That encapsulation is the whole difference between a public
+            delegate field (anyone can clobber or invoke it) and an event (safe pub/sub). Delegates and events
+            underpin callbacks, the observer pattern, LINQ, and async continuations.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every UI button click, every <code>PropertyChanged</code> in MVVM, every <code>OrderPlaced</code>
+              domain event is a C# <strong>event</strong> — a publisher raising it, subscribers reacting. LINQ is
+              built on delegates: <code>list.Where(x =&gt; x.IsActive)</code> passes a <code>Func</code> as the filter.
+              Background work uses <code>Action</code> callbacks, and <code>Task.ContinueWith</code> takes a delegate.
+              Delegates are how C# treats <em>behavior as a first-class value</em>, which is the basis for most of the
+              language’s expressiveness.
+            </p>
+          </div>
+
+          <h2>Delegate = invocation list; event = guarded pub/sub</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 140" role="img" aria-label="Multicast delegate and event subscription">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="20" y="50" width="150" height="44" rx="9"/><text class="dgm-label" x="95" y="70" text-anchor="middle">event PriceChanged</text><text class="dgm-sub" x="95" y="86" text-anchor="middle">(multicast delegate)</text>
+              <rect class="dgm-box" x="260" y="14" width="150" height="26" rx="5"/><text class="dgm-sub" x="335" y="32" text-anchor="middle">handler: chart</text>
+              <rect class="dgm-box" x="260" y="56" width="150" height="26" rx="5"/><text class="dgm-sub" x="335" y="74" text-anchor="middle">handler: alert</text>
+              <rect class="dgm-box" x="260" y="98" width="150" height="26" rx="5"/><text class="dgm-sub" x="335" y="116" text-anchor="middle">handler: log</text>
+              <line class="dgm-line" x1="170" y1="64" x2="258" y2="27" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="170" y1="72" x2="258" y2="69" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="170" y1="80" x2="258" y2="111" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="490" y="64" text-anchor="middle">+= subscribe</text>
+              <text class="dgm-sub" x="490" y="84" text-anchor="middle">raise → calls all</text>
+            </svg>
+            <figcaption>Figure 1 — A delegate can reference many methods; an event lets others subscribe but only the owner raises.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Delegates as values (Func/Action), created from lambdas:
+Func&lt;int, int&gt; square = x =&gt; x * x;           // holds a method
+Action&lt;string&gt; log = Console.WriteLine;        // method group → delegate
+int four = square(2);
+
+// Multicast: one delegate, many methods.
+Action steps = () =&gt; Console.Write("a");
+steps += () =&gt; Console.Write("b");
+steps();                                        // calls both → "ab"
+
+// Passing behavior to a method (this is exactly how LINQ works):
+var actives = people.Where(p =&gt; p.IsActive);    // a Func is the filter
+
+// An EVENT: subscribers can += / -=, but only Stock can raise it.
+public class Stock
+{
+    public event EventHandler&lt;decimal&gt;? PriceChanged;
+    public void Set(decimal p) =&gt; PriceChanged?.Invoke(this, p);  // only the owner raises
+}
+var s = new Stock();
+s.PriceChanged += (sender, price) =&gt; Console.WriteLine(price);    // subscribe</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A delegate is a type-safe method reference (use <code>Func</code>/<code>Action</code>/<code>Predicate</code>); lambdas create them; they’re multicast.</li>
+              <li>An event is a restricted delegate: outsiders can only subscribe/unsubscribe (<code>+=</code>/<code>-=</code>); only the declaring class can raise it.</li>
+              <li>They make behavior a first-class value — the basis of callbacks, the observer pattern, and LINQ.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/observer.html"><span class="rc-cat">C#</span><span class="rc-title">Observer Pattern</span></a>
+            <a class="related-card" href="../csharp/linq-internals.html"><span class="rc-cat">C#</span><span class="rc-title">LINQ Internals</span></a>
+            <a class="related-card" href="../csharp/extension-methods.html"><span class="rc-cat">C#</span><span class="rc-title">Extension Methods</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“Delegate vs event?”</em> A delegate is a method reference you can pass and invoke; an event wraps a
+              delegate so only the owner can raise it while others subscribe — encapsulated pub/sub. Mention
+              <code>Func</code>/<code>Action</code>, multicast, and that <strong>events are the observer pattern in C#</strong>.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

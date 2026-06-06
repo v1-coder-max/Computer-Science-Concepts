@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unit of Work — DevLens</title>
+  <meta name="description" content="The Unit of Work pattern: track all changes in a business transaction and commit them as one atomic operation — and how EF Core's DbContext + SaveChanges already implement it." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="unit-of-work" data-title="Unit of Work">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Unit of Work</h1>
+          <p class="lede">
+            Collect all the changes a business operation makes, then commit them as <strong>one atomic
+            transaction</strong> — so several writes succeed or fail together.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#unit-of-work</span>
+            <span class="tag">#transaction</span>
+            <span class="tag">#data-access</span>
+            <span class="tag">#ef-core</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A single business action often touches several entities — place an order, decrement inventory, write a
+            ledger entry. You don’t want those persisted one-by-one (a crash mid-way leaves inconsistent data). The
+            <strong>Unit of Work</strong> pattern keeps a list of everything that changed during the operation and,
+            on <code>Commit()</code>, writes them all out inside <strong>one database transaction</strong> — all or
+            nothing. It also coordinates so multiple repositories share the same transaction.
+          </p>
+          <p>
+            The headline for .NET developers: <strong>EF Core’s <code>DbContext</code> <em>is</em> a Unit of
+            Work.</strong> Its change tracker records every add/modify/delete, and <code>SaveChanges()</code> commits
+            them together in a transaction. So you usually don’t implement the pattern yourself — you <em>use</em> it
+            every time you call <code>SaveChanges</code>.
+          </p>
+          <p>
+            A custom <code>IUnitOfWork</code> is still occasionally useful: to let several repositories share one
+            <code>DbContext</code>/transaction behind an abstraction, or to express “commit” explicitly at the
+            application boundary. But like Repository, wrapping <code>DbContext</code> in a thin Unit of Work that
+            just forwards to <code>SaveChanges</code> is often redundant ceremony.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When you place an order, the service adds the order, updates stock, and records a payment intent — all
+              tracked by one <code>DbContext</code> — and a single <code>SaveChangesAsync()</code> commits them in one
+              transaction. If the payment row violates a constraint, the whole thing rolls back; you never get an
+              order with stock removed but no payment. That’s Unit of Work doing its job invisibly. Teams that add an
+              explicit <code>IUnitOfWork</code> usually do it to keep the “when do we commit?” decision in the
+              application layer rather than scattered across repositories.
+            </p>
+          </div>
+
+          <h2>Track changes, commit once</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 140" role="img" aria-label="Unit of work commits tracked changes in one transaction">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="20" y="24" width="200" height="92" rx="11"/>
+              <text class="dgm-label" x="120" y="44" text-anchor="middle">Unit of Work (DbContext)</text>
+              <rect class="dgm-box" x="36" y="56" width="168" height="20" rx="4"/><text class="dgm-sub" x="120" y="71" text-anchor="middle">+ order (Added)</text>
+              <rect class="dgm-box" x="36" y="82" width="168" height="20" rx="4"/><text class="dgm-sub" x="120" y="97" text-anchor="middle">~ stock (Modified)</text>
+              <rect class="dgm-box-accent" x="300" y="48" width="130" height="44" rx="9"/><text class="dgm-label" x="365" y="68" text-anchor="middle">Commit()</text><text class="dgm-sub" x="365" y="84" text-anchor="middle">SaveChanges</text>
+              <rect class="dgm-box" x="470" y="48" width="110" height="44" rx="9"/><text class="dgm-sub" x="525" y="74" text-anchor="middle">1 transaction</text>
+              <line class="dgm-line" x1="220" y1="70" x2="298" y2="70" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="430" y1="70" x2="468" y2="70" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — All tracked changes commit together; any failure rolls back the whole unit.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// EF Core: the DbContext already IS a unit of work.
+public async Task PlaceOrderAsync(Order order)
+{
+    db.Orders.Add(order);                       // tracked: Added
+    var stock = await db.Stock.FindAsync(order.Sku);
+    stock!.Quantity -= order.Qty;               // tracked: Modified
+    db.Payments.Add(new Payment(order.Id));     // tracked: Added
+
+    await db.SaveChangesAsync();   // commits ALL three in ONE transaction (all-or-nothing)
+}
+
+// An explicit IUnitOfWork is mostly a thin wrapper — useful to share one
+// transaction across repositories or to express commit at the app boundary:
+public interface IUnitOfWork { Task&lt;int&gt; CommitAsync(CancellationToken ct = default); }
+public class EfUnitOfWork(AppDbContext db) : IUnitOfWork
+{
+    public Task&lt;int&gt; CommitAsync(CancellationToken ct = default) =&gt; db.SaveChangesAsync(ct);
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Unit of Work tracks all changes in an operation and commits them as one atomic transaction (all-or-nothing).</li>
+              <li>EF Core’s <code>DbContext</code> + <code>SaveChanges</code> <em>are</em> a Unit of Work — you use it constantly without naming it.</li>
+              <li>A custom <code>IUnitOfWork</code> helps share a transaction across repositories, but a thin wrapper over <code>DbContext</code> is often redundant.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/repository.html"><span class="rc-cat">C#</span><span class="rc-title">Repository Pattern</span></a>
+            <a class="related-card" href="../database/transactions-acid.html"><span class="rc-cat">Database</span><span class="rc-title">Transactions &amp; ACID</span></a>
+            <a class="related-card" href="../dotnet/ef-core-internals.html"><span class="rc-cat">.NET</span><span class="rc-title">EF Core Internals</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define it (one transaction for many changes), then the key .NET insight: <strong>DbContext +
+              SaveChanges is the Unit of Work</strong> (and DbSet is the Repository). So you rarely build it
+              yourself — and a thin custom wrapper adds little. That pairing with Repository is the expected answer.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

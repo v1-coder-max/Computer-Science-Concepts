@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LINQ Internals — DevLens</title>
+  <meta name="description" content="How LINQ really works: deferred (lazy) execution, the difference between IEnumerable (delegates, in-memory) and IQueryable (expression trees translated to SQL), and the multiple-enumeration trap." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="linq-internals" data-title="LINQ Internals">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>LINQ Internals</h1>
+          <p class="lede">
+            LINQ feels like magic, but it’s two simple ideas: <strong>deferred execution</strong> and the split
+            between <code>IEnumerable</code> (runs in memory) and <code>IQueryable</code> (translated to SQL).
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#linq</span>
+            <span class="tag">#deferred-execution</span>
+            <span class="tag">#iqueryable</span>
+            <span class="tag">#expression-trees</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A LINQ query doesn’t run when you write it — it builds a <strong>chain of operators</strong>. The work
+            happens only when you <em>enumerate</em> the result (a <code>foreach</code>, <code>ToList()</code>,
+            <code>Count()</code>, <code>First()</code>). This is <strong>deferred (lazy) execution</strong>: define
+            now, execute later, element by element. It’s powerful (compose queries, stop early) and a common source
+            of bugs if you forget it.
+          </p>
+          <p>The other half is <em>where</em> the query runs, decided by the static type:</p>
+          <ul>
+            <li><strong><code>IEnumerable&lt;T&gt;</code></strong> (LINQ to Objects) — operators take <strong>compiled delegates</strong> and run <strong>in memory</strong>, pulling items via iterators (<code>yield</code>). Use it on collections already in memory.</li>
+            <li><strong><code>IQueryable&lt;T&gt;</code></strong> — operators take <strong>expression trees</strong> (data describing the code, not the compiled code). A <em>provider</em> (EF Core) walks that tree and translates it to <strong>SQL</strong> executed by the database.</li>
+          </ul>
+          <p>
+            That boundary is why <code>db.Orders.Where(o =&gt; o.IsOpen)</code> becomes a SQL <code>WHERE</code>, but
+            calling <code>.ToList()</code> first pulls the whole table into memory and then filters in C#. Two
+            classic traps: crossing to <code>IEnumerable</code> too early (losing SQL translation), and
+            <strong>multiple enumeration</strong> — iterating the same deferred query twice re-runs it (two DB
+            trips); materialize once with <code>ToList()</code> if you’ll use it repeatedly.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A query like <code>db.Orders.Where(o =&gt; o.CustomerId == id).OrderByDescending(o =&gt; o.Date).Take(10)</code>
+              ships to the database as a single efficient SQL statement — because it’s <code>IQueryable</code> and EF
+              translates the expression tree. Accidentally calling <code>.AsEnumerable()</code> before the
+              <code>Where</code> would instead download every order and filter in app memory — a performance
+              landmine. And a deferred query enumerated inside a loop (or logged then used) silently hits the DB
+              multiple times; adding <code>ToList()</code> once is the fix. Understanding deferred execution and the
+              IEnumerable/IQueryable line is what separates fast LINQ from slow LINQ.
+            </p>
+          </div>
+
+          <h2>Build the chain, execute on enumeration</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 140" role="img" aria-label="LINQ deferred execution and IQueryable vs IEnumerable">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="20" y="50" width="160" height="40" rx="9"/><text class="dgm-sub" x="100" y="68" text-anchor="middle">Where(...).Select(...)</text><text class="dgm-sub" x="100" y="84" text-anchor="middle">operator chain (nothing runs)</text>
+              <rect class="dgm-box" x="240" y="50" width="120" height="40" rx="9"/><text class="dgm-sub" x="300" y="68" text-anchor="middle">ToList()/foreach</text><text class="dgm-sub" x="300" y="84" text-anchor="middle">→ executes</text>
+              <rect class="dgm-box" x="430" y="14" width="150" height="28" rx="6"/><text class="dgm-sub" x="505" y="32" text-anchor="middle">IQueryable → SQL</text>
+              <rect class="dgm-box" x="430" y="98" width="150" height="28" rx="6"/><text class="dgm-sub" x="505" y="116" text-anchor="middle">IEnumerable → memory</text>
+              <line class="dgm-line" x1="180" y1="70" x2="238" y2="70" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="360" y1="62" x2="428" y2="32" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="360" y1="78" x2="428" y2="108" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Nothing runs until enumeration; the static type decides SQL vs in-memory.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Deferred: this line runs NOTHING — it builds a query object.
+var q = numbers.Where(n =&gt; { Console.WriteLine($"test {n}"); return n &gt; 2; });
+// "test ..." prints only here, when we enumerate:
+var list = q.ToList();
+
+// IQueryable → translated to SQL by EF (efficient, filtered in the DB).
+var open = await db.Orders.Where(o =&gt; o.IsOpen).Take(10).ToListAsync();
+
+// ❌ Crossing to IEnumerable too early pulls the whole table, then filters in memory.
+var bad = db.Orders.AsEnumerable().Where(o =&gt; o.IsOpen);   // downloads everything
+
+// ⚠ Multiple enumeration: each use re-runs the query (two DB round trips here).
+IEnumerable&lt;Order&gt; deferred = db.Orders.Where(o =&gt; o.IsOpen);
+var count = deferred.Count();    // query #1
+var first = deferred.First();    // query #2 — materialize once with ToList() to avoid this</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>LINQ uses <strong>deferred execution</strong> — the query runs when enumerated, not when defined.</li>
+              <li><code>IEnumerable</code> runs in memory via delegates/iterators; <code>IQueryable</code> builds expression trees a provider (EF) translates to SQL.</li>
+              <li>Don’t cross to <code>IEnumerable</code> too early (loses SQL translation), and avoid multiple enumeration (re-runs the query) — <code>ToList()</code> to materialize.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/yield-iterators.html"><span class="rc-cat">C#</span><span class="rc-title">yield &amp; Iterators</span></a>
+            <a class="related-card" href="../dotnet/ef-core-internals.html"><span class="rc-cat">.NET</span><span class="rc-title">EF Core Internals</span></a>
+            <a class="related-card" href="../csharp/delegates-events.html"><span class="rc-cat">C#</span><span class="rc-title">Delegates &amp; Events</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Two near-certain questions: <em>“what is deferred execution?”</em> and <em>“IEnumerable vs IQueryable?”</em>
+              Nail deferred (runs on enumeration), then the split: delegates/in-memory vs expression-trees/SQL. Bonus
+              points for the <strong>multiple-enumeration</strong> pitfall and crossing the boundary too early.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

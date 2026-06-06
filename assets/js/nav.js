@@ -94,7 +94,16 @@
           { slug: "chain-of-responsibility", title: "Chain of Responsibility" },
           { slug: "mediator", title: "Mediator Pattern" },
           { slug: "cqrs", title: "CQRS" },
-          { slug: "repository", title: "Repository Pattern" }
+          { slug: "repository", title: "Repository Pattern" },
+          { slug: "unit-of-work", title: "Unit of Work" },
+          { slug: "specification", title: "Specification Pattern" },
+          { slug: "delegates-events", title: "Delegates & Events" },
+          { slug: "linq-internals", title: "LINQ Internals" },
+          { slug: "generics", title: "Generics" },
+          { slug: "variance", title: "Covariance & Contravariance" },
+          { slug: "reflection", title: "Reflection & Attributes" },
+          { slug: "yield-iterators", title: "yield & Iterators" },
+          { slug: "extension-methods", title: "Extension Methods" }
         ]
       },
       {

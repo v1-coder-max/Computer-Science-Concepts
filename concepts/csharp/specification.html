@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Specification Pattern — DevLens</title>
+  <meta name="description" content="The Specification pattern: encapsulate a business rule or query as a reusable, composable object you can combine with And/Or/Not — eliminating duplicated Where clauses in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="specification" data-title="Specification Pattern">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Specification Pattern</h1>
+          <p class="lede">
+            Turn a business rule like “active premium customers” into a <strong>reusable, composable object</strong>
+            you can test, combine, and hand to a query — instead of copy-pasting the same <code>Where</code> clause.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#specification</span>
+            <span class="tag">#composable</span>
+            <span class="tag">#query</span>
+            <span class="tag">#modern-pattern</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            The same selection rule often appears in many places — a filter in a query, a validation check, an
+            authorization decision. Duplicating <code>x =&gt; x.IsActive &amp;&amp; x.Tier == "Premium"</code> across
+            the codebase means a rule change has to be hunted down everywhere. The <strong>Specification</strong>
+            pattern names that rule as a single object that answers “does this entity satisfy me?” — via an
+            <code>IsSatisfiedBy(entity)</code> check and/or an <strong>expression</strong> the query layer can apply.
+          </p>
+          <p>The two big wins:</p>
+          <ul>
+            <li><strong>One definition, reused</strong> — the rule lives in one class, used for both in-memory checks and database queries.</li>
+            <li><strong>Composability</strong> — combine specifications with <code>And</code>, <code>Or</code>, <code>Not</code> to build complex criteria from simple, named parts.</li>
+          </ul>
+          <p>
+            For database use, the specification exposes a <code>Expression&lt;Func&lt;T,bool&gt;&gt;</code> so EF Core
+            can translate it to SQL (not just filter in memory). It pairs naturally with the Repository pattern —
+            <code>repo.ListAsync(new ActivePremiumSpec())</code> — keeping query logic out of the data layer. The
+            <strong>Ardalis.Specification</strong> library is the popular ready-made implementation in .NET.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              An e-commerce backend defines specs like <code>InStockSpec</code>, <code>PriceUnderSpec(max)</code>,
+              and <code>OnSaleSpec</code>, then composes them per request — <code>InStock.And(OnSale)</code> — to
+              build product filters without writing a new query each time. The same <code>ActiveCustomerSpec</code>
+              guards a query <em>and</em> a business-rule check, so the definition of “active” can never drift between
+              them. Teams using Ardalis.Specification hand specs straight to the repository, which applies the
+              expression (translated to SQL) plus includes/ordering, keeping controllers and the data layer clean.
+            </p>
+          </div>
+
+          <h2>Compose simple specs into complex criteria</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 130" role="img" aria-label="Specifications composed with And/Or">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box-accent" x="20" y="30" width="120" height="30" rx="6"/><text class="dgm-sub" x="80" y="50" text-anchor="middle">IsActive</text>
+              <rect class="dgm-box-accent" x="20" y="76" width="120" height="30" rx="6"/><text class="dgm-sub" x="80" y="96" text-anchor="middle">IsPremium</text>
+              <rect class="dgm-box" x="220" y="52" width="120" height="34" rx="8"/><text class="dgm-sub" x="280" y="74" text-anchor="middle">.And(...)</text>
+              <rect class="dgm-box" x="420" y="48" width="160" height="42" rx="9"/><text class="dgm-sub" x="500" y="66" text-anchor="middle">apply to query</text><text class="dgm-sub" x="500" y="82" text-anchor="middle">→ SQL / in-memory</text>
+              <line class="dgm-line" x1="140" y1="45" x2="218" y2="62" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="140" y1="91" x2="218" y2="76" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="340" y1="69" x2="418" y2="69" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — Small named rules combine into one criterion, reused for queries and checks.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public interface ISpecification&lt;T&gt;
+{
+    Expression&lt;Func&lt;T, bool&gt;&gt; ToExpression();             // for EF → SQL
+    bool IsSatisfiedBy(T entity) =&gt; ToExpression().Compile()(entity); // in-memory check
+}
+
+public class ActiveCustomerSpec : ISpecification&lt;Customer&gt;
+{
+    public Expression&lt;Func&lt;Customer, bool&gt;&gt; ToExpression() =&gt; c =&gt; c.IsActive;
+}
+public class PremiumSpec : ISpecification&lt;Customer&gt;
+{
+    public Expression&lt;Func&lt;Customer, bool&gt;&gt; ToExpression() =&gt; c =&gt; c.Tier == "Premium";
+}
+
+// Compose, then apply once — same rule for query AND validation.
+var spec = new ActiveCustomerSpec().And(new PremiumSpec());     // And/Or/Not combinators
+var premium = await db.Customers.Where(spec.ToExpression()).ToListAsync(); // translated to SQL
+bool ok = spec.IsSatisfiedBy(someCustomer);                    // reused in-memory
+// (Ardalis.Specification provides this plus Includes/ordering out of the box.)</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Specification encapsulates a business rule/query as a reusable object (<code>IsSatisfiedBy</code> + an expression).</li>
+              <li>Specs <strong>compose</strong> with And/Or/Not, eliminating duplicated <code>Where</code> predicates and keeping rules in one place.</li>
+              <li>Expose an <code>Expression&lt;Func&lt;T,bool&gt;&gt;</code> so EF translates it to SQL; pairs with Repository (Ardalis.Specification).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/repository.html"><span class="rc-cat">C#</span><span class="rc-title">Repository Pattern</span></a>
+            <a class="related-card" href="../csharp/linq-internals.html"><span class="rc-cat">C#</span><span class="rc-title">LINQ Internals</span></a>
+            <a class="related-card" href="../csharp/strategy.html"><span class="rc-cat">C#</span><span class="rc-title">Strategy Pattern</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Pitch Specification as <strong>reusable, composable query/business rules</strong> that kill duplicated
+              predicates. The key technical detail: expose an <code>Expression</code> (not a compiled delegate) so EF
+              can translate it to SQL rather than pulling rows into memory. Mention Ardalis.Specification + Repository.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
