@@ -588,6 +588,55 @@
     "url": "concepts/microservices/outbox-pattern.html"
   },
   {
+    "title": "Circuit Breaker",
+    "category": "microservices",
+    "tags": ["circuit-breaker", "resilience", "fail-fast", "polly", "cascading-failure", "hystrix"],
+    "description": "Stop hammering a failing dependency by failing fast: the closed/open/half-open state machine, fallbacks, preventing cascading failures, and Polly in .NET.",
+    "url": "concepts/microservices/circuit-breaker.html"
+  },
+  {
+    "title": "Retry, Timeout & Bulkhead",
+    "category": "microservices",
+    "tags": ["resilience", "retry", "bulkhead", "timeout", "exponential-backoff", "jitter"],
+    "description": "Resilience patterns beyond the circuit breaker: retry with backoff and jitter (idempotent only), timeouts on every call, and bulkhead resource isolation.",
+    "url": "concepts/microservices/retry-bulkhead.html"
+  },
+  {
+    "title": "Distributed Tracing",
+    "category": "microservices",
+    "tags": ["tracing", "observability", "opentelemetry", "spans", "jaeger", "traceparent"],
+    "description": "Follow one request across many services: a trace made of spans, context propagation via the trace ID, and OpenTelemetry/Jaeger to pinpoint the slow service.",
+    "url": "concepts/microservices/distributed-tracing.html"
+  },
+  {
+    "title": "Centralized Logging",
+    "category": "microservices",
+    "tags": ["logging", "observability", "elk", "correlation-id", "kibana", "structured-logging"],
+    "description": "Why per-instance logs are useless and how centralized logging aggregates structured logs into one searchable store (ELK/Loki/Seq), correlated by trace ID.",
+    "url": "concepts/microservices/centralized-logging.html"
+  },
+  {
+    "title": "Docker & Containers",
+    "category": "microservices",
+    "tags": ["docker", "containers", "images", "dockerfile", "layers", "vm"],
+    "description": "Containers package an app plus its dependencies into a portable isolated unit. Images vs containers, layers, the Dockerfile, and containers vs VMs.",
+    "url": "concepts/microservices/docker.html"
+  },
+  {
+    "title": "Kubernetes Concepts",
+    "category": "microservices",
+    "tags": ["kubernetes", "orchestration", "pods", "declarative", "deployment", "self-healing"],
+    "description": "Container orchestration: Pods, Deployments, Services and Ingress; declarative desired state; self-healing, autoscaling, rolling updates; control plane and nodes.",
+    "url": "concepts/microservices/kubernetes.html"
+  },
+  {
+    "title": "Microservices with .NET",
+    "category": "microservices",
+    "tags": ["dotnet", "masstransit", "dapr", "aspire", "yarp", "polly"],
+    "description": "The .NET ecosystem for microservices mapped to the patterns: YARP/Ocelot gateways, MassTransit messaging/sagas/outbox, Dapr sidecar, Aspire, gRPC, Polly, OpenTelemetry.",
+    "url": "concepts/microservices/dotnet-microservices.html"
+  },
+  {
     "title": "Singleton Pattern",
     "category": "csharp",
     "tags": ["design-pattern", "creational", "singleton", "thread-safety", "gof", "lazy"],

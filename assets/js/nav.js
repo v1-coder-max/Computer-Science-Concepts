@@ -128,7 +128,14 @@
           { slug: "inter-service-comms", title: "Inter-Service Communication" },
           { slug: "event-driven", title: "Event-Driven Architecture" },
           { slug: "saga-pattern", title: "Saga Pattern" },
-          { slug: "outbox-pattern", title: "Outbox Pattern" }
+          { slug: "outbox-pattern", title: "Outbox Pattern" },
+          { slug: "circuit-breaker", title: "Circuit Breaker" },
+          { slug: "retry-bulkhead", title: "Retry, Timeout & Bulkhead" },
+          { slug: "distributed-tracing", title: "Distributed Tracing" },
+          { slug: "centralized-logging", title: "Centralized Logging" },
+          { slug: "docker", title: "Docker & Containers" },
+          { slug: "kubernetes", title: "Kubernetes Concepts" },
+          { slug: "dotnet-microservices", title: "Microservices with .NET" }
         ]
       },
       {

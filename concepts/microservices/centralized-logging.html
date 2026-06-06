@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Centralized Logging — DevLens</title>
+  <meta name="description" content="Why logs scattered across many service instances are useless, and how centralized logging aggregates structured logs into one searchable store (ELK/Loki/Seq), correlated by a trace ID." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="centralized-logging" data-title="Centralized Logging">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Centralized Logging</h1>
+          <p class="lede">
+            Twenty service instances each writing logs to their own container is twenty haystacks. Centralized
+            logging pulls them into <strong>one searchable place</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#logging</span>
+            <span class="tag">#observability</span>
+            <span class="tag">#elk</span>
+            <span class="tag">#correlation-id</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            In microservices, the log lines for a single user request are spread across many services and many
+            replicas — and containers are ephemeral, so a crashed pod takes its local logs with it. SSHing into
+            boxes to <code>grep</code> doesn’t scale. <strong>Centralized logging</strong> fixes this: every service
+            ships its logs to a central <strong>aggregation store</strong> where you can search, filter, dashboard,
+            and alert across the whole system.
+          </p>
+          <p>The common stacks:</p>
+          <ul>
+            <li><strong>ELK / Elastic Stack</strong> — Elasticsearch (store/search) + Logstash or Beats (ship/parse) + Kibana (visualize). The classic.</li>
+            <li><strong>Loki + Grafana</strong>, <strong>Seq</strong>, <strong>Splunk</strong>, or a cloud service (CloudWatch, App Insights).</li>
+          </ul>
+          <p>
+            Two things make it actually useful. First, <strong>structured logging</strong> — emit key/value
+            properties, not flat text — so you can query by field (<code>status=500 AND service=orders</code>).
+            Second, a <strong>correlation/trace ID</strong> stamped on every log line and propagated across services,
+            so you can pull up <em>every</em> log for one request in one search. That trace ID is the same one your
+            distributed tracing uses, which is why logs and traces are sibling pillars of <strong>observability</strong>
+            (with metrics).
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A request errors out somewhere in a chain of services. An engineer copies the <strong>correlation
+              ID</strong> from the error response, pastes it into <strong>Kibana</strong>, and instantly sees the
+              ordered log lines from <em>every</em> service that touched that request — the exact exception, in the
+              exact service, with the exact inputs. Dashboards show error rates per service, and alerts fire when
+              5xx spikes. This is table stakes at any company running more than a couple of services; without it,
+              debugging distributed systems is guesswork by timestamp.
+            </p>
+          </div>
+
+          <h2>Ship → aggregate → search</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Centralized logging pipeline">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect class="dgm-box" x="14" y="30" width="120" height="26" rx="5"/><text class="dgm-sub" x="74" y="48" text-anchor="middle">Orders svc</text>
+              <rect class="dgm-box" x="14" y="66" width="120" height="26" rx="5"/><text class="dgm-sub" x="74" y="84" text-anchor="middle">Payments svc</text>
+              <rect class="dgm-box" x="14" y="102" width="120" height="26" rx="5"/><text class="dgm-sub" x="74" y="120" text-anchor="middle">Catalog svc</text>
+              <rect class="dgm-box-accent" x="220" y="58" width="140" height="46" rx="9"/><text class="dgm-label" x="290" y="80" text-anchor="middle">log store</text><text class="dgm-sub" x="290" y="96" text-anchor="middle">Elasticsearch</text>
+              <rect class="dgm-box" x="430" y="58" width="150" height="46" rx="9"/><text class="dgm-label" x="505" y="80" text-anchor="middle">Kibana</text><text class="dgm-sub" x="505" y="96" text-anchor="middle">search by trace-id</text>
+              <line class="dgm-line" x1="134" y1="43" x2="218" y2="72" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="134" y1="79" x2="218" y2="81" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="134" y1="115" x2="218" y2="90" marker-end="url(#arrow)"/>
+              <line class="dgm-line" x1="360" y1="81" x2="428" y2="81" marker-end="url(#arrow)"/>
+            </svg>
+            <figcaption>Figure 1 — All services ship structured logs to one store; you query the whole system by trace ID.</figcaption>
+          </figure>
+
+          <h2>In C# (Serilog → central sink)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">builder.Host.UseSerilog((ctx, cfg) =&gt; cfg
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("service", "orders")           // tag which service emitted it
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch("http://elasticsearch:9200")); // central, searchable store
+
+// Stamp a correlation/trace id on every log of a request (middleware):
+app.Use(async (ctx, next) =&gt;
+{
+    var traceId = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString();
+    using (LogContext.PushProperty("TraceId", traceId))  // now every log line carries it
+        await next();
+});
+// Search "TraceId: abc123" in Kibana → every service's logs for that one request.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Ship logs from every service to one searchable store (ELK/Loki/Seq) — per-instance container logs are ephemeral and useless alone.</li>
+              <li>Use <strong>structured logging</strong> so you can query by field, and stamp a <strong>correlation/trace ID</strong> to follow one request across services.</li>
+              <li>Logs + metrics + traces are the three pillars of observability; the shared trace ID links logs to traces.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/distributed-tracing.html"><span class="rc-cat">Microservices</span><span class="rc-title">Distributed Tracing</span></a>
+            <a class="related-card" href="../dotnet/logging.html"><span class="rc-cat">.NET</span><span class="rc-title">Logging</span></a>
+            <a class="related-card" href="../dotnet/health-checks.html"><span class="rc-cat">.NET</span><span class="rc-title">Health Checks</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              <em>“How do you debug across services?”</em> — centralized logging with a <strong>correlation ID</strong>
+              + <strong>structured logs</strong> in a store like the <strong>ELK stack</strong>. Connect it to
+              distributed tracing (same trace ID) and name the three observability pillars (logs, metrics, traces).
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

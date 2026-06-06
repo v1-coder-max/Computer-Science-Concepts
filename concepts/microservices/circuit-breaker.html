@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Circuit Breaker — DevLens</title>
+  <meta name="description" content="The circuit breaker resilience pattern: stop hammering a failing dependency by failing fast. The closed/open/half-open state machine, fallbacks, preventing cascading failures, and Polly in .NET." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="circuit-breaker" data-title="Circuit Breaker">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Circuit Breaker</h1>
+          <p class="lede">
+            When a downstream service is failing, the worst thing you can do is keep calling it. A circuit breaker
+            <strong>fails fast</strong> — protecting both you and the struggling service.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#circuit-breaker</span>
+            <span class="tag">#resilience</span>
+            <span class="tag">#fail-fast</span>
+            <span class="tag">#polly</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Named after the electrical kind, a circuit breaker sits between your service and a dependency and trips
+            when that dependency starts failing. Instead of every request piling up on a dead service — exhausting
+            your threads/connections and cascading the outage upward — calls are <strong>rejected immediately</strong>
+            (or routed to a fallback) until the dependency looks healthy again. It has three states:
+          </p>
+          <ul>
+            <li><strong>Closed</strong> — normal. Requests flow through; the breaker counts failures.</li>
+            <li><strong>Open</strong> — the failure threshold was crossed. Requests are rejected instantly (fail fast / fallback) for a cool-down period, giving the dependency room to recover.</li>
+            <li><strong>Half-Open</strong> — after the cool-down, let a <em>trial</em> request through. Success → close the circuit (back to normal); failure → re-open and wait again.</li>
+          </ul>
+          <p>
+            The point is twofold: <strong>fail fast</strong> so your service stays responsive (a quick error beats a
+            30-second hang), and <strong>stop the stampede</strong> so the dependency can recover instead of being
+            kept down by relentless retries. It pairs naturally with retries, timeouts, and a sensible
+            <strong>fallback</strong> (cached data, a queued action, a friendly “try later”).
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              If the payment provider starts timing out during a sale, a circuit breaker around those calls
+              <strong>opens</strong> after a handful of failures: checkout instantly shows “payments are
+              temporarily unavailable, we’ll retry” instead of every shopper’s request hanging for 30 seconds and
+              draining the thread pool. After a cool-down it sends one trial charge; if it succeeds, normal service
+              resumes. Netflix’s <strong>Hystrix</strong> popularized this; in .NET it’s built into <strong>Polly</strong>
+              and the standard resilience handler. Without it, one slow dependency takes the whole system down.
+            </p>
+          </div>
+
+          <h2>The state machine</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="Circuit breaker states">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <rect x="30" y="60" width="130" height="50" rx="10" fill="var(--c-success)" fill-opacity="0.14" stroke="var(--c-success)"/>
+              <text x="95" y="82" text-anchor="middle" fill="var(--c-success)" style="font:700 13px var(--font-sans)">Closed</text>
+              <text class="dgm-sub" x="95" y="100" text-anchor="middle">requests pass</text>
+              <rect x="235" y="60" width="130" height="50" rx="10" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)"/>
+              <text x="300" y="82" text-anchor="middle" fill="var(--c-warning)" style="font:700 13px var(--font-sans)">Open</text>
+              <text class="dgm-sub" x="300" y="100" text-anchor="middle">reject / fallback</text>
+              <rect x="440" y="60" width="130" height="50" rx="10" fill="var(--c-info)" fill-opacity="0.14" stroke="var(--c-info)"/>
+              <text x="505" y="82" text-anchor="middle" fill="var(--c-info)" style="font:700 13px var(--font-sans)">Half-Open</text>
+              <text class="dgm-sub" x="505" y="100" text-anchor="middle">one trial request</text>
+
+              <line class="dgm-line" x1="160" y1="78" x2="233" y2="78" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="196" y="70" text-anchor="middle">failures &gt; threshold</text>
+              <line class="dgm-line" x1="300" y1="110" x2="470" y2="112" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="385" y="130" text-anchor="middle">after cool-down</text>
+              <line class="dgm-line" x1="505" y1="60" x2="120" y2="58" marker-end="url(#arrow)"/>
+              <text class="dgm-sub" x="320" y="48" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">trial OK → Closed</text>
+            </svg>
+            <figcaption>Figure 1 — Closed → (too many failures) → Open → (cool-down) → Half-Open → success closes it.</figcaption>
+          </figure>
+
+          <h2>In C# (Polly)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Attach a circuit breaker to a typed HttpClient (Microsoft.Extensions.Http.Resilience / Polly).
+builder.Services.AddHttpClient&lt;PaymentClient&gt;()
+    .AddResilienceHandler("payments", b =&gt;
+    {
+        b.AddCircuitBreaker(new()
+        {
+            FailureRatio = 0.5,                       // open if &gt;50% of calls fail...
+            MinimumThroughput = 10,                   // ...over a sample of 10+ calls
+            BreakDuration = TimeSpan.FromSeconds(15)  // stay open 15s, then half-open
+        });
+        b.AddTimeout(TimeSpan.FromSeconds(2));        // pair with a timeout
+    });
+
+// When open, calls throw BrokenCircuitException immediately → catch it and return a fallback.
+try { return await _payments.ChargeAsync(order); }
+catch (BrokenCircuitException) { return PaymentResult.TryAgainLater; }</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A circuit breaker stops calls to a failing dependency, failing fast to keep your service responsive and let the dependency recover.</li>
+              <li>Three states: Closed (pass + count), Open (reject/fallback), Half-Open (one trial, then close or re-open).</li>
+              <li>It prevents cascading failures; combine it with timeouts, retries, and a sensible fallback.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/retry-bulkhead.html"><span class="rc-cat">Microservices</span><span class="rc-title">Retry, Timeout &amp; Bulkhead</span></a>
+            <a class="related-card" href="../dotnet/http-client-factory.html"><span class="rc-cat">.NET</span><span class="rc-title">HttpClientFactory</span></a>
+            <a class="related-card" href="../microservices/inter-service-comms.html"><span class="rc-cat">Microservices</span><span class="rc-title">Inter-Service Communication</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Describe the <strong>three states</strong> and the goal: <strong>fail fast</strong> to avoid
+              cascading failures and give the dependency time to heal. Contrast it with retry (retry handles
+              <em>transient</em> blips; the breaker handles <em>sustained</em> failure), and mention a fallback. Polly
+              is the .NET answer.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

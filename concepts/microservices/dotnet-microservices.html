@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Microservices with .NET — DevLens</title>
+  <meta name="description" content="The .NET ecosystem for microservices mapped to the patterns: YARP/Ocelot gateways, MassTransit messaging (sagas/outbox), Dapr sidecar building blocks, .NET Aspire orchestration, gRPC, Polly resilience, and OpenTelemetry." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="dotnet-microservices" data-title="Microservices with .NET">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Microservices with .NET</h1>
+          <p class="lede">
+            The patterns are universal; here’s the <strong>.NET toolbox</strong> that implements them — gateway,
+            messaging, sidecar building blocks, resilience, and observability.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dotnet</span>
+            <span class="tag">#masstransit</span>
+            <span class="tag">#dapr</span>
+            <span class="tag">#aspire</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            .NET has a mature, batteries-included stack for microservices. Each tool maps to a pattern from this
+            category:
+          </p>
+          <ul>
+            <li><strong>API Gateway</strong> → <strong>YARP</strong> (Microsoft’s reverse proxy) or <strong>Ocelot</strong> — routing, auth, rate limiting at the edge.</li>
+            <li><strong>Async messaging / events / saga / outbox</strong> → <strong>MassTransit</strong> — a broker abstraction over RabbitMQ, Azure Service Bus, and Amazon SQS, with first-class <em>saga state machines</em>, a <em>transactional outbox</em>, retries, and scheduling.</li>
+            <li><strong>Service invocation, pub/sub, state, secrets</strong> → <strong>Dapr</strong> — a language-agnostic <em>sidecar</em> that runs next to your service and exposes portable building blocks over HTTP/gRPC, so you don’t hard-code Redis/Kafka/etc.</li>
+            <li><strong>Local orchestration + dev-time observability</strong> → <strong>.NET Aspire</strong> — an opinionated stack to compose, run, and wire up multi-service apps (with dashboards, service discovery, and telemetry) locally and toward deploy.</li>
+            <li><strong>Sync calls</strong> → <strong>gRPC</strong> / typed <code>HttpClient</code>; <strong>resilience</strong> → <strong>Polly</strong> (circuit breaker, retry, timeout, bulkhead); <strong>observability</strong> → <strong>OpenTelemetry</strong> + Health Checks; <strong>packaging</strong> → Docker + Kubernetes.</li>
+          </ul>
+          <p>
+            The mental model: <strong>Dapr</strong> abstracts <em>infrastructure</em> (don’t bind to a specific
+            broker/store), <strong>MassTransit</strong> gives you a rich <em>messaging/saga</em> framework in C#,
+            and <strong>Aspire</strong> ties the whole multi-service app together for development. You rarely need
+            all of them — pick per need.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A .NET shop building an e-commerce backend fronts its services with <strong>YARP</strong>, has the
+              order service publish <code>OrderPlaced</code> via <strong>MassTransit</strong> (with the outbox so no
+              event is lost) and run the checkout <em>saga</em> as a MassTransit state machine, wraps downstream
+              calls in <strong>Polly</strong>, and exports traces/metrics with <strong>OpenTelemetry</strong> to
+              Grafana. During development, <strong>.NET Aspire</strong> spins up all the services plus Redis and
+              RabbitMQ with one run and shows a live dashboard. In production it all ships as Docker images on
+              Kubernetes. Every piece is a pattern from this category with a .NET implementation.
+            </p>
+          </div>
+
+          <h2>The stack, mapped to concerns</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 170" role="img" aria-label="The .NET microservices stack by concern">
+              <rect class="dgm-box-accent" x="20" y="20" width="180" height="30" rx="6"/><text class="dgm-sub" x="110" y="40" text-anchor="middle">Gateway → YARP / Ocelot</text>
+              <rect class="dgm-box" x="20" y="58" width="180" height="30" rx="6"/><text class="dgm-sub" x="110" y="78" text-anchor="middle">Messaging/Saga → MassTransit</text>
+              <rect class="dgm-box" x="20" y="96" width="180" height="30" rx="6"/><text class="dgm-sub" x="110" y="116" text-anchor="middle">Infra building blocks → Dapr</text>
+              <rect class="dgm-box-accent" x="220" y="20" width="180" height="30" rx="6"/><text class="dgm-sub" x="310" y="40" text-anchor="middle">Sync → gRPC / HttpClient</text>
+              <rect class="dgm-box" x="220" y="58" width="180" height="30" rx="6"/><text class="dgm-sub" x="310" y="78" text-anchor="middle">Resilience → Polly</text>
+              <rect class="dgm-box" x="220" y="96" width="180" height="30" rx="6"/><text class="dgm-sub" x="310" y="116" text-anchor="middle">Observability → OpenTelemetry</text>
+              <rect class="dgm-box-accent" x="420" y="20" width="160" height="30" rx="6"/><text class="dgm-sub" x="500" y="40" text-anchor="middle">Compose/dev → Aspire</text>
+              <rect class="dgm-box" x="420" y="58" width="160" height="30" rx="6"/><text class="dgm-sub" x="500" y="78" text-anchor="middle">Package → Docker</text>
+              <rect class="dgm-box" x="420" y="96" width="160" height="30" rx="6"/><text class="dgm-sub" x="500" y="116" text-anchor="middle">Run → Kubernetes</text>
+              <text class="dgm-sub" x="300" y="150" text-anchor="middle">each tool implements a pattern from this category</text>
+            </svg>
+            <figcaption>Figure 1 — Pick per concern; you rarely need every tool at once.</figcaption>
+          </figure>
+
+          <h2>In C# (MassTransit)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// MassTransit over RabbitMQ, with the transactional outbox + consumers.
+builder.Services.AddMassTransit(x =&gt;
+{
+    x.AddConsumer&lt;OrderPlacedConsumer&gt;();
+    x.AddEntityFrameworkOutbox&lt;AppDbContext&gt;(o =&gt; o.UsePostgres());  // outbox pattern, built in
+    x.UsingRabbitMq((ctx, cfg) =&gt;
+    {
+        cfg.Host("rabbitmq");
+        cfg.ConfigureEndpoints(ctx);
+        cfg.UseMessageRetry(r =&gt; r.Exponential(3,                       // resilience
+            TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(2)));
+    });
+});
+
+// Publish an event — saga state machines and consumers react.
+await _bus.Publish(new OrderPlaced(order.Id, order.Total));</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>YARP/Ocelot (gateway), MassTransit (messaging/saga/outbox), Dapr (portable infra building blocks via a sidecar), Aspire (compose + dev-time observability).</li>
+              <li>gRPC + Polly + OpenTelemetry + Health Checks cover sync calls, resilience, and observability; Docker + K8s for packaging/running.</li>
+              <li>Each tool implements a pattern from this category — choose per concern, not all at once.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/api-gateway.html"><span class="rc-cat">Microservices</span><span class="rc-title">API Gateway</span></a>
+            <a class="related-card" href="../microservices/event-driven.html"><span class="rc-cat">Microservices</span><span class="rc-title">Event-Driven Architecture</span></a>
+            <a class="related-card" href="../microservices/distributed-tracing.html"><span class="rc-cat">Microservices</span><span class="rc-title">Distributed Tracing</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              For a .NET microservices role, map tools to patterns: <strong>MassTransit</strong> for messaging/saga/
+              outbox, <strong>Dapr</strong> for portable infra building blocks via a sidecar, <strong>YARP</strong>
+              for the gateway, <strong>Polly</strong> for resilience, <strong>OpenTelemetry</strong> for tracing, and
+              <strong>Aspire</strong> for composing it locally. Showing you know <em>which tool solves which problem</em>
+              beats name-dropping.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

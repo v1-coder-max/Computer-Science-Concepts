@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retry, Timeout &amp; Bulkhead — DevLens</title>
+  <meta name="description" content="The everyday resilience patterns beyond the circuit breaker: retry with exponential backoff and jitter (idempotent only), timeouts on every remote call, and bulkhead isolation so one slow dependency can't sink the rest." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="retry-bulkhead" data-title="Retry, Timeout & Bulkhead">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Retry, Timeout &amp; Bulkhead</h1>
+          <p class="lede">
+            The resilience patterns you reach for daily. Used well they hide transient faults; used carelessly they
+            <em>amplify</em> an outage.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#resilience</span>
+            <span class="tag">#retry</span>
+            <span class="tag">#bulkhead</span>
+            <span class="tag">#timeout</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Networks fail in small, temporary ways all the time. These patterns make a service tolerate that:
+          </p>
+          <ul>
+            <li><strong>Retry</strong> — many failures are <em>transient</em> (a brief blip, a dropped packet). Just try again. But do it right: <strong>exponential backoff</strong> (wait longer each attempt) plus <strong>jitter</strong> (randomize the delay) so a thousand clients don’t retry in lockstep and create a <em>thundering herd</em>. Only retry <strong>idempotent</strong> operations, and cap the attempts.</li>
+            <li><strong>Timeout</strong> — never wait forever. Every remote call gets a bounded timeout, so a hung dependency can’t pin your threads/connections indefinitely. A missing timeout is the root of most cascading failures.</li>
+            <li><strong>Bulkhead</strong> — named after a ship’s watertight compartments: isolate resources so a flood in one can’t sink the whole vessel. Give each dependency its own limited pool (connections/concurrency); if one dependency goes slow and saturates <em>its</em> pool, the others keep working instead of every thread piling onto the slow one.</li>
+          </ul>
+          <p>
+            These compose: a typical resilient call has a <strong>timeout</strong>, bounded <strong>retries</strong>
+            with backoff+jitter, a <strong>bulkhead</strong> limiting concurrency, and a <strong>circuit breaker</strong>
+            for sustained failure — applied in a sensible order.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A service calling several downstreams gives each its own <strong>bulkhead</strong> (say, max 20
+              concurrent calls). When the recommendations service goes slow, its 20 slots fill and further
+              recommendation calls are shed — but the orders and catalog calls, in their own compartments, sail on.
+              Meanwhile a flaky network call is wrapped in a <strong>2-second timeout</strong> and <strong>3 retries
+              with exponential backoff + jitter</strong>, so a momentary blip is invisible to users without
+              hammering the dependency. The cautionary tale is retries <em>without</em> backoff: during an outage
+              they multiply load and turn a small failure into a full meltdown.
+            </p>
+          </div>
+
+          <h2>Bulkhead isolation</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 160" role="img" aria-label="Bulkhead isolation of resource pools">
+              <rect class="dgm-box" x="20" y="40" width="170" height="90" rx="10"/>
+              <text class="dgm-label" x="105" y="34" text-anchor="middle">Pool A → Orders</text>
+              <rect class="dgm-box-accent" x="36" y="56" width="30" height="60" rx="4"/><rect class="dgm-box-accent" x="72" y="56" width="30" height="60" rx="4"/><rect class="dgm-box-accent" x="108" y="56" width="30" height="60" rx="4"/>
+              <text class="dgm-sub" x="105" y="146" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">healthy ✓</text>
+
+              <rect class="dgm-box" x="215" y="40" width="170" height="90" rx="10"/>
+              <text class="dgm-label" x="300" y="34" text-anchor="middle">Pool B → Recs (slow)</text>
+              <rect x="231" y="56" width="30" height="60" rx="4" fill="var(--c-warning)" fill-opacity="0.2" stroke="var(--c-warning)"/><rect x="267" y="56" width="30" height="60" rx="4" fill="var(--c-warning)" fill-opacity="0.2" stroke="var(--c-warning)"/><rect x="303" y="56" width="30" height="60" rx="4" fill="var(--c-warning)" fill-opacity="0.2" stroke="var(--c-warning)"/>
+              <text x="300" y="146" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">saturated — contained</text>
+
+              <rect class="dgm-box" x="410" y="40" width="170" height="90" rx="10"/>
+              <text class="dgm-label" x="495" y="34" text-anchor="middle">Pool C → Catalog</text>
+              <rect class="dgm-box-accent" x="426" y="56" width="30" height="60" rx="4"/><rect class="dgm-box-accent" x="462" y="56" width="30" height="60" rx="4"/><rect class="dgm-box-accent" x="498" y="56" width="30" height="60" rx="4"/>
+              <text class="dgm-sub" x="495" y="146" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">healthy ✓</text>
+            </svg>
+            <figcaption>Figure 1 — Separate pools per dependency: a saturated one can’t starve the others.</figcaption>
+          </figure>
+
+          <h2>In C# (Polly)</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">builder.Services.AddHttpClient&lt;CatalogClient&gt;()
+    .AddResilienceHandler("catalog", b =&gt;
+    {
+        // Retry transient faults with exponential backoff + jitter (idempotent calls!).
+        b.AddRetry(new()
+        {
+            MaxRetryAttempts = 3,
+            BackoffType = DelayBackoffType.Exponential,
+            UseJitter = true                         // avoid synchronized retry storms
+        });
+        // Bulkhead: cap concurrency so a slow catalog can't exhaust all threads.
+        b.AddConcurrencyLimiter(permitLimit: 20, queueLimit: 0);
+        // Always bound the wait.
+        b.AddTimeout(TimeSpan.FromSeconds(2));
+    });
+// ⚠ Never retry non-idempotent writes blindly, and never retry without backoff.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Retry transient faults with <strong>exponential backoff + jitter</strong>, only for idempotent operations, with a cap.</li>
+              <li>Put a <strong>timeout</strong> on every remote call — unbounded waits cause cascading failures.</li>
+              <li><strong>Bulkhead</strong> isolates resource pools per dependency so one slow service can’t exhaust everything.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/circuit-breaker.html"><span class="rc-cat">Microservices</span><span class="rc-title">Circuit Breaker</span></a>
+            <a class="related-card" href="../dotnet/http-client-factory.html"><span class="rc-cat">.NET</span><span class="rc-title">HttpClientFactory</span></a>
+            <a class="related-card" href="../dotnet/threadpool.html"><span class="rc-cat">.NET</span><span class="rc-title">The Thread Pool</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The retry trap: a naive retry loop <em>amplifies</em> outages — say <strong>backoff + jitter</strong>,
+              <strong>idempotent only</strong>, and a cap. Add that every remote call needs a <strong>timeout</strong>,
+              and explain <strong>bulkhead</strong> isolation with the ship analogy. Together with the circuit
+              breaker, these are the four resilience patterns.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
