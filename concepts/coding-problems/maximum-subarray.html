@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maximum Subarray (Kadane's) — DevLens</title>
+  <meta name="description" content="Maximum Subarray: find the contiguous subarray with the largest sum using Kadane's algorithm — O(n) time, O(1) space — with the running-sum insight and a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="maximum-subarray" data-title="Maximum Subarray">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Maximum Subarray (Kadane’s)</h1>
+          <p class="lede">
+            Find the contiguous subarray with the largest sum. The elegant O(n) answer — <strong>Kadane’s
+            algorithm</strong> — is a gateway to dynamic-programming intuition.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#arrays</span>
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#kadane</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an integer array <code>nums</code> (which may contain negatives), find the contiguous subarray with
+            the largest sum and return that sum.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[-2, 1, -3, 4, -1, 2, 1, -5, 4]</code> → <code>6</code> &nbsp;(the subarray <code>[4, -1, 2, 1]</code>)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Consider every subarray (start <code>i</code>, end <code>j</code>) and sum it. <strong>Time O(n²)</strong>
+            (with a running sum) or O(n³) naïvely, <strong>Space O(1)</strong>.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            <strong>Kadane’s insight:</strong> walk left to right keeping a running sum <code>current</code> of the
+            best subarray <em>ending at the current index</em>. At each element you face one choice — extend the
+            previous subarray, or start fresh here: <code>current = max(num, current + num)</code>. If the running
+            sum ever goes negative, it can only hurt what follows, so you drop it and restart. Track the best
+            <code>current</code> ever seen.
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong> That “best ending here” recurrence is dynamic programming in disguise.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="Kadane running sum trace">
+              <text class="dgm-sub" x="20" y="20">[-2, 1, -3, 4, -1, 2, 1, -5, 4]</text>
+              <text class="dgm-sub" x="20" y="46">current: -2 → 1 → -2(reset to 1? max(-3,1-3))… → 4 → 3 → 5 → 6 → 1 → 5</text>
+              <rect class="dgm-box-accent" x="20" y="64" width="380" height="34" rx="6"/>
+              <text x="210" y="86" text-anchor="middle" fill="var(--c-success)" style="font:600 13px var(--font-sans)">best running sum reaches 6 at [4, -1, 2, 1]</text>
+              <text class="dgm-sub" x="20" y="124">rule: current = max(num, current + num); answer = max(current) seen</text>
+            </svg>
+            <figcaption>Figure 1 — Extend or restart at each step; the peak running sum is the answer.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MaxSubArray(int[] nums)
+{
+    int current = nums[0];   // best sum ENDING at the current index
+    int best = nums[0];      // best sum seen anywhere
+
+    for (int i = 1; i &lt; nums.Length; i++)
+    {
+        // extend the previous subarray, or start a new one at nums[i]
+        current = Math.Max(nums[i], current + nums[i]);
+        best = Math.Max(best, current);
+    }
+    return best;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — a single pass.</li>
+              <li><strong>Space:</strong> O(1) — just two running integers.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Kadane = a <strong>running sum</strong> that resets whenever it turns negative (it can only drag the future down).</li>
+              <li>The recurrence <code>current = max(num, current + num)</code> is DP: best answer ending here.</li>
+              <li>Start <code>best</code> at <code>nums[0]</code> (not 0) so all-negative arrays return the largest single element.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/best-time-to-buy-sell-stock.html"><span class="rc-cat">Coding</span><span class="rc-title">Best Time to Buy/Sell Stock</span></a>
+            <a class="related-card" href="../coding-problems/product-of-array-except-self.html"><span class="rc-cat">Coding</span><span class="rc-title">Product of Array Except Self</span></a>
+            <a class="related-card" href="../coding-problems/house-robber.html"><span class="rc-cat">Coding</span><span class="rc-title">House Robber</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Name <strong>Kadane’s algorithm</strong> and explain the “extend vs restart” choice — interviewers want
+              the O(n) DP intuition, not just the code. The classic trap is initializing <code>best = 0</code>, which
+              breaks on all-negative inputs; start from <code>nums[0]</code>.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -831,5 +831,47 @@
     "tags": ["extension-methods", "syntactic-sugar", "linq", "fluent", "this-parameter", "static"],
     "description": "Add methods to existing types you don't own (string, IEnumerable) without modifying or subclassing them — a static method with a this parameter, as LINQ uses.",
     "url": "concepts/csharp/extension-methods.html"
+  },
+  {
+    "title": "Two Sum",
+    "category": "coding-problems",
+    "tags": ["arrays", "hashing", "easy", "complement", "hash-map", "interview"],
+    "description": "Return the indices of the two numbers that add up to a target. Brute-force O(n²) vs the hash-map O(n) one-pass solution and the complement pattern.",
+    "url": "concepts/coding-problems/two-sum.html"
+  },
+  {
+    "title": "Contains Duplicate",
+    "category": "coding-problems",
+    "tags": ["arrays", "hashing", "easy", "set", "uniqueness", "interview"],
+    "description": "Detect whether any value appears twice. Brute-force, sort, and the optimal HashSet O(n) solution — the 'use a set for uniqueness' pattern.",
+    "url": "concepts/coding-problems/contains-duplicate.html"
+  },
+  {
+    "title": "Maximum Subarray (Kadane's)",
+    "category": "coding-problems",
+    "tags": ["arrays", "dynamic-programming", "kadane", "medium", "running-sum", "interview"],
+    "description": "Find the contiguous subarray with the largest sum using Kadane's algorithm — O(n) time, O(1) space — with the extend-or-restart running-sum insight.",
+    "url": "concepts/coding-problems/maximum-subarray.html"
+  },
+  {
+    "title": "Product of Array Except Self",
+    "category": "coding-problems",
+    "tags": ["arrays", "prefix-suffix", "medium", "no-division", "interview"],
+    "description": "Return the product of all other elements without division in O(n), using the prefix-and-suffix products technique with O(1) extra space.",
+    "url": "concepts/coding-problems/product-of-array-except-self.html"
+  },
+  {
+    "title": "Valid Palindrome",
+    "category": "coding-problems",
+    "tags": ["strings", "two-pointers", "easy", "converge", "interview"],
+    "description": "Check a string ignoring case and non-alphanumeric characters using the two-pointer technique in O(n) time and O(1) space.",
+    "url": "concepts/coding-problems/valid-palindrome.html"
+  },
+  {
+    "title": "3Sum",
+    "category": "coding-problems",
+    "tags": ["arrays", "two-pointers", "sorting", "medium", "duplicates", "interview"],
+    "description": "Find all unique triplets that sum to zero with sort plus two pointers for O(n²), carefully skipping duplicates.",
+    "url": "concepts/coding-problems/3sum.html"
   }
 ]

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3Sum — DevLens</title>
+  <meta name="description" content="3Sum: find all unique triplets that sum to zero. Sort plus the two-pointer technique for O(n²), with duplicate-skipping and a clean C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="3sum" data-title="3Sum">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>3Sum</h1>
+          <p class="lede">
+            Find every unique triplet that sums to zero. The leap from Two Sum: <strong>sort the array, fix one
+            number, and two-pointer the rest</strong> — while carefully skipping duplicates.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#arrays</span>
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#sorting</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an integer array <code>nums</code>, return all unique triplets <code>[a, b, c]</code> such that
+            <code>a + b + c == 0</code>. The result must not contain duplicate triplets.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[-1, 0, 1, 2, -1, -4]</code> → <code>[[-1, -1, 2], [-1, 0, 1]]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Three nested loops over all triplets, dedup with a set. <strong>Time O(n³), Space O(n).</strong> Too slow.</p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            <strong>Sort</strong> the array first. Then fix each element <code>nums[i]</code> and reduce the rest to a
+            <strong>Two Sum on a sorted array</strong>: a <code>left</code> pointer just after <code>i</code> and a
+            <code>right</code> pointer at the end. If the three sum to 0, record it; if the sum is too small move
+            <code>left</code> right (bigger), if too big move <code>right</code> left (smaller). Skip duplicate values
+            for <code>i</code>, <code>left</code>, and <code>right</code> so triplets aren’t repeated.
+          </p>
+          <p><strong>Time O(n²)</strong> (one fixed element × the linear two-pointer scan), <strong>Space O(1)</strong> beyond the output (ignoring the sort).</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 130" role="img" aria-label="3Sum sorted with fixed element and two pointers">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
+                </marker>
+              </defs>
+              <text class="dgm-sub" x="20" y="22">sorted: [-4, -1, -1, 0, 1, 2]</text>
+              <rect class="dgm-box-accent" x="20" y="36" width="60" height="34" rx="5"/><text class="dgm-sub" x="50" y="58" text-anchor="middle">-4 (i)</text>
+              <rect class="dgm-box" x="84" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="112" y="58" text-anchor="middle">-1 L</text>
+              <rect class="dgm-box" x="144" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="172" y="58" text-anchor="middle">-1</text>
+              <rect class="dgm-box" x="204" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="232" y="58" text-anchor="middle">0</text>
+              <rect class="dgm-box" x="264" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="292" y="58" text-anchor="middle">1</text>
+              <rect class="dgm-box" x="324" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="352" y="58" text-anchor="middle">2 R</text>
+              <text class="dgm-sub" x="20" y="100">fix i, move L/R: sum&lt;0 → L++, sum&gt;0 → R--, sum==0 → record + skip dups</text>
+            </svg>
+            <figcaption>Figure 1 — Sorting lets the inner search use two pointers instead of a hash set.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;int&gt;&gt; ThreeSum(int[] nums)
+{
+    Array.Sort(nums);                       // enables the two-pointer scan + easy dedup
+    var result = new List&lt;IList&lt;int&gt;&gt;();
+
+    for (int i = 0; i &lt; nums.Length - 2; i++)
+    {
+        if (i &gt; 0 &amp;&amp; nums[i] == nums[i - 1]) continue;   // skip duplicate "fixed" values
+        if (nums[i] &gt; 0) break;                          // sorted: no triplet can sum to 0
+
+        int left = i + 1, right = nums.Length - 1;
+        while (left &lt; right)
+        {
+            int sum = nums[i] + nums[left] + nums[right];
+            if (sum &lt; 0) left++;
+            else if (sum &gt; 0) right--;
+            else
+            {
+                result.Add(new[] { nums[i], nums[left], nums[right] });
+                left++; right--;
+                while (left &lt; right &amp;&amp; nums[left] == nums[left - 1]) left++;     // skip dups
+                while (left &lt; right &amp;&amp; nums[right] == nums[right + 1]) right--;
+            }
+        }
+    }
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n²) — the sort is O(n log n); the fixed element × two-pointer scan dominates.</li>
+              <li><strong>Space:</strong> O(1) beyond the output (or O(n) depending on the sort implementation).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Sort + two pointers</strong> turns an O(n³) triplet search into O(n²).</li>
+              <li>Sorting also makes <strong>duplicate-skipping</strong> trivial (skip equal neighbors for i, left, right).</li>
+              <li>Early exits help: once <code>nums[i] &gt; 0</code> in a sorted array, no triplet can reach 0.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/two-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Two Sum</span></a>
+            <a class="related-card" href="../coding-problems/valid-palindrome.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Palindrome</span></a>
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The whole problem hinges on <strong>“sort, then two pointers”</strong> plus rigorous duplicate
+              handling — that dedup is where most candidates slip. Walk through skipping equal neighbors explicitly,
+              and mention the early-break optimization for sorted positives.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

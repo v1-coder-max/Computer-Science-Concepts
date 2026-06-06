@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Two Sum — DevLens</title>
+  <meta name="description" content="Two Sum: return indices of the two numbers that add up to a target. Brute-force O(n²) vs the hash-map O(n) one-pass solution in C#, with complexity and the complement pattern." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="two-sum" data-title="Two Sum">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Two Sum</h1>
+          <p class="lede">
+            Given an array and a target, return the <strong>indices of the two numbers</strong> that add up to it.
+            The “hello world” of coding interviews — and a perfect intro to trading space for time.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#arrays</span>
+            <span class="tag">#hashing</span>
+            <span class="tag">#easy</span>
+            <span class="tag">#two-pass-vs-one-pass</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an integer array <code>nums</code> and an integer <code>target</code>, return the indices of the
+            two numbers that add up to <code>target</code>. Exactly one solution exists, and you may not use the same
+            element twice.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums = [2, 7, 11, 15], target = 9</code> → <code>[0, 1]</code> &nbsp;(because 2 + 7 = 9)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Check every pair with two nested loops: for each <code>i</code>, scan every <code>j &gt; i</code> and test
+            <code>nums[i] + nums[j] == target</code>. Correct but quadratic.
+          </p>
+          <p><strong>Time O(n²), Space O(1).</strong></p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            The key insight: for each number <code>x</code>, the partner you need is the
+            <strong>complement</strong> <code>target − x</code>. Keep a <strong>hash map</strong> of values you’ve
+            already seen → their index. As you walk the array once, check whether the complement is already in the
+            map; if so, you’ve found the pair. One pass, constant-time lookups.
+          </p>
+          <p><strong>Time O(n), Space O(n)</strong> — we trade memory (the map) for speed.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 150" role="img" aria-label="Two Sum hash map one-pass trace">
+              <text class="dgm-sub" x="20" y="22">nums = [2, 7, 11, 15], target = 9</text>
+              <rect class="dgm-box" x="20" y="34" width="50" height="34" rx="5"/><text class="dgm-sub" x="45" y="56" text-anchor="middle">2</text>
+              <rect class="dgm-box-accent" x="74" y="34" width="50" height="34" rx="5"/><text class="dgm-sub" x="99" y="56" text-anchor="middle">7</text>
+              <rect class="dgm-box" x="128" y="34" width="50" height="34" rx="5"/><text class="dgm-sub" x="153" y="56" text-anchor="middle">11</text>
+              <rect class="dgm-box" x="182" y="34" width="50" height="34" rx="5"/><text class="dgm-sub" x="207" y="56" text-anchor="middle">15</text>
+
+              <text class="dgm-sub" x="20" y="98">seen map: { 2 → 0 }</text>
+              <text class="dgm-sub" x="20" y="120" fill="var(--c-success)" style="font:600 12px var(--font-sans)">at 7: complement 9−7=2 is in map → answer [0, 1] ✓</text>
+            </svg>
+            <figcaption>Figure 1 — Store each value’s index; at 7, its complement (2) is already seen.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[] TwoSum(int[] nums, int target)
+{
+    var seen = new Dictionary&lt;int, int&gt;();      // value -&gt; index
+    for (int i = 0; i &lt; nums.Length; i++)
+    {
+        int complement = target - nums[i];       // the partner we need
+        if (seen.TryGetValue(complement, out int j))
+            return new[] { j, i };               // found it — one pass
+        seen[nums[i]] = i;                        // remember this value's index
+    }
+    return Array.Empty&lt;int&gt;();                    // problem guarantees a solution
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — a single pass with O(1) hash lookups.</li>
+              <li><strong>Space:</strong> O(n) — the worst case stores nearly every element in the map.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The reusable trick: for pair-sum problems, look up the <strong>complement</strong> in a hash map.</li>
+              <li>One pass beats two — insert <em>after</em> checking so you never pair an element with itself.</li>
+              <li>It’s the classic space-for-time trade: O(n) memory buys you O(n) time over O(n²).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/3sum.html"><span class="rc-cat">Coding</span><span class="rc-title">3Sum</span></a>
+            <a class="related-card" href="../coding-problems/contains-duplicate.html"><span class="rc-cat">Coding</span><span class="rc-title">Contains Duplicate</span></a>
+            <a class="related-card" href="../coding-problems/valid-anagram.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Anagram</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              State the brute force first (shows you can reason), then improve to the hash-map one-pass and call out
+              the <strong>space-for-time</strong> trade explicitly. Watch the edge: insert into the map <em>after</em>
+              the complement check so an element isn’t matched with itself.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

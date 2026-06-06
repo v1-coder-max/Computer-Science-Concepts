@@ -187,9 +187,16 @@
       },
       {
         id: "coding-problems", slug: "coding-problems", title: "Coding Problems", icon: "🧠",
-        color: "var(--cat-coding-problems)", expected: 350,
-        blurb: "300–400 curated problems with approach, C# solution and complexity.",
-        concepts: []
+        color: "var(--cat-coding-problems)", expected: 31,
+        blurb: "The most-asked interview problems: approach, C# solution, complexity.",
+        concepts: [
+          { slug: "two-sum", title: "Two Sum" },
+          { slug: "contains-duplicate", title: "Contains Duplicate" },
+          { slug: "maximum-subarray", title: "Maximum Subarray" },
+          { slug: "product-of-array-except-self", title: "Product of Array Except Self" },
+          { slug: "valid-palindrome", title: "Valid Palindrome" },
+          { slug: "3sum", title: "3Sum" }
+        ]
       },
       {
         id: "web-fundamentals", slug: "web-fundamentals", title: "Web Fundamentals", icon: "🌐",
