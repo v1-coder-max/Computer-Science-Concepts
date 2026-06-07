@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>House Robber — DevLens</title>
+  <meta name="description" content="Maximize loot from houses without robbing two adjacent ones: the DP recurrence dp[i] = max(skip, rob this + dp[i-2]), reduced to O(1) rolling variables, in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="house-robber" data-title="House Robber">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>House Robber</h1>
+          <p class="lede">
+            Rob houses along a street to maximize loot — but tripping two <strong>adjacent</strong> alarms gets you
+            caught. At each house the choice is simple: <em>take it and skip the neighbor, or skip it</em>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#take-or-skip</span>
+            <span class="tag">#o1-space</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given <code>nums</code> where <code>nums[i]</code> is the money in house <code>i</code>, return the maximum
+            you can rob <strong>without robbing two adjacent houses</strong>.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[2,7,9,3,1]</code> → <code>12</code> (rob houses 0, 2, 4 → 2 + 9 + 1) &nbsp;·&nbsp; <code>[1,2,3,1]</code> → <code>4</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Try every valid subset of non-adjacent houses — exponential. But the choice at each house only depends on
+            results just behind it, so the subproblems overlap: DP collapses it to linear time.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Let <code>dp[i]</code> = the most you can rob from the first <code>i+1</code> houses. At house
+            <code>i</code> you either <strong>skip</strong> it (keep <code>dp[i-1]</code>) or <strong>rob</strong> it
+            (its money plus <code>dp[i-2]</code>, since <code>i-1</code> is now off-limits):
+            <code>dp[i] = max(dp[i-1], nums[i] + dp[i-2])</code>. Each state needs only the previous two answers, so
+            track two rolling variables — <strong>O(1) space</strong>.
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Take-or-skip rolling maximum">
+              <text class="dgm-sub" x="20" y="22">dp[i] = max(skip = dp[i-1],  rob = nums[i] + dp[i-2])</text>
+              <rect class="dgm-box" x="20" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="50" y="60" text-anchor="middle">2</text>
+              <rect class="dgm-box" x="85" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="115" y="60" text-anchor="middle">7</text>
+              <rect class="dgm-box-accent" x="150" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="180" y="60" text-anchor="middle">9</text>
+              <rect class="dgm-box" x="215" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="245" y="60" text-anchor="middle">3</text>
+              <rect class="dgm-box-accent" x="280" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="310" y="60" text-anchor="middle">1</text>
+              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">best = 2 + 9 + 1 = 12 (non-adjacent picks)</text>
+            </svg>
+            <figcaption>Figure 1 — Each house compares “skip” vs “rob + best two back”; the running max is the answer.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — O(1) space DP</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int Rob(int[] nums)
+{
+    int prev2 = 0;   // best up to house i-2
+    int prev1 = 0;   // best up to house i-1
+    foreach (int money in nums)
+    {
+        int take = money + prev2;            // rob this house
+        int curr = Math.Max(prev1, take);    // vs. skip it
+        prev2 = prev1;
+        prev1 = curr;
+    }
+    return prev1;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one pass over the houses.</li>
+              <li><strong>Space:</strong> O(1) — two rolling variables.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The <strong>take-or-skip</strong> recurrence: <code>max(skip, value + best-two-back)</code>.</li>
+              <li>State depends only on the last two results → O(1) rolling variables.</li>
+              <li>“Houses in a circle” (House Robber II) = run this twice, excluding the first or last house.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/climbing-stairs.html"><span class="rc-cat">Coding</span><span class="rc-title">Climbing Stairs</span></a>
+            <a class="related-card" href="../coding-problems/coin-change.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change</span></a>
+            <a class="related-card" href="../coding-problems/maximum-subarray.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Subarray</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              State the recurrence in words first — “rob this plus best two back, or skip and keep best so far” — then
+              code the two-variable version. The natural follow-up is the circular street; say you solve it by running
+              the linear version twice.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

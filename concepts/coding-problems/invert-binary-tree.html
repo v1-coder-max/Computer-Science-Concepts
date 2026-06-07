@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invert Binary Tree — DevLens</title>
+  <meta name="description" content="Mirror a binary tree by swapping every node's left and right children — the textbook recursive tree problem — in O(n) time, with an iterative queue variant in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="invert-binary-tree" data-title="Invert Binary Tree">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Invert Binary Tree</h1>
+          <p class="lede">
+            Mirror a tree left-to-right. Swap each node’s two children and recurse — three lines that show you
+            understand <strong>tree recursion</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given the <code>root</code> of a binary tree, invert it (swap left and right subtrees everywhere) and
+            return the root.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[4,2,7,1,3,6,9]</code> → <code>[4,7,2,9,6,3,1]</code> — every level reads right-to-left.</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            There’s no real “slow” version — any correct approach visits every node once (O(n)). The question is
+            really testing whether you can express the recursion (or its iterative equivalent) cleanly.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Inverting a tree = swap the root’s left and right children, then invert each subtree. That’s a direct
+            recursion: base case is <code>null</code>; otherwise swap, recurse left, recurse right. Equivalently, do a
+            <strong>BFS/DFS</strong> with a queue or stack and swap children as you pop each node.
+          </p>
+          <p><strong>Time O(n), Space O(h)</strong> (recursion/stack depth = tree height).</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 130" role="img" aria-label="Swapping children mirrors the tree">
+              <circle class="dgm-box-accent" cx="120" cy="30" r="16"/><text class="dgm-sub" x="120" y="35" text-anchor="middle">4</text>
+              <circle class="dgm-box" cx="80" cy="80" r="16"/><text class="dgm-sub" x="80" y="85" text-anchor="middle">2</text>
+              <circle class="dgm-box" cx="160" cy="80" r="16"/><text class="dgm-sub" x="160" y="85" text-anchor="middle">7</text>
+              <line class="dgm-line" x1="110" y1="42" x2="88" y2="66"/><line class="dgm-line" x1="130" y1="42" x2="152" y2="66"/>
+              <text x="220" y="60" style="font:600 18px var(--font-sans)" fill="var(--c-text-soft)">→</text>
+              <circle class="dgm-box-accent" cx="380" cy="30" r="16"/><text class="dgm-sub" x="380" y="35" text-anchor="middle">4</text>
+              <circle class="dgm-box" cx="340" cy="80" r="16"/><text class="dgm-sub" x="340" y="85" text-anchor="middle">7</text>
+              <circle class="dgm-box" cx="420" cy="80" r="16"/><text class="dgm-sub" x="420" y="85" text-anchor="middle">2</text>
+              <line class="dgm-line" x1="370" y1="42" x2="348" y2="66"/><line class="dgm-line" x1="390" y1="42" x2="412" y2="66"/>
+              <text class="dgm-sub" x="300" y="120" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">swap children at every node</text>
+            </svg>
+            <figcaption>Figure 1 — Swapping left/right at each node, recursively, produces the mirror image.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class TreeNode { public int val; public TreeNode left, right; }
+
+public TreeNode InvertTree(TreeNode root)
+{
+    if (root == null) return null;
+    (root.left, root.right) = (InvertTree(root.right), InvertTree(root.left));
+    return root;
+}
+
+// Iterative (BFS) variant:
+public TreeNode InvertIterative(TreeNode root)
+{
+    if (root == null) return null;
+    var q = new Queue&lt;TreeNode&gt;();
+    q.Enqueue(root);
+    while (q.Count &gt; 0)
+    {
+        var n = q.Dequeue();
+        (n.left, n.right) = (n.right, n.left);   // swap
+        if (n.left  != null) q.Enqueue(n.left);
+        if (n.right != null) q.Enqueue(n.right);
+    }
+    return root;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — every node is visited once.</li>
+              <li><strong>Space:</strong> O(h) recursion depth (O(n) worst case for a skewed tree).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Most tree problems = <strong>do something at the node, recurse into both children</strong>.</li>
+              <li>The base case (<code>null</code>) is what stops the recursion — always state it first.</li>
+              <li>Any recursive tree walk has an iterative twin using an explicit stack or queue.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/max-depth-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Depth of Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/level-order-traversal.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Level Order Traversal</span></a>
+            <a class="related-card" href="../coding-problems/validate-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Validate BST</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              It’s famous (the “invert a binary tree” tweet), so it’s often a quick warm-up. Write the three-line
+              recursion confidently, then offer the iterative version to show you know recursion is just an implicit
+              stack.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

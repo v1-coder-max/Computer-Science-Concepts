@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Binary Search — DevLens</title>
+  <meta name="description" content="Find a target in a sorted array by halving the search range each step — the classic O(log n) algorithm — with the overflow-safe midpoint and the half-open invariant in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="binary-search" data-title="Binary Search">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Binary Search</h1>
+          <p class="lede">
+            On a <strong>sorted</strong> array, you don’t scan — you halve. Each comparison throws away half the
+            remaining candidates, turning O(n) into <strong>O(log n)</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#binary-search</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#divide-and-conquer</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given a sorted array <code>nums</code> and a <code>target</code>, return its index, or <code>-1</code> if
+            it isn’t present.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums = [-1,0,3,5,9,12], target = 9</code> → <code>4</code> &nbsp;·&nbsp; <code>target = 2</code> → <code>-1</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            A linear scan checks every element — O(n). It works, but it ignores the sorted order. Sortedness lets us
+            rule out half the array with a single comparison.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Track a window <code>[lo, hi]</code>. Look at the middle element. If it equals the target, done. If it’s
+            <em>smaller</em>, the target can only be to the right, so move <code>lo = mid + 1</code>. If it’s
+            <em>larger</em>, move <code>hi = mid - 1</code>. Repeat until the window is empty. Compute the midpoint as
+            <code>lo + (hi - lo) / 2</code> to avoid integer <strong>overflow</strong> on large indices.
+          </p>
+          <p><strong>Time O(log n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Halving the search window">
+              <text class="dgm-sub" x="20" y="22">target = 9 in [-1, 0, 3, 5, 9, 12]</text>
+              <rect class="dgm-box" x="20" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="60" y="54" text-anchor="middle">-1</text>
+              <rect class="dgm-box" x="105" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="145" y="54" text-anchor="middle">0</text>
+              <rect class="dgm-box-accent" x="190" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="230" y="54" text-anchor="middle">3 = mid</text>
+              <rect class="dgm-box" x="275" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="315" y="54" text-anchor="middle">5</text>
+              <rect class="dgm-box" x="360" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="400" y="54" text-anchor="middle">9</text>
+              <rect class="dgm-box" x="445" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="485" y="54" text-anchor="middle">12</text>
+              <text class="dgm-sub" x="20" y="92" fill="var(--c-success)" style="font:600 12px var(--font-sans)">3 &lt; 9 → discard left half, search [5, 9, 12]; next mid = 9 → found</text>
+            </svg>
+            <figcaption>Figure 1 — Each step compares the midpoint and discards the half that cannot contain the target.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int Search(int[] nums, int target)
+{
+    int lo = 0, hi = nums.Length - 1;
+    while (lo &lt;= hi)
+    {
+        int mid = lo + (hi - lo) / 2;   // overflow-safe midpoint
+        if (nums[mid] == target) return mid;
+        if (nums[mid] &lt; target)  lo = mid + 1;  // target is to the right
+        else                     hi = mid - 1;  // target is to the left
+    }
+    return -1;
+}
+// Built-in: Array.BinarySearch(nums, target) returns the index (or a negative
+// bitwise-complement of the insertion point if absent).</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(log n) — the window halves every iteration.</li>
+              <li><strong>Space:</strong> O(1) iterative (O(log n) stack if written recursively).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Binary search needs a <strong>sorted / monotonic</strong> space; each step discards half.</li>
+              <li>Use <code>lo + (hi - lo) / 2</code> and be consistent about your loop invariant (here, inclusive <code>[lo, hi]</code> with <code>lo &lt;= hi</code>).</li>
+              <li>The idea generalizes: “binary search on the answer” solves min/max feasibility problems.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/search-rotated-sorted-array.html"><span class="rc-cat">Coding</span><span class="rc-title">Search in Rotated Sorted Array</span></a>
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element</span></a>
+            <a class="related-card" href="../coding-problems/climbing-stairs.html"><span class="rc-cat">Coding</span><span class="rc-title">Climbing Stairs</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Get the boundaries right out loud: inclusive vs half-open, <code>lo &lt;= hi</code> vs <code>lo &lt; hi</code>.
+              Most binary-search bugs are off-by-one in the update step. Mention the overflow-safe midpoint — it’s a
+              small detail interviewers notice.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

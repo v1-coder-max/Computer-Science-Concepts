@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pow(x, n) — DevLens</title>
+  <meta name="description" content="Compute x raised to n in O(log n) with fast exponentiation by squaring — square the base and halve the exponent — handling negative powers, with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="pow-x-n" data-title="Pow(x, n)">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Pow(x, n)</h1>
+          <p class="lede">
+            Raise <code>x</code> to the power <code>n</code> without n multiplications. <strong>Exponentiation by
+            squaring</strong> halves the exponent each step, turning O(n) into <strong>O(log n)</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#math</span>
+            <span class="tag">#divide-and-conquer</span>
+            <span class="tag">#fast-exponentiation</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Implement <code>Pow(x, n)</code> — compute <code>x</code> raised to the integer power <code>n</code>
+            (<code>n</code> may be negative). Return a double.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>Pow(2.0, 10)</code> → <code>1024.0</code> &nbsp;·&nbsp; <code>Pow(2.0, -2)</code> → <code>0.25</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Multiply <code>x</code> by itself <code>n</code> times — O(n). For large <code>n</code> that’s far too
+            slow, and it does redundant work: <code>x⁸</code> recomputes everything it already built for
+            <code>x⁴</code>.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Use the identity <code>xⁿ = (x²)^(n/2)</code> for even <code>n</code>, and <code>x · x^(n-1)</code> for
+            odd <code>n</code>. Each step <strong>squares the base and halves the exponent</strong>, so you reach
+            <code>n = 0</code> in about <code>log₂ n</code> steps. For negative powers, compute the positive power and
+            return its reciprocal (and use a <code>long</code> for <code>n</code> to safely negate
+            <code>int.MinValue</code>).
+          </p>
+          <p><strong>Time O(log n), Space O(1)</strong> (iterative).</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Squaring the base while halving the exponent">
+              <text class="dgm-sub" x="20" y="22">2^10 — square base, halve exponent</text>
+              <rect class="dgm-box" x="20" y="40" width="110" height="30" rx="5"/><text class="dgm-sub" x="75" y="60" text-anchor="middle">2^10 = (4)^5</text>
+              <rect class="dgm-box" x="140" y="40" width="120" height="30" rx="5"/><text class="dgm-sub" x="200" y="60" text-anchor="middle">4·(16)^2</text>
+              <rect class="dgm-box" x="270" y="40" width="120" height="30" rx="5"/><text class="dgm-sub" x="330" y="60" text-anchor="middle">4·(256)^1</text>
+              <rect class="dgm-box-accent" x="400" y="40" width="120" height="30" rx="5"/><text class="dgm-sub" x="460" y="60" text-anchor="middle">= 1024</text>
+              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">~log₂(10) ≈ 4 multiplications instead of 10</text>
+            </svg>
+            <figcaption>Figure 1 — Halving the exponent each step collapses n multiplications into log n.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — iterative fast power</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public double MyPow(double x, int n)
+{
+    long e = n;                  // widen so we can negate int.MinValue safely
+    if (e &lt; 0) { x = 1 / x; e = -e; }
+
+    double result = 1.0;
+    while (e &gt; 0)
+    {
+        if ((e &amp; 1) == 1) result *= x;  // exponent bit set → multiply in current power
+        x *= x;                          // square the base
+        e &gt;&gt;= 1;                          // halve the exponent
+    }
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(log n) — the exponent halves each iteration.</li>
+              <li><strong>Space:</strong> O(1) iterative (O(log n) call stack if recursive).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Exponentiation by squaring</strong>: square the base, halve the exponent → O(log n).</li>
+              <li>The exponent’s binary bits decide which squared powers to multiply in.</li>
+              <li>Handle <code>n &lt; 0</code> via reciprocal, and widen to <code>long</code> for the <code>int.MinValue</code> edge case.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+            <a class="related-card" href="../coding-problems/single-number.html"><span class="rc-cat">Coding</span><span class="rc-title">Single Number</span></a>
+            <a class="related-card" href="../coding-problems/climbing-stairs.html"><span class="rc-cat">Coding</span><span class="rc-title">Climbing Stairs</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The two things they check: the O(log n) squaring insight, and the edge cases — negative <code>n</code>
+              and <code>n = int.MinValue</code> (which overflows on negation as an <code>int</code>). Call out the
+              <code>long</code> widening; it’s the detail that trips most candidates.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

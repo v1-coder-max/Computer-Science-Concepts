@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reverse Linked List — DevLens</title>
+  <meta name="description" content="Reverse a singly linked list in place by re-pointing each node's next to the previous node — the three-pointer iterative pattern in O(n) time, O(1) space, with the recursive variant." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="reverse-linked-list" data-title="Reverse Linked List">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Reverse Linked List</h1>
+          <p class="lede">
+            Flip a singly linked list so the last node becomes the head. The whole trick is
+            <strong>three pointers</strong> walking the list and re-pointing each <code>next</code> backwards.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#linked-list</span>
+            <span class="tag">#pointers</span>
+            <span class="tag">#in-place</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given the <code>head</code> of a singly linked list, reverse it and return the new head. Do it
+            <strong>in place</strong> — O(1) extra memory.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>1 → 2 → 3 → 4 → 5 → null</code> becomes <code>5 → 4 → 3 → 2 → 1 → null</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            You could push every value onto a list/stack and rebuild a new list in reverse — O(n) time but
+            <strong>O(n) extra space</strong>, and it allocates new nodes instead of reusing the ones you have. The
+            interview wants the in-place pointer reversal.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Walk the list with three references: <code>prev</code> (starts <code>null</code>), <code>curr</code>
+            (starts at head), and a saved <code>next</code>. At each step: remember <code>next = curr.next</code>,
+            point <code>curr.next = prev</code> (the reversal), then advance <code>prev = curr</code> and
+            <code>curr = next</code>. When <code>curr</code> falls off the end, <code>prev</code> is the new head.
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 140" role="img" aria-label="Three-pointer reversal of a linked list">
+              <text class="dgm-sub" x="20" y="22">before: prev=null  curr→1 → 2 → 3</text>
+              <rect class="dgm-box" x="20" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="55" y="54" text-anchor="middle">1</text>
+              <rect class="dgm-box" x="120" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="155" y="54" text-anchor="middle">2</text>
+              <rect class="dgm-box" x="220" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="255" y="54" text-anchor="middle">3</text>
+              <text class="dgm-sub" x="20" y="92">step: save next, flip curr.next = prev, advance both</text>
+              <rect class="dgm-box-accent" x="20" y="104" width="280" height="26" rx="6"/>
+              <text x="160" y="122" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">end: prev = 3 → 2 → 1 → null = new head</text>
+            </svg>
+            <figcaption>Figure 1 — Each iteration redirects one arrow backward; <code>prev</code> trails as the growing reversed list.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class ListNode { public int val; public ListNode next; }
+
+public ListNode ReverseList(ListNode head)
+{
+    ListNode prev = null, curr = head;
+    while (curr != null)
+    {
+        ListNode next = curr.next; // save the rest of the list
+        curr.next = prev;          // reverse this node's pointer
+        prev = curr;               // prev moves up
+        curr = next;               // curr moves on
+    }
+    return prev;                   // prev is the new head
+}
+
+// Recursive variant (O(n) stack space):
+public ListNode ReverseRec(ListNode head)
+{
+    if (head == null || head.next == null) return head;
+    ListNode newHead = ReverseRec(head.next);
+    head.next.next = head;         // make the next node point back
+    head.next = null;
+    return newHead;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one pass, each pointer touched once.</li>
+              <li><strong>Space:</strong> O(1) iterative (O(n) call stack for the recursive form).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The <strong>prev / curr / next</strong> three-pointer dance is the core linked-list pattern.</li>
+              <li>Always save <code>next</code> <em>before</em> you overwrite <code>curr.next</code>, or you lose the rest of the list.</li>
+              <li><code>prev</code> ends as the new head; reuse nodes in place for O(1) space.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-two-sorted-lists.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge Two Sorted Lists</span></a>
+            <a class="related-card" href="../coding-problems/linked-list-cycle.html"><span class="rc-cat">Coding</span><span class="rc-title">Linked List Cycle</span></a>
+            <a class="related-card" href="../coding-problems/valid-parentheses.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Parentheses</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              This is the linked-list warm-up — get the three-pointer loop out cleanly and fast. Narrate “save next,
+              flip, advance.” It’s the building block for reverse-in-k-groups, palindrome-linked-list, and reordering,
+              so interviewers expect it to be automatic.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

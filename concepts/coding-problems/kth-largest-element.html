@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kth Largest Element — DevLens</title>
+  <meta name="description" content="Find the kth largest element in an array using a size-k min-heap in O(n log k) — the canonical heap problem — plus the Quickselect O(n) average alternative, in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="kth-largest-element" data-title="Kth Largest Element">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Kth Largest Element</h1>
+          <p class="lede">
+            Find the kth largest value without fully sorting. A <strong>size-k min-heap</strong> keeps only the top k
+            candidates — its root is your answer — in O(n log k).
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#heap</span>
+            <span class="tag">#priority-queue</span>
+            <span class="tag">#quickselect</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an integer array <code>nums</code> and an integer <code>k</code>, return the
+            <strong>k</strong>th largest element (by value, in sorted order — not the kth distinct).
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums = [3,2,1,5,6,4], k = 2</code> → <code>5</code> &nbsp;·&nbsp; <code>nums = [3,2,3,1,2,4,5,5,6], k = 4</code> → <code>4</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Sort descending and take index <code>k-1</code> — O(n log n). Fine, but it does more work than needed: you
+            don’t care about the order of the other n−k elements. A heap (or Quickselect) does less.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Maintain a <strong>min-heap of size k</strong>. Push elements; whenever the heap exceeds k, pop the
+            smallest. After processing everything, the heap holds the k largest values and its <strong>root is the
+            smallest of those — exactly the kth largest</strong>. Each push/pop is O(log k), so total is O(n log k),
+            and memory is just O(k). In C#, <code>PriorityQueue&lt;TElement,TPriority&gt;</code> is a min-heap by priority.
+          </p>
+          <p><strong>Time O(n log k), Space O(k).</strong> Quickselect averages O(n) (worst O(n²)).</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 130" role="img" aria-label="Size-k min-heap keeping top k elements">
+              <text class="dgm-sub" x="20" y="22">k = 2 — keep the 2 largest seen so far</text>
+              <rect class="dgm-box-accent" x="20" y="40" width="180" height="30" rx="6"/><text class="dgm-sub" x="110" y="60" text-anchor="middle">heap (min on top): [5, 6]</text>
+              <text class="dgm-sub" x="20" y="96">push 4 → heap [4,5,6] over size → pop min(4) → [5,6]</text>
+              <rect class="dgm-box-accent" x="360" y="84" width="220" height="26" rx="6"/>
+              <text x="470" y="102" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">root = 5 = 2nd largest ✓</text>
+            </svg>
+            <figcaption>Figure 1 — A bounded min-heap discards everything below the top k; its root is the kth largest.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — min-heap</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int FindKthLargest(int[] nums, int k)
+{
+    // PriorityQueue is a MIN-heap: lowest priority dequeues first.
+    var heap = new PriorityQueue&lt;int, int&gt;();
+    foreach (int n in nums)
+    {
+        heap.Enqueue(n, n);
+        if (heap.Count &gt; k) heap.Dequeue();   // drop the smallest, keep top k
+    }
+    return heap.Peek();                       // root = kth largest
+}
+
+// Quickselect alternative — O(n) average via partition around a pivot:
+//   pick pivot, partition; if pivot lands at index (n-k) it's the answer,
+//   else recurse into the side that contains it.</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n log k) for the heap; Quickselect is O(n) average, O(n²) worst.</li>
+              <li><strong>Space:</strong> O(k) for the heap; O(1) for in-place Quickselect.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>“Top-k / kth largest” → a <strong>bounded heap of size k</strong>; keep the opposite extreme on the root.</li>
+              <li>For the <em>k largest</em>, use a <strong>min</strong>-heap (evict the smallest); flip for k smallest.</li>
+              <li><strong>Quickselect</strong> gives O(n) average when you need raw speed and can sacrifice worst-case.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-two-sorted-lists.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge Two Sorted Lists</span></a>
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+            <a class="related-card" href="../coding-problems/group-anagrams.html"><span class="rc-cat">Coding</span><span class="rc-title">Group Anagrams</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Say “top-k → heap” immediately, and be precise that the <em>k largest</em> uses a <strong>min</strong>-heap.
+              If pressed for better than O(n log k), bring up <strong>Quickselect</strong> and its O(n) average — naming
+              the trade-off (worst-case O(n²)) shows depth.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

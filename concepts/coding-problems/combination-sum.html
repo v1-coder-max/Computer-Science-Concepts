@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Combination Sum — DevLens</title>
+  <meta name="description" content="Find all combinations of candidates (reusable) that sum to a target using backtracking with pruning and a start index to avoid permutations — a C# solution and the pattern." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="combination-sum" data-title="Combination Sum">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Combination Sum</h1>
+          <p class="lede">
+            Which combinations of numbers add up to a target, when each number can be reused? Backtracking with a
+            <strong>start index</strong> (to avoid reordered duplicates) and <strong>pruning</strong> (when the running
+            sum overshoots).
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#backtracking</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#pruning</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given <strong>distinct</strong> positive integers <code>candidates</code> and a <code>target</code>,
+            return all unique combinations where the chosen numbers sum to <code>target</code>. Each candidate may be
+            used an <strong>unlimited</strong> number of times.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>candidates = [2,3,6,7], target = 7</code> → <code>[[2,2,3], [7]]</code></p>
+          </div>
+
+          <h2>The idea</h2>
+          <p>
+            Build combinations incrementally and track the remaining amount. At each step you can <strong>reuse the
+            current candidate</strong> (so recurse with the same index, not <code>i+1</code>) or move on to later
+            candidates. Two controls keep it correct and fast:
+          </p>
+          <ul>
+            <li><strong>Start index</strong> — only consider candidates from <code>i</code> onward, so <code>[2,2,3]</code> and <code>[2,3,2]</code> aren’t both produced.</li>
+            <li><strong>Pruning</strong> — if a candidate exceeds the remaining target, stop (sort first so you can break early).</li>
+          </ul>
+          <p>When <code>remaining == 0</code>, record the path.</p>
+          <p><strong>Time:</strong> exponential in the worst case (bounded by the number of valid combinations); <strong>Space O(target/min)</strong> recursion depth.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 130" role="img" aria-label="Backtracking subtracting from the remaining target">
+              <text class="dgm-sub" x="20" y="20">target 7, candidates [2,3,6,7]</text>
+              <circle class="dgm-box-accent" cx="300" cy="36" r="15"/><text class="dgm-sub" x="300" y="41" text-anchor="middle">7</text>
+              <line class="dgm-line" x1="288" y1="46" x2="180" y2="76"/><line class="dgm-line" x1="312" y1="46" x2="430" y2="76"/>
+              <circle class="dgm-box" cx="170" cy="88" r="15"/><text class="dgm-sub" x="170" y="93" text-anchor="middle">5</text>
+              <circle class="dgm-box" cx="440" cy="88" r="15"/><text class="dgm-sub" x="440" y="93" text-anchor="middle">0</text>
+              <text class="dgm-sub" x="150" y="120">take 2 → need 5 …</text>
+              <text class="dgm-sub" x="400" y="120" fill="var(--c-success)" style="font:600 11px var(--font-sans)">take 7 → 0 → record [7] ✓</text>
+            </svg>
+            <figcaption>Figure 1 — Each branch subtracts a candidate from the remaining target; a branch that hits 0 is a valid combination, &lt;0 is pruned.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — backtracking</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;int&gt;&gt; CombinationSum(int[] candidates, int target)
+{
+    Array.Sort(candidates);                  // lets us break early
+    var result = new List&lt;IList&lt;int&gt;&gt;();
+    Backtrack(0, target, new List&lt;int&gt;());
+    return result;
+
+    void Backtrack(int start, int remaining, List&lt;int&gt; path)
+    {
+        if (remaining == 0) { result.Add(new List&lt;int&gt;(path)); return; }
+        for (int i = start; i &lt; candidates.Length; i++)
+        {
+            if (candidates[i] &gt; remaining) break;     // sorted ⇒ rest are bigger too
+            path.Add(candidates[i]);
+            Backtrack(i, remaining - candidates[i], path); // i (not i+1): reuse allowed
+            path.RemoveAt(path.Count - 1);               // un-choose
+        }
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> exponential — bounded by the number of valid combinations explored.</li>
+              <li><strong>Space:</strong> O(target / min candidate) recursion depth (excluding output).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Recurse with the <strong>same index</strong> to allow reuse; use <code>i+1</code> when each item is used once.</li>
+              <li>The <strong>start index</strong> kills permutation duplicates; <strong>sort + break</strong> prunes hopeless branches.</li>
+              <li>It’s the subsets template plus a target/remaining accumulator.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/subsets.html"><span class="rc-cat">Coding</span><span class="rc-title">Subsets</span></a>
+            <a class="related-card" href="../coding-problems/coin-change.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change</span></a>
+            <a class="related-card" href="../coding-problems/3sum.html"><span class="rc-cat">Coding</span><span class="rc-title">3Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The two details interviewers probe: how you avoid duplicate combinations (start index) and how you allow
+              reuse (recurse on <code>i</code>). Contrast with “Combination Sum II” (each used once, skip equal
+              neighbors) to show you understand the knobs.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

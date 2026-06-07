@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maximum Depth of Binary Tree — DevLens</title>
+  <meta name="description" content="Compute the height of a binary tree as 1 + max(depth of left, depth of right) — the foundational tree recursion — in O(n), with an iterative BFS level-count variant in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="max-depth-binary-tree" data-title="Maximum Depth of Binary Tree">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Maximum Depth of Binary Tree</h1>
+          <p class="lede">
+            How tall is the tree? The height of a node is <strong>1 + the taller of its two subtrees</strong>. That
+            single recurrence is the template for half of all tree problems.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given the <code>root</code> of a binary tree, return its maximum depth — the number of nodes along the
+            longest path from the root down to a leaf.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[3,9,20,null,null,15,7]</code> → <code>3</code> &nbsp;·&nbsp; <code>[]</code> → <code>0</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            There’s no wasteful version worth writing — you must look at every node (O(n)). The exercise is to express
+            the height recurrence correctly and handle the empty-tree base case.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Define depth recursively: an empty tree has depth <code>0</code>; otherwise the depth is
+            <code>1 + max(depth(left), depth(right))</code>. The recursion naturally explores every path and bubbles
+            the maximum back up. The iterative form is a <strong>BFS</strong> that counts how many levels the queue
+            processes.
+          </p>
+          <p><strong>Time O(n), Space O(h)</strong> (call-stack depth = height).</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 130" role="img" aria-label="Depth as one plus the taller subtree">
+              <circle class="dgm-box-accent" cx="120" cy="28" r="16"/><text class="dgm-sub" x="120" y="33" text-anchor="middle">3</text>
+              <circle class="dgm-box" cx="70" cy="74" r="16"/><text class="dgm-sub" x="70" y="79" text-anchor="middle">9</text>
+              <circle class="dgm-box" cx="170" cy="74" r="16"/><text class="dgm-sub" x="170" y="79" text-anchor="middle">20</text>
+              <circle class="dgm-box" cx="140" cy="116" r="14"/><text class="dgm-sub" x="140" y="121" text-anchor="middle">15</text>
+              <circle class="dgm-box" cx="200" cy="116" r="14"/><text class="dgm-sub" x="200" y="121" text-anchor="middle">7</text>
+              <line class="dgm-line" x1="110" y1="40" x2="80" y2="62"/><line class="dgm-line" x1="130" y1="40" x2="160" y2="62"/>
+              <line class="dgm-line" x1="162" y1="86" x2="146" y2="104"/><line class="dgm-line" x1="178" y1="86" x2="194" y2="104"/>
+              <text class="dgm-sub" x="320" y="74" fill="var(--c-success)" style="font:600 13px var(--font-sans)">1 + max(1, 2) = 3</text>
+            </svg>
+            <figcaption>Figure 1 — Each node returns 1 + the deeper of its subtrees; the root yields the tree’s height.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MaxDepth(TreeNode root)
+{
+    if (root == null) return 0;                       // empty subtree
+    return 1 + Math.Max(MaxDepth(root.left), MaxDepth(root.right));
+}
+
+// Iterative BFS: count levels.
+public int MaxDepthBfs(TreeNode root)
+{
+    if (root == null) return 0;
+    var q = new Queue&lt;TreeNode&gt;();
+    q.Enqueue(root);
+    int depth = 0;
+    while (q.Count &gt; 0)
+    {
+        int size = q.Count;                           // one full level
+        for (int i = 0; i &lt; size; i++)
+        {
+            var n = q.Dequeue();
+            if (n.left  != null) q.Enqueue(n.left);
+            if (n.right != null) q.Enqueue(n.right);
+        }
+        depth++;
+    }
+    return depth;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — visit every node once.</li>
+              <li><strong>Space:</strong> O(h) recursion (O(n) for a skewed tree); BFS uses O(width).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The recurrence <strong>1 + max(left, right)</strong> is the canonical “aggregate up the tree” pattern.</li>
+              <li>Empty tree → 0 is the base case that makes leaves return 1.</li>
+              <li>Swap <code>max</code> for <code>min</code> (with a leaf guard) to get <em>minimum</em> depth.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/invert-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Invert Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/validate-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Validate BST</span></a>
+            <a class="related-card" href="../coding-problems/level-order-traversal.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Level Order Traversal</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              This is the “can you do tree recursion?” baseline. Once it’s automatic, the same shape solves diameter,
+              balanced-tree checks, and path sums — say so to show you see the pattern, not just this instance.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

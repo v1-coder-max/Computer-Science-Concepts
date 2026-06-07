@@ -201,7 +201,26 @@
           { slug: "valid-parentheses", title: "Valid Parentheses" },
           { slug: "min-stack", title: "Min Stack" },
           { slug: "valid-anagram", title: "Valid Anagram" },
-          { slug: "group-anagrams", title: "Group Anagrams" }
+          { slug: "group-anagrams", title: "Group Anagrams" },
+          { slug: "reverse-linked-list", title: "Reverse Linked List" },
+          { slug: "linked-list-cycle", title: "Linked List Cycle" },
+          { slug: "merge-two-sorted-lists", title: "Merge Two Sorted Lists" },
+          { slug: "binary-search", title: "Binary Search" },
+          { slug: "search-rotated-sorted-array", title: "Search in Rotated Sorted Array" },
+          { slug: "kth-largest-element", title: "Kth Largest Element" },
+          { slug: "invert-binary-tree", title: "Invert Binary Tree" },
+          { slug: "max-depth-binary-tree", title: "Maximum Depth of Binary Tree" },
+          { slug: "validate-bst", title: "Validate BST" },
+          { slug: "level-order-traversal", title: "Binary Tree Level Order Traversal" },
+          { slug: "number-of-islands", title: "Number of Islands" },
+          { slug: "course-schedule", title: "Course Schedule" },
+          { slug: "subsets", title: "Subsets" },
+          { slug: "combination-sum", title: "Combination Sum" },
+          { slug: "climbing-stairs", title: "Climbing Stairs" },
+          { slug: "coin-change", title: "Coin Change" },
+          { slug: "house-robber", title: "House Robber" },
+          { slug: "single-number", title: "Single Number" },
+          { slug: "pow-x-n", title: "Pow(x, n)" }
         ]
       },
       {

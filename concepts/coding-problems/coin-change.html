@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coin Change — DevLens</title>
+  <meta name="description" content="Fewest coins to make an amount: a bottom-up unbounded-knapsack DP where dp[a] = 1 + min over coins of dp[a-coin], in O(amount×coins) — why greedy fails — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="coin-change" data-title="Coin Change">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Coin Change</h1>
+          <p class="lede">
+            Make an amount with the <strong>fewest coins</strong>, given coin denominations you can reuse. Greedy
+            fails on some coin sets — the robust answer is <strong>bottom-up dynamic programming</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#unbounded-knapsack</span>
+            <span class="tag">#bottom-up</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given coin denominations <code>coins</code> (unlimited supply of each) and an <code>amount</code>, return
+            the minimum number of coins needed to make it, or <code>-1</code> if it can’t be made.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>coins = [1,2,5], amount = 11</code> → <code>3</code> (5 + 5 + 1) &nbsp;·&nbsp; <code>coins = [2], amount = 3</code> → <code>-1</code></p>
+          </div>
+
+          <h2>Why not greedy</h2>
+          <p>
+            Always grabbing the biggest coin works for typical currencies but not in general. With
+            <code>coins = [1,3,4], amount = 6</code>, greedy takes <code>4 + 1 + 1 = 3</code> coins, but the optimum is
+            <code>3 + 3 = 2</code>. You must consider every denomination at each amount — that’s DP.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Let <code>dp[a]</code> = the fewest coins to make amount <code>a</code>. Base: <code>dp[0] = 0</code>.
+            For each amount from <code>1…amount</code>, try every coin that fits:
+            <code>dp[a] = 1 + min(dp[a - coin])</code> over all coins <code>≤ a</code>. Initialize the rest to a
+            sentinel “impossible” (e.g. <code>amount+1</code>); if <code>dp[amount]</code> stays at the sentinel, return
+            <code>-1</code>. This is an <strong>unbounded knapsack</strong> (coins reusable).
+          </p>
+          <p><strong>Time O(amount × coins), Space O(amount).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="DP table filling minimum coins per amount">
+              <text class="dgm-sub" x="20" y="22">coins [1,2,5] — dp[a] = 1 + min(dp[a-coin])</text>
+              <rect class="dgm-box" x="20" y="40" width="55" height="30" rx="5"/><text class="dgm-sub" x="47" y="60" text-anchor="middle">0:0</text>
+              <rect class="dgm-box" x="80" y="40" width="55" height="30" rx="5"/><text class="dgm-sub" x="107" y="60" text-anchor="middle">1:1</text>
+              <rect class="dgm-box" x="140" y="40" width="55" height="30" rx="5"/><text class="dgm-sub" x="167" y="60" text-anchor="middle">2:1</text>
+              <rect class="dgm-box" x="200" y="40" width="55" height="30" rx="5"/><text class="dgm-sub" x="227" y="60" text-anchor="middle">5:1</text>
+              <rect class="dgm-box-accent" x="260" y="40" width="70" height="30" rx="5"/><text class="dgm-sub" x="295" y="60" text-anchor="middle">11:3</text>
+              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">dp[11] = 1 + min(dp[10], dp[9], dp[6]) = 3</text>
+            </svg>
+            <figcaption>Figure 1 — Fill the table upward; each amount picks the best coin to land on it from a smaller solved amount.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — bottom-up DP</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int CoinChange(int[] coins, int amount)
+{
+    var dp = new int[amount + 1];
+    Array.Fill(dp, amount + 1);      // sentinel "impossible" (bigger than any real answer)
+    dp[0] = 0;
+
+    for (int a = 1; a &lt;= amount; a++)
+        foreach (int coin in coins)
+            if (coin &lt;= a)
+                dp[a] = Math.Min(dp[a], 1 + dp[a - coin]);
+
+    return dp[amount] &gt; amount ? -1 : dp[amount];
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(amount × number of coins).</li>
+              <li><strong>Space:</strong> O(amount) for the 1-D table.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Greedy can be wrong</strong> for arbitrary coin sets — DP is the safe answer.</li>
+              <li><code>dp[a] = 1 + min over coins of dp[a-coin]</code>; use a sentinel for “unreachable.”</li>
+              <li>Coins reusable ⇒ <strong>unbounded knapsack</strong>; “number of ways” is the same table with a sum instead of a min.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/climbing-stairs.html"><span class="rc-cat">Coding</span><span class="rc-title">Climbing Stairs</span></a>
+            <a class="related-card" href="../coding-problems/house-robber.html"><span class="rc-cat">Coding</span><span class="rc-title">House Robber</span></a>
+            <a class="related-card" href="../coding-problems/combination-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Combination Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Pre-empt the greedy temptation with the <code>[1,3,4]</code> counter-example, then go bottom-up. Be
+              explicit about the sentinel and the final “did we reach it?” check — that’s where buggy solutions return
+              0 instead of -1.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

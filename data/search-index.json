@@ -915,5 +915,138 @@
     "tags": ["strings", "hashing", "grouping", "medium", "canonical-key", "interview"],
     "description": "Bucket words that are anagrams by hashing each to a canonical key (sorted string or character-count signature).",
     "url": "concepts/coding-problems/group-anagrams.html"
+  },
+  {
+    "title": "Reverse Linked List",
+    "category": "coding-problems",
+    "tags": ["linked-list", "pointers", "in-place", "easy", "three-pointers", "interview"],
+    "description": "Reverse a singly linked list in place with the prev/curr/next three-pointer pattern in O(n) time and O(1) space, plus the recursive variant.",
+    "url": "concepts/coding-problems/reverse-linked-list.html"
+  },
+  {
+    "title": "Linked List Cycle",
+    "category": "coding-problems",
+    "tags": ["linked-list", "two-pointers", "floyd", "easy", "tortoise-hare", "interview"],
+    "description": "Detect a cycle in a linked list with Floyd's tortoise-and-hare slow/fast pointers in O(n) time and O(1) space — no hash set needed.",
+    "url": "concepts/coding-problems/linked-list-cycle.html"
+  },
+  {
+    "title": "Merge Two Sorted Lists",
+    "category": "coding-problems",
+    "tags": ["linked-list", "two-pointers", "merge", "easy", "dummy-head", "interview"],
+    "description": "Splice two sorted linked lists into one using a dummy head and a tail pointer — the two-pointer merge step of merge sort — in O(n+m) time.",
+    "url": "concepts/coding-problems/merge-two-sorted-lists.html"
+  },
+  {
+    "title": "Binary Search",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "divide-and-conquer", "easy", "logarithmic", "interview"],
+    "description": "Find a target in a sorted array by halving the range each step — O(log n) — with the overflow-safe midpoint and a consistent loop invariant.",
+    "url": "concepts/coding-problems/binary-search.html"
+  },
+  {
+    "title": "Search in Rotated Sorted Array",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "rotation", "medium", "invariant", "interview"],
+    "description": "Find a target in a rotated sorted array in O(log n) by spotting that one half of every split is still sorted and range-checking into it.",
+    "url": "concepts/coding-problems/search-rotated-sorted-array.html"
+  },
+  {
+    "title": "Kth Largest Element",
+    "category": "coding-problems",
+    "tags": ["heap", "priority-queue", "quickselect", "medium", "top-k", "interview"],
+    "description": "Find the kth largest value with a size-k min-heap in O(n log k), or Quickselect for O(n) average — the canonical top-k pattern.",
+    "url": "concepts/coding-problems/kth-largest-element.html"
+  },
+  {
+    "title": "Invert Binary Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "easy", "mirror", "interview"],
+    "description": "Mirror a binary tree by swapping every node's children — the textbook recursive tree problem — in O(n), with an iterative queue variant.",
+    "url": "concepts/coding-problems/invert-binary-tree.html"
+  },
+  {
+    "title": "Maximum Depth of Binary Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "easy", "height", "interview"],
+    "description": "Compute a tree's height as 1 + max(left depth, right depth) — the foundational tree recurrence — in O(n), with a BFS level-count alternative.",
+    "url": "concepts/coding-problems/max-depth-binary-tree.html"
+  },
+  {
+    "title": "Validate BST",
+    "category": "coding-problems",
+    "tags": ["trees", "bst", "recursion", "medium", "bounds", "interview"],
+    "description": "Validate a binary search tree by carrying a (min, max) bound down each branch — not just comparing parent and child — in O(n), plus the in-order check.",
+    "url": "concepts/coding-problems/validate-bst.html"
+  },
+  {
+    "title": "Binary Tree Level Order Traversal",
+    "category": "coding-problems",
+    "tags": ["trees", "bfs", "queue", "medium", "levels", "interview"],
+    "description": "Traverse a tree level by level with BFS, freezing the queue size each pass to group nodes by depth, in O(n).",
+    "url": "concepts/coding-problems/level-order-traversal.html"
+  },
+  {
+    "title": "Number of Islands",
+    "category": "coding-problems",
+    "tags": ["graphs", "grid", "dfs", "medium", "connected-components", "interview"],
+    "description": "Count connected land components in a grid by flood-filling each new island with DFS/BFS and marking cells visited — O(rows×cols).",
+    "url": "concepts/coding-problems/number-of-islands.html"
+  },
+  {
+    "title": "Course Schedule",
+    "category": "coding-problems",
+    "tags": ["graphs", "topological-sort", "cycle-detection", "medium", "kahn", "interview"],
+    "description": "Decide if prerequisites are completable: detect a cycle in a directed graph via Kahn's topological sort (in-degree BFS) in O(V+E).",
+    "url": "concepts/coding-problems/course-schedule.html"
+  },
+  {
+    "title": "Subsets",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "combinatorics", "medium", "power-set", "interview"],
+    "description": "Generate the power set with the choose/explore/un-choose backtracking template and a start index — O(n·2^n).",
+    "url": "concepts/coding-problems/subsets.html"
+  },
+  {
+    "title": "Combination Sum",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "pruning", "medium", "start-index", "interview"],
+    "description": "Find all combinations summing to a target (candidates reusable) via backtracking with a start index and sort-and-break pruning.",
+    "url": "concepts/coding-problems/combination-sum.html"
+  },
+  {
+    "title": "Climbing Stairs",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "fibonacci", "recurrence", "easy", "rolling", "interview"],
+    "description": "Count ways to climb n stairs taking 1 or 2 steps — the Fibonacci recurrence — with O(n) bottom-up DP reduced to O(1) space.",
+    "url": "concepts/coding-problems/climbing-stairs.html"
+  },
+  {
+    "title": "Coin Change",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "unbounded-knapsack", "bottom-up", "medium", "greedy-fails", "interview"],
+    "description": "Fewest coins to make an amount via bottom-up DP: dp[a] = 1 + min(dp[a-coin]) — why greedy fails — in O(amount×coins).",
+    "url": "concepts/coding-problems/coin-change.html"
+  },
+  {
+    "title": "House Robber",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "take-or-skip", "o1-space", "medium", "adjacent", "interview"],
+    "description": "Maximize loot without robbing adjacent houses: dp[i] = max(skip, rob this + dp[i-2]), reduced to O(1) rolling variables.",
+    "url": "concepts/coding-problems/house-robber.html"
+  },
+  {
+    "title": "Single Number",
+    "category": "coding-problems",
+    "tags": ["bit-manipulation", "xor", "arrays", "easy", "cancellation", "interview"],
+    "description": "Find the element that appears once while others appear twice using XOR (a^a=0 cancels pairs) — O(n) time, O(1) space.",
+    "url": "concepts/coding-problems/single-number.html"
+  },
+  {
+    "title": "Pow(x, n)",
+    "category": "coding-problems",
+    "tags": ["math", "divide-and-conquer", "fast-exponentiation", "medium", "squaring", "interview"],
+    "description": "Compute x^n in O(log n) by exponentiation by squaring — square the base, halve the exponent — handling negative powers and int.MinValue.",
+    "url": "concepts/coding-problems/pow-x-n.html"
   }
 ]
