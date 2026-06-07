@@ -195,7 +195,13 @@
           { slug: "maximum-subarray", title: "Maximum Subarray" },
           { slug: "product-of-array-except-self", title: "Product of Array Except Self" },
           { slug: "valid-palindrome", title: "Valid Palindrome" },
-          { slug: "3sum", title: "3Sum" }
+          { slug: "3sum", title: "3Sum" },
+          { slug: "longest-substring-without-repeating", title: "Longest Substring Without Repeating" },
+          { slug: "best-time-to-buy-sell-stock", title: "Best Time to Buy and Sell Stock" },
+          { slug: "valid-parentheses", title: "Valid Parentheses" },
+          { slug: "min-stack", title: "Min Stack" },
+          { slug: "valid-anagram", title: "Valid Anagram" },
+          { slug: "group-anagrams", title: "Group Anagrams" }
         ]
       },
       {

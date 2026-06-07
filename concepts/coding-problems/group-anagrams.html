@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Group Anagrams — DevLens</title>
+  <meta name="description" content="Group Anagrams: bucket words that are anagrams together by hashing each word to a canonical key (sorted string or character-count signature) — a C# solution with complexity." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="group-anagrams" data-title="Group Anagrams">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Group Anagrams</h1>
+          <p class="lede">
+            Bucket words that are anagrams of one another. The key idea: give every anagram the <strong>same
+            canonical key</strong>, then group by it.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#strings</span>
+            <span class="tag">#hashing</span>
+            <span class="tag">#grouping</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an array of strings, group the anagrams together. Return the groups in any order.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>["eat","tea","tan","ate","nat","bat"]</code> → <code>[["eat","tea","ate"], ["tan","nat"], ["bat"]]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Compare every pair to see if they’re anagrams and union them. <strong>Time O(n² · k)</strong> for <code>n</code> words of length <code>k</code> — too slow.</p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            All anagrams share a <strong>canonical form</strong>. Map each word to a key that’s identical for
+            anagrams, then drop it into a dictionary <code>key → list of words</code>. Two key choices:
+          </p>
+          <ul>
+            <li><strong>Sorted string</strong> — <code>"eat"</code>, <code>"tea"</code>, <code>"ate"</code> all sort to <code>"aet"</code>. Simple; key cost O(k log k).</li>
+            <li><strong>Character-count signature</strong> — a 26-length count turned into a string (e.g. <code>"1#0#0#…1#…1#"</code>). Key cost O(k), faster for long words.</li>
+          </ul>
+          <p><strong>Time O(n · k log k)</strong> (sorted key) or <strong>O(n · k)</strong> (count key); <strong>Space O(n · k)</strong>.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Grouping by canonical key">
+              <text class="dgm-sub" x="20" y="22">eat, tea, ate → sort → "aet" (same key)</text>
+              <rect class="dgm-box-accent" x="20" y="36" width="150" height="30" rx="6"/><text class="dgm-sub" x="95" y="56" text-anchor="middle">"aet" → [eat,tea,ate]</text>
+              <rect class="dgm-box" x="190" y="36" width="150" height="30" rx="6"/><text class="dgm-sub" x="265" y="56" text-anchor="middle">"ant" → [tan,nat]</text>
+              <rect class="dgm-box" x="360" y="36" width="130" height="30" rx="6"/><text class="dgm-sub" x="425" y="56" text-anchor="middle">"abt" → [bat]</text>
+              <text class="dgm-sub" x="20" y="100">dictionary keyed by canonical form → buckets are the groups</text>
+            </svg>
+            <figcaption>Figure 1 — Each word’s canonical key selects its bucket; the buckets are the answer.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;string&gt;&gt; GroupAnagrams(string[] strs)
+{
+    var groups = new Dictionary&lt;string, IList&lt;string&gt;&gt;();
+
+    foreach (string word in strs)
+    {
+        // Canonical key: sorted characters (anagrams share it).
+        char[] chars = word.ToCharArray();
+        Array.Sort(chars);
+        string key = new string(chars);
+
+        if (!groups.TryGetValue(key, out var bucket))
+            groups[key] = bucket = new List&lt;string&gt;();
+        bucket.Add(word);
+    }
+    return groups.Values.ToList();
+}
+// Faster key for long words: a 26-count signature instead of sorting.</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n · k log k) with a sorted key (O(n · k) with a count signature).</li>
+              <li><strong>Space:</strong> O(n · k) for the grouping dictionary.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Hash by a canonical key</strong>: map items to a normalized form so equivalents collide.</li>
+              <li>Sorted string is the easy key; a character-count signature is faster for long words.</li>
+              <li>Group-by-key with a dictionary turns an O(n²) pairwise comparison into O(n).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/valid-anagram.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Anagram</span></a>
+            <a class="related-card" href="../coding-problems/contains-duplicate.html"><span class="rc-cat">Coding</span><span class="rc-title">Contains Duplicate</span></a>
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The insight to verbalize: anagrams collide under a <strong>canonical key</strong>. Offer the sorted-key
+              version first, then mention the O(k) count-signature key as an optimization for long strings — that
+              trade-off discussion is what they’re after.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

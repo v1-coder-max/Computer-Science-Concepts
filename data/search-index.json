@@ -873,5 +873,47 @@
     "tags": ["arrays", "two-pointers", "sorting", "medium", "duplicates", "interview"],
     "description": "Find all unique triplets that sum to zero with sort plus two pointers for O(n²), carefully skipping duplicates.",
     "url": "concepts/coding-problems/3sum.html"
+  },
+  {
+    "title": "Longest Substring Without Repeating Characters",
+    "category": "coding-problems",
+    "tags": ["strings", "sliding-window", "hashing", "medium", "window", "interview"],
+    "description": "The sliding-window technique with a last-seen index map for an O(n) solution — the model variable-size window problem.",
+    "url": "concepts/coding-problems/longest-substring-without-repeating.html"
+  },
+  {
+    "title": "Best Time to Buy and Sell Stock",
+    "category": "coding-problems",
+    "tags": ["arrays", "greedy", "one-pass", "easy", "running-min", "interview"],
+    "description": "Maximize profit from one buy and one later sell in a single O(n) pass by tracking the minimum price so far.",
+    "url": "concepts/coding-problems/best-time-to-buy-sell-stock.html"
+  },
+  {
+    "title": "Valid Parentheses",
+    "category": "coding-problems",
+    "tags": ["stack", "strings", "matching", "easy", "nesting", "interview"],
+    "description": "Check whether brackets are correctly matched and nested using a stack — the canonical stack problem — in O(n).",
+    "url": "concepts/coding-problems/valid-parentheses.html"
+  },
+  {
+    "title": "Min Stack",
+    "category": "coding-problems",
+    "tags": ["stack", "design", "o1", "medium", "auxiliary-state", "interview"],
+    "description": "Design a stack with push, pop, top and getMin all in O(1) by storing the running minimum alongside each value.",
+    "url": "concepts/coding-problems/min-stack.html"
+  },
+  {
+    "title": "Valid Anagram",
+    "category": "coding-problems",
+    "tags": ["strings", "hashing", "counting", "easy", "frequency", "interview"],
+    "description": "Decide whether two strings are anagrams using a character-frequency count for O(n) time and O(1) space.",
+    "url": "concepts/coding-problems/valid-anagram.html"
+  },
+  {
+    "title": "Group Anagrams",
+    "category": "coding-problems",
+    "tags": ["strings", "hashing", "grouping", "medium", "canonical-key", "interview"],
+    "description": "Bucket words that are anagrams by hashing each to a canonical key (sorted string or character-count signature).",
+    "url": "concepts/coding-problems/group-anagrams.html"
   }
 ]
