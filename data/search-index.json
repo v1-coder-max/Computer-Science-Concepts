@@ -1153,5 +1153,110 @@
     "tags": ["greedy", "arrays", "dynamic-programming", "medium", "farthest-reach", "interview"],
     "description": "Decide if you can reach the last index when each value is a max jump length, using a greedy farthest-reachable scan — O(n) time, O(1) space.",
     "url": "concepts/coding-problems/jump-game.html"
+  },
+  {
+    "title": "Longest Repeating Character Replacement",
+    "category": "coding-problems",
+    "tags": ["sliding-window", "strings", "frequency", "medium", "replacement", "interview"],
+    "description": "Longest substring of one repeated letter after at most k replacements: a sliding window valid while window length − most frequent char count ≤ k — O(n).",
+    "url": "concepts/coding-problems/longest-repeating-character-replacement.html"
+  },
+  {
+    "title": "Permutation in String",
+    "category": "coding-problems",
+    "tags": ["sliding-window", "strings", "frequency", "medium", "anagram", "interview"],
+    "description": "Detect whether one string contains a permutation of another using a fixed-size sliding window over matching character-frequency counts — O(n).",
+    "url": "concepts/coding-problems/permutation-in-string.html"
+  },
+  {
+    "title": "Minimum Window Substring",
+    "category": "coding-problems",
+    "tags": ["sliding-window", "strings", "hashing", "hard", "have-need", "interview"],
+    "description": "Find the smallest substring of s containing all characters of t with a grow-then-shrink window and a have/required match counter — O(|s|+|t|).",
+    "url": "concepts/coding-problems/minimum-window-substring.html"
+  },
+  {
+    "title": "Search a 2D Matrix",
+    "category": "coding-problems",
+    "tags": ["binary-search", "matrix", "index-mapping", "medium", "flatten", "interview"],
+    "description": "Search a row-joined sorted matrix by treating it as one sorted array of m×n and binary searching with index/cols and index%cols mapping — O(log mn).",
+    "url": "concepts/coding-problems/search-2d-matrix.html"
+  },
+  {
+    "title": "Koko Eating Bananas",
+    "category": "coding-problems",
+    "tags": ["binary-search", "search-the-answer", "monotonic", "medium", "feasibility", "interview"],
+    "description": "Find the minimum eating speed to finish in h hours by binary searching on the answer, since feasibility is monotonic in speed — O(n log max pile).",
+    "url": "concepts/coding-problems/koko-eating-bananas.html"
+  },
+  {
+    "title": "Find Minimum in Rotated Sorted Array",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "rotation", "medium", "inflection", "interview"],
+    "description": "Find the minimum of a rotated sorted array in O(log n) by binary searching for the inflection point, comparing mid to the right end to pick a half.",
+    "url": "concepts/coding-problems/find-minimum-rotated-sorted-array.html"
+  },
+  {
+    "title": "Evaluate Reverse Polish Notation",
+    "category": "coding-problems",
+    "tags": ["stack", "math", "parsing", "medium", "postfix", "interview"],
+    "description": "Evaluate a postfix expression with a stack: push numbers, and on an operator pop two operands, apply, push the result — O(n) time, O(n) space.",
+    "url": "concepts/coding-problems/evaluate-reverse-polish-notation.html"
+  },
+  {
+    "title": "Generate Parentheses",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "pruning", "medium", "catalan", "interview"],
+    "description": "Generate all valid combinations of n pairs of parentheses with backtracking, adding '(' while open < n and ')' while close < open to prune invalid branches.",
+    "url": "concepts/coding-problems/generate-parentheses.html"
+  },
+  {
+    "title": "Daily Temperatures",
+    "category": "coding-problems",
+    "tags": ["stack", "monotonic-stack", "arrays", "medium", "next-greater", "interview"],
+    "description": "For each day, how many days until a warmer one — a monotonic decreasing stack of indices that resolves each day when a warmer temperature arrives — O(n).",
+    "url": "concepts/coding-problems/daily-temperatures.html"
+  },
+  {
+    "title": "Permutations",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "combinatorics", "medium", "used-flags", "interview"],
+    "description": "Generate all orderings of distinct numbers with backtracking: at each position try every unused element, mark used, recurse, then unmark — O(n·n!).",
+    "url": "concepts/coding-problems/permutations.html"
+  },
+  {
+    "title": "Word Search",
+    "category": "coding-problems",
+    "tags": ["backtracking", "grid", "dfs", "medium", "mark-restore", "interview"],
+    "description": "Decide if a word exists in a grid by DFS backtracking from each cell, marking cells visited during a path and restoring them on return — O(m·n·4^L).",
+    "url": "concepts/coding-problems/word-search.html"
+  },
+  {
+    "title": "Palindrome Partitioning",
+    "category": "coding-problems",
+    "tags": ["backtracking", "strings", "palindrome", "medium", "cut-points", "interview"],
+    "description": "Partition a string so every piece is a palindrome using backtracking over prefix cut points, recursing on the remainder when a prefix is a palindrome — O(n·2^n).",
+    "url": "concepts/coding-problems/palindrome-partitioning.html"
+  },
+  {
+    "title": "Longest Increasing Subsequence",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "binary-search", "subsequence", "medium", "patience", "interview"],
+    "description": "Length of the longest strictly increasing subsequence: the O(n^2) ending-at-i DP and the O(n log n) patience-sorting tails-with-binary-search trick.",
+    "url": "concepts/coding-problems/longest-increasing-subsequence.html"
+  },
+  {
+    "title": "Word Break",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "strings", "reachability", "medium", "segmentation", "interview"],
+    "description": "Decide if a string can be segmented into dictionary words with reachability DP: dp[i] true if some dp[j] is true and s[j..i] is in the dictionary — O(n^2).",
+    "url": "concepts/coding-problems/word-break.html"
+  },
+  {
+    "title": "Maximum Product Subarray",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "arrays", "kadane", "medium", "max-min", "interview"],
+    "description": "Largest product of a contiguous subarray: track both running max and min because a negative flips them, updating both each step — O(n) time, O(1) space.",
+    "url": "concepts/coding-problems/maximum-product-subarray.html"
   }
 ]

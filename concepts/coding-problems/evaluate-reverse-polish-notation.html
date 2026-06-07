@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluate Reverse Polish Notation — DevLens</title>
+  <meta name="description" content="Evaluate a postfix expression with a stack: push numbers, and on an operator pop two operands, apply, push the result — O(n) time, O(n) space — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="evaluate-reverse-polish-notation" data-title="Evaluate Reverse Polish Notation">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Evaluate Reverse Polish Notation</h1>
+          <p class="lede">
+            Postfix expressions need no parentheses and no precedence rules — just a <strong>stack</strong>. Push
+            numbers; on an operator, pop two, combine, push back.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#stack</span>
+            <span class="tag">#math</span>
+            <span class="tag">#parsing</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Evaluate an arithmetic expression in Reverse Polish (postfix) Notation. Tokens are integers and the
+            operators <code>+ − × ÷</code>. Division truncates toward zero. Return the integer result.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>["2","1","+","3","*"]</code> → <code>9</code> ((2 + 1) × 3) &nbsp;·&nbsp; <code>["4","13","5","/","+"]</code> → <code>6</code></p>
+          </div>
+
+          <h2>The idea</h2>
+          <p>
+            In postfix, an operator applies to the two most recently produced values — which is exactly the top of a
+            <strong>stack</strong>. Scan left to right: a number gets <strong>pushed</strong>; an operator
+            <strong>pops the top two</strong> operands (mind the order: the first popped is the right-hand operand),
+            applies itself, and pushes the result. After the scan, the lone remaining value is the answer.
+          </p>
+          <p><strong>Time O(n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Stack evaluation of postfix tokens">
+              <text class="dgm-sub" x="20" y="22">["2","1","+","3","*"]</text>
+              <text class="dgm-sub" x="20" y="48">push 2, push 1 → '+' pops 1,2 → push 3 → stack [3]</text>
+              <text class="dgm-sub" x="20" y="72">push 3 → '*' pops 3,3 → push 9</text>
+              <rect class="dgm-box-accent" x="20" y="82" width="120" height="22" rx="5"/>
+              <text x="80" y="98" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">result = 9</text>
+            </svg>
+            <figcaption>Figure 1 — Operands stack up; each operator collapses the top two into one result.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int EvalRPN(string[] tokens)
+{
+    var stack = new Stack&lt;int&gt;();
+    foreach (string tok in tokens)
+    {
+        switch (tok)
+        {
+            case "+": case "-": case "*": case "/":
+                int b = stack.Pop(), a = stack.Pop();   // a is left, b is right
+                stack.Push(tok switch
+                {
+                    "+" =&gt; a + b,
+                    "-" =&gt; a - b,
+                    "*" =&gt; a * b,
+                    _   =&gt; a / b      // truncates toward zero
+                });
+                break;
+            default:
+                stack.Push(int.Parse(tok));
+                break;
+        }
+    }
+    return stack.Pop();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one pass over the tokens.</li>
+              <li><strong>Space:</strong> O(n) — operands on the stack.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Postfix evaluation <em>is</em> a <strong>stack</strong> — no precedence or parentheses needed.</li>
+              <li>Mind <strong>operand order</strong> for <code>−</code> and <code>÷</code>: first popped is the right operand.</li>
+              <li>Infix → postfix conversion (shunting-yard) is the related compiler-flavored follow-up.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/valid-parentheses.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Parentheses</span></a>
+            <a class="related-card" href="../coding-problems/min-stack.html"><span class="rc-cat">Coding</span><span class="rc-title">Min Stack</span></a>
+            <a class="related-card" href="../coding-problems/generate-parentheses.html"><span class="rc-cat">Coding</span><span class="rc-title">Generate Parentheses</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Call out the operand-order gotcha for subtraction and division before you’re burned by it. If asked the
+              harder “evaluate infix with precedence,” mention two stacks or shunting-yard — this is the warm-up to
+              expression parsing.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

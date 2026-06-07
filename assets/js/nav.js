@@ -187,7 +187,7 @@
       },
       {
         id: "coding-problems", slug: "coding-problems", title: "Coding Problems", icon: "🧠",
-        color: "var(--cat-coding-problems)", expected: 46,
+        color: "var(--cat-coding-problems)", expected: 61,
         blurb: "The most-asked interview problems: approach, C# solution, complexity.",
         concepts: [
           { slug: "two-sum", title: "Two Sum" },
@@ -235,7 +235,22 @@
           { slug: "diameter-of-binary-tree", title: "Diameter of Binary Tree" },
           { slug: "clone-graph", title: "Clone Graph" },
           { slug: "rotting-oranges", title: "Rotting Oranges" },
-          { slug: "jump-game", title: "Jump Game" }
+          { slug: "jump-game", title: "Jump Game" },
+          { slug: "longest-repeating-character-replacement", title: "Longest Repeating Character Replacement" },
+          { slug: "permutation-in-string", title: "Permutation in String" },
+          { slug: "minimum-window-substring", title: "Minimum Window Substring" },
+          { slug: "search-2d-matrix", title: "Search a 2D Matrix" },
+          { slug: "koko-eating-bananas", title: "Koko Eating Bananas" },
+          { slug: "find-minimum-rotated-sorted-array", title: "Find Minimum in Rotated Sorted Array" },
+          { slug: "evaluate-reverse-polish-notation", title: "Evaluate Reverse Polish Notation" },
+          { slug: "generate-parentheses", title: "Generate Parentheses" },
+          { slug: "daily-temperatures", title: "Daily Temperatures" },
+          { slug: "permutations", title: "Permutations" },
+          { slug: "word-search", title: "Word Search" },
+          { slug: "palindrome-partitioning", title: "Palindrome Partitioning" },
+          { slug: "longest-increasing-subsequence", title: "Longest Increasing Subsequence" },
+          { slug: "word-break", title: "Word Break" },
+          { slug: "maximum-product-subarray", title: "Maximum Product Subarray" }
         ]
       },
       {

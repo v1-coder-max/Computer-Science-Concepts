@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generate Parentheses — DevLens</title>
+  <meta name="description" content="Generate all valid combinations of n pairs of parentheses with backtracking, adding '(' while open < n and ')' while close < open — pruning invalid branches early — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="generate-parentheses" data-title="Generate Parentheses">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Generate Parentheses</h1>
+          <p class="lede">
+            List every valid arrangement of <code>n</code> pairs of parentheses. Backtracking with two simple rules
+            keeps you on <strong>only valid paths</strong> — you never generate-then-filter.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#backtracking</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#pruning</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given <code>n</code> pairs of parentheses, generate all combinations of well-formed (balanced)
+            parentheses.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>n = 3</code> → <code>["((()))","(()())","(())()","()(())","()()()"]</code></p>
+          </div>
+
+          <h2>The idea</h2>
+          <p>
+            Build the string one character at a time, tracking how many <code>(</code> and <code>)</code> you’ve
+            placed. Two constraints keep every partial string <strong>valid by construction</strong>:
+          </p>
+          <ul>
+            <li>You may add <code>(</code> while <code>open &lt; n</code> (haven’t used all openers).</li>
+            <li>You may add <code>)</code> while <code>close &lt; open</code> (never close more than you’ve opened).</li>
+          </ul>
+          <p>
+            When the string reaches length <code>2n</code>, it’s a complete valid combination — record it. The rules
+            prune all invalid branches before they’re ever built.
+          </p>
+          <p><strong>Time/Space O(4ⁿ / √n)</strong> (the nth Catalan number of results).</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Backtracking tree with open/close rules">
+              <text class="dgm-sub" x="20" y="22">rules: add '(' if open&lt;n · add ')' if close&lt;open</text>
+              <circle class="dgm-box-accent" cx="300" cy="36" r="14"/><text class="dgm-sub" x="300" y="41" text-anchor="middle">(</text>
+              <line class="dgm-line" x1="288" y1="46" x2="200" y2="74"/><line class="dgm-line" x1="312" y1="46" x2="400" y2="74"/>
+              <circle class="dgm-box" cx="190" cy="86" r="14"/><text class="dgm-sub" x="190" y="91" text-anchor="middle">((</text>
+              <circle class="dgm-box" cx="410" cy="86" r="14"/><text class="dgm-sub" x="410" y="91" text-anchor="middle">()</text>
+              <text class="dgm-sub" x="20" y="104" fill="var(--c-success)" style="font:600 11px var(--font-sans)">only legal moves branch → all leaves valid</text>
+            </svg>
+            <figcaption>Figure 1 — Each level adds a legal bracket; invalid placements are pruned, so every leaf is balanced.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — backtracking</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;string&gt; GenerateParenthesis(int n)
+{
+    var result = new List&lt;string&gt;();
+    var sb = new System.Text.StringBuilder();
+    Backtrack(0, 0);
+    return result;
+
+    void Backtrack(int open, int close)
+    {
+        if (sb.Length == 2 * n) { result.Add(sb.ToString()); return; }
+
+        if (open &lt; n)                       // can open another
+        {
+            sb.Append('(');
+            Backtrack(open + 1, close);
+            sb.Length--;                    // un-choose
+        }
+        if (close &lt; open)                   // can close one
+        {
+            sb.Append(')');
+            Backtrack(open, close + 1);
+            sb.Length--;
+        }
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(4ⁿ / √n) — bounded by the number of valid strings (Catalan number).</li>
+              <li><strong>Space:</strong> O(n) recursion depth, plus the output.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Prune with validity rules</strong> instead of generating all 2²ⁿ strings and filtering.</li>
+              <li>Two counters, two conditions: <code>open &lt; n</code> and <code>close &lt; open</code>.</li>
+              <li>Same choose/explore/un-choose skeleton as subsets and permutations.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/valid-parentheses.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Parentheses</span></a>
+            <a class="related-card" href="../coding-problems/subsets.html"><span class="rc-cat">Coding</span><span class="rc-title">Subsets</span></a>
+            <a class="related-card" href="../coding-problems/combination-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Combination Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The signal you want to send is <em>pruning</em>: enforce validity as you build, never generate-and-check.
+              State the two counter rules crisply — that’s the entire solution, and it shows you understand
+              backtracking constraints.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

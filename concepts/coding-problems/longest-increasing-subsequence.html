@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Longest Increasing Subsequence — DevLens</title>
+  <meta name="description" content="Length of the longest strictly increasing subsequence: the O(n^2) DP where dp[i]=1+max(dp[j]) for j<i with nums[j]<nums[i], and the O(n log n) patience-sorting tails trick — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="longest-increasing-subsequence" data-title="Longest Increasing Subsequence">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Longest Increasing Subsequence</h1>
+          <p class="lede">
+            How long is the longest strictly increasing subsequence? A clean <strong>O(n²) DP</strong> — and a clever
+            <strong>O(n log n)</strong> “patience” trick that binary-searches a list of tails.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#binary-search</span>
+            <span class="tag">#subsequence</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an integer array <code>nums</code>, return the length of the longest <strong>strictly
+            increasing</strong> subsequence (elements keep their relative order but need not be contiguous).
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[10,9,2,5,3,7,101,18]</code> → <code>4</code> (e.g. 2, 3, 7, 18 or 2, 5, 7, 101)</p>
+          </div>
+
+          <h2>O(n²) DP</h2>
+          <p>
+            Let <code>dp[i]</code> = length of the longest increasing subsequence <strong>ending at</strong> index
+            <code>i</code>. Then <code>dp[i] = 1 + max(dp[j])</code> over all <code>j &lt; i</code> with
+            <code>nums[j] &lt; nums[i]</code> (or <code>1</code> if none). The answer is <code>max(dp)</code>. Each
+            element looks back at all earlier ones — O(n²).
+          </p>
+
+          <h2>O(n log n) — patience sorting</h2>
+          <p>
+            Maintain a list <code>tails</code> where <code>tails[k]</code> is the <em>smallest possible tail</em> of an
+            increasing subsequence of length <code>k+1</code>. For each number, binary-search the first tail
+            <code>≥</code> it: replace it (a better, smaller tail) or append (extends the longest run). The length of
+            <code>tails</code> is the answer. <code>tails</code> isn’t a real subsequence, but its <em>length</em> is
+            correct.
+          </p>
+          <p><strong>Time O(n²) DP / O(n log n) tails; Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Tails array growing via binary search">
+              <text class="dgm-sub" x="20" y="22">tails = smallest tail per LIS length</text>
+              <rect class="dgm-box-accent" x="20" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="50" y="59" text-anchor="middle">2</text>
+              <rect class="dgm-box-accent" x="84" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="114" y="59" text-anchor="middle">3</text>
+              <rect class="dgm-box-accent" x="148" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="178" y="59" text-anchor="middle">7</text>
+              <rect class="dgm-box-accent" x="212" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="242" y="59" text-anchor="middle">18</text>
+              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">length of tails = 4 = LIS length</text>
+            </svg>
+            <figcaption>Figure 1 — Each value replaces the first tail ≥ it (or extends); the array length is the LIS length.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — O(n log n) tails</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int LengthOfLIS(int[] nums)
+{
+    var tails = new List&lt;int&gt;();
+    foreach (int x in nums)
+    {
+        int lo = 0, hi = tails.Count;          // find first tail &gt;= x
+        while (lo &lt; hi)
+        {
+            int mid = (lo + hi) / 2;
+            if (tails[mid] &lt; x) lo = mid + 1;
+            else                hi = mid;
+        }
+        if (lo == tails.Count) tails.Add(x);   // x extends the longest run
+        else                   tails[lo] = x;  // x is a smaller tail for that length
+    }
+    return tails.Count;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n log n) with the tails+binary-search method (O(n²) for the plain DP).</li>
+              <li><strong>Space:</strong> O(n) for the dp or tails array.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>DP definition: <strong>longest run ending at i</strong>, looking back at smaller earlier elements.</li>
+              <li>The <strong>tails</strong> array holds the smallest tail per length — binary search to place each value.</li>
+              <li><code>tails.Count</code> is the answer even though <code>tails</code> isn’t an actual subsequence.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/maximum-subarray.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Subarray</span></a>
+            <a class="related-card" href="../coding-problems/coin-change.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change</span></a>
+            <a class="related-card" href="../coding-problems/climbing-stairs.html"><span class="rc-cat">Coding</span><span class="rc-title">Climbing Stairs</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Get the O(n²) DP out first (it shows you understand the recurrence), then offer the O(n log n) patience
+              method if pushed. Be honest that the tails array gives the right <em>length</em> but isn’t the actual
+              subsequence — interviewers probe that.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimum Window Substring — DevLens</title>
+  <meta name="description" content="Find the smallest substring of s containing all characters of t using a grow-then-shrink sliding window with a have/need match counter — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="minimum-window-substring" data-title="Minimum Window Substring">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Minimum Window Substring</h1>
+          <p class="lede">
+            Find the shortest slice of <code>s</code> that contains every character of <code>t</code> (with
+            multiplicity). A <strong>grow-then-shrink</strong> window with a “how many needs are satisfied” counter.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#sliding-window</span>
+            <span class="tag">#strings</span>
+            <span class="tag">#hashing</span>
+            <span class="tag">#hard</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given strings <code>s</code> and <code>t</code>, return the minimum-length substring of <code>s</code>
+            that contains all characters of <code>t</code> (including duplicates), or <code>""</code> if none exists.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>s = "ADOBECODEBANC", t = "ABC"</code> → <code>"BANC"</code></p>
+          </div>
+
+          <h2>The idea</h2>
+          <p>
+            Use a variable-size window. <strong>Expand</strong> <code>right</code> until the window contains all of
+            <code>t</code>; once it’s valid, <strong>contract</strong> from <code>left</code> as far as possible while
+            it stays valid, recording the smallest valid window. To know validity in O(1), keep a <code>need</code>
+            map of <code>t</code>’s counts and a <code>have</code> counter of how many distinct requirements are
+            currently met; the window is valid when <code>have == required</code>.
+          </p>
+          <p><strong>Time O(|s| + |t|), Space O(|t|).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Expand to valid then contract to minimal">
+              <text class="dgm-sub" x="20" y="22">need {A,B,C} · expand → valid, then shrink left</text>
+              <rect class="dgm-box-accent" x="20" y="36" width="36" height="28" rx="5"/><text class="dgm-sub" x="38" y="55" text-anchor="middle">B</text>
+              <rect class="dgm-box-accent" x="58" y="36" width="36" height="28" rx="5"/><text class="dgm-sub" x="76" y="55" text-anchor="middle">A</text>
+              <rect class="dgm-box-accent" x="96" y="36" width="36" height="28" rx="5"/><text class="dgm-sub" x="114" y="55" text-anchor="middle">N</text>
+              <rect class="dgm-box-accent" x="134" y="36" width="36" height="28" rx="5"/><text class="dgm-sub" x="152" y="55" text-anchor="middle">C</text>
+              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">smallest valid window = "BANC"</text>
+            </svg>
+            <figcaption>Figure 1 — Grow until all of t is covered, then shrink the left edge while it stays covered.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — grow/shrink window</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public string MinWindow(string s, string t)
+{
+    if (t.Length == 0 || s.Length &lt; t.Length) return "";
+
+    var need = new Dictionary&lt;char, int&gt;();
+    foreach (char c in t) need[c] = need.GetValueOrDefault(c) + 1;
+
+    int required = need.Count, have = 0, left = 0;
+    int bestLen = int.MaxValue, bestStart = 0;
+    var window = new Dictionary&lt;char, int&gt;();
+
+    for (int right = 0; right &lt; s.Length; right++)
+    {
+        char c = s[right];
+        window[c] = window.GetValueOrDefault(c) + 1;
+        if (need.ContainsKey(c) &amp;&amp; window[c] == need[c]) have++;
+
+        while (have == required)                  // valid → try to shrink
+        {
+            if (right - left + 1 &lt; bestLen) { bestLen = right - left + 1; bestStart = left; }
+            char l = s[left++];
+            window[l]--;
+            if (need.ContainsKey(l) &amp;&amp; window[l] &lt; need[l]) have--;
+        }
+    }
+    return bestLen == int.MaxValue ? "" : s.Substring(bestStart, bestLen);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(|s| + |t|) — each character enters and leaves the window once.</li>
+              <li><strong>Space:</strong> O(|t|) — the need/window maps over distinct chars.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The canonical <strong>variable window</strong>: expand to satisfy, contract to minimize.</li>
+              <li>A <code>have == required</code> counter gives O(1) validity instead of re-scanning counts.</li>
+              <li>Only decrement <code>have</code> when a count drops <strong>below</strong> its need (not merely changes).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/longest-substring-without-repeating.html"><span class="rc-cat">Coding</span><span class="rc-title">Longest Substring Without Repeating</span></a>
+            <a class="related-card" href="../coding-problems/permutation-in-string.html"><span class="rc-cat">Coding</span><span class="rc-title">Permutation in String</span></a>
+            <a class="related-card" href="../coding-problems/valid-anagram.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Anagram</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              This is the hardest standard sliding-window question — narrate the two phases (expand to valid, shrink to
+              minimal) and the <code>have/required</code> bookkeeping. The classic bug is decrementing <code>have</code>
+              on any change instead of only when a count falls below its requirement.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
