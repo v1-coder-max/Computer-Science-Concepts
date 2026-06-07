@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insert Interval — DevLens</title>
+  <meta name="description" content="Insert a new interval into a sorted, non-overlapping list and merge overlaps in O(n): emit intervals before, merge the overlapping middle, then emit the rest — C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="insert-interval" data-title="Insert Interval">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Insert Interval</h1>
+          <p class="lede">
+            The list is already sorted and non-overlapping — slot in one new interval. Because it’s sorted, you can do
+            it in <strong>three clean phases</strong>, no re-sort needed.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#intervals</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#merge</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given a list of <strong>sorted, non-overlapping</strong> intervals and a <code>newInterval</code>, insert
+            it and merge any overlaps, returning the still-sorted, non-overlapping result.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[[1,3],[6,9]], new = [2,5]</code> → <code>[[1,5],[6,9]]</code></p>
+          </div>
+
+          <h2>The idea</h2>
+          <p>
+            Since the input is already sorted, walk once and split into three phases:
+          </p>
+          <ol>
+            <li><strong>Before:</strong> intervals that end before <code>newInterval</code> starts — copy them as-is.</li>
+            <li><strong>Overlap:</strong> intervals that touch <code>newInterval</code> — absorb them by widening
+              <code>newInterval</code> to the min start / max end; then emit it once.</li>
+            <li><strong>After:</strong> intervals that start after <code>newInterval</code> ends — copy the rest.</li>
+          </ol>
+          <p><strong>Time O(n), Space O(n)</strong> — no sort because the list was already ordered.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Three phases inserting an interval">
+              <line class="dgm-line" x1="20" y1="70" x2="560" y2="70"/>
+              <rect class="dgm-box" x="40" y="40" width="80" height="16" rx="4"/><text class="dgm-sub" x="80" y="34" text-anchor="middle">[1,3]</text>
+              <rect class="dgm-box-accent" x="70" y="58" width="120" height="16" rx="4"/><text class="dgm-sub" x="130" y="92" text-anchor="middle">new [2,5] → merge → [1,5]</text>
+              <rect class="dgm-box" x="360" y="40" width="100" height="16" rx="4"/><text class="dgm-sub" x="410" y="34" text-anchor="middle">[6,9] after</text>
+            </svg>
+            <figcaption>Figure 1 — Emit the “before” block, fold all overlaps into the new interval, then emit the “after” block.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[][] Insert(int[][] intervals, int[] newInterval)
+{
+    var result = new List&lt;int[]&gt;();
+    int i = 0, n = intervals.Length;
+
+    // 1) intervals strictly before newInterval
+    while (i &lt; n &amp;&amp; intervals[i][1] &lt; newInterval[0])
+        result.Add(intervals[i++]);
+
+    // 2) overlapping intervals → widen newInterval
+    while (i &lt; n &amp;&amp; intervals[i][0] &lt;= newInterval[1])
+    {
+        newInterval[0] = Math.Min(newInterval[0], intervals[i][0]);
+        newInterval[1] = Math.Max(newInterval[1], intervals[i][1]);
+        i++;
+    }
+    result.Add(newInterval);
+
+    // 3) intervals strictly after
+    while (i &lt; n) result.Add(intervals[i++]);
+
+    return result.ToArray();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — a single linear pass, no sorting.</li>
+              <li><strong>Space:</strong> O(n) for the output.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A <strong>pre-sorted</strong> input means O(n) — exploit the order, don’t re-sort.</li>
+              <li>Three phases: <strong>before → merge overlaps → after</strong>.</li>
+              <li>Overlap test: <code>interval.start ≤ newInterval.end</code>; widen with min-start / max-end.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-intervals.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge Intervals</span></a>
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+            <a class="related-card" href="../coding-problems/maximum-subarray.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Subarray</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The trap is reaching for a sort — point out the input is already sorted and do the three-phase O(n)
+              sweep. Naming the phases up front keeps your pointer logic from tangling, which is where most bugs hide.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Same Tree — DevLens</title>
+  <meta name="description" content="Check whether two binary trees are structurally identical with the same values using a simple parallel recursion comparing both nodes at once — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="same-tree" data-title="Same Tree">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Same Tree</h1>
+          <p class="lede">
+            Are two binary trees identical — same shape <em>and</em> same values? Recurse down
+            <strong>both at once</strong>, comparing node-for-node.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given the roots of two binary trees <code>p</code> and <code>q</code>, return <code>true</code> if they are
+            structurally identical and every corresponding node has the same value.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>p = [1,2,3], q = [1,2,3]</code> → <code>true</code> &nbsp;·&nbsp; <code>p = [1,2], q = [1,null,2]</code> → <code>false</code></p>
+          </div>
+
+          <h2>The idea</h2>
+          <p>
+            Walk both trees in lockstep. At each pair of nodes there are three outcomes: both <code>null</code> → this
+            branch matches (return <code>true</code>); exactly one <code>null</code>, or values differ → mismatch
+            (return <code>false</code>); otherwise the values match, so the trees are the same here iff their
+            <strong>left subtrees match and their right subtrees match</strong>. The recursion handles the rest.
+          </p>
+          <p><strong>Time O(n), Space O(h)</strong> recursion depth.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Comparing two trees node by node">
+              <circle class="dgm-box-accent" cx="110" cy="28" r="15"/><text class="dgm-sub" x="110" y="33" text-anchor="middle">1</text>
+              <circle class="dgm-box" cx="75" cy="72" r="15"/><text class="dgm-sub" x="75" y="77" text-anchor="middle">2</text>
+              <circle class="dgm-box" cx="150" cy="72" r="15"/><text class="dgm-sub" x="150" y="77" text-anchor="middle">3</text>
+              <line class="dgm-line" x1="100" y1="40" x2="83" y2="58"/><line class="dgm-line" x1="120" y1="40" x2="142" y2="58"/>
+              <text x="220" y="50" style="font:600 16px var(--font-sans)" fill="var(--c-text-soft)">≟</text>
+              <circle class="dgm-box-accent" cx="360" cy="28" r="15"/><text class="dgm-sub" x="360" y="33" text-anchor="middle">1</text>
+              <circle class="dgm-box" cx="325" cy="72" r="15"/><text class="dgm-sub" x="325" y="77" text-anchor="middle">2</text>
+              <circle class="dgm-box" cx="400" cy="72" r="15"/><text class="dgm-sub" x="400" y="77" text-anchor="middle">3</text>
+              <line class="dgm-line" x1="350" y1="40" x2="333" y2="58"/><line class="dgm-line" x1="370" y1="40" x2="392" y2="58"/>
+              <text class="dgm-sub" x="470" y="55" fill="var(--c-success)" style="font:600 12px var(--font-sans)">all pairs equal → true</text>
+            </svg>
+            <figcaption>Figure 1 — Recurse over both trees together; equality holds iff value, left, and right all match.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public bool IsSameTree(TreeNode p, TreeNode q)
+{
+    if (p == null &amp;&amp; q == null) return true;     // both empty → match
+    if (p == null || q == null) return false;    // exactly one empty → mismatch
+    if (p.val != q.val)         return false;    // values differ
+
+    return IsSameTree(p.left, q.left)
+        &amp;&amp; IsSameTree(p.right, q.right);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — visits each node pair once (n = smaller tree’s size).</li>
+              <li><strong>Space:</strong> O(h) recursion depth.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Parallel recursion</strong> over two trees: compare both nodes at every step.</li>
+              <li>Handle the null cases first — both null, one null — before touching <code>.val</code>.</li>
+              <li>This is the core of <em>subtree-of-another-tree</em> and <em>symmetric-tree</em>.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/invert-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Invert Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/max-depth-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Depth of Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/validate-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Validate BST</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              It’s a warm-up that proves you can recurse over two structures at once. Get the null-handling order right
+              (both, then either) and note it’s the helper inside <em>subtree of another tree</em> — interviewers often
+              chain the two.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

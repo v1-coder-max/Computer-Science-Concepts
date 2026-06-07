@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Longest Consecutive Sequence — DevLens</title>
+  <meta name="description" content="Find the longest run of consecutive integers in O(n): drop everything in a HashSet, then start counting only from sequence-starts (no n-1 present). C# solution included." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="longest-consecutive-sequence" data-title="Longest Consecutive Sequence">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Longest Consecutive Sequence</h1>
+          <p class="lede">
+            Find the longest run of consecutive integers — in <strong>O(n)</strong>, without sorting. A
+            <strong>HashSet</strong> plus the trick of <em>only counting from a sequence’s start</em>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#hashing</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#set</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an unsorted array <code>nums</code>, return the length of the longest run of consecutive integers.
+            The run’s elements need not be adjacent in the array. Aim for O(n).
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[100,4,200,1,3,2]</code> → <code>4</code> (the run 1, 2, 3, 4)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Sorting then scanning runs is O(n log n) — and the problem explicitly asks for O(n). Sorting does more work
+            than needed; membership tests are all we actually require.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Put every number in a <code>HashSet</code> for O(1) lookups. Then, for each number, only begin counting if
+            it’s a <strong>sequence start</strong> — i.e. <code>num - 1</code> is <em>not</em> in the set. From a start,
+            walk <code>num+1, num+2, …</code> while they exist, measuring the run. Because each number is visited at
+            most twice (once in the loop, once during a walk it belongs to), the total is <strong>O(n)</strong>, not
+            O(n²).
+          </p>
+          <p><strong>Time O(n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Counting only from sequence starts">
+              <text class="dgm-sub" x="20" y="22">set = {100,4,200,1,3,2}</text>
+              <rect class="dgm-box-accent" x="20" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="50" y="55" text-anchor="middle">1 ✓start</text>
+              <rect class="dgm-box" x="90" y="36" width="50" height="28" rx="5"/><text class="dgm-sub" x="115" y="55" text-anchor="middle">2</text>
+              <rect class="dgm-box" x="150" y="36" width="50" height="28" rx="5"/><text class="dgm-sub" x="175" y="55" text-anchor="middle">3</text>
+              <rect class="dgm-box" x="210" y="36" width="50" height="28" rx="5"/><text class="dgm-sub" x="235" y="55" text-anchor="middle">4</text>
+              <text class="dgm-sub" x="290" y="55">4 is not a start (3 present) → skip</text>
+              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">walk 1→2→3→4: length 4</text>
+            </svg>
+            <figcaption>Figure 1 — Only numbers with no predecessor seed a walk, so each run is counted exactly once.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int LongestConsecutive(int[] nums)
+{
+    var set = new HashSet&lt;int&gt;(nums);
+    int longest = 0;
+    foreach (int n in set)
+    {
+        if (set.Contains(n - 1)) continue;   // not a sequence start — skip
+        int length = 1;
+        while (set.Contains(n + length)) length++;   // walk the run
+        longest = Math.Max(longest, length);
+    }
+    return longest;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — the start-only guard makes each number part of one walk.</li>
+              <li><strong>Space:</strong> O(n) — the HashSet.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A <strong>HashSet</strong> turns “is x present?” into O(1) — the enabler for O(n).</li>
+              <li>The <strong>start-only</strong> guard (<code>n-1 ∉ set</code>) is what prevents O(n²) re-walks.</li>
+              <li>“O(n) but it looks like it needs sorting” is a cue to reach for a set.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/contains-duplicate.html"><span class="rc-cat">Coding</span><span class="rc-title">Contains Duplicate</span></a>
+            <a class="related-card" href="../coding-problems/two-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Two Sum</span></a>
+            <a class="related-card" href="../coding-problems/top-k-frequent-elements.html"><span class="rc-cat">Coding</span><span class="rc-title">Top K Frequent Elements</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The interviewer wants the O(n), not the sort. The make-or-break detail is the start-only check — without
+              it your “O(n)” is secretly O(n²). Say explicitly why each element is touched a constant number of times.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

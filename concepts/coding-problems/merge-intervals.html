@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merge Intervals — DevLens</title>
+  <meta name="description" content="Merge all overlapping intervals: sort by start, then sweep and extend the last interval whenever the next one overlaps — O(n log n) — with a C# solution and the pattern." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="merge-intervals" data-title="Merge Intervals">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Merge Intervals</h1>
+          <p class="lede">
+            Collapse overlapping intervals into the fewest non-overlapping ones. The unlock is one word:
+            <strong>sort by start</strong>. After that it’s a single sweep.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#intervals</span>
+            <span class="tag">#sorting</span>
+            <span class="tag">#sweep</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an array of intervals <code>[start, end]</code>, merge all that overlap and return the resulting
+            non-overlapping intervals.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[[1,3],[2,6],[8,10],[15,18]]</code> → <code>[[1,6],[8,10],[15,18]]</code></p>
+          </div>
+
+          <h2>The idea</h2>
+          <p>
+            Once intervals are <strong>sorted by start</strong>, any interval that overlaps a given one must come
+            immediately after it — there’s nothing earlier to worry about. So sweep left to right keeping the
+            <em>last</em> interval in the result. For each next interval: if its start <code>≤</code> the last
+            interval’s end, they <strong>overlap</strong> — extend the last end to <code>max(end, next.end)</code>.
+            Otherwise there’s a gap — push the next interval as a new result entry.
+          </p>
+          <p><strong>Time O(n log n)</strong> (the sort), <strong>Space O(n)</strong> for output.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Sorted intervals merged on overlap">
+              <line class="dgm-line" x1="20" y1="70" x2="560" y2="70"/>
+              <rect class="dgm-box-accent" x="40" y="40" width="120" height="16" rx="4"/><text class="dgm-sub" x="100" y="34" text-anchor="middle">[1,3]</text>
+              <rect class="dgm-box-accent" x="110" y="58" width="170" height="16" rx="4"/><text class="dgm-sub" x="195" y="92" text-anchor="middle">[2,6] overlaps → [1,6]</text>
+              <rect class="dgm-box" x="340" y="40" width="80" height="16" rx="4"/><text class="dgm-sub" x="380" y="34" text-anchor="middle">[8,10]</text>
+              <rect class="dgm-box" x="470" y="40" width="80" height="16" rx="4"/><text class="dgm-sub" x="510" y="34" text-anchor="middle">[15,18]</text>
+            </svg>
+            <figcaption>Figure 1 — Sorted by start, overlaps are always adjacent; extend the running interval or start a new one.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[][] Merge(int[][] intervals)
+{
+    Array.Sort(intervals, (a, b) =&gt; a[0] - b[0]);   // sort by start
+    var result = new List&lt;int[]&gt;();
+
+    foreach (var cur in intervals)
+    {
+        // no overlap with the last merged interval → start a new one
+        if (result.Count == 0 || cur[0] &gt; result[^1][1])
+            result.Add(new[] { cur[0], cur[1] });
+        else                                         // overlap → extend the end
+            result[^1][1] = Math.Max(result[^1][1], cur[1]);
+    }
+    return result.ToArray();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n log n) — dominated by the sort; the sweep is O(n).</li>
+              <li><strong>Space:</strong> O(n) for the output (O(log n)–O(n) for the sort itself).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Almost every interval problem starts with <strong>sort by start</strong> (sometimes by end).</li>
+              <li>Overlap test: <code>next.start ≤ last.end</code>; merge by <code>max</code>-ing the ends.</li>
+              <li>This sweep generalizes to insert-interval, free-time, and meeting-room counting.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/insert-interval.html"><span class="rc-cat">Coding</span><span class="rc-title">Insert Interval</span></a>
+            <a class="related-card" href="../coding-problems/maximum-subarray.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Subarray</span></a>
+            <a class="related-card" href="../coding-problems/3sum.html"><span class="rc-cat">Coding</span><span class="rc-title">3Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Say “sort by start” before anything else — it’s the line that makes the rest trivial. Then state the
+              overlap condition crisply. Interval questions are a whole family; this sweep is the template they all
+              build on.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

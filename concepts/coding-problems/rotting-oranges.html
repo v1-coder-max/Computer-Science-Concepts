@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rotting Oranges — DevLens</title>
+  <meta name="description" content="Find the minutes for rot to spread across a grid with multi-source BFS: seed the queue with all rotten cells and expand level by level, counting elapsed minutes — O(rows×cols), C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="rotting-oranges" data-title="Rotting Oranges">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Rotting Oranges</h1>
+          <p class="lede">
+            Rot spreads from every rotten orange to its neighbors each minute. “How long until all rot?” is a
+            <strong>multi-source BFS</strong>: start from <em>all</em> rotten cells at once and count levels.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#bfs</span>
+            <span class="tag">#grid</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            In a grid, each cell is <code>0</code> (empty), <code>1</code> (fresh orange), or <code>2</code> (rotten).
+            Every minute, a fresh orange adjacent (4-directionally) to a rotten one becomes rotten. Return the minutes
+            until no fresh orange remains, or <code>-1</code> if some can never rot.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[[2,1,1],[1,1,0],[0,1,1]]</code> → <code>4</code> &nbsp;·&nbsp; <code>[[2,1,1],[0,1,1],[1,0,1]]</code> → <code>-1</code></p>
+          </div>
+
+          <h2>The idea</h2>
+          <p>
+            Rot expands like ripples — one ring of neighbors per minute. That’s exactly a <strong>level-by-level
+            BFS</strong>, but with <em>many</em> starting points. Seed the queue with <strong>all</strong> rotten cells
+            and count the fresh ones. Then process the queue one minute (one level) at a time, rotting fresh neighbors
+            and enqueuing them, incrementing the timer per level. At the end, if any fresh orange is left unreached,
+            return <code>-1</code>.
+          </p>
+          <p><strong>Time O(rows × cols), Space O(rows × cols).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Multi-source BFS spreading minute by minute">
+              <rect class="dgm-box-accent" x="40" y="30" width="34" height="34"/><text class="dgm-sub" x="57" y="52" text-anchor="middle">2</text>
+              <rect class="dgm-box" x="76" y="30" width="34" height="34"/><text class="dgm-sub" x="93" y="52" text-anchor="middle">1</text>
+              <rect class="dgm-box" x="112" y="30" width="34" height="34"/><text class="dgm-sub" x="129" y="52" text-anchor="middle">1</text>
+              <text class="dgm-sub" x="180" y="52">min 1 → col2 rots; min 2 → col3 …</text>
+              <text class="dgm-sub" x="40" y="92" fill="var(--c-success)" style="font:600 12px var(--font-sans)">queue all 2s up front; each BFS level = one minute</text>
+            </svg>
+            <figcaption>Figure 1 — All rotten cells start the wave together; each BFS layer advances the clock by one minute.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — multi-source BFS</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int OrangesRotting(int[][] grid)
+{
+    int rows = grid.Length, cols = grid[0].Length, fresh = 0;
+    var q = new Queue&lt;(int r, int c)&gt;();
+
+    for (int r = 0; r &lt; rows; r++)
+        for (int c = 0; c &lt; cols; c++)
+            if (grid[r][c] == 2) q.Enqueue((r, c));   // all sources
+            else if (grid[r][c] == 1) fresh++;
+
+    int minutes = 0;
+    int[][] dirs = { new[]{1,0}, new[]{-1,0}, new[]{0,1}, new[]{0,-1} };
+
+    while (q.Count &gt; 0 &amp;&amp; fresh &gt; 0)
+    {
+        minutes++;
+        for (int i = q.Count; i &gt; 0; i--)             // exactly one minute's worth
+        {
+            var (r, c) = q.Dequeue();
+            foreach (var d in dirs)
+            {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr &gt;= 0 &amp;&amp; nc &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &lt; cols &amp;&amp; grid[nr][nc] == 1)
+                {
+                    grid[nr][nc] = 2; fresh--;
+                    q.Enqueue((nr, nc));
+                }
+            }
+        }
+    }
+    return fresh == 0 ? minutes : -1;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(rows × cols) — each cell enqueued/processed once.</li>
+              <li><strong>Space:</strong> O(rows × cols) for the queue.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>“Spread / shortest time over a grid” → <strong>multi-source BFS</strong> (seed all sources first).</li>
+              <li>Process <strong>one level per tick</strong> (freeze the queue size) so each layer is one minute.</li>
+              <li>Track <code>fresh</code> remaining to detect the <strong>unreachable → -1</strong> case.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/number-of-islands.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Islands</span></a>
+            <a class="related-card" href="../coding-problems/course-schedule.html"><span class="rc-cat">Coding</span><span class="rc-title">Course Schedule</span></a>
+            <a class="related-card" href="../coding-problems/level-order-traversal.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Level Order Traversal</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The signal phrase is “minimum time for something to spread.” Say <strong>multi-source BFS</strong> and
+              emphasize seeding every source before the loop — that’s what makes the level count equal elapsed minutes.
+              Don’t forget the leftover-fresh → -1 check.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

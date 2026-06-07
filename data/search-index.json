@@ -1048,5 +1048,110 @@
     "tags": ["math", "divide-and-conquer", "fast-exponentiation", "medium", "squaring", "interview"],
     "description": "Compute x^n in O(log n) by exponentiation by squaring — square the base, halve the exponent — handling negative powers and int.MinValue.",
     "url": "concepts/coding-problems/pow-x-n.html"
+  },
+  {
+    "title": "Container With Most Water",
+    "category": "coding-problems",
+    "tags": ["two-pointers", "arrays", "greedy", "medium", "area", "interview"],
+    "description": "Maximize water between two lines with an opposite-end two-pointer sweep that always moves the shorter wall inward — O(n) time, O(1) space.",
+    "url": "concepts/coding-problems/container-with-most-water.html"
+  },
+  {
+    "title": "Trapping Rain Water",
+    "category": "coding-problems",
+    "tags": ["two-pointers", "arrays", "prefix-max", "hard", "water", "interview"],
+    "description": "Compute trapped rain as min(maxLeft, maxRight) − height per column, reduced from prefix arrays to an O(1)-space two-pointer pass.",
+    "url": "concepts/coding-problems/trapping-rain-water.html"
+  },
+  {
+    "title": "Top K Frequent Elements",
+    "category": "coding-problems",
+    "tags": ["hashing", "bucket-sort", "heap", "medium", "top-k", "interview"],
+    "description": "Return the k most frequent values by counting then bucket-sorting by frequency for O(n), or using a size-k heap for O(n log k).",
+    "url": "concepts/coding-problems/top-k-frequent-elements.html"
+  },
+  {
+    "title": "Longest Consecutive Sequence",
+    "category": "coding-problems",
+    "tags": ["hashing", "arrays", "set", "medium", "o-n", "interview"],
+    "description": "Find the longest run of consecutive integers in O(n) with a HashSet, counting only from sequence starts (n−1 not present).",
+    "url": "concepts/coding-problems/longest-consecutive-sequence.html"
+  },
+  {
+    "title": "Merge Intervals",
+    "category": "coding-problems",
+    "tags": ["intervals", "sorting", "sweep", "medium", "overlap", "interview"],
+    "description": "Merge overlapping intervals by sorting on start, then sweeping and extending the last interval whenever the next overlaps — O(n log n).",
+    "url": "concepts/coding-problems/merge-intervals.html"
+  },
+  {
+    "title": "Insert Interval",
+    "category": "coding-problems",
+    "tags": ["intervals", "arrays", "merge", "medium", "three-phase", "interview"],
+    "description": "Insert a new interval into a sorted non-overlapping list in O(n): emit the before block, fold overlaps into the new interval, then emit the rest.",
+    "url": "concepts/coding-problems/insert-interval.html"
+  },
+  {
+    "title": "Remove Nth Node From End",
+    "category": "coding-problems",
+    "tags": ["linked-list", "two-pointers", "dummy-head", "medium", "one-pass", "interview"],
+    "description": "Remove the nth node from the end in one pass using two pointers spaced n apart, with a dummy head to handle removing the first node.",
+    "url": "concepts/coding-problems/remove-nth-node-from-end.html"
+  },
+  {
+    "title": "Reorder List",
+    "category": "coding-problems",
+    "tags": ["linked-list", "two-pointers", "composition", "medium", "reverse-merge", "interview"],
+    "description": "Reorder a list to L0→Ln→L1→Ln-1… by composing find-middle, reverse-second-half, and merge-alternately — O(n) time, O(1) space.",
+    "url": "concepts/coding-problems/reorder-list.html"
+  },
+  {
+    "title": "Add Two Numbers",
+    "category": "coding-problems",
+    "tags": ["linked-list", "math", "carry", "medium", "simulation", "interview"],
+    "description": "Add two numbers stored as reversed-digit linked lists by simulating long addition with a running carry and a dummy head — O(max(n,m)).",
+    "url": "concepts/coding-problems/add-two-numbers.html"
+  },
+  {
+    "title": "Same Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "easy", "parallel-recursion", "interview"],
+    "description": "Check if two binary trees are structurally identical with equal values using a parallel recursion comparing both nodes at once — O(n).",
+    "url": "concepts/coding-problems/same-tree.html"
+  },
+  {
+    "title": "Lowest Common Ancestor of a BST",
+    "category": "coding-problems",
+    "tags": ["trees", "bst", "binary-search", "medium", "split-point", "interview"],
+    "description": "Find the LCA in a BST by walking from the root: go left if both targets are smaller, right if both larger, else this split node is the answer — O(h).",
+    "url": "concepts/coding-problems/lowest-common-ancestor-bst.html"
+  },
+  {
+    "title": "Diameter of Binary Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "easy", "height", "interview"],
+    "description": "Find the longest path between any two nodes by computing height bottom-up and tracking leftHeight + rightHeight at each node — O(n).",
+    "url": "concepts/coding-problems/diameter-of-binary-tree.html"
+  },
+  {
+    "title": "Clone Graph",
+    "category": "coding-problems",
+    "tags": ["graphs", "dfs", "hash-map", "medium", "deep-copy", "interview"],
+    "description": "Deep-copy a connected undirected graph with DFS/BFS and an old→new visited map that both dedupes shared nodes and breaks cycles — O(V+E).",
+    "url": "concepts/coding-problems/clone-graph.html"
+  },
+  {
+    "title": "Rotting Oranges",
+    "category": "coding-problems",
+    "tags": ["graphs", "bfs", "grid", "medium", "multi-source", "interview"],
+    "description": "Find the minutes for rot to spread across a grid with multi-source BFS: seed all rotten cells, expand one level per minute, then check for unreachable fresh cells.",
+    "url": "concepts/coding-problems/rotting-oranges.html"
+  },
+  {
+    "title": "Jump Game",
+    "category": "coding-problems",
+    "tags": ["greedy", "arrays", "dynamic-programming", "medium", "farthest-reach", "interview"],
+    "description": "Decide if you can reach the last index when each value is a max jump length, using a greedy farthest-reachable scan — O(n) time, O(1) space.",
+    "url": "concepts/coding-problems/jump-game.html"
   }
 ]

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jump Game — DevLens</title>
+  <meta name="description" content="Decide if you can reach the last index when each value is a max jump length, using a greedy farthest-reach scan in O(n) time and O(1) space — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="jump-game" data-title="Jump Game">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Jump Game</h1>
+          <p class="lede">
+            Each number is the <em>max</em> jump length from that spot. Can you reach the end? A
+            <strong>greedy</strong> scan tracking the farthest reachable index answers it in one pass.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#greedy</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an array <code>nums</code> where <code>nums[i]</code> is the maximum jump length from index
+            <code>i</code>, return <code>true</code> if you can reach the last index starting from index 0.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[2,3,1,1,4]</code> → <code>true</code> &nbsp;·&nbsp; <code>[3,2,1,0,4]</code> → <code>false</code> (stuck at the 0)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Recursively try every jump length from each index — exponential. A DP marking each index reachable is
+            O(n²). Both do more work than needed: a single greedy quantity captures everything.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Track <code>farthest</code> — the rightmost index reachable so far. Scan left to right; at index
+            <code>i</code>, if <code>i &gt; farthest</code> you can never get here, so return <code>false</code>.
+            Otherwise update <code>farthest = max(farthest, i + nums[i])</code>. If <code>farthest</code> ever reaches
+            the last index, return <code>true</code>. One pass, one variable.
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 110" role="img" aria-label="Greedy farthest-reach scan">
+              <text class="dgm-sub" x="20" y="22">[2, 3, 1, 1, 4] — farthest reach</text>
+              <rect class="dgm-box-accent" x="20" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="50" y="55" text-anchor="middle">2 → 2</text>
+              <rect class="dgm-box-accent" x="90" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="120" y="55" text-anchor="middle">3 → 4</text>
+              <rect class="dgm-box" x="160" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="190" y="55" text-anchor="middle">1 → 4</text>
+              <rect class="dgm-box" x="230" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="260" y="55" text-anchor="middle">1 → 4</text>
+              <rect class="dgm-box-accent" x="300" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="330" y="55" text-anchor="middle">4 end</text>
+              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">farthest hits last index → reachable ✓</text>
+            </svg>
+            <figcaption>Figure 1 — Keep the maximum reachable index; failure is when the current index outruns it.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — greedy</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public bool CanJump(int[] nums)
+{
+    int farthest = 0;
+    for (int i = 0; i &lt; nums.Length; i++)
+    {
+        if (i &gt; farthest) return false;               // this index is unreachable
+        farthest = Math.Max(farthest, i + nums[i]);   // extend our reach
+        if (farthest &gt;= nums.Length - 1) return true; // can already reach the end
+    }
+    return true;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — single pass.</li>
+              <li><strong>Space:</strong> O(1) — one running maximum.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Track a single <strong>farthest-reachable</strong> value instead of enumerating jumps.</li>
+              <li>Failure ⇔ the current index <strong>exceeds</strong> the farthest reach.</li>
+              <li>A clean greedy invariant often replaces an O(n²) reachability DP.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/maximum-subarray.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Subarray</span></a>
+            <a class="related-card" href="../coding-problems/climbing-stairs.html"><span class="rc-cat">Coding</span><span class="rc-title">Climbing Stairs</span></a>
+            <a class="related-card" href="../coding-problems/house-robber.html"><span class="rc-cat">Coding</span><span class="rc-title">House Robber</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Show you can spot when greedy beats DP: one <code>farthest</code> variable replaces an O(n²) table. The
+              follow-up “minimum number of jumps” (Jump Game II) extends this with a current-window boundary — mention
+              it to show you see the family.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

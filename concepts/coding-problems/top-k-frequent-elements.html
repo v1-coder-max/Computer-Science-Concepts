@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Top K Frequent Elements — DevLens</title>
+  <meta name="description" content="Return the k most frequent values: count with a hash map, then bucket-sort by frequency for O(n), or use a size-k heap for O(n log k) — with a C# solution and the pattern." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="top-k-frequent-elements" data-title="Top K Frequent Elements">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Top K Frequent Elements</h1>
+          <p class="lede">
+            Return the k values that appear most often. Count once, then either <strong>bucket by frequency</strong>
+            for O(n) or keep a <strong>size-k heap</strong> for O(n log k).
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#hashing</span>
+            <span class="tag">#bucket-sort</span>
+            <span class="tag">#heap</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an integer array <code>nums</code> and an integer <code>k</code>, return the <code>k</code> most
+            frequent elements (in any order).
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums = [1,1,1,2,2,3], k = 2</code> → <code>[1,2]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Count frequencies and sort the distinct values by count — O(n log n). Fine, but sorting is more than we
+            need: frequencies are bounded by <code>n</code>, which lets us avoid a comparison sort entirely.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Build a frequency map in O(n). Then <strong>bucket sort</strong>: create an array indexed by frequency
+            (<code>0…n</code>), and drop each value into the bucket for its count. Walk buckets from highest frequency
+            down, collecting values until you have <code>k</code>. Because there are at most <code>n</code> possible
+            frequencies, this is <strong>O(n)</strong>. (A size-k min-heap is the O(n log k) alternative — better when
+            <code>k</code> is tiny relative to the number of distinct values.)
+          </p>
+          <p><strong>Time O(n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Bucket array indexed by frequency">
+              <text class="dgm-sub" x="20" y="22">freq map: {1:3, 2:2, 3:1} → buckets[count]</text>
+              <rect class="dgm-box" x="20" y="40" width="80" height="30" rx="5"/><text class="dgm-sub" x="60" y="60" text-anchor="middle">1: —</text>
+              <rect class="dgm-box" x="110" y="40" width="80" height="30" rx="5"/><text class="dgm-sub" x="150" y="60" text-anchor="middle">2: —</text>
+              <rect class="dgm-box-accent" x="200" y="40" width="90" height="30" rx="5"/><text class="dgm-sub" x="245" y="60" text-anchor="middle">3: [1]</text>
+              <rect class="dgm-box" x="300" y="40" width="90" height="30" rx="5"/><text class="dgm-sub" x="345" y="60" text-anchor="middle">1: [3]</text>
+              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">scan buckets high→low, take k = 2 → [1, 2]</text>
+            </svg>
+            <figcaption>Figure 1 — Bucketing by count sidesteps a comparison sort because frequencies are at most n.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — bucket sort</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[] TopKFrequent(int[] nums, int k)
+{
+    var freq = new Dictionary&lt;int, int&gt;();
+    foreach (int n in nums)
+        freq[n] = freq.GetValueOrDefault(n) + 1;
+
+    // buckets[f] = values that occur exactly f times
+    var buckets = new List&lt;int&gt;[nums.Length + 1];
+    foreach (var (val, f) in freq)
+        (buckets[f] ??= new List&lt;int&gt;()).Add(val);
+
+    var result = new List&lt;int&gt;();
+    for (int f = buckets.Length - 1; f &gt;= 0 &amp;&amp; result.Count &lt; k; f--)
+        if (buckets[f] != null)
+            result.AddRange(buckets[f]);
+
+    return result.Take(k).ToArray();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) bucket sort (O(n log k) for the heap variant).</li>
+              <li><strong>Space:</strong> O(n) — frequency map plus buckets.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Count then organize</strong>: a hash map followed by bucketing or a heap.</li>
+              <li><strong>Bucket sort</strong> beats comparison sort when the key range (here, frequency) is bounded by n.</li>
+              <li>Use a <strong>size-k heap</strong> instead when k ≪ distinct count or data streams in.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element</span></a>
+            <a class="related-card" href="../coding-problems/group-anagrams.html"><span class="rc-cat">Coding</span><span class="rc-title">Group Anagrams</span></a>
+            <a class="related-card" href="../coding-problems/contains-duplicate.html"><span class="rc-cat">Coding</span><span class="rc-title">Contains Duplicate</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Offer both: the O(n log k) heap (simple, classic top-k) and the O(n) bucket sort (the “can you beat
+              n log n?” answer). Knowing <em>when</em> each wins — small k vs. bounded key range — is what impresses.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

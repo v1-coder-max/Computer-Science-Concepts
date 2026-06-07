@@ -187,7 +187,7 @@
       },
       {
         id: "coding-problems", slug: "coding-problems", title: "Coding Problems", icon: "🧠",
-        color: "var(--cat-coding-problems)", expected: 31,
+        color: "var(--cat-coding-problems)", expected: 46,
         blurb: "The most-asked interview problems: approach, C# solution, complexity.",
         concepts: [
           { slug: "two-sum", title: "Two Sum" },
@@ -220,7 +220,22 @@
           { slug: "coin-change", title: "Coin Change" },
           { slug: "house-robber", title: "House Robber" },
           { slug: "single-number", title: "Single Number" },
-          { slug: "pow-x-n", title: "Pow(x, n)" }
+          { slug: "pow-x-n", title: "Pow(x, n)" },
+          { slug: "container-with-most-water", title: "Container With Most Water" },
+          { slug: "trapping-rain-water", title: "Trapping Rain Water" },
+          { slug: "top-k-frequent-elements", title: "Top K Frequent Elements" },
+          { slug: "longest-consecutive-sequence", title: "Longest Consecutive Sequence" },
+          { slug: "merge-intervals", title: "Merge Intervals" },
+          { slug: "insert-interval", title: "Insert Interval" },
+          { slug: "remove-nth-node-from-end", title: "Remove Nth Node From End" },
+          { slug: "reorder-list", title: "Reorder List" },
+          { slug: "add-two-numbers", title: "Add Two Numbers" },
+          { slug: "same-tree", title: "Same Tree" },
+          { slug: "lowest-common-ancestor-bst", title: "Lowest Common Ancestor of a BST" },
+          { slug: "diameter-of-binary-tree", title: "Diameter of Binary Tree" },
+          { slug: "clone-graph", title: "Clone Graph" },
+          { slug: "rotting-oranges", title: "Rotting Oranges" },
+          { slug: "jump-game", title: "Jump Game" }
         ]
       },
       {

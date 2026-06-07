@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Container With Most Water — DevLens</title>
+  <meta name="description" content="Maximize the water trapped between two lines: a two-pointer sweep from both ends that always moves the shorter wall inward — O(n) time, O(1) space — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="container-with-most-water" data-title="Container With Most Water">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Container With Most Water</h1>
+          <p class="lede">
+            Pick two vertical lines that hold the most water. Start <strong>wide</strong> and walk inward, always
+            moving the <strong>shorter</strong> wall — that’s the only move that can ever help.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#greedy</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given heights <code>height[i]</code>, each a vertical line at position <code>i</code>, pick two lines that
+            with the x-axis form a container holding the most water. Return that maximum area.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,8,6,2,5,4,8,3,7]</code> → <code>49</code> (lines at index 1 and 8: min(8,7) × 7)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Try every pair of lines and compute <code>min(height[i], height[j]) × (j - i)</code> — O(n²). It works but
+            re-examines pairs that can never beat what we’ve seen. A two-pointer sweep gets it in one pass.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Put one pointer at each end. The area is <code>min(left, right) × width</code>. To improve, you must beat
+            the current area despite the width <em>shrinking</em> — so you need a taller wall. Moving the
+            <strong>taller</strong> wall in can never raise the limiting height; only moving the
+            <strong>shorter</strong> wall has a chance. So compute the area, then advance the shorter side. Track the
+            max as you converge.
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Two pointers closing in on the widest container">
+              <line class="dgm-line" x1="40" y1="100" x2="560" y2="100"/>
+              <rect class="dgm-box-accent" x="70" y="40" width="14" height="60"/><text class="dgm-sub" x="77" y="32" text-anchor="middle">L</text>
+              <rect class="dgm-box" x="160" y="60" width="14" height="40"/>
+              <rect class="dgm-box" x="260" y="70" width="14" height="30"/>
+              <rect class="dgm-box" x="360" y="55" width="14" height="45"/>
+              <rect class="dgm-box-accent" x="500" y="48" width="14" height="52"/><text class="dgm-sub" x="507" y="32" text-anchor="middle">R</text>
+              <text class="dgm-sub" x="300" y="116" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">area = min(L,R) × width; move the shorter wall inward</text>
+            </svg>
+            <figcaption>Figure 1 — Width only decreases, so progress requires a taller limiting wall; advance the shorter side.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MaxArea(int[] height)
+{
+    int left = 0, right = height.Length - 1, best = 0;
+    while (left &lt; right)
+    {
+        int h = Math.Min(height[left], height[right]);
+        best = Math.Max(best, h * (right - left));   // area with current walls
+        if (height[left] &lt; height[right]) left++;    // move the shorter wall
+        else right--;
+    }
+    return best;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — the two pointers meet after n steps.</li>
+              <li><strong>Space:</strong> O(1) — two indices.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Opposite-end two pointers</strong> shine when the answer depends on a width and a min/max of the ends.</li>
+              <li>Move the side that <em>limits</em> you — moving the taller wall can’t help.</li>
+              <li>The greedy move is safe because the discarded pairs are all dominated.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/trapping-rain-water.html"><span class="rc-cat">Coding</span><span class="rc-title">Trapping Rain Water</span></a>
+            <a class="related-card" href="../coding-problems/valid-palindrome.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Palindrome</span></a>
+            <a class="related-card" href="../coding-problems/3sum.html"><span class="rc-cat">Coding</span><span class="rc-title">3Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The whole interview is “why is moving the shorter wall safe?” Answer it: width shrinks every step, so the
+              only path to a bigger area is a taller limiting wall. Saying that proves the greedy choice isn’t a guess.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
