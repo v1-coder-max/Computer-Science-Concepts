@@ -1538,5 +1538,278 @@
     "tags": ["dynamic-programming", "strings", "medium", "fibonacci", "counting", "interview"],
     "description": "Count the ways to decode a digit string into letters (A=1..Z=26) with a Fibonacci-like DP: at each position add the ways from a valid one-digit and two-digit step — O(n) — C#.",
     "url": "concepts/coding-problems/decode-ways.html"
+  },
+  {
+    "title": "Unique Paths",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "2d-dp", "grid", "medium", "combinatorics", "interview"],
+    "description": "Count paths from the top-left to bottom-right of a grid moving only right or down: a 2-D DP where each cell sums the cell above and the cell to its left, reducible to one row — O(m·n).",
+    "url": "concepts/coding-problems/unique-paths.html"
+  },
+  {
+    "title": "Longest Common Subsequence",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "2d-dp", "strings", "medium", "subsequence", "interview"],
+    "description": "Find the length of the longest subsequence common to two strings with a 2-D DP: matching characters extend the diagonal, mismatches take the best of dropping one character — O(m·n).",
+    "url": "concepts/coding-problems/longest-common-subsequence.html"
+  },
+  {
+    "title": "Edit Distance",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "2d-dp", "strings", "hard", "levenshtein", "interview"],
+    "description": "Compute the minimum insert, delete, or replace operations to turn one string into another with a 2-D DP: equal chars carry the diagonal, else 1 + min of the three neighbors — O(m·n).",
+    "url": "concepts/coding-problems/edit-distance.html"
+  },
+  {
+    "title": "Coin Change II",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "unbounded-knapsack", "counting", "medium", "combinations", "interview"],
+    "description": "Count the number of ways to make an amount with unlimited coins using a 1-D DP iterated coin-by-coin so each combination is counted once regardless of order — O(amount·coins).",
+    "url": "concepts/coding-problems/coin-change-ii.html"
+  },
+  {
+    "title": "Target Sum",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "subset-sum", "medium", "transform", "counting", "interview"],
+    "description": "Count ways to assign + and - to numbers so they sum to a target by transforming it into a subset-sum count: find subsets summing to (total+target)/2 with a 1-D DP — O(n·sum).",
+    "url": "concepts/coding-problems/target-sum.html"
+  },
+  {
+    "title": "Best Time to Buy and Sell Stock with Cooldown",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "state-machine", "medium", "stocks", "cooldown", "interview"],
+    "description": "Maximize stock profit with unlimited transactions and a one-day cooldown after selling using a small state machine DP over hold, sold, and rest states — O(n) time, O(1) space.",
+    "url": "concepts/coding-problems/best-time-to-buy-sell-cooldown.html"
+  },
+  {
+    "title": "Interleaving String",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "2d-dp", "strings", "medium", "reachability", "interview"],
+    "description": "Decide whether a string is an interleaving of two others using a 2-D DP where dp[i][j] is reachable if the current char matches s1 or s2 and the smaller state was reachable — O(m·n).",
+    "url": "concepts/coding-problems/interleaving-string.html"
+  },
+  {
+    "title": "Network Delay Time",
+    "category": "coding-problems",
+    "tags": ["graphs", "dijkstra", "shortest-path", "medium", "heap", "interview"],
+    "description": "Find how long a signal takes to reach all nodes from a source: shortest paths in a weighted directed graph via Dijkstra with a min-heap, then take the maximum distance — O(E log V).",
+    "url": "concepts/coding-problems/network-delay-time.html"
+  },
+  {
+    "title": "Cheapest Flights Within K Stops",
+    "category": "coding-problems",
+    "tags": ["graphs", "bellman-ford", "shortest-path", "medium", "bounded", "interview"],
+    "description": "Find the cheapest route with at most k stops using Bellman-Ford limited to k+1 relaxation rounds on a snapshot of distances, which bounds the number of edges used — O(k·E).",
+    "url": "concepts/coding-problems/cheapest-flights-k-stops.html"
+  },
+  {
+    "title": "Reconstruct Itinerary",
+    "category": "coding-problems",
+    "tags": ["graphs", "eulerian-path", "dfs", "hard", "hierholzer", "interview"],
+    "description": "Reconstruct an itinerary using all tickets in lexical order by finding an Eulerian path with Hierholzer’s algorithm: DFS greedily and append nodes post-order, then reverse — O(E log E).",
+    "url": "concepts/coding-problems/reconstruct-itinerary.html"
+  },
+  {
+    "title": "Min Cost to Connect All Points",
+    "category": "coding-problems",
+    "tags": ["graphs", "mst", "prim", "medium", "spanning-tree", "interview"],
+    "description": "Connect all points at minimum total Manhattan distance: a minimum spanning tree built with Prim’s algorithm and a min-heap, repeatedly adding the cheapest edge to a new point — O(n^2 log n).",
+    "url": "concepts/coding-problems/min-cost-connect-points.html"
+  },
+  {
+    "title": "Swim in Rising Water",
+    "category": "coding-problems",
+    "tags": ["graphs", "dijkstra", "grid", "hard", "minimax-path", "interview"],
+    "description": "Find the least time to cross a grid where water rises, minimizing the maximum cell elevation on a path: Dijkstra-like search with a min-heap that expands the lowest peak first — O(n^2 log n).",
+    "url": "concepts/coding-problems/swim-in-rising-water.html"
+  },
+  {
+    "title": "Alien Dictionary",
+    "category": "coding-problems",
+    "tags": ["graphs", "topological-sort", "hard", "ordering", "kahn", "interview"],
+    "description": "Derive the letter order of an alien language from a sorted word list by building ordering constraints from adjacent word pairs and topologically sorting them, detecting contradictions — O(C).",
+    "url": "concepts/coding-problems/alien-dictionary.html"
+  },
+  {
+    "title": "Pacific Atlantic Water Flow",
+    "category": "coding-problems",
+    "tags": ["graphs", "dfs", "grid", "medium", "reverse-search", "interview"],
+    "description": "Find cells from which water can reach both oceans by reverse DFS/BFS from each ocean’s border (climbing to equal or higher cells) and intersecting the two reachable sets — O(m·n).",
+    "url": "concepts/coding-problems/pacific-atlantic.html"
+  },
+  {
+    "title": "Surrounded Regions",
+    "category": "coding-problems",
+    "tags": ["graphs", "dfs", "grid", "medium", "border-flood", "interview"],
+    "description": "Capture regions of O fully surrounded by X by flooding from border-connected O’s first (marking them safe), then flipping every remaining O to X — O(m·n) — with a C# solution.",
+    "url": "concepts/coding-problems/surrounded-regions.html"
+  },
+  {
+    "title": "Course Schedule II",
+    "category": "coding-problems",
+    "tags": ["graphs", "topological-sort", "kahn", "medium", "ordering", "interview"],
+    "description": "Return a valid order to take all courses given prerequisites via topological sort (Kahn’s in-degree BFS): output courses as their in-degree hits zero, or empty if a cycle exists — O(V+E).",
+    "url": "concepts/coding-problems/course-schedule-ii.html"
+  },
+  {
+    "title": "Redundant Connection",
+    "category": "coding-problems",
+    "tags": ["graphs", "union-find", "medium", "cycle", "dsu", "interview"],
+    "description": "Find the extra edge that turns a tree into a graph with one cycle using union-find: the first edge whose endpoints already share a root is the redundant one — near O(n) with path compression.",
+    "url": "concepts/coding-problems/redundant-connection.html"
+  },
+  {
+    "title": "Number of Connected Components",
+    "category": "coding-problems",
+    "tags": ["graphs", "union-find", "medium", "components", "dsu", "interview"],
+    "description": "Count connected components in an undirected graph with union-find: start with n components and decrement each time an edge joins two different sets — near O(n+e) — with a C# solution.",
+    "url": "concepts/coding-problems/number-of-connected-components.html"
+  },
+  {
+    "title": "Graph Valid Tree",
+    "category": "coding-problems",
+    "tags": ["graphs", "union-find", "medium", "tree", "connectivity", "interview"],
+    "description": "Check whether an undirected graph is a tree: it must have exactly n-1 edges and be fully connected with no cycles, verified with union-find or a single DFS — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/graph-valid-tree.html"
+  },
+  {
+    "title": "Word Ladder",
+    "category": "coding-problems",
+    "tags": ["graphs", "bfs", "shortest-path", "hard", "word-graph", "interview"],
+    "description": "Find the shortest transformation from start to end changing one letter at a time through a dictionary using BFS over words, generating neighbors by wildcard patterns — O(N·L^2) — C#.",
+    "url": "concepts/coding-problems/word-ladder.html"
+  },
+  {
+    "title": "Walls and Gates",
+    "category": "coding-problems",
+    "tags": ["graphs", "bfs", "grid", "medium", "multi-source", "interview"],
+    "description": "Fill each empty room with the distance to its nearest gate using multi-source BFS seeded from all gates at once, so every room is reached by its shortest path first — O(m·n) — C#.",
+    "url": "concepts/coding-problems/walls-and-gates.html"
+  },
+  {
+    "title": "Palindrome Linked List",
+    "category": "coding-problems",
+    "tags": ["linked-list", "two-pointers", "easy", "reverse", "in-place", "interview"],
+    "description": "Check whether a singly linked list is a palindrome in O(1) space by finding the middle, reversing the second half, and comparing the two halves node by node — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/palindrome-linked-list.html"
+  },
+  {
+    "title": "Merge K Sorted Lists",
+    "category": "coding-problems",
+    "tags": ["linked-list", "heap", "divide-and-conquer", "hard", "merge", "interview"],
+    "description": "Merge k sorted linked lists into one using a min-heap of the current heads, repeatedly popping the smallest and pushing its successor — O(N log k) — or divide-and-conquer pairwise — C#.",
+    "url": "concepts/coding-problems/merge-k-sorted-lists.html"
+  },
+  {
+    "title": "Reverse Nodes in k-Group",
+    "category": "coding-problems",
+    "tags": ["linked-list", "pointers", "hard", "reverse", "in-place", "interview"],
+    "description": "Reverse a linked list in consecutive groups of k, leaving a trailing remainder under k untouched, by reversing each full group in place and stitching the segments — O(n) time, O(1) space — C#.",
+    "url": "concepts/coding-problems/reverse-nodes-in-k-group.html"
+  },
+  {
+    "title": "Copy List with Random Pointer",
+    "category": "coding-problems",
+    "tags": ["linked-list", "hash-map", "medium", "deep-copy", "pointers", "interview"],
+    "description": "Deep-copy a linked list whose nodes have an extra random pointer using a hash map from original to clone, or an O(1)-space interleaving trick that weaves clones between originals — O(n) — C#.",
+    "url": "concepts/coding-problems/copy-list-with-random-pointer.html"
+  },
+  {
+    "title": "LRU Cache",
+    "category": "coding-problems",
+    "tags": ["linked-list", "hash-map", "design", "medium", "o1", "interview"],
+    "description": "Design a fixed-capacity cache with O(1) get and put by combining a hash map for lookup with a doubly linked list ordering entries by recency, evicting the least recently used tail — C#.",
+    "url": "concepts/coding-problems/lru-cache.html"
+  },
+  {
+    "title": "Two Sum II - Input Array Is Sorted",
+    "category": "coding-problems",
+    "tags": ["two-pointers", "arrays", "easy", "sorted", "complement", "interview"],
+    "description": "Find two numbers in a sorted array that sum to a target using two pointers from both ends that move inward based on the sum versus the target — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/two-sum-ii.html"
+  },
+  {
+    "title": "Remove Duplicates from Sorted Array",
+    "category": "coding-problems",
+    "tags": ["two-pointers", "arrays", "easy", "in-place", "sorted", "interview"],
+    "description": "Remove duplicates in place from a sorted array using a slow write pointer that only advances on a new value, returning the count of unique elements — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/remove-duplicates-from-sorted-array.html"
+  },
+  {
+    "title": "4Sum",
+    "category": "coding-problems",
+    "tags": ["two-pointers", "arrays", "medium", "k-sum", "dedupe", "interview"],
+    "description": "Find all unique quadruples summing to a target by sorting, fixing two indices with nested loops, and two-pointering the rest while skipping duplicates — O(n^3) — with a C# solution.",
+    "url": "concepts/coding-problems/4sum.html"
+  },
+  {
+    "title": "Car Fleet",
+    "category": "coding-problems",
+    "tags": ["stack", "sorting", "medium", "monotonic", "simulation", "interview"],
+    "description": "Count how many fleets of cars arrive at a target by sorting cars by start position descending and counting how many arrival times are not swallowed by a slower car ahead — O(n log n) — C#.",
+    "url": "concepts/coding-problems/car-fleet.html"
+  },
+  {
+    "title": "Largest Rectangle in Histogram",
+    "category": "coding-problems",
+    "tags": ["stack", "monotonic-stack", "arrays", "hard", "area", "interview"],
+    "description": "Find the largest rectangle in a histogram with a monotonic increasing stack of bar indices: when a shorter bar appears, pop and compute areas using the popped height and the width between boundaries — O(n).",
+    "url": "concepts/coding-problems/largest-rectangle-in-histogram.html"
+  },
+  {
+    "title": "Time Based Key-Value Store",
+    "category": "coding-problems",
+    "tags": ["binary-search", "design", "hash-map", "medium", "versioning", "interview"],
+    "description": "Design a store that returns the value of a key at the largest timestamp ≤ a query time by keeping each key’s entries in timestamp order and binary searching for the floor — O(log n) get — C#.",
+    "url": "concepts/coding-problems/time-based-key-value-store.html"
+  },
+  {
+    "title": "Median of Two Sorted Arrays",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "hard", "partition", "median", "interview"],
+    "description": "Find the median of two sorted arrays in O(log(min(m,n))) by binary searching a partition of the smaller array so the combined left half is correct, checked via the four boundary values — C#.",
+    "url": "concepts/coding-problems/median-of-two-sorted-arrays.html"
+  },
+  {
+    "title": "Sliding Window Maximum",
+    "category": "coding-problems",
+    "tags": ["sliding-window", "deque", "monotonic", "hard", "arrays", "interview"],
+    "description": "Return the maximum of every window of size k using a monotonic decreasing deque of indices, so the front is always the window max and each element is pushed and popped once — O(n) — C#.",
+    "url": "concepts/coding-problems/sliding-window-maximum.html"
+  },
+  {
+    "title": "Partition Equal Subset Sum",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "subset-sum", "medium", "knapsack", "partition", "interview"],
+    "description": "Decide if an array can split into two equal-sum subsets by reducing to a subset-sum DP targeting half the total: a 1-D boolean knapsack iterated in reverse — O(n·sum) — with a C# solution.",
+    "url": "concepts/coding-problems/partition-equal-subset-sum.html"
+  },
+  {
+    "title": "Happy Number",
+    "category": "coding-problems",
+    "tags": ["math", "two-pointers", "easy", "cycle", "floyd", "interview"],
+    "description": "Detect a happy number — repeatedly replacing it by the sum of the squares of its digits reaches 1 — using Floyd’s cycle detection to spot loops without a set — O(log n) — with a C# solution.",
+    "url": "concepts/coding-problems/happy-number.html"
+  },
+  {
+    "title": "Plus One",
+    "category": "coding-problems",
+    "tags": ["math", "arrays", "easy", "carry", "digits", "interview"],
+    "description": "Add one to a number represented as a digit array by propagating the carry from the least significant digit, handling the all-nines case by prepending a leading one — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/plus-one.html"
+  },
+  {
+    "title": "Multiply Strings",
+    "category": "coding-problems",
+    "tags": ["math", "strings", "medium", "simulation", "carry", "interview"],
+    "description": "Multiply two non-negative integers given as strings without big-integer types by simulating grade-school multiplication into a digit array, where digits i and j land at positions i+j and i+j+1 — O(m·n).",
+    "url": "concepts/coding-problems/multiply-strings.html"
+  },
+  {
+    "title": "Majority Element",
+    "category": "coding-problems",
+    "tags": ["arrays", "boyer-moore", "easy", "voting", "o1", "interview"],
+    "description": "Find the element appearing more than n/2 times in O(n) time and O(1) space with the Boyer-Moore voting algorithm: keep a candidate and a count that cancels out minority elements — C#.",
+    "url": "concepts/coding-problems/majority-element.html"
   }
 ]

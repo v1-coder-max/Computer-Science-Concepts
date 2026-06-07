@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pacific Atlantic Water Flow — DevLens</title>
+  <meta name="description" content="Find cells from which water can reach both oceans by reverse DFS/BFS from each ocean’s border (climbing to equal or higher cells) and intersecting the two reachable sets — O(m·n)." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="pacific-atlantic" data-title="Pacific Atlantic Water Flow">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Pacific Atlantic Water Flow</h1>
+          <p class="lede">Find cells whose water can reach <em>both</em> oceans. The trick: search <strong>backwards from each ocean’s border</strong>, climbing uphill, then intersect.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#grid</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#reverse-search</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a grid of heights, water flows to lower-or-equal neighbors. The Pacific touches the top/left edges, the Atlantic the bottom/right. Return cells from which water can reach both oceans.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p>A 5×5 height grid → the list of coordinates that drain to both oceans.</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>From every cell, DFS to see if water can reach each ocean — O((m·n)²), since each search scans much of the grid. The reverse trick removes the per-cell repetition.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Instead of asking “can this cell reach the ocean,” ask “which cells can the ocean reach if water flowed <strong>uphill</strong>.” From all <strong>Pacific border</strong> cells, DFS/BFS to neighbors with <em>height ≥</em> current, marking a <code>pacific</code> set; do the same from the <strong>Atlantic border</strong> into an <code>atlantic</code> set. Any cell in <strong>both</strong> sets can drain to both oceans.</p><p><strong>Time O(m·n), Space O(m·n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Reverse search from each ocean, then intersect">
+              <text class="dgm-sub" x="20" y="24">from Pacific border, climb to height ≥ cur</text>
+              <text class="dgm-sub" x="20" y="52">from Atlantic border, same uphill flood</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">cells in BOTH reachable sets = answer</text>
+            </svg>
+            <figcaption>Figure 1 — Reverse uphill floods from each border meet at the cells that drain to both.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;int&gt;&gt; PacificAtlantic(int[][] heights)
+{
+    int m = heights.Length, n = heights[0].Length;
+    var pac = new bool[m, n]; var atl = new bool[m, n];
+
+    void Dfs(int r, int c, bool[,] seen, int prev)
+    {
+        if (r &lt; 0 || c &lt; 0 || r &gt;= m || c &gt;= n || seen[r, c] || heights[r][c] &lt; prev) return;
+        seen[r, c] = true;
+        Dfs(r+1,c,seen,heights[r][c]); Dfs(r-1,c,seen,heights[r][c]);
+        Dfs(r,c+1,seen,heights[r][c]); Dfs(r,c-1,seen,heights[r][c]);
+    }
+    for (int c = 0; c &lt; n; c++) { Dfs(0, c, pac, int.MinValue); Dfs(m-1, c, atl, int.MinValue); }
+    for (int r = 0; r &lt; m; r++) { Dfs(r, 0, pac, int.MinValue); Dfs(r, n-1, atl, int.MinValue); }
+
+    var result = new List&lt;IList&lt;int&gt;&gt;();
+    for (int r = 0; r &lt; m; r++) for (int c = 0; c &lt; n; c++)
+        if (pac[r, c] &amp;&amp; atl[r, c]) result.Add(new List&lt;int&gt; { r, c });
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(m·n) — two floods over the grid.</li>
+              <li><strong>Space:</strong> O(m·n) for the two reachability grids.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Flip the question: search <strong>from</strong> the oceans, flowing uphill.</li>
+              <li>Two floods + a set <strong>intersection</strong> beats per-cell searches.</li>
+              <li>The uphill condition (height ≥ current) reverses normal downhill flow.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/number-of-islands.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Islands</span></a>
+            <a class="related-card" href="../coding-problems/surrounded-regions.html"><span class="rc-cat">Coding</span><span class="rc-title">Surrounded Regions</span></a>
+            <a class="related-card" href="../coding-problems/walls-and-gates.html"><span class="rc-cat">Coding</span><span class="rc-title">Walls and Gates</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The whole insight is reversing the search direction — start from the borders and flood uphill. Without it you re-search from every cell. Then intersect the two reachable sets.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

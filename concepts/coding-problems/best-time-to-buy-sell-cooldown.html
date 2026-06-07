@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Best Time to Buy and Sell Stock with Cooldown — DevLens</title>
+  <meta name="description" content="Maximize stock profit with unlimited transactions and a one-day cooldown after selling using a small state machine DP over hold, sold, and rest states — O(n) time, O(1) space." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="best-time-to-buy-sell-cooldown" data-title="Best Time to Buy and Sell Stock with Cooldown">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Best Time to Buy and Sell Stock with Cooldown</h1>
+          <p class="lede">Unlimited trades, but a one-day <strong>cooldown</strong> after every sale. Model three states — <em>holding</em>, <em>just sold</em>, <em>resting</em> — and step them forward.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#state-machine</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#stocks</span>
+            <span class="tag">#cooldown</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given daily <code>prices</code>, maximize profit with as many transactions as you like, but you cannot buy on the day right after you sell (one-day cooldown). You hold at most one share.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,2,3,0,2]</code> → <code>3</code> (buy 1, sell 2, cooldown, buy 0, sell 2)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Recurse over each day with “buy / sell / skip” branches and a cooldown flag — exponential without memoization. Memoizing on <code>(day, holdingState)</code> works; the state-machine DP below is the clean O(1)-space form.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Track three running values: <code>hold</code> (max profit while owning a share), <code>sold</code> (max profit on the day you just sold), and <code>rest</code> (max profit not holding and free to buy). Transitions per day: <code>hold = max(hold, rest − price)</code> (keep or buy from rest), <code>sold = hold + price</code> (sell today), <code>rest = max(rest, prevSold)</code> (cooldown then rest). The answer is <code>max(sold, rest)</code> at the end.</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Three-state machine with cooldown">
+              <text class="dgm-sub" x="20" y="24">hold = max(hold, rest − price)</text>
+              <text class="dgm-sub" x="20" y="52">sold = hold + price · rest = max(rest, prevSold)</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">cooldown = can’t buy the day after selling</text>
+            </svg>
+            <figcaption>Figure 1 — The “sold” state forces a rest day before the next buy.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MaxProfit(int[] prices)
+{
+    int hold = int.MinValue, sold = 0, rest = 0;
+    foreach (int price in prices)
+    {
+        int prevSold = sold;
+        sold = hold + price;                       // sell today
+        hold = Math.Max(hold, rest - price);       // keep, or buy from rest
+        rest = Math.Max(rest, prevSold);           // cooldown into rest
+    }
+    return Math.Max(sold, rest);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one pass.</li>
+              <li><strong>Space:</strong> O(1) — three rolling states.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Model trading constraints as a <strong>state machine</strong>.</li>
+              <li>The cooldown is captured by a separate “just sold” state feeding into rest.</li>
+              <li>Roll the states forward; no transaction count to track.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/best-time-to-buy-sell-stock.html"><span class="rc-cat">Coding</span><span class="rc-title">Best Time to Buy and Sell Stock</span></a>
+            <a class="related-card" href="../coding-problems/house-robber.html"><span class="rc-cat">Coding</span><span class="rc-title">House Robber</span></a>
+            <a class="related-card" href="../coding-problems/maximum-subarray.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Subarray</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Draw the three states and their transitions before coding — it makes the cooldown obvious and the code falls out. The same state-machine framing solves the transaction-fee and k-transactions variants.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

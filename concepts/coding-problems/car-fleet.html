@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Car Fleet — DevLens</title>
+  <meta name="description" content="Count how many fleets of cars arrive at a target by sorting cars by start position descending and counting how many arrival times are not swallowed by a slower car ahead — O(n log n) — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="car-fleet" data-title="Car Fleet">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Car Fleet</h1>
+          <p class="lede">Cars can’t pass; a faster car catching a slower one joins its fleet at the slower speed. Sort by position and count <strong>arrival times that aren’t swallowed ahead</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#stack</span>
+            <span class="tag">#sorting</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#monotonic</span>
+            <span class="tag">#simulation</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Cars at given positions head to a <code>target</code> at given speeds; a faster car catching a slower one forms a fleet moving at the slower speed. Return the number of fleets that arrive.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>target=12, position=[10,8,0,5,3], speed=[2,4,1,1,3]</code> → <code>3</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Simulating positions over time until everything merges is fiddly and slow. Reasoning about <strong>arrival times</strong> in order of starting position turns it into a single O(n log n) scan.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Each car’s time to the target is <code>(target − position) / speed</code>. Sort cars by <strong>start position descending</strong> (closest to the target first) and walk through them, keeping the <strong>slowest arrival time so far</strong> (the front of the current fleet). If a car’s arrival time is <strong>greater</strong> than that front time, it can’t catch up — it starts a <strong>new fleet</strong> and becomes the new front; otherwise it merges into the fleet ahead. Count the new fronts. (The non-increasing fronts behave like a monotonic stack.)</p><p><strong>Time O(n log n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Arrival times in position order">
+              <text class="dgm-sub" x="20" y="24">time = (target − pos) / speed</text>
+              <text class="dgm-sub" x="20" y="52">sort by pos desc; track slowest front time</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">arrival > front → new fleet; else merge</text>
+            </svg>
+            <figcaption>Figure 1 — A car that would arrive later than the one ahead is blocked into its fleet.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int CarFleet(int target, int[] position, int[] speed)
+{
+    int n = position.Length;
+    var cars = new (int pos, double time)[n];
+    for (int i = 0; i &lt; n; i++)
+        cars[i] = (position[i], (double)(target - position[i]) / speed[i]);
+
+    Array.Sort(cars, (a, b) =&gt; b.pos - a.pos);   // closest to target first
+
+    int fleets = 0;
+    double front = 0;
+    foreach (var car in cars)
+        if (car.time &gt; front)                    // can't catch the car ahead
+        {
+            fleets++;
+            front = car.time;                    // new fleet front
+        }
+    return fleets;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n log n) — sort dominates.</li>
+              <li><strong>Space:</strong> O(n) for the cars array.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Reason about <strong>arrival times</strong>, not moving positions.</li>
+              <li>Sort by position toward the target; a slower front <strong>absorbs</strong> faster followers.</li>
+              <li>A new fleet starts whenever a car’s time exceeds the running front time.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/daily-temperatures.html"><span class="rc-cat">Coding</span><span class="rc-title">Daily Temperatures</span></a>
+            <a class="related-card" href="../coding-problems/largest-rectangle-in-histogram.html"><span class="rc-cat">Coding</span><span class="rc-title">Largest Rectangle in Histogram</span></a>
+            <a class="related-card" href="../coding-problems/valid-parentheses.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Parentheses</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The reframe from positions-over-time to arrival-times-in-order is the whole problem. The non-increasing fronts are effectively a monotonic stack — mention that connection.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

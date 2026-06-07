@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redundant Connection — DevLens</title>
+  <meta name="description" content="Find the extra edge that turns a tree into a graph with one cycle using union-find: the first edge whose endpoints already share a root is the redundant one — near O(n) with path compression." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="redundant-connection" data-title="Redundant Connection">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Redundant Connection</h1>
+          <p class="lede">A tree plus one extra edge has exactly one cycle. <strong>Union-Find</strong> spots the culprit: the first edge connecting two already-joined nodes.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#union-find</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#cycle</span>
+            <span class="tag">#dsu</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a graph that started as a tree with <code>n</code> nodes and had one extra edge added (so it has one cycle), return that redundant edge — the last one in the input that forms the cycle.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[[1,2],[1,3],[2,3]]</code> → <code>[2,3]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>For each edge, remove it and check if the rest is still a connected acyclic tree (DFS) — O(n²). Union-Find answers it in near-linear time by detecting the cycle as edges are added.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Process edges with a <strong>Disjoint Set Union</strong>. For each edge <code>(u, v)</code>, find their roots: if they’re <strong>already in the same set</strong>, this edge closes a cycle → it’s the redundant one. Otherwise union them. With path compression and union by rank, each operation is effectively O(1).</p><p><strong>Time ~O(n·α(n)), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Union-Find flags the cycle-closing edge">
+              <text class="dgm-sub" x="20" y="24">for each edge: find(u), find(v)</text>
+              <text class="dgm-sub" x="20" y="52">same root already → this edge is redundant</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">else union(u, v) and continue</text>
+            </svg>
+            <figcaption>Figure 1 — The first edge whose endpoints share a root is the one that creates the cycle.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[] FindRedundantConnection(int[][] edges)
+{
+    int n = edges.Length;
+    var parent = new int[n + 1];
+    for (int i = 0; i &lt;= n; i++) parent[i] = i;
+
+    int Find(int x) =&gt; parent[x] == x ? x : (parent[x] = Find(parent[x]));  // path compression
+
+    foreach (var e in edges)
+    {
+        int ru = Find(e[0]), rv = Find(e[1]);
+        if (ru == rv) return e;          // already connected → redundant edge
+        parent[ru] = rv;                 // union
+    }
+    return Array.Empty&lt;int&gt;();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> ~O(n·α(n)) with path compression.</li>
+              <li><strong>Space:</strong> O(n) for the parent array.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Cycle detection while building → <strong>Union-Find</strong>.</li>
+              <li>Same-root <code>find</code> before union means this edge closes a cycle.</li>
+              <li>Path compression keeps operations effectively constant time.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/number-of-connected-components.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Connected Components</span></a>
+            <a class="related-card" href="../coding-problems/graph-valid-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Graph Valid Tree</span></a>
+            <a class="related-card" href="../coding-problems/course-schedule.html"><span class="rc-cat">Coding</span><span class="rc-title">Course Schedule</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Union-Find is the textbook tool here — detect the cycle as you add edges. Be ready to implement DSU with path compression from memory; it underlies many graph problems.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

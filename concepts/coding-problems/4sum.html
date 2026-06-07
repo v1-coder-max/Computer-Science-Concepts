@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4Sum — DevLens</title>
+  <meta name="description" content="Find all unique quadruples summing to a target by sorting, fixing two indices with nested loops, and two-pointering the rest while skipping duplicates — O(n^3) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="4sum" data-title="4Sum">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>4Sum</h1>
+          <p class="lede">All unique quadruples that sum to a target. Sort, <strong>fix two numbers</strong> with nested loops, and two-pointer the remaining pair — skipping duplicates throughout.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#k-sum</span>
+            <span class="tag">#dedupe</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an array <code>nums</code> and a <code>target</code>, return all unique quadruples <code>[a,b,c,d]</code> with <code>a+b+c+d == target</code>. The solution set must not contain duplicate quadruples.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums = [1,0,-1,0,-2,2], target = 0</code> → <code>[[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Four nested loops over all quadruples — O(n⁴) — plus a set to dedupe. Sorting and reusing the 3Sum/2Sum two-pointer reduces it to O(n³).</p>
+
+          <h2>Optimized approach</h2>
+          <p>It’s the general <strong>k-Sum</strong> pattern. <strong>Sort</strong> the array. Fix the first index <code>i</code> and second index <code>j</code> with two loops, then run the <strong>two-pointer</strong> 2Sum on the remainder to find pairs hitting <code>target − nums[i] − nums[j]</code>. Skip equal values at every level to avoid duplicate quadruples. Use a 64-bit sum to dodge overflow.</p><p><strong>Time O(n³), Space O(1)</strong> (excluding output).</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Fix two, two-pointer the rest">
+              <text class="dgm-sub" x="20" y="24">sort; fix i, fix j (skip dup values)</text>
+              <text class="dgm-sub" x="20" y="52">two-pointer for target − nums[i] − nums[j]</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">skip duplicates at all four levels</text>
+            </svg>
+            <figcaption>Figure 1 — Each fixed pair reduces 4Sum to a sorted two-pointer 2Sum.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;int&gt;&gt; FourSum(int[] nums, int target)
+{
+    Array.Sort(nums);
+    int n = nums.Length;
+    var result = new List&lt;IList&lt;int&gt;&gt;();
+
+    for (int i = 0; i &lt; n - 3; i++)
+    {
+        if (i &gt; 0 &amp;&amp; nums[i] == nums[i - 1]) continue;          // dedupe i
+        for (int j = i + 1; j &lt; n - 2; j++)
+        {
+            if (j &gt; i + 1 &amp;&amp; nums[j] == nums[j - 1]) continue;  // dedupe j
+            int lo = j + 1, hi = n - 1;
+            while (lo &lt; hi)
+            {
+                long sum = (long)nums[i] + nums[j] + nums[lo] + nums[hi];
+                if (sum == target)
+                {
+                    result.Add(new List&lt;int&gt; { nums[i], nums[j], nums[lo], nums[hi] });
+                    while (lo &lt; hi &amp;&amp; nums[lo] == nums[lo + 1]) lo++;   // dedupe lo
+                    while (lo &lt; hi &amp;&amp; nums[hi] == nums[hi - 1]) hi--;   // dedupe hi
+                    lo++; hi--;
+                }
+                else if (sum &lt; target) lo++;
+                else hi--;
+            }
+        }
+    }
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n³) — two fixed indices × a linear two-pointer scan.</li>
+              <li><strong>Space:</strong> O(1) beyond the output.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>k-Sum reduces to <strong>fix (k−2) indices + two-pointer the pair</strong>.</li>
+              <li>Sort first; <strong>skip equal values</strong> at every level to dedupe.</li>
+              <li>Use a 64-bit sum to avoid overflow on large inputs.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/3sum.html"><span class="rc-cat">Coding</span><span class="rc-title">3Sum</span></a>
+            <a class="related-card" href="../coding-problems/two-sum-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Two Sum II</span></a>
+            <a class="related-card" href="../coding-problems/two-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Two Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Present it as the recursive k-Sum template — 4Sum is 3Sum is 2Sum with extra fixed loops. The duplicate-skipping at each level is the part that trips people; narrate it.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

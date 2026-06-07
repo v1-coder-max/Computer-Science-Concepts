@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Target Sum — DevLens</title>
+  <meta name="description" content="Count ways to assign + and - to numbers so they sum to a target by transforming it into a subset-sum count: find subsets summing to (total+target)/2 with a 1-D DP — O(n·sum)." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="target-sum" data-title="Target Sum">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Target Sum</h1>
+          <p class="lede">Assign <code>+</code> or <code>−</code> to each number to hit a target — count the ways. A clever algebra step turns it into <strong>subset-sum counting</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#subset-sum</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#transform</span>
+            <span class="tag">#counting</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given <code>nums</code> and a <code>target</code>, assign <code>+</code> or <code>−</code> before each number so the expression equals <code>target</code>. Return the number of ways.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums = [1,1,1,1,1], target = 3</code> → <code>5</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Recursively try <code>+num</code> and <code>−num</code> at each index, counting leaves that hit the target — <strong>O(2<sup>n</sup>)</strong>. Memoizing on <code>(index, runningSum)</code> helps, but the algebra below makes it a clean subset-sum.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Let <code>P</code> be the positive subset and <code>N</code> the negative one. Then <code>P − N = target</code> and <code>P + N = total</code>, so <code>P = (total + target) / 2</code>. The problem becomes: <strong>count subsets that sum to <code>P</code></strong>. That’s a 1-D DP: <code>dp[s] += dp[s − num]</code> for each num, with <code>dp[0] = 1</code>. (If <code>total + target</code> is odd or negative, the answer is 0.)</p><p><strong>Time O(n · P), Space O(P).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Reduce to subset sum P">
+              <text class="dgm-sub" x="20" y="24">P − N = target,  P + N = total</text>
+              <text class="dgm-sub" x="20" y="52">→ P = (total + target) / 2</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">count subsets summing to P → answer</text>
+            </svg>
+            <figcaption>Figure 1 — The sign assignment collapses to counting subsets that reach P.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int FindTargetSumWays(int[] nums, int target)
+{
+    int total = nums.Sum();
+    if (Math.Abs(target) &gt; total || (total + target) % 2 != 0) return 0;
+    int P = (total + target) / 2;          // subset that must be positive
+
+    var dp = new int[P + 1];
+    dp[0] = 1;
+    foreach (int num in nums)
+        for (int s = P; s &gt;= num; s--)     // descend → each num used once
+            dp[s] += dp[s - num];
+    return dp[P];
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n · P) where P = (total+target)/2.</li>
+              <li><strong>Space:</strong> O(P).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Algebra reduces signed sums to a <strong>subset-sum count</strong>.</li>
+              <li>Iterate <code>s</code> downward so each number is used once (0/1 knapsack).</li>
+              <li>Guard the parity/range check — odd or out-of-range gives 0.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/partition-equal-subset-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Partition Equal Subset Sum</span></a>
+            <a class="related-card" href="../coding-problems/coin-change-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change II</span></a>
+            <a class="related-card" href="../coding-problems/coin-change.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The transformation P = (total+target)/2 is the insight that turns a scary sign problem into a standard subset-sum. Show the derivation; the DP after it is routine 0/1 knapsack.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

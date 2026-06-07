@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Largest Rectangle in Histogram — DevLens</title>
+  <meta name="description" content="Find the largest rectangle in a histogram with a monotonic increasing stack of bar indices: when a shorter bar appears, pop and compute areas using the popped height and the width between boundaries — O(n)." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="largest-rectangle-in-histogram" data-title="Largest Rectangle in Histogram">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Largest Rectangle in Histogram</h1>
+          <p class="lede">The biggest rectangle under a histogram. A <strong>monotonic increasing stack</strong> of bar indices lets each bar settle its widest rectangle exactly when a shorter bar appears.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#stack</span>
+            <span class="tag">#monotonic-stack</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#hard</span>
+            <span class="tag">#area</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given bar heights <code>heights</code>, return the area of the largest rectangle that fits entirely within the histogram.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[2,1,5,6,2,3]</code> → <code>10</code> (heights 5 and 6 over width 2)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>For each bar, expand left and right while bars are at least as tall, computing its maximal rectangle — O(n²). A monotonic stack does the same boundary-finding in one O(n) pass.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Keep a stack of indices with <strong>increasing</strong> heights. When the current bar is <strong>shorter</strong> than the stack top, that top bar can’t extend further right — pop it and compute its rectangle: height is the popped bar’s height, and the width spans from the new stack top (its left boundary) to the current index (its right boundary). Push the current bar. Process a sentinel 0 at the end to flush the stack. Each bar is pushed and popped once.</p><p><strong>Time O(n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Monotonic stack settles each bar’s rectangle">
+              <text class="dgm-sub" x="20" y="24">stack holds increasing-height indices</text>
+              <text class="dgm-sub" x="20" y="52">shorter bar → pop, width = i − stackTop − 1</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[2,1,5,6,2,3] → 5×2 = 10</text>
+            </svg>
+            <figcaption>Figure 1 — A bar’s rectangle is finalized when a shorter bar bounds it on the right.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int LargestRectangleArea(int[] heights)
+{
+    var stack = new Stack&lt;int&gt;();    // indices of increasing heights
+    int best = 0, n = heights.Length;
+
+    for (int i = 0; i &lt;= n; i++)
+    {
+        int h = i == n ? 0 : heights[i];                 // sentinel flushes the stack
+        while (stack.Count &gt; 0 &amp;&amp; heights[stack.Peek()] &gt; h)
+        {
+            int height = heights[stack.Pop()];
+            int left = stack.Count == 0 ? -1 : stack.Peek();
+            int width = i - left - 1;                    // bounded by left & i
+            best = Math.Max(best, height * width);
+        }
+        stack.Push(i);
+    }
+    return best;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each index pushed and popped once.</li>
+              <li><strong>Space:</strong> O(n) for the stack.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A <strong>monotonic increasing stack</strong> finds each bar’s left/right boundaries in O(n).</li>
+              <li>On a pop, <strong>width = i − newTop − 1</strong>; height = popped bar.</li>
+              <li>A trailing sentinel 0 flushes any bars left on the stack.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/daily-temperatures.html"><span class="rc-cat">Coding</span><span class="rc-title">Daily Temperatures</span></a>
+            <a class="related-card" href="../coding-problems/car-fleet.html"><span class="rc-cat">Coding</span><span class="rc-title">Car Fleet</span></a>
+            <a class="related-card" href="../coding-problems/trapping-rain-water.html"><span class="rc-cat">Coding</span><span class="rc-title">Trapping Rain Water</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>This is the hardest monotonic-stack staple. The key is what each pop computes — the popped bar’s maximal rectangle, bounded left by the new top and right by the current index. The sentinel is the clean way to flush.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

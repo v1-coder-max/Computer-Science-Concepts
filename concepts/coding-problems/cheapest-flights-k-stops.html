@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cheapest Flights Within K Stops — DevLens</title>
+  <meta name="description" content="Find the cheapest route with at most k stops using Bellman-Ford limited to k+1 relaxation rounds on a snapshot of distances, which bounds the number of edges used — O(k·E)." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="cheapest-flights-k-stops" data-title="Cheapest Flights Within K Stops">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Cheapest Flights Within K Stops</h1>
+          <p class="lede">Cheapest flight path with at most <code>k</code> stops. Plain Dijkstra ignores the stop limit — <strong>Bellman-Ford run exactly <code>k+1</code> rounds</strong> respects it.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#bellman-ford</span>
+            <span class="tag">#shortest-path</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#bounded</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given <code>flights = [from, to, price]</code>, <code>n</code> cities, source <code>src</code>, destination <code>dst</code>, and <code>k</code>, return the cheapest price from <code>src</code> to <code>dst</code> using at most <code>k</code> stops, or <code>-1</code>.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>n=4, flights=[[0,1,100],[1,2,100],[2,0,100],[1,3,600],[2,3,200]], src=0, dst=3, k=1</code> → <code>700</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>DFS every path from <code>src</code>, tracking cost and stops — exponential in the number of paths. The stop limit makes greedy Dijkstra incorrect (the cheapest path may exceed k stops), so we need an edge-count-bounded method.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Run <strong>Bellman-Ford</strong> for exactly <code>k + 1</code> rounds (each round may add one more edge/stop). Crucially, relax against a <strong>snapshot</strong> of the previous round’s distances so a single round can’t chain multiple new edges. After <code>k + 1</code> rounds, <code>dist[dst]</code> is the cheapest price within the stop budget.</p><p><strong>Time O(k · E), Space O(V).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Bellman-Ford bounded to k+1 rounds">
+              <text class="dgm-sub" x="20" y="24">each round relaxes all edges once</text>
+              <text class="dgm-sub" x="20" y="52">relax against a SNAPSHOT → ≤1 new edge/round</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">k+1 rounds = at most k stops</text>
+            </svg>
+            <figcaption>Figure 1 — Limiting rounds limits how many edges (stops) a path may use.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int FindCheapestPrice(int n, int[][] flights, int src, int dst, int k)
+{
+    var dist = new int[n];
+    Array.Fill(dist, int.MaxValue);
+    dist[src] = 0;
+
+    for (int round = 0; round &lt;= k; round++)
+    {
+        var snapshot = (int[])dist.Clone();        // freeze last round
+        foreach (var f in flights)
+        {
+            int u = f[0], v = f[1], price = f[2];
+            if (snapshot[u] != int.MaxValue &amp;&amp; snapshot[u] + price &lt; dist[v])
+                dist[v] = snapshot[u] + price;
+        }
+    }
+    return dist[dst] == int.MaxValue ? -1 : dist[dst];
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(k · E) — k+1 rounds over all edges.</li>
+              <li><strong>Space:</strong> O(V) for distances and the snapshot.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A <strong>stop limit</strong> means bound the edge count → Bellman-Ford rounds.</li>
+              <li>Relax against a <strong>snapshot</strong> so one round adds at most one edge.</li>
+              <li>Plain Dijkstra is wrong here because the cheapest path may use too many stops.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/network-delay-time.html"><span class="rc-cat">Coding</span><span class="rc-title">Network Delay Time</span></a>
+            <a class="related-card" href="../coding-problems/course-schedule.html"><span class="rc-cat">Coding</span><span class="rc-title">Course Schedule</span></a>
+            <a class="related-card" href="../coding-problems/min-cost-connect-points.html"><span class="rc-cat">Coding</span><span class="rc-title">Min Cost to Connect All Points</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The snapshot is the subtle, must-mention detail — without it a single round chains multiple edges and breaks the stop bound. Explain why Dijkstra alone fails and Bellman-Ford-by-rounds fits.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

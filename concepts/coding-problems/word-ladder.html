@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word Ladder — DevLens</title>
+  <meta name="description" content="Find the shortest transformation from start to end changing one letter at a time through a dictionary using BFS over words, generating neighbors by wildcard patterns — O(N·L^2) — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="word-ladder" data-title="Word Ladder">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Word Ladder</h1>
+          <p class="lede">Transform one word into another, one letter at a time, staying in the dictionary — shortest chain. It’s an <strong>unweighted shortest path</strong>, so BFS.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#bfs</span>
+            <span class="tag">#shortest-path</span>
+            <span class="tag">#hard</span>
+            <span class="tag">#word-graph</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given <code>beginWord</code>, <code>endWord</code>, and a <code>wordList</code>, return the number of words in the shortest transformation sequence (each step changes one letter and must be in the list), or 0 if none exists.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>begin="hit", end="cog", list=["hot","dot","dog","lot","log","cog"]</code> → <code>5</code> (hit→hot→dot→dog→cog)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>DFS every transformation chain and keep the shortest — exponential. Since every edge has weight 1, BFS finds the shortest path the first time it reaches <code>endWord</code>, far more efficiently.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Model words as nodes with edges between words differing by one letter. Run <strong>BFS</strong> from <code>beginWord</code>, expanding level by level (each level = one transformation). To find neighbors without comparing all pairs, generate <strong>wildcard patterns</strong> (<code>h*t</code>, <code>*it</code>, …) and group dictionary words by pattern, so neighbor lookup is O(L) per word. The first time <code>endWord</code> appears, its level is the answer.</p><p><strong>Time O(N · L²), Space O(N · L).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="BFS over one-letter-apart words">
+              <text class="dgm-sub" x="20" y="24">neighbors via wildcards: h*t, *it, hi*</text>
+              <text class="dgm-sub" x="20" y="52">BFS level = one transformation step</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">first reach of endWord → shortest length</text>
+            </svg>
+            <figcaption>Figure 1 — Each BFS layer is one letter-change away; the first to hit the target is shortest.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int LadderLength(string beginWord, string endWord, IList&lt;string&gt; wordList)
+{
+    var dict = new HashSet&lt;string&gt;(wordList);
+    if (!dict.Contains(endWord)) return 0;
+
+    var q = new Queue&lt;string&gt;();
+    q.Enqueue(beginWord);
+    int steps = 1;
+    while (q.Count &gt; 0)
+    {
+        for (int i = q.Count; i &gt; 0; i--)
+        {
+            string word = q.Dequeue();
+            if (word == endWord) return steps;
+            var chars = word.ToCharArray();
+            for (int j = 0; j &lt; chars.Length; j++)
+            {
+                char original = chars[j];
+                for (char c = 'a'; c &lt;= 'z'; c++)
+                {
+                    chars[j] = c;
+                    string next = new string(chars);
+                    if (dict.Remove(next)) q.Enqueue(next);   // visit once
+                }
+                chars[j] = original;
+            }
+        }
+        steps++;
+    }
+    return 0;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(N · L²) — N words, L letters, 26 swaps each.</li>
+              <li><strong>Space:</strong> O(N · L) for the set and queue.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Unweighted shortest path → <strong>BFS</strong> (level = one step).</li>
+              <li>Generate neighbors by letter swaps / wildcard buckets, not all-pairs.</li>
+              <li><strong>Remove from the set on visit</strong> to avoid revisiting.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/number-of-islands.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Islands</span></a>
+            <a class="related-card" href="../coding-problems/rotting-oranges.html"><span class="rc-cat">Coding</span><span class="rc-title">Rotting Oranges</span></a>
+            <a class="related-card" href="../coding-problems/clone-graph.html"><span class="rc-cat">Coding</span><span class="rc-title">Clone Graph</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Frame it as unweighted shortest path → BFS, and the “words are nodes, one-letter-apart are edges” modeling. Mention bidirectional BFS as the optimization for large dictionaries.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

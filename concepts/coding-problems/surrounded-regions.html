@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Surrounded Regions — DevLens</title>
+  <meta name="description" content="Capture regions of O fully surrounded by X by flooding from border-connected O’s first (marking them safe), then flipping every remaining O to X — O(m·n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="surrounded-regions" data-title="Surrounded Regions">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Surrounded Regions</h1>
+          <p class="lede">Flip every <code>O</code> region enclosed by <code>X</code>. The shortcut: an <code>O</code> survives only if it connects to the border — so <strong>mark border-reachable O’s first</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#grid</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#border-flood</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a board of <code>X</code> and <code>O</code>, capture all regions of <code>O</code> that are completely surrounded by <code>X</code> (flip those <code>O</code>s to <code>X</code>). Border-connected <code>O</code>s are not captured.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p>A board where interior <code>O</code>s become <code>X</code> but edge-connected <code>O</code>s stay.</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>For each <code>O</code>, flood-fill to check whether its region touches a border — O((m·n)²) with repeated work across the same region. Flooding from the borders once flips it to O(m·n).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Invert the logic: an <code>O</code> is <strong>safe</strong> iff it’s reachable from a border <code>O</code>. DFS/BFS from every <code>O</code> on the four edges, marking reached cells with a temporary sentinel (e.g. <code>#</code>). After that, every remaining <code>O</code> is enclosed → flip it to <code>X</code>, and restore the sentinels back to <code>O</code>.</p><p><strong>Time O(m·n), Space O(m·n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Mark border-connected O safe, flip the rest">
+              <text class="dgm-sub" x="20" y="24">flood from edge O’s → mark safe (#)</text>
+              <text class="dgm-sub" x="20" y="52">remaining O = enclosed → flip to X</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">restore # back to O</text>
+            </svg>
+            <figcaption>Figure 1 — Only border-linked O’s survive; everything else is captured.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public void Solve(char[][] board)
+{
+    int m = board.Length, n = board[0].Length;
+    void Dfs(int r, int c)
+    {
+        if (r &lt; 0 || c &lt; 0 || r &gt;= m || c &gt;= n || board[r][c] != 'O') return;
+        board[r][c] = '#';                       // mark safe
+        Dfs(r+1,c); Dfs(r-1,c); Dfs(r,c+1); Dfs(r,c-1);
+    }
+    for (int r = 0; r &lt; m; r++) { Dfs(r, 0); Dfs(r, n - 1); }
+    for (int c = 0; c &lt; n; c++) { Dfs(0, c); Dfs(m - 1, c); }
+
+    for (int r = 0; r &lt; m; r++)
+        for (int c = 0; c &lt; n; c++)
+            board[r][c] = board[r][c] == '#' ? 'O' : 'X';   // restore / capture
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(m·n) — one border flood plus one sweep.</li>
+              <li><strong>Space:</strong> O(m·n) recursion worst case.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Invert: find the <strong>safe</strong> (border-connected) O’s, capture the rest.</li>
+              <li>A temporary sentinel marks safe cells during the flood.</li>
+              <li>A final sweep flips enclosed O→X and restores sentinels.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/number-of-islands.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Islands</span></a>
+            <a class="related-card" href="../coding-problems/pacific-atlantic.html"><span class="rc-cat">Coding</span><span class="rc-title">Pacific Atlantic Water Flow</span></a>
+            <a class="related-card" href="../coding-problems/walls-and-gates.html"><span class="rc-cat">Coding</span><span class="rc-title">Walls and Gates</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>“What survives is connected to the border” is the reframe that makes this O(m·n). Flood from the edges, sentinel-mark, then flip. The same border-flood idea powers Pacific/Atlantic.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

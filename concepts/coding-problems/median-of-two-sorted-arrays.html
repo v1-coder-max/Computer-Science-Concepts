@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Median of Two Sorted Arrays — DevLens</title>
+  <meta name="description" content="Find the median of two sorted arrays in O(log(min(m,n))) by binary searching a partition of the smaller array so the combined left half is correct, checked via the four boundary values — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="median-of-two-sorted-arrays" data-title="Median of Two Sorted Arrays">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Median of Two Sorted Arrays</h1>
+          <p class="lede">The median of two sorted arrays in <strong>O(log(min(m,n)))</strong>. Binary search a <strong>partition</strong> of the smaller array so the merged left half is exactly half the elements.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#binary-search</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#hard</span>
+            <span class="tag">#partition</span>
+            <span class="tag">#median</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given two sorted arrays <code>nums1</code> and <code>nums2</code>, return the median of the combined arrays in O(log(m+n)) time.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums1=[1,3], nums2=[2]</code> → <code>2.0</code> &nbsp;·&nbsp; <code>nums1=[1,2], nums2=[3,4]</code> → <code>2.5</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Merge both arrays and pick the middle — O(m+n) time and (naively) O(m+n) space. The logarithmic solution never merges; it binary-searches the correct partition.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Binary search a cut in the <strong>smaller</strong> array. A cut <code>i</code> in <code>nums1</code> forces a cut <code>j</code> in <code>nums2</code> so the combined left side holds exactly half the elements. The partition is correct when <code>leftMax1 ≤ rightMin2</code> and <code>leftMax2 ≤ rightMin1</code> (everything on the left ≤ everything on the right). Adjust the search by comparing the four boundary values. The median is then computed from those boundaries (averaging two for an even total).</p><p><strong>Time O(log(min(m,n))), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search the correct partition">
+              <text class="dgm-sub" x="20" y="24">cut nums1 at i → cut nums2 at j (halves total)</text>
+              <text class="dgm-sub" x="20" y="52">valid when L1 ≤ R2 and L2 ≤ R1</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">median from the four boundary values</text>
+            </svg>
+            <figcaption>Figure 1 — The right partition splits both arrays so every left element ≤ every right element.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public double FindMedianSortedArrays(int[] a, int[] b)
+{
+    if (a.Length &gt; b.Length) (a, b) = (b, a);     // search the smaller array
+    int m = a.Length, n = b.Length, total = m + n, half = (total + 1) / 2;
+    int lo = 0, hi = m;
+
+    while (lo &lt;= hi)
+    {
+        int i = (lo + hi) / 2;                    // cut in a
+        int j = half - i;                          // cut in b
+        int L1 = i == 0 ? int.MinValue : a[i - 1];
+        int R1 = i == m ? int.MaxValue : a[i];
+        int L2 = j == 0 ? int.MinValue : b[j - 1];
+        int R2 = j == n ? int.MaxValue : b[j];
+
+        if (L1 &lt;= R2 &amp;&amp; L2 &lt;= R1)                   // correct partition
+        {
+            int leftMax = Math.Max(L1, L2);
+            if (total % 2 == 1) return leftMax;
+            return (leftMax + Math.Min(R1, R2)) / 2.0;
+        }
+        if (L1 &gt; R2) hi = i - 1;                    // cut a smaller
+        else lo = i + 1;                           // cut a larger
+    }
+    return 0.0;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(log(min(m,n))) — binary search the smaller array.</li>
+              <li><strong>Space:</strong> O(1).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Binary-search the <strong>partition</strong>, not the values; search the smaller array.</li>
+              <li>Valid cut: <strong>both left maxes ≤ both right mins</strong>.</li>
+              <li>Sentinels (±∞) cleanly handle empty partition sides.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+            <a class="related-card" href="../coding-problems/search-2d-matrix.html"><span class="rc-cat">Coding</span><span class="rc-title">Search a 2D Matrix</span></a>
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>This is a famously fiddly hard one. The mental model that makes it tractable: you’re binary-searching a partition so the combined left half is correct, validated by the four boundary values. Sentinels handle the edges.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

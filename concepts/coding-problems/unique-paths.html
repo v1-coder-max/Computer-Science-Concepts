@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unique Paths — DevLens</title>
+  <meta name="description" content="Count paths from the top-left to bottom-right of a grid moving only right or down: a 2-D DP where each cell sums the cell above and the cell to its left, reducible to one row — O(m·n)." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="unique-paths" data-title="Unique Paths">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Unique Paths</h1>
+          <p class="lede">How many ways from the top-left to the bottom-right moving only right or down? Each cell’s paths are the <strong>sum of the cell above and the cell left</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#2d-dp</span>
+            <span class="tag">#grid</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#combinatorics</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an <code>m × n</code> grid, a robot starts top-left and may move only right or down. Return the number of distinct paths to the bottom-right corner.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>m = 3, n = 7</code> → <code>28</code> &nbsp;·&nbsp; <code>m = 3, n = 2</code> → <code>3</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Recursively branch right and down from each cell, counting paths that reach the corner — that explores an exponential tree and recomputes the same cells repeatedly, so it’s <strong>O(2<sup>m+n</sup>)</strong>. The overlapping subproblems are the DP signal.</p>
+
+          <h2>Optimized approach</h2>
+          <p>The only ways into a cell are from <strong>above</strong> or from the <strong>left</strong>, so <code>dp[r][c] = dp[r−1][c] + dp[r][c−1]</code>, with the first row and column all <code>1</code> (one straight path). Fill row by row. Since each row needs only the previous row, collapse to a <strong>single 1-D array</strong> for O(n) space. (It’s also the binomial coefficient C(m+n−2, m−1).)</p><p><strong>Time O(m·n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Each cell sums above + left">
+              <text class="dgm-sub" x="20" y="24">dp[r][c] = dp[r-1][c] + dp[r][c-1]</text>
+              <text class="dgm-sub" x="20" y="52">first row & column = 1 (one straight path)</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">3×3 grid → 1 1 1 / 1 2 3 / 1 3 6 → 6 paths</text>
+            </svg>
+            <figcaption>Figure 1 — Paths into a cell come only from above or the left, so they add.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int UniquePaths(int m, int n)
+{
+    var row = new int[n];
+    Array.Fill(row, 1);                 // top row: one path to each cell
+    for (int r = 1; r &lt; m; r++)
+        for (int c = 1; c &lt; n; c++)
+            row[c] += row[c - 1];       // above (old row[c]) + left (row[c-1])
+    return row[n - 1];
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(m·n) — fill every cell once.</li>
+              <li><strong>Space:</strong> O(n) — one rolling row (O(1) with the math formula).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Grid path counts: <strong>dp[r][c] = above + left</strong>.</li>
+              <li>Only the previous row matters → collapse 2-D to 1-D.</li>
+              <li>It equals the binomial coefficient C(m+n−2, m−1).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/climbing-stairs.html"><span class="rc-cat">Coding</span><span class="rc-title">Climbing Stairs</span></a>
+            <a class="related-card" href="../coding-problems/coin-change-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change II</span></a>
+            <a class="related-card" href="../coding-problems/longest-common-subsequence.html"><span class="rc-cat">Coding</span><span class="rc-title">Longest Common Subsequence</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Derive the recurrence from “you can only arrive from above or the left,” then show the 1-D space reduction. Mentioning the closed-form binomial coefficient is a nice flourish.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

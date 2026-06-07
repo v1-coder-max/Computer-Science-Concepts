@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partition Equal Subset Sum — DevLens</title>
+  <meta name="description" content="Decide if an array can split into two equal-sum subsets by reducing to a subset-sum DP targeting half the total: a 1-D boolean knapsack iterated in reverse — O(n·sum) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="partition-equal-subset-sum" data-title="Partition Equal Subset Sum">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Partition Equal Subset Sum</h1>
+          <p class="lede">Can the array split into two equal-sum halves? That’s just asking whether a <strong>subset sums to total/2</strong> — a boolean knapsack DP.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#subset-sum</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#knapsack</span>
+            <span class="tag">#partition</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an array <code>nums</code> of positive integers, return <code>true</code> if it can be partitioned into two subsets with equal sums.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,5,11,5]</code> → <code>true</code> ([1,5,5] and [11]) &nbsp;·&nbsp; <code>[1,2,3,5]</code> → <code>false</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Enumerate all subsets and check for one summing to half the total — <strong>O(2<sup>n</sup>)</strong>. The overlapping subproblems (reachable sums) collapse it into a DP over a bounded sum range.</p>
+
+          <h2>Optimized approach</h2>
+          <p>If the total is <strong>odd</strong>, return false immediately. Otherwise the target is <code>total / 2</code>, and the question becomes “can some subset reach <code>target</code>?” — a <strong>0/1 subset-sum</strong>. Use a 1-D boolean array <code>dp</code> where <code>dp[s]</code> means sum <code>s</code> is reachable; for each number, update <code>dp[s] |= dp[s − num]</code> iterating <code>s</code> <strong>downward</strong> so each number is used once. Return <code>dp[target]</code>.</p><p><strong>Time O(n · sum), Space O(sum).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Subset sum to total/2">
+              <text class="dgm-sub" x="20" y="24">odd total → false; else target = total/2</text>
+              <text class="dgm-sub" x="20" y="52">dp[s] |= dp[s − num], s descending (0/1)</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">dp[target] reachable → can partition</text>
+            </svg>
+            <figcaption>Figure 1 — Equal partition exists iff a subset reaches half the total.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public bool CanPartition(int[] nums)
+{
+    int total = nums.Sum();
+    if (total % 2 != 0) return false;
+    int target = total / 2;
+
+    var dp = new bool[target + 1];
+    dp[0] = true;                          // empty subset sums to 0
+    foreach (int num in nums)
+        for (int s = target; s &gt;= num; s--)   // descend → each num once
+            dp[s] = dp[s] || dp[s - num];
+    return dp[target];
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n · sum/2).</li>
+              <li><strong>Space:</strong> O(sum/2) — the 1-D boolean array.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Equal partition ⇔ a <strong>subset sums to total/2</strong>.</li>
+              <li>Odd total is an instant false.</li>
+              <li>Iterate the sum <strong>downward</strong> for 0/1 (use-once) knapsack.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/target-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Target Sum</span></a>
+            <a class="related-card" href="../coding-problems/coin-change-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change II</span></a>
+            <a class="related-card" href="../coding-problems/coin-change.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The reduction “equal partition = subset sum to half” is the insight. Then it’s a standard 0/1 knapsack — and the reverse iteration (so each item is used once) is the detail interviewers check.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multiply Strings — DevLens</title>
+  <meta name="description" content="Multiply two non-negative integers given as strings without big-integer types by simulating grade-school multiplication into a digit array, where digits i and j land at positions i+j and i+j+1 — O(m·n)." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="multiply-strings" data-title="Multiply Strings">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Multiply Strings</h1>
+          <p class="lede">Multiply two numbers given as strings, no big-integer types. Simulate grade-school multiplication, using the fact that digits <code>i</code> and <code>j</code> land at positions <code>i+j</code> and <code>i+j+1</code>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#math</span>
+            <span class="tag">#strings</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#simulation</span>
+            <span class="tag">#carry</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given two non-negative integers <code>num1</code> and <code>num2</code> as strings, return their product as a string. You may not convert them to native integer types.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>num1="123", num2="456"</code> → <code>"56088"</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>You can’t parse to <code>int</code>/<code>long</code> for large inputs (overflow), and that’s disallowed anyway. Simulating multiplication on digit arrays handles arbitrary length.</p>
+
+          <h2>Optimized approach</h2>
+          <p>The product of an <code>m</code>-digit and <code>n</code>-digit number has at most <code>m + n</code> digits. Use a result array of that size. Multiply every digit pair: <code>num1[i] * num2[j]</code> contributes to result positions <code>i + j</code> (carry) and <code>i + j + 1</code> (units). Add into those slots and propagate carries. Finally, build the string, skipping a single leading zero (unless the product is 0).</p><p><strong>Time O(m·n), Space O(m+n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Digit i×j lands at i+j and i+j+1">
+              <text class="dgm-sub" x="20" y="24">result size = m + n</text>
+              <text class="dgm-sub" x="20" y="52">p = d1*d2; pos i+j+1 += p; carry to i+j</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"123" × "456" = "56088"</text>
+            </svg>
+            <figcaption>Figure 1 — Positional bookkeeping replaces big-integer arithmetic.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public string Multiply(string num1, string num2)
+{
+    if (num1 == "0" || num2 == "0") return "0";
+    int m = num1.Length, n = num2.Length;
+    var res = new int[m + n];
+
+    for (int i = m - 1; i &gt;= 0; i--)
+        for (int j = n - 1; j &gt;= 0; j--)
+        {
+            int mul = (num1[i] - '0') * (num2[j] - '0');
+            int sum = mul + res[i + j + 1];        // add into the units position
+            res[i + j + 1] = sum % 10;
+            res[i + j] += sum / 10;                // carry to the higher position
+        }
+
+    var sb = new System.Text.StringBuilder();
+    foreach (int d in res)
+        if (!(sb.Length == 0 &amp;&amp; d == 0)) sb.Append(d);   // skip leading zero
+    return sb.ToString();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(m·n) — every digit pair multiplied.</li>
+              <li><strong>Space:</strong> O(m+n) for the result array.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Product length ≤ <strong>m + n</strong> digits — size the array accordingly.</li>
+              <li>Digits <code>i, j</code> map to positions <code>i+j</code> (carry) and <code>i+j+1</code> (units).</li>
+              <li>Skip a single leading zero when building the final string.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/add-two-numbers.html"><span class="rc-cat">Coding</span><span class="rc-title">Add Two Numbers</span></a>
+            <a class="related-card" href="../coding-problems/plus-one.html"><span class="rc-cat">Coding</span><span class="rc-title">Plus One</span></a>
+            <a class="related-card" href="../coding-problems/reverse-integer.html"><span class="rc-cat">Coding</span><span class="rc-title">Reverse Integer</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The positional formula (<code>i+j</code>, <code>i+j+1</code>) is the crux — derive it from how place values multiply. It’s pure simulation once you trust that mapping.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
