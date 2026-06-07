@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N-Queens — DevLens</title>
+  <meta name="description" content="Place n queens on an n×n board with none attacking by backtracking row by row, tracking used columns and both diagonals as sets for O(1) checks — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="n-queens" data-title="N-Queens">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>N-Queens</h1>
+          <p class="lede">Place <code>n</code> queens so none attack. Go <strong>row by row</strong>, and track threatened columns and diagonals in sets for instant validity checks.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#backtracking</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#pruning</span>
+            <span class="tag">#hard</span>
+            <span class="tag">#constraints</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Place <code>n</code> queens on an <code>n × n</code> board so that no two attack each other (same row, column, or diagonal). Return all distinct solutions.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>n = 4</code> → <code>2</code> distinct solutions</p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            Exactly one queen goes per row, so recurse one row at a time, trying each column. A placement is safe if
+            its column and both diagonals are free. Track three sets: used <strong>columns</strong>, used
+            <strong>“↘” diagonals</strong> (constant <code>row − col</code>), and used <strong>“↙” diagonals</strong>
+            (constant <code>row + col</code>). Each check and update is O(1); placing all <code>n</code> rows yields a
+            solution.
+          </p>
+          <p><strong>Time O(n!), Space O(n).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Row-by-row with column/diagonal sets">
+              <text class="dgm-sub" x="20" y="24">one queen per row; try each column</text>
+              <text class="dgm-sub" x="20" y="56">safe = col, (row−col), (row+col) all free</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">all n rows placed → a solution ✓</text>
+            </svg>
+            <figcaption>Figure 1 — The two diagonal keys (row−col, row+col) make attack checks O(1).</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;string&gt;&gt; SolveNQueens(int n)
+{
+    var result = new List&lt;IList&lt;string&gt;&gt;();
+    var cols  = new HashSet&lt;int&gt;();
+    var diag1 = new HashSet&lt;int&gt;();   // row - col
+    var diag2 = new HashSet&lt;int&gt;();   // row + col
+    var pos = new int[n];
+    Place(0);
+    return result;
+
+    void Place(int row)
+    {
+        if (row == n) { result.Add(Render()); return; }
+        for (int col = 0; col &lt; n; col++)
+        {
+            if (cols.Contains(col) || diag1.Contains(row - col) || diag2.Contains(row + col))
+                continue;
+            cols.Add(col); diag1.Add(row - col); diag2.Add(row + col); pos[row] = col;
+            Place(row + 1);
+            cols.Remove(col); diag1.Remove(row - col); diag2.Remove(row + col);
+        }
+    }
+
+    IList&lt;string&gt; Render()
+    {
+        var board = new List&lt;string&gt;();
+        foreach (int c in pos) board.Add(new string('.', c) + "Q" + new string('.', n - c - 1));
+        return board;
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n!) — pruned far below by the constraint sets.</li>
+              <li><strong>Space:</strong> O(n) for the sets and recursion.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>One queen per <strong>row</strong> reduces the search to column choices.</li>
+              <li>Diagonals are constant <code>row−col</code> and <code>row+col</code> — track them in sets.</li>
+              <li>O(1) constraint checks make the pruning aggressive.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/subsets.html"><span class="rc-cat">Coding</span><span class="rc-title">Subsets</span></a>
+            <a class="related-card" href="../coding-problems/permutations.html"><span class="rc-cat">Coding</span><span class="rc-title">Permutations</span></a>
+            <a class="related-card" href="../coding-problems/word-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Word Search</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The clever bit is the diagonal encoding (<code>row−col</code>, <code>row+col</code>) giving O(1) attack checks. Place one queen per row to shrink the branching, and the rest is standard choose/explore/un-choose.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

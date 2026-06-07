@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Twitter — DevLens</title>
+  <meta name="description" content="Design a mini Twitter with postTweet, follow, unfollow, and a news feed that merges the 10 most recent tweets from followees using a max-heap by timestamp — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="design-twitter" data-title="Design Twitter">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Design Twitter</h1>
+          <p class="lede">A news feed is a <strong>merge of recent tweets</strong> from everyone you follow. A max-heap by timestamp pulls the 10 newest across all followees.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#heap</span>
+            <span class="tag">#design</span>
+            <span class="tag">#hash-map</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#merge-k</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Design Twitter supporting <code>PostTweet(userId, tweetId)</code>, <code>GetNewsFeed(userId)</code> (10 most recent tweets from the user and followees), <code>Follow</code>, and <code>Unfollow</code>.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>postTweet(1,5); getNewsFeed(1)→[5]; follow(1,2); postTweet(2,6); getNewsFeed(1)→[6,5]</code></p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            Store each user’s tweets as a list of <code>(timestamp, tweetId)</code> with a global increasing clock, and
+            each user’s followees in a set. The feed is the <strong>k-way merge</strong> of the most recent tweets from
+            the user plus followees: seed a <strong>max-heap</strong> with each relevant user’s latest tweet, then pop
+            10 times, pushing the next-older tweet from whichever list you popped. Timestamps give a global order.
+          </p>
+          <p><strong>Feed O(F + 10 log F), Space O(users + tweets).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Max-heap merges newest tweets across followees">
+              <text class="dgm-sub" x="20" y="24">each user: list of (time, tweetId); follow set</text>
+              <text class="dgm-sub" x="20" y="56">heap on timestamp, seed with each list head</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">pop 10 newest → news feed</text>
+            </svg>
+            <figcaption>Figure 1 — Merging k sorted tweet lists by timestamp with a heap yields the 10 most recent.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class Twitter
+{
+    private int _clock = 0;
+    private readonly Dictionary&lt;int, List&lt;(int t, int id)&gt;&gt; _tweets = new();
+    private readonly Dictionary&lt;int, HashSet&lt;int&gt;&gt; _following = new();
+
+    public void PostTweet(int userId, int tweetId)
+    {
+        (_tweets.TryGetValue(userId, out var l) ? l : _tweets[userId] = new())
+            .Add((_clock++, tweetId));
+    }
+
+    public IList&lt;int&gt; GetNewsFeed(int userId)
+    {
+        var heap = new PriorityQueue&lt;int, int&gt;();    // max-heap by time (negate)
+        var users = new HashSet&lt;int&gt;(_following.GetValueOrDefault(userId) ?? new()) { userId };
+        foreach (int u in users)
+            if (_tweets.TryGetValue(u, out var l))
+                foreach (var (t, id) in l) heap.Enqueue(id, -t);
+
+        var feed = new List&lt;int&gt;();
+        while (feed.Count &lt; 10 &amp;&amp; heap.Count &gt; 0) feed.Add(heap.Dequeue());
+        return feed;
+    }
+
+    public void Follow(int a, int b)   =&gt; (_following.TryGetValue(a, out var s) ? s : _following[a] = new()).Add(b);
+    public void Unfollow(int a, int b) =&gt; _following.GetValueOrDefault(a)?.Remove(b);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> feed is O(T + 10 log T) over relevant tweets T (heap-merge variant is O(F + 10 log F)).</li>
+              <li><strong>Space:</strong> O(users + tweets + follow edges).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A feed is a <strong>k-way merge by timestamp</strong> — a heap’s home turf.</li>
+              <li>A global increasing clock gives every tweet a total order.</li>
+              <li>Hash maps for tweets-per-user and followee-sets keep ops O(1).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-two-sorted-lists.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge Two Sorted Lists</span></a>
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element</span></a>
+            <a class="related-card" href="../coding-problems/find-median-from-data-stream.html"><span class="rc-cat">Coding</span><span class="rc-title">Find Median from Data Stream</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Frame the feed as merging k sorted tweet lists by time — that reframing is the whole design. Pick clean data structures (per-user tweet lists, followee sets) and a global timestamp, and the rest follows.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Binary Tree Right Side View — DevLens</title>
+  <meta name="description" content="Return the values visible from the right of a binary tree using level-order BFS and taking the last node of each level — O(n) — with a C# solution and the pattern." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="binary-tree-right-side-view" data-title="Binary Tree Right Side View">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Binary Tree Right Side View</h1>
+          <p class="lede">Stand to the right of the tree — which nodes do you see? The <strong>last node of each level</strong>. A level-order BFS with one tweak.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#bfs</span>
+            <span class="tag">#queue</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#levels</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given the <code>root</code> of a binary tree, return the values of the nodes you can see ordered from top to bottom when looking from the right side.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,2,3,null,5,null,4]</code> → <code>[1,3,4]</code></p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            From the right, each level is blocked by all but its <strong>rightmost</strong> node. So do a level-order
+            <strong>BFS</strong> (freeze the queue size each level) and record the <em>last</em> node dequeued in each
+            level. A DFS that visits right before left and records the first node seen at each new depth works too.
+          </p>
+          <p><strong>Time O(n), Space O(n).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Rightmost node per level">
+              <text class="dgm-sub" x="20" y="24">level 0: [1] → 1 · level 1: [2,3] → 3</text>
+              <text class="dgm-sub" x="20" y="56">level 2: [5,4] → 4</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">right view = [1, 3, 4]</text>
+            </svg>
+            <figcaption>Figure 1 — The last node processed in each BFS level is the one visible from the right.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;int&gt; RightSideView(TreeNode root)
+{
+    var result = new List&lt;int&gt;();
+    if (root == null) return result;
+    var q = new Queue&lt;TreeNode&gt;();
+    q.Enqueue(root);
+    while (q.Count &gt; 0)
+    {
+        int size = q.Count;
+        for (int i = 0; i &lt; size; i++)
+        {
+            var n = q.Dequeue();
+            if (i == size - 1) result.Add(n.val);   // last in this level
+            if (n.left  != null) q.Enqueue(n.left);
+            if (n.right != null) q.Enqueue(n.right);
+        }
+    }
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — every node enqueued/dequeued once.</li>
+              <li><strong>Space:</strong> O(n) — the queue (one level wide).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Right view = <strong>last node of each BFS level</strong>.</li>
+              <li>Reuse the freeze-the-level-size template from level-order traversal.</li>
+              <li>DFS visiting right-first and capturing the first node per depth is equivalent.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/level-order-traversal.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Level Order Traversal</span></a>
+            <a class="related-card" href="../coding-problems/max-depth-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Depth of Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/invert-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Invert Binary Tree</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>It’s a one-line variation of level-order traversal — say so. Mention the DFS (right-first) alternative to show you understand it’s “first node at each new depth,” not literally a BFS requirement.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Add and Search Words — DevLens</title>
+  <meta name="description" content="Build a dictionary supporting addWord and search where "." matches any letter, using a trie with DFS branching on wildcards — with a C# solution and the pattern." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="design-add-and-search-words" data-title="Design Add and Search Words">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Design Add and Search Words</h1>
+          <p class="lede">A trie dictionary where search can contain <code>.</code> wildcards. A dot forces a <strong>DFS that branches into every child</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#trie</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#design</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#wildcard</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Design a structure with <code>AddWord(word)</code> and <code>Search(word)</code>, where <code>word</code> in search may contain <code>.</code> matching any single letter.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>add "bad","dad","mad"; search "pad"</code> → <code>false</code>; <code>search ".ad"</code> → <code>true</code>; <code>"b.."</code> → <code>true</code></p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            Store words in a <strong>trie</strong> as usual. Search becomes a DFS over the trie: for a normal letter,
+            follow that single child; for a <code>.</code>, <strong>try every existing child</strong> and succeed if
+            any branch matches the rest. Reaching the end of the pattern succeeds only if the current node marks a word
+            end. The wildcard is what turns a straight walk into a branching search.
+          </p>
+          <p><strong>Time O(L) typical, O(26<sup>L</sup>) worst (all dots); Space O(total chars).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Wildcard branches into all children">
+              <text class="dgm-sub" x="20" y="24">normal letter → follow one child</text>
+              <text class="dgm-sub" x="20" y="56">"." → recurse into every child node</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">end of pattern AND isEnd → match ✓</text>
+            </svg>
+            <figcaption>Figure 1 — A dot fans the DFS out across all children; a letter narrows to one.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class WordDictionary
+{
+    private class Node { public Node[] Next = new Node[26]; public bool End; }
+    private readonly Node _root = new();
+
+    public void AddWord(string word)
+    {
+        var node = _root;
+        foreach (char c in word) node = node.Next[c - 'a'] ??= new Node();
+        node.End = true;
+    }
+
+    public bool Search(string word) =&gt; Dfs(_root, 0, word);
+
+    private bool Dfs(Node node, int i, string w)
+    {
+        if (node == null) return false;
+        if (i == w.Length) return node.End;
+        if (w[i] == '.')
+        {
+            foreach (var child in node.Next)          // try every child
+                if (Dfs(child, i + 1, w)) return true;
+            return false;
+        }
+        return Dfs(node.Next[w[i] - 'a'], i + 1, w);  // single letter
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(L) without dots; up to O(26<sup>d</sup>) with d dots.</li>
+              <li><strong>Space:</strong> O(total characters) plus O(L) recursion.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Store in a trie; the <strong>wildcard</strong> turns search into a branching DFS.</li>
+              <li>A <code>.</code> recurses into <strong>all</strong> children; a letter into one.</li>
+              <li>Match succeeds only at pattern end <em>and</em> a word-end node.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/implement-trie.html"><span class="rc-cat">Coding</span><span class="rc-title">Implement Trie (Prefix Tree)</span></a>
+            <a class="related-card" href="../coding-problems/word-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Word Search</span></a>
+            <a class="related-card" href="../coding-problems/word-search-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Word Search II</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Build on the plain trie, then explain the one change: a dot recurses into every child. Call out the worst case (all dots) so the interviewer knows you understand the branching cost.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

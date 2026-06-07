@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Count Good Nodes in Binary Tree — DevLens</title>
+  <meta name="description" content="Count nodes whose value is at least the maximum on the path from the root, using a DFS that carries the running max down each branch — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="count-good-nodes" data-title="Count Good Nodes in Binary Tree">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Count Good Nodes in Binary Tree</h1>
+          <p class="lede">A node is “good” if nothing on the path from the root is larger than it. Carry the <strong>running max</strong> down each branch and count.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#path-max</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given the <code>root</code> of a binary tree, a node X is <strong>good</strong> if no node on the path from the root to X has a value greater than X. Return the number of good nodes.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[3,1,4,3,null,1,5]</code> → <code>4</code></p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            “Good” depends only on the maximum value seen so far along the current root-to-node path. So DFS down the
+            tree carrying <code>maxSoFar</code>: a node is good when <code>node.val &gt;= maxSoFar</code>. Update the max
+            (<code>max(maxSoFar, node.val)</code>) before recursing into the children. Sum the good count from both
+            subtrees plus this node.
+          </p>
+          <p><strong>Time O(n), Space O(h).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Running path-max decides good nodes">
+              <text class="dgm-sub" x="20" y="24">carry maxSoFar down · good if node.val ≥ maxSoFar</text>
+              <text class="dgm-sub" x="20" y="56">root 3 (good) → 4 ≥ 3 (good) → 5 ≥ 4 (good) …</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">count all good nodes on every path</text>
+            </svg>
+            <figcaption>Figure 1 — Each branch tracks its own path maximum; a node is good when it ties or beats it.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int GoodNodes(TreeNode root)
+{
+    return Dfs(root, int.MinValue);
+
+    int Dfs(TreeNode node, int maxSoFar)
+    {
+        if (node == null) return 0;
+        int good = node.val &gt;= maxSoFar ? 1 : 0;     // this node good?
+        int nextMax = Math.Max(maxSoFar, node.val);
+        return good + Dfs(node.left, nextMax) + Dfs(node.right, nextMax);
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — visit each node once.</li>
+              <li><strong>Space:</strong> O(h) recursion depth.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Thread <strong>path state (the running max)</strong> down the recursion.</li>
+              <li>Decide the node locally, then aggregate children’s counts.</li>
+              <li>Same “carry context down” shape as path-sum and good-path problems.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/max-depth-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Depth of Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/diameter-of-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Diameter of Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/validate-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Validate BST</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The pattern is “pass a running value down the path.” Contrast it with Validate BST (which passes bounds down) — both thread ancestor context through the recursion rather than returning it up.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

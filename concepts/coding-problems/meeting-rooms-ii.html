@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meeting Rooms II — DevLens</title>
+  <meta name="description" content="Find the minimum meeting rooms needed by tracking concurrent meetings: a min-heap of end times, or sorted start/end sweep counting overlaps — O(n log n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="meeting-rooms-ii" data-title="Meeting Rooms II">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Meeting Rooms II</h1>
+          <p class="lede">How many rooms at once? The answer is the <strong>peak number of overlapping meetings</strong>. A min-heap of end times tracks rooms in use.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#intervals</span>
+            <span class="tag">#heap</span>
+            <span class="tag">#sweep</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#concurrency</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given meeting intervals, return the minimum number of conference rooms required so no two simultaneous meetings share a room.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[[0,30],[5,10],[15,20]]</code> → <code>2</code></p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            Rooms needed = maximum concurrency. Sort meetings by start, and keep a <strong>min-heap of end times</strong>
+            for rooms currently busy. For each meeting, if the earliest-ending room (heap top) is free by its start,
+            <strong>reuse</strong> it (pop); otherwise allocate a new room. Push this meeting’s end. The heap’s maximum
+            size is the answer. Equivalently, sweep sorted starts and ends, +1 on a start and −1 on an end, and track
+            the peak.
+          </p>
+          <p><strong>Time O(n log n), Space O(n).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Min-heap of end times tracks busy rooms">
+              <text class="dgm-sub" x="20" y="24">sort by start; heap = end times of busy rooms</text>
+              <text class="dgm-sub" x="20" y="56">earliest end ≤ start → reuse; else new room</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">max rooms in use = answer ✓</text>
+            </svg>
+            <figcaption>Figure 1 — Reuse the soonest-freeing room when possible; the heap’s peak size is the room count.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MinMeetingRooms(int[][] intervals)
+{
+    if (intervals.Length == 0) return 0;
+    Array.Sort(intervals, (a, b) =&gt; a[0] - b[0]);    // by start
+
+    var ends = new PriorityQueue&lt;int, int&gt;();         // min-heap of end times
+    foreach (var iv in intervals)
+    {
+        if (ends.Count &gt; 0 &amp;&amp; ends.Peek() &lt;= iv[0])
+            ends.Dequeue();                           // a room freed up → reuse
+        ends.Enqueue(iv[1], iv[1]);
+    }
+    return ends.Count;                                // rooms in use at the peak
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n log n) — sort plus heap operations.</li>
+              <li><strong>Space:</strong> O(n) — the heap of end times.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Rooms = <strong>peak overlap</strong>; a min-heap of end times models busy rooms.</li>
+              <li>Reuse the earliest-freeing room when the next meeting starts after it ends.</li>
+              <li>A start/end sweep with a running counter is the equivalent O(n log n).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-intervals.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge Intervals</span></a>
+            <a class="related-card" href="../coding-problems/meeting-rooms.html"><span class="rc-cat">Coding</span><span class="rc-title">Meeting Rooms</span></a>
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Reframe as “maximum concurrent meetings.” Present either the min-heap of end times or the two-pointer start/end sweep — both O(n log n). The heap version reads most naturally as “reuse the soonest-free room.”</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

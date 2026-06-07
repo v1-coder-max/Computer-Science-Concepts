@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Scheduler — DevLens</title>
+  <meta name="description" content="Find the minimum time to run tasks with a cooldown n between identical tasks: a math formula from the most frequent task, or a greedy max-heap simulation — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="task-scheduler" data-title="Task Scheduler">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Task Scheduler</h1>
+          <p class="lede">Identical tasks need <code>n</code> idle slots between them. The schedule is paced by the <strong>most frequent task</strong> — a neat formula, or a greedy heap.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#heap</span>
+            <span class="tag">#greedy</span>
+            <span class="tag">#math</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#scheduling</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given task labels and a cooldown <code>n</code> (minimum gap between two same tasks), return the least number of time units to finish all tasks (idling allowed).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>tasks = ["A","A","A","B","B","B"], n = 2</code> → <code>8</code> (A B _ A B _ A B)</p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            The bottleneck is the task with the highest frequency <code>fmax</code>. Lay out its copies with
+            <code>n</code> gaps between them: that frames <code>(fmax − 1)</code> blocks of size <code>(n + 1)</code>,
+            plus the final group of all tasks that share the max frequency. So the answer is
+            <code>max(tasks.Length, (fmax − 1) · (n + 1) + countOfMaxFreq)</code> — the <code>max</code> handles the
+            case where there are so many distinct tasks that no idling is needed. A greedy max-heap simulation gives
+            the same result.
+          </p>
+          <p><strong>Time O(n), Space O(1)</strong> (26 task types).</p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Most frequent task frames the schedule">
+              <text class="dgm-sub" x="20" y="24">A _ _ A _ _ A  ← (fmax−1) blocks of (n+1)</text>
+              <text class="dgm-sub" x="20" y="56">fill gaps with other tasks; tail = ties at fmax</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 12px var(--font-sans)">answer = max(len, (fmax−1)(n+1) + maxCount)</text>
+            </svg>
+            <figcaption>Figure 1 — The peak-frequency task sets the skeleton; remaining tasks fill the idle slots.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int LeastInterval(char[] tasks, int n)
+{
+    var counts = new int[26];
+    foreach (char t in tasks) counts[t - 'A']++;
+
+    int fmax = counts.Max();
+    int maxCount = counts.Count(c =&gt; c == fmax);   // tasks tied at the top
+
+    int framed = (fmax - 1) * (n + 1) + maxCount;
+    return Math.Max(tasks.Length, framed);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(total tasks) — counting plus O(1) arithmetic.</li>
+              <li><strong>Space:</strong> O(1) — a fixed 26-count array.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The <strong>most frequent task</strong> dictates the minimum length.</li>
+              <li>Formula: <code>max(len, (fmax−1)(n+1) + #tiesAtMax)</code>.</li>
+              <li>A greedy max-heap (run the most-remaining task each tick) is the simulation alternative.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/top-k-frequent-elements.html"><span class="rc-cat">Coding</span><span class="rc-title">Top K Frequent Elements</span></a>
+            <a class="related-card" href="../coding-problems/last-stone-weight.html"><span class="rc-cat">Coding</span><span class="rc-title">Last Stone Weight</span></a>
+            <a class="related-card" href="../coding-problems/k-closest-points-to-origin.html"><span class="rc-cat">Coding</span><span class="rc-title">K Closest Points to Origin</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Two valid routes: the closed-form formula (fast, but justify the <code>max</code> with “len”) or the greedy max-heap simulation (more intuitive). Deriving the formula from the peak-frequency skeleton is the impressive answer.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

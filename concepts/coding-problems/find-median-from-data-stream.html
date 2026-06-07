@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Median from Data Stream — DevLens</title>
+  <meta name="description" content="Maintain a running median with two heaps — a max-heap for the lower half and a min-heap for the upper half — kept balanced so the median is read off the tops — O(log n) add — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="find-median-from-data-stream" data-title="Find Median from Data Stream">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Find Median from Data Stream</h1>
+          <p class="lede">Track the median as numbers stream in. Split the data into a <strong>low half (max-heap)</strong> and <strong>high half (min-heap)</strong>; the median sits at their tops.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#heap</span>
+            <span class="tag">#design</span>
+            <span class="tag">#two-heaps</span>
+            <span class="tag">#hard</span>
+            <span class="tag">#streaming</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Design a structure with <code>AddNum(num)</code> and <code>FindMedian()</code> returning the median of all values added so far.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>add 1; add 2; median→1.5; add 3; median→2</code></p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            Keep two heaps: a <strong>max-heap</strong> <code>lo</code> for the smaller half and a
+            <strong>min-heap</strong> <code>hi</code> for the larger half. Maintain the invariant that every element in
+            <code>lo</code> ≤ every element in <code>hi</code>, and their sizes differ by at most 1. Then the median is
+            the top of the larger heap (odd count) or the average of both tops (even count). Each add does a couple of
+            heap pushes/pops to rebalance — O(log n).
+          </p>
+          <p><strong>Add O(log n), FindMedian O(1).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Two balanced heaps meet at the median">
+              <text class="dgm-sub" x="20" y="24">lo = max-heap (small half) · hi = min-heap (big half)</text>
+              <text class="dgm-sub" x="20" y="56">keep sizes within 1; every lo ≤ every hi</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 12px var(--font-sans)">median = top of larger, or average of tops</text>
+            </svg>
+            <figcaption>Figure 1 — The two heap tops straddle the middle, so the median is read in O(1).</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class MedianFinder
+{
+    private readonly PriorityQueue&lt;int, int&gt; _lo = new();  // max-heap (negated)
+    private readonly PriorityQueue&lt;int, int&gt; _hi = new();  // min-heap
+
+    public void AddNum(int num)
+    {
+        _lo.Enqueue(num, -num);                 // push to low half
+        _hi.Enqueue(_lo.Dequeue(), 0);          // move its max to high half
+        // rebalance: hi must not be larger than lo
+        if (_hi.Count &gt; _lo.Count)
+        {
+            int x = _hi.Dequeue();
+            _lo.Enqueue(x, -x);
+        }
+    }
+
+    public double FindMedian() =&gt;
+        _lo.Count &gt; _hi.Count ? _lo.Peek() : (_lo.Peek() + _hi.Peek()) / 2.0;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(log n) per add, O(1) per median query.</li>
+              <li><strong>Space:</strong> O(n) across the two heaps.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Two heaps</strong>: max-heap low half, min-heap high half.</li>
+              <li>Keep sizes balanced (≤ 1 apart) so the median is at the top(s).</li>
+              <li>Push-then-shift across heaps keeps the ordering invariant automatically.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element</span></a>
+            <a class="related-card" href="../coding-problems/kth-largest-element-in-a-stream.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element in a Stream</span></a>
+            <a class="related-card" href="../coding-problems/last-stone-weight.html"><span class="rc-cat">Coding</span><span class="rc-title">Last Stone Weight</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>“Running median” is the canonical <strong>two-heaps</strong> question. Nail the invariant (low-half max-heap ≤ high-half min-heap, sizes within 1) and the balance step, and the median read is trivial.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

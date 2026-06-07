@@ -1258,5 +1258,285 @@
     "tags": ["dynamic-programming", "arrays", "kadane", "medium", "max-min", "interview"],
     "description": "Largest product of a contiguous subarray: track both running max and min because a negative flips them, updating both each step — O(n) time, O(1) space.",
     "url": "concepts/coding-problems/maximum-product-subarray.html"
+  },
+  {
+    "title": "Subtree of Another Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "easy", "same-tree", "interview"],
+    "description": "Check whether one tree is a subtree of another by trying a same-tree comparison rooted at every node — O(m·n) — reusing the identical-tree recursion, with a C# solution.",
+    "url": "concepts/coding-problems/subtree-of-another-tree.html"
+  },
+  {
+    "title": "Symmetric Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "easy", "mirror", "interview"],
+    "description": "Check whether a binary tree is a mirror of itself by recursing on outer and inner pairs of two subtrees in lockstep — O(n) — with a C# solution and the mirror pattern.",
+    "url": "concepts/coding-problems/symmetric-tree.html"
+  },
+  {
+    "title": "Balanced Binary Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "easy", "height", "interview"],
+    "description": "Check whether a binary tree is height-balanced in O(n) by computing height bottom-up and short-circuiting with a sentinel when any subtree differs by more than 1 — C# solution.",
+    "url": "concepts/coding-problems/balanced-binary-tree.html"
+  },
+  {
+    "title": "Binary Tree Right Side View",
+    "category": "coding-problems",
+    "tags": ["trees", "bfs", "queue", "medium", "levels", "interview"],
+    "description": "Return the values visible from the right of a binary tree using level-order BFS and taking the last node of each level — O(n) — with a C# solution and the pattern.",
+    "url": "concepts/coding-problems/binary-tree-right-side-view.html"
+  },
+  {
+    "title": "Count Good Nodes in Binary Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "dfs", "recursion", "medium", "path-max", "interview"],
+    "description": "Count nodes whose value is at least the maximum on the path from the root, using a DFS that carries the running max down each branch — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/count-good-nodes.html"
+  },
+  {
+    "title": "Kth Smallest Element in a BST",
+    "category": "coding-problems",
+    "tags": ["trees", "bst", "in-order", "medium", "traversal", "interview"],
+    "description": "Find the kth smallest value in a BST with an in-order traversal that yields values in sorted order, stopping at the kth — O(h + k) — with an iterative C# solution.",
+    "url": "concepts/coding-problems/kth-smallest-element-bst.html"
+  },
+  {
+    "title": "Construct Binary Tree from Preorder and Inorder",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "divide-and-conquer", "medium", "traversal", "interview"],
+    "description": "Rebuild a binary tree from preorder and inorder traversals: the preorder head is the root, and its index in inorder splits left and right subtrees — O(n) with a hash map — C#.",
+    "url": "concepts/coding-problems/construct-binary-tree-preorder-inorder.html"
+  },
+  {
+    "title": "Binary Tree Maximum Path Sum",
+    "category": "coding-problems",
+    "tags": ["trees", "dfs", "recursion", "hard", "global-update", "interview"],
+    "description": "Find the maximum path sum in a binary tree where a path bends at one node: return the best downward gain up the recursion while updating a global best with left+node+right — O(n) — C#.",
+    "url": "concepts/coding-problems/binary-tree-maximum-path-sum.html"
+  },
+  {
+    "title": "Serialize and Deserialize Binary Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "dfs", "design", "hard", "serialization", "interview"],
+    "description": "Encode a binary tree to a string and rebuild it using preorder DFS with explicit null markers, so structure is preserved — O(n) each way — with a C# solution.",
+    "url": "concepts/coding-problems/serialize-and-deserialize-binary-tree.html"
+  },
+  {
+    "title": "Implement Trie (Prefix Tree)",
+    "category": "coding-problems",
+    "tags": ["trie", "design", "strings", "medium", "prefix-tree", "interview"],
+    "description": "Build a prefix tree supporting insert, search, and startsWith, where each node holds child links and an end-of-word flag — O(L) per operation — with a C# solution.",
+    "url": "concepts/coding-problems/implement-trie.html"
+  },
+  {
+    "title": "Design Add and Search Words",
+    "category": "coding-problems",
+    "tags": ["trie", "dfs", "design", "medium", "wildcard", "interview"],
+    "description": "Build a dictionary supporting addWord and search where \".\" matches any letter, using a trie with DFS branching on wildcards — with a C# solution and the pattern.",
+    "url": "concepts/coding-problems/design-add-and-search-words.html"
+  },
+  {
+    "title": "Word Search II",
+    "category": "coding-problems",
+    "tags": ["trie", "backtracking", "grid", "hard", "dfs", "interview"],
+    "description": "Find all dictionary words in a grid efficiently by building a trie of the words and DFS-ing the board once, pruning paths that leave the trie — far better than searching each word — C#.",
+    "url": "concepts/coding-problems/word-search-ii.html"
+  },
+  {
+    "title": "Kth Largest Element in a Stream",
+    "category": "coding-problems",
+    "tags": ["heap", "priority-queue", "design", "easy", "streaming", "interview"],
+    "description": "Maintain the kth largest value as numbers arrive using a size-k min-heap whose root is always the answer — O(log k) per add — with a C# PriorityQueue solution.",
+    "url": "concepts/coding-problems/kth-largest-element-in-a-stream.html"
+  },
+  {
+    "title": "Last Stone Weight",
+    "category": "coding-problems",
+    "tags": ["heap", "priority-queue", "simulation", "easy", "max-heap", "interview"],
+    "description": "Repeatedly smash the two heaviest stones until one or none remains, using a max-heap to always fetch the top two in O(log n) — with a C# PriorityQueue solution.",
+    "url": "concepts/coding-problems/last-stone-weight.html"
+  },
+  {
+    "title": "K Closest Points to Origin",
+    "category": "coding-problems",
+    "tags": ["heap", "priority-queue", "quickselect", "medium", "top-k", "interview"],
+    "description": "Return the k points nearest the origin using a size-k max-heap by squared distance, evicting the farthest — O(n log k) — or Quickselect for O(n) average — with a C# solution.",
+    "url": "concepts/coding-problems/k-closest-points-to-origin.html"
+  },
+  {
+    "title": "Task Scheduler",
+    "category": "coding-problems",
+    "tags": ["heap", "greedy", "math", "medium", "scheduling", "interview"],
+    "description": "Find the minimum time to run tasks with a cooldown n between identical tasks: a math formula from the most frequent task, or a greedy max-heap simulation — with a C# solution.",
+    "url": "concepts/coding-problems/task-scheduler.html"
+  },
+  {
+    "title": "Design Twitter",
+    "category": "coding-problems",
+    "tags": ["heap", "design", "hash-map", "medium", "merge-k", "interview"],
+    "description": "Design a mini Twitter with postTweet, follow, unfollow, and a news feed that merges the 10 most recent tweets from followees using a max-heap by timestamp — with a C# solution.",
+    "url": "concepts/coding-problems/design-twitter.html"
+  },
+  {
+    "title": "Find Median from Data Stream",
+    "category": "coding-problems",
+    "tags": ["heap", "design", "two-heaps", "hard", "streaming", "interview"],
+    "description": "Maintain a running median with two heaps — a max-heap for the lower half and a min-heap for the upper half — kept balanced so the median is read off the tops — O(log n) add — C#.",
+    "url": "concepts/coding-problems/find-median-from-data-stream.html"
+  },
+  {
+    "title": "Subsets II",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "dedupe", "medium", "subsets", "interview"],
+    "description": "Generate all unique subsets when the input has duplicates by sorting and skipping a duplicate at the same recursion depth unless it follows its identical predecessor — O(n·2^n) — C#.",
+    "url": "concepts/coding-problems/subsets-ii.html"
+  },
+  {
+    "title": "Combination Sum II",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "dedupe", "medium", "pruning", "interview"],
+    "description": "Find unique combinations summing to a target where each number is used at most once and the input has duplicates: sort, advance the index, and skip same-level duplicates — C#.",
+    "url": "concepts/coding-problems/combination-sum-ii.html"
+  },
+  {
+    "title": "Letter Combinations of a Phone Number",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "strings", "medium", "cartesian", "interview"],
+    "description": "Generate all letter strings a phone number could spell by backtracking through each digit’s letters, building one character per recursion level — O(4^n·n) — with a C# solution.",
+    "url": "concepts/coding-problems/letter-combinations-of-a-phone-number.html"
+  },
+  {
+    "title": "N-Queens",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "pruning", "hard", "constraints", "interview"],
+    "description": "Place n queens on an n×n board with none attacking by backtracking row by row, tracking used columns and both diagonals as sets for O(1) checks — with a C# solution.",
+    "url": "concepts/coding-problems/n-queens.html"
+  },
+  {
+    "title": "Jump Game II",
+    "category": "coding-problems",
+    "tags": ["greedy", "arrays", "bfs", "medium", "windows", "interview"],
+    "description": "Find the minimum number of jumps to reach the last index by greedily treating each jump as a BFS level: extend the current reachable window and bump the jump count at its boundary — O(n) — C#.",
+    "url": "concepts/coding-problems/jump-game-ii.html"
+  },
+  {
+    "title": "Gas Station",
+    "category": "coding-problems",
+    "tags": ["greedy", "arrays", "circular", "medium", "prefix", "interview"],
+    "description": "Find the start station to complete a circular route: if total gas ≥ total cost a solution exists, and the unique start is just after wherever the running tank goes negative — O(n) — C#.",
+    "url": "concepts/coding-problems/gas-station.html"
+  },
+  {
+    "title": "Hand of Straights",
+    "category": "coding-problems",
+    "tags": ["greedy", "hash-map", "sorting", "medium", "consecutive", "interview"],
+    "description": "Decide if a hand can be rearranged into groups of consecutive cards of a given size by greedily starting each group at the smallest remaining card, tracked with a sorted count map — C#.",
+    "url": "concepts/coding-problems/hand-of-straights.html"
+  },
+  {
+    "title": "Partition Labels",
+    "category": "coding-problems",
+    "tags": ["greedy", "strings", "two-pointers", "medium", "intervals", "interview"],
+    "description": "Cut a string into the most parts so each letter appears in only one part: record each letter’s last index, then extend the current part to the max last-index of its letters — O(n) — C#.",
+    "url": "concepts/coding-problems/partition-labels.html"
+  },
+  {
+    "title": "Valid Parenthesis String",
+    "category": "coding-problems",
+    "tags": ["greedy", "strings", "ranges", "medium", "wildcard", "interview"],
+    "description": "Decide if a string of (, ), and wildcard * can be a valid parenthesization by tracking the range [low, high] of possible open-paren counts in one greedy pass — O(n), O(1) — C#.",
+    "url": "concepts/coding-problems/valid-parenthesis-string.html"
+  },
+  {
+    "title": "Non-overlapping Intervals",
+    "category": "coding-problems",
+    "tags": ["intervals", "greedy", "sorting", "medium", "activity-selection", "interview"],
+    "description": "Find the minimum intervals to remove so the rest don’t overlap by greedily sorting on end time and keeping intervals that start at or after the last kept end — O(n log n) — C#.",
+    "url": "concepts/coding-problems/non-overlapping-intervals.html"
+  },
+  {
+    "title": "Meeting Rooms",
+    "category": "coding-problems",
+    "tags": ["intervals", "sorting", "easy", "overlap", "sweep", "interview"],
+    "description": "Decide if a person can attend all meetings by sorting intervals on start time and checking that no meeting begins before the previous one ends — O(n log n) — with a C# solution.",
+    "url": "concepts/coding-problems/meeting-rooms.html"
+  },
+  {
+    "title": "Meeting Rooms II",
+    "category": "coding-problems",
+    "tags": ["intervals", "heap", "sweep", "medium", "concurrency", "interview"],
+    "description": "Find the minimum meeting rooms needed by tracking concurrent meetings: a min-heap of end times, or sorted start/end sweep counting overlaps — O(n log n) — with a C# solution.",
+    "url": "concepts/coding-problems/meeting-rooms-ii.html"
+  },
+  {
+    "title": "Number of 1 Bits",
+    "category": "coding-problems",
+    "tags": ["bit-manipulation", "integers", "easy", "kernighan", "popcount", "interview"],
+    "description": "Count set bits in an integer with the Brian Kernighan trick n &= n-1, which clears the lowest set bit each step so the loop runs once per 1-bit — with a C# solution.",
+    "url": "concepts/coding-problems/number-of-1-bits.html"
+  },
+  {
+    "title": "Counting Bits",
+    "category": "coding-problems",
+    "tags": ["bit-manipulation", "dynamic-programming", "easy", "popcount", "recurrence", "interview"],
+    "description": "Compute the set-bit count for every integer 0..n in O(n) using the DP dp[i] = dp[i >> 1] + (i & 1), reusing the already-computed count of i with its last bit dropped — C#.",
+    "url": "concepts/coding-problems/counting-bits.html"
+  },
+  {
+    "title": "Reverse Bits",
+    "category": "coding-problems",
+    "tags": ["bit-manipulation", "integers", "easy", "shifting", "reverse", "interview"],
+    "description": "Reverse the 32 bits of an unsigned integer by pulling the lowest bit off the input and pushing it onto a result that is shifted left each step — O(32) — with a C# solution.",
+    "url": "concepts/coding-problems/reverse-bits.html"
+  },
+  {
+    "title": "Missing Number",
+    "category": "coding-problems",
+    "tags": ["bit-manipulation", "math", "arrays", "easy", "xor", "interview"],
+    "description": "Find the missing value in 0..n either by XOR-ing all indices with all values so pairs cancel, or by subtracting the array sum from n(n+1)/2 — O(n) time, O(1) space — C#.",
+    "url": "concepts/coding-problems/missing-number.html"
+  },
+  {
+    "title": "Sum of Two Integers",
+    "category": "coding-problems",
+    "tags": ["bit-manipulation", "math", "medium", "carry", "adder", "interview"],
+    "description": "Add two integers without + or - using bitwise ops: XOR gives the sum without carry, AND-and-shift gives the carry, repeat until the carry is zero — with a C# solution.",
+    "url": "concepts/coding-problems/sum-of-two-integers.html"
+  },
+  {
+    "title": "Reverse Integer",
+    "category": "coding-problems",
+    "tags": ["math", "integers", "medium", "overflow", "digits", "interview"],
+    "description": "Reverse the digits of a signed 32-bit integer and return 0 on overflow by checking the running result against the int bounds before each digit push — O(log n) — with a C# solution.",
+    "url": "concepts/coding-problems/reverse-integer.html"
+  },
+  {
+    "title": "House Robber II",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "arrays", "medium", "circular", "reduction", "interview"],
+    "description": "Rob a circular street of houses where the first and last are adjacent by running the linear House Robber twice — once excluding the first house, once excluding the last — and taking the max — C#.",
+    "url": "concepts/coding-problems/house-robber-ii.html"
+  },
+  {
+    "title": "Longest Palindromic Substring",
+    "category": "coding-problems",
+    "tags": ["strings", "two-pointers", "palindrome", "medium", "expand-center", "interview"],
+    "description": "Find the longest palindromic substring by expanding around each of the 2n-1 centers and keeping the widest palindrome — O(n^2) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/longest-palindromic-substring.html"
+  },
+  {
+    "title": "Palindromic Substrings",
+    "category": "coding-problems",
+    "tags": ["strings", "two-pointers", "palindrome", "medium", "expand-center", "interview"],
+    "description": "Count all palindromic substrings by expanding around each of the 2n-1 centers and counting every successful expansion — O(n^2) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/palindromic-substrings.html"
+  },
+  {
+    "title": "Decode Ways",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "strings", "medium", "fibonacci", "counting", "interview"],
+    "description": "Count the ways to decode a digit string into letters (A=1..Z=26) with a Fibonacci-like DP: at each position add the ways from a valid one-digit and two-digit step — O(n) — C#.",
+    "url": "concepts/coding-problems/decode-ways.html"
   }
 ]

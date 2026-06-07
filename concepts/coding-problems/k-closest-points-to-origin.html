@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K Closest Points to Origin — DevLens</title>
+  <meta name="description" content="Return the k points nearest the origin using a size-k max-heap by squared distance, evicting the farthest — O(n log k) — or Quickselect for O(n) average — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="k-closest-points-to-origin" data-title="K Closest Points to Origin">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>K Closest Points to Origin</h1>
+          <p class="lede">Find the k nearest points. A <strong>size-k max-heap</strong> keyed by distance keeps the closest k, evicting the farthest — no need to sort everything.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#heap</span>
+            <span class="tag">#priority-queue</span>
+            <span class="tag">#quickselect</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#top-k</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an array of <code>points</code> and an integer <code>k</code>, return the <code>k</code> points closest to the origin (Euclidean distance, any order).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>points = [[1,3],[-2,2]], k = 1</code> → <code>[[-2,2]]</code></p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            Compare by <strong>squared distance</strong> (<code>x² + y²</code>) — no square roots needed. Keep a
+            <strong>max-heap of size k</strong>: push each point, and when the heap exceeds k, pop the
+            <em>farthest</em>. What remains is the closest k. This is O(n log k), better than the O(n log n) full sort
+            when k is small. Quickselect gives O(n) average if you only need the set (unordered).
+          </p>
+          <p><strong>Time O(n log k), Space O(k).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Size-k max-heap keyed by distance">
+              <text class="dgm-sub" x="20" y="24">key = x² + y² (skip the sqrt)</text>
+              <text class="dgm-sub" x="20" y="56">max-heap size k → evict the farthest</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">remaining k = closest points ✓</text>
+            </svg>
+            <figcaption>Figure 1 — A bounded max-heap on squared distance keeps the nearest k and drops the rest.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[][] KClosest(int[][] points, int k)
+{
+    // max-heap of size k: priority is the squared distance, negated
+    var heap = new PriorityQueue&lt;int[], int&gt;();
+    foreach (var p in points)
+    {
+        int dist = p[0] * p[0] + p[1] * p[1];
+        heap.Enqueue(p, -dist);
+        if (heap.Count &gt; k) heap.Dequeue();   // drop the farthest
+    }
+    var result = new int[k][];
+    for (int i = 0; i &lt; k; i++) result[i] = heap.Dequeue();
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n log k) with the heap; O(n) average with Quickselect.</li>
+              <li><strong>Space:</strong> O(k) for the heap.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Compare by <strong>squared distance</strong> — the sqrt is monotonic and unnecessary.</li>
+              <li>A size-k <strong>max-heap</strong> keeps the closest k (evict the farthest).</li>
+              <li>Quickselect is O(n) average when order within the k doesn’t matter.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element</span></a>
+            <a class="related-card" href="../coding-problems/last-stone-weight.html"><span class="rc-cat">Coding</span><span class="rc-title">Last Stone Weight</span></a>
+            <a class="related-card" href="../coding-problems/task-scheduler.html"><span class="rc-cat">Coding</span><span class="rc-title">Task Scheduler</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Two quick wins: skip the square root (compare squared distances) and use a max-heap so you evict the farthest. If asked for better, Quickselect on the kth distance gives O(n) average.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

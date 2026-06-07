@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subsets II — DevLens</title>
+  <meta name="description" content="Generate all unique subsets when the input has duplicates by sorting and skipping a duplicate at the same recursion depth unless it follows its identical predecessor — O(n·2^n) — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="subsets-ii" data-title="Subsets II">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Subsets II</h1>
+          <p class="lede">Subsets, but the input has duplicates and the output must be unique. <strong>Sort</strong>, then skip a repeat at the same level unless it follows its twin.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#backtracking</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#dedupe</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#subsets</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an integer array <code>nums</code> that may contain duplicates, return all possible subsets without duplicate subsets.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,2,2]</code> → <code>[[],[1],[1,2],[1,2,2],[2],[2,2]]</code></p>
+          </div>
+
+                    <h2>The idea</h2>
+          <p>
+            Use the subsets backtracking template, but prevent duplicate <em>subsets</em>. First <strong>sort</strong>
+            so equal values are adjacent. Then in the choice loop, <strong>skip</strong> a value if it equals the
+            previous one <em>and</em> the previous one wasn’t chosen at this level (<code>i &gt; start &amp;&amp;
+            nums[i] == nums[i-1]</code>). That allows <code>[2,2]</code> (consecutive picks) but blocks generating the
+            same subset from a later identical element.
+          </p>
+          <p><strong>Time O(n·2<sup>n</sup>), Space O(n).</strong></p>
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Skip duplicates at the same level">
+              <text class="dgm-sub" x="20" y="24">sort → equal values adjacent</text>
+              <text class="dgm-sub" x="20" y="56">skip nums[i] if i>start and nums[i]==nums[i-1]</text>
+              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">allows [2,2], blocks duplicate subsets ✓</text>
+            </svg>
+            <figcaption>Figure 1 — Sorting plus the same-level skip rule prunes duplicate subsets while keeping legitimate repeats.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;int&gt;&gt; SubsetsWithDup(int[] nums)
+{
+    Array.Sort(nums);
+    var result = new List&lt;IList&lt;int&gt;&gt;();
+    Backtrack(0, new List&lt;int&gt;());
+    return result;
+
+    void Backtrack(int start, List&lt;int&gt; path)
+    {
+        result.Add(new List&lt;int&gt;(path));
+        for (int i = start; i &lt; nums.Length; i++)
+        {
+            if (i &gt; start &amp;&amp; nums[i] == nums[i - 1]) continue;  // skip dup at this level
+            path.Add(nums[i]);
+            Backtrack(i + 1, path);
+            path.RemoveAt(path.Count - 1);
+        }
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n·2<sup>n</sup>) — up to 2<sup>n</sup> subsets, each O(n) to copy.</li>
+              <li><strong>Space:</strong> O(n) recursion depth.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Sort</strong> first so duplicates are adjacent and skippable.</li>
+              <li>Skip with <code>i &gt; start &amp;&amp; nums[i] == nums[i-1]</code> — same level only.</li>
+              <li>This same-level skip is the universal “dedupe in backtracking” trick.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/subsets.html"><span class="rc-cat">Coding</span><span class="rc-title">Subsets</span></a>
+            <a class="related-card" href="../coding-problems/combination-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Combination Sum</span></a>
+            <a class="related-card" href="../coding-problems/permutations.html"><span class="rc-cat">Coding</span><span class="rc-title">Permutations</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The whole problem is the dedupe rule. Explain why it’s <code>i &gt; start</code> (not <code>i &gt; 0</code>): you only skip a duplicate that starts a <em>sibling</em> branch, not one that legitimately extends the path.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
