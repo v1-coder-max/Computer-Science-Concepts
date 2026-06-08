@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find All Anagrams in a String — DevLens</title>
+  <meta name="description" content="Find all start indices where an anagram of a pattern occurs in a string using a fixed-size sliding window of character counts compared against the pattern counts — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="find-all-anagrams-in-a-string" data-title="Find All Anagrams in a String">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Find All Anagrams in a String</h1>
+          <p class="lede">Find every start index where an anagram of <code>p</code> appears in <code>s</code>. A <strong>fixed-size window</strong> of letter counts, matched against <code>p</code>’s counts.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#sliding-window</span>
+            <span class="tag">#strings</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#frequency</span>
+            <span class="tag">#anagram</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given strings <code>s</code> and <code>p</code>, return all start indices of <code>p</code>’s anagrams in <code>s</code>.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>s="cbaebabacd", p="abc"</code> → <code>[0,6]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>For each window of length <code>|p|</code>, sort it or count its letters and compare to <code>p</code> — O(n·|p|) or worse. Maintaining the window’s counts incrementally makes it O(n).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Build a frequency array for <code>p</code> and a sliding window of the same width over <code>s</code>. Slide one character at a time: <strong>add</strong> the entering character and <strong>remove</strong> the leaving one in O(1). When the window’s counts equal <code>p</code>’s counts, record the start index. Tracking how many of the 26 letter-counts currently match keeps each comparison O(1).</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Fixed window of letter counts">
+              <text class="dgm-sub" x="20" y="24">window width = |p|; counts updated in O(1)</text>
+              <text class="dgm-sub" x="20" y="52">window counts == p counts → record start</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">s="cbaebabacd", p="abc" → [0, 6]</text>
+            </svg>
+            <figcaption>Figure 1 — An equal letter-count window is an anagram, recorded by its start index.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;int&gt; FindAnagrams(string s, string p)
+{
+    var result = new List&lt;int&gt;();
+    if (s.Length &lt; p.Length) return result;
+
+    int[] need = new int[26], window = new int[26];
+    foreach (char c in p) need[c - 'a']++;
+
+    for (int i = 0; i &lt; s.Length; i++)
+    {
+        window[s[i] - 'a']++;                      // add entering char
+        if (i &gt;= p.Length) window[s[i - p.Length] - 'a']--;   // remove leaving char
+        if (i &gt;= p.Length - 1 &amp;&amp; window.AsSpan().SequenceEqual(need))
+            result.Add(i - p.Length + 1);
+    }
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — O(1) work per slide.</li>
+              <li><strong>Space:</strong> O(1) — two 26-count arrays.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Anagram search → <strong>fixed-size sliding window</strong> on counts.</li>
+              <li>Update counts incrementally (add entering, drop leaving).</li>
+              <li>A <code>matches</code> counter makes the comparison O(1) instead of O(26).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/permutation-in-string.html"><span class="rc-cat">Coding</span><span class="rc-title">Permutation in String</span></a>
+            <a class="related-card" href="../coding-problems/valid-anagram.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Anagram</span></a>
+            <a class="related-card" href="../coding-problems/minimum-window-substring.html"><span class="rc-cat">Coding</span><span class="rc-title">Minimum Window Substring</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>It’s Permutation in String but returning all matches. Stress the incremental count updates and the fixed window width. The 26-count match check is the standard O(1) comparison.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

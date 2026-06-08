@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encode and Decode Strings — DevLens</title>
+  <meta name="description" content="Serialize a list of strings into one string and parse it back unambiguously by length-prefixing each string (length + delimiter + content), so any characters are safe — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="encode-and-decode-strings" data-title="Encode and Decode Strings">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Encode and Decode Strings</h1>
+          <p class="lede">Pack a list of strings into one string and recover it exactly — even if strings contain your delimiter. <strong>Length-prefix</strong> each one and parsing is unambiguous.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#strings</span>
+            <span class="tag">#design</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#serialization</span>
+            <span class="tag">#length-prefix</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Design <code>Encode(list)</code> → a single string and <code>Decode(s)</code> → the original list, so encoding then decoding round-trips any list of strings (including ones with special characters).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>["lint","code"]</code> → <code>"4#lint4#code"</code> → <code>["lint","code"]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Joining with a delimiter like <code>,</code> breaks if a string contains that delimiter. Escaping delimiters works but is fiddly. Length-prefixing sidesteps the problem entirely.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Encode each string as <strong>length + a delimiter + the string</strong> (e.g. <code>"4#lint"</code>). To decode, read digits up to the <code>#</code> to get the length <code>L</code>, then take exactly the next <code>L</code> characters — regardless of what they are — and repeat. Because you always know how many characters to read, the content can contain any character, including <code>#</code>.</p><p><strong>Time O(total length), Space O(total length).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Length prefix makes parsing unambiguous">
+              <text class="dgm-sub" x="20" y="24">encode: len + "#" + string  (e.g. 4#lint)</text>
+              <text class="dgm-sub" x="20" y="52">decode: read len, then take exactly len chars</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">content may contain # safely</text>
+            </svg>
+            <figcaption>Figure 1 — Knowing each string’s length up front removes any delimiter ambiguity.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public string Encode(IList&lt;string&gt; strs)
+{
+    var sb = new System.Text.StringBuilder();
+    foreach (var s in strs) sb.Append(s.Length).Append('#').Append(s);
+    return sb.ToString();
+}
+
+public IList&lt;string&gt; Decode(string s)
+{
+    var result = new List&lt;string&gt;();
+    int i = 0;
+    while (i &lt; s.Length)
+    {
+        int j = i;
+        while (s[j] != '#') j++;                 // read the length
+        int len = int.Parse(s.Substring(i, j - i));
+        result.Add(s.Substring(j + 1, len));     // take exactly len chars
+        i = j + 1 + len;
+    }
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(total length) to encode and decode.</li>
+              <li><strong>Space:</strong> O(total length).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Length-prefix</strong> beats delimiter-joining — no escaping needed.</li>
+              <li>Decode reads the length, then takes exactly that many characters.</li>
+              <li>Robust to any character in the payload, including the delimiter.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/serialize-and-deserialize-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Serialize and Deserialize Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/string-to-integer-atoi.html"><span class="rc-cat">Coding</span><span class="rc-title">String to Integer (atoi)</span></a>
+            <a class="related-card" href="../coding-problems/longest-common-prefix.html"><span class="rc-cat">Coding</span><span class="rc-title">Longest Common Prefix</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The interviewer is testing for the delimiter-collision edge case. Length-prefixing is the clean fix — explain why escaping is worse. It mirrors the null-marker idea in tree serialization.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

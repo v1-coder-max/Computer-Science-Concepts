@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Set Matrix Zeroes — DevLens</title>
+  <meta name="description" content="Zero out the entire row and column of every zero in a matrix in place by using the first row and column as markers, with two flags for their own state — O(m·n) time, O(1) space — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="set-matrix-zeroes" data-title="Set Matrix Zeroes">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Set Matrix Zeroes</h1>
+          <p class="lede">If a cell is 0, zero its whole row and column. Doing it in O(1) space means using the <strong>first row and column as markers</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#matrix</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#in-place</span>
+            <span class="tag">#markers</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an <code>m × n</code> matrix, if an element is 0, set its entire row and column to 0, in place.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[[1,1,1],[1,0,1],[1,1,1]]</code> → <code>[[1,0,1],[0,0,0],[1,0,1]]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Record all zero positions first, then apply — but a naive “zero as you go” corrupts the scan. Using sets of rows/columns to clear is O(m+n) space. The marker trick gets it to O(1).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Use the matrix’s own <strong>first row and first column</strong> to record which rows/columns need zeroing. First, two boolean flags capture whether row 0 and column 0 themselves contain a zero. Then for each interior cell that’s 0, mark <code>matrix[r][0] = 0</code> and <code>matrix[0][c] = 0</code>. Next, zero interior cells whose row or column marker is 0. Finally, apply the two flags to clear row 0 / column 0 if needed.</p><p><strong>Time O(m·n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="First row/col as zeroing markers">
+              <text class="dgm-sub" x="20" y="24">flags: does row0 / col0 hold a zero?</text>
+              <text class="dgm-sub" x="20" y="52">interior 0 → mark matrix[r][0], matrix[0][c]</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">apply markers, then clear row0/col0 by flags</text>
+            </svg>
+            <figcaption>Figure 1 — Reusing the borders as markers avoids the O(m+n) auxiliary sets.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public void SetZeroes(int[][] matrix)
+{
+    int m = matrix.Length, n = matrix[0].Length;
+    bool row0 = false, col0 = false;
+    for (int c = 0; c &lt; n; c++) if (matrix[0][c] == 0) row0 = true;
+    for (int r = 0; r &lt; m; r++) if (matrix[r][0] == 0) col0 = true;
+
+    for (int r = 1; r &lt; m; r++)                 // mark borders
+        for (int c = 1; c &lt; n; c++)
+            if (matrix[r][c] == 0) { matrix[r][0] = 0; matrix[0][c] = 0; }
+
+    for (int r = 1; r &lt; m; r++)                 // apply markers
+        for (int c = 1; c &lt; n; c++)
+            if (matrix[r][0] == 0 || matrix[0][c] == 0) matrix[r][c] = 0;
+
+    if (row0) for (int c = 0; c &lt; n; c++) matrix[0][c] = 0;
+    if (col0) for (int r = 0; r &lt; m; r++) matrix[r][0] = 0;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(m·n) — a few passes over the grid.</li>
+              <li><strong>Space:</strong> O(1) — borders reused as markers.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Reuse the <strong>first row/column as marker storage</strong> for O(1) space.</li>
+              <li>Two flags track the borders’ own zero state separately.</li>
+              <li>Apply markers before clearing the borders themselves.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/spiral-matrix.html"><span class="rc-cat">Coding</span><span class="rc-title">Spiral Matrix</span></a>
+            <a class="related-card" href="../coding-problems/rotate-image.html"><span class="rc-cat">Coding</span><span class="rc-title">Rotate Image</span></a>
+            <a class="related-card" href="../coding-problems/rotate-image.html"><span class="rc-cat">Coding</span><span class="rc-title">Game of Life style in-place</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The O(m+n)-space version (row/col sets) is the easy answer; the O(1) marker trick with two border flags is what impresses. Walk through the order of operations carefully — that’s where bugs hide.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

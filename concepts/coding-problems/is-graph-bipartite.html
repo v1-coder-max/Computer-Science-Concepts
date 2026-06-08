@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Is Graph Bipartite — DevLens</title>
+  <meta name="description" content="Determine if a graph is bipartite by 2-coloring it with BFS or DFS — assigning alternating colors and failing if an edge connects two same-colored nodes — across all components — O(V+E) — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="is-graph-bipartite" data-title="Is Graph Bipartite">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Is Graph Bipartite</h1>
+          <p class="lede">Can the graph be 2-colored so no edge joins same colors? <strong>Color it greedily</strong> with BFS/DFS — a conflict means it isn’t bipartite.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#bfs</span>
+            <span class="tag">#coloring</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#bipartite</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an undirected graph as an adjacency list, return <code>true</code> if it is bipartite (its nodes can be split into two sets with every edge crossing between them).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[[1,3],[0,2],[1,3],[0,2]]</code> → <code>true</code> &nbsp;·&nbsp; a triangle → <code>false</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Trying all 2-set partitions is exponential. A graph is bipartite iff it has no odd-length cycle, which a single 2-coloring traversal detects directly in O(V+E).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Maintain a <code>color</code> array (0 = uncolored). For each uncolored node, start a BFS/DFS, assigning it one color and each neighbor the <strong>opposite</strong> color. If you ever reach a neighbor already colored the <strong>same</strong> as the current node, there’s an odd cycle → not bipartite. Repeat across all components (the graph may be disconnected).</p><p><strong>Time O(V + E), Space O(V).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Greedy 2-coloring detects odd cycles">
+              <text class="dgm-sub" x="20" y="24">color a node, neighbors get the opposite</text>
+              <text class="dgm-sub" x="20" y="52">neighbor same color as current → conflict</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">no conflict across all components → bipartite</text>
+            </svg>
+            <figcaption>Figure 1 — A same-color edge reveals an odd cycle, the obstruction to bipartiteness.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public bool IsBipartite(int[][] graph)
+{
+    int n = graph.Length;
+    var color = new int[n];          // 0 = uncolored, 1 / -1 = the two sides
+
+    for (int start = 0; start &lt; n; start++)
+    {
+        if (color[start] != 0) continue;
+        var q = new Queue&lt;int&gt;();
+        q.Enqueue(start); color[start] = 1;
+        while (q.Count &gt; 0)
+        {
+            int node = q.Dequeue();
+            foreach (int next in graph[node])
+            {
+                if (color[next] == 0) { color[next] = -color[node]; q.Enqueue(next); }
+                else if (color[next] == color[node]) return false;   // conflict
+            }
+        }
+    }
+    return true;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(V + E).</li>
+              <li><strong>Space:</strong> O(V) for colors and queue.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Bipartite ⇔ <strong>2-colorable</strong> ⇔ no odd cycle.</li>
+              <li>Assign opposite colors across each edge; a same-color edge fails.</li>
+              <li>Loop over all nodes to cover disconnected components.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/course-schedule.html"><span class="rc-cat">Coding</span><span class="rc-title">Course Schedule</span></a>
+            <a class="related-card" href="../coding-problems/number-of-provinces.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Provinces</span></a>
+            <a class="related-card" href="../coding-problems/clone-graph.html"><span class="rc-cat">Coding</span><span class="rc-title">Clone Graph</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>State the equivalence (bipartite ⇔ 2-colorable ⇔ no odd cycle) and color greedily. Remember to iterate all components — forgetting disconnected pieces is the common miss.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1811,5 +1811,285 @@
     "tags": ["arrays", "boyer-moore", "easy", "voting", "o1", "interview"],
     "description": "Find the element appearing more than n/2 times in O(n) time and O(1) space with the Boyer-Moore voting algorithm: keep a candidate and a count that cancels out minority elements — C#.",
     "url": "concepts/coding-problems/majority-element.html"
+  },
+  {
+    "title": "Merge Sorted Array",
+    "category": "coding-problems",
+    "tags": ["arrays", "two-pointers", "easy", "in-place", "merge", "interview"],
+    "description": "Merge two sorted arrays in place into the first using a three-pointer fill from the back, so writing the largest elements first never overwrites unread values — O(m+n) — with a C# solution.",
+    "url": "concepts/coding-problems/merge-sorted-array.html"
+  },
+  {
+    "title": "Remove Element",
+    "category": "coding-problems",
+    "tags": ["arrays", "two-pointers", "easy", "in-place", "filter", "interview"],
+    "description": "Remove all occurrences of a value from an array in place using a slow write pointer that only keeps elements not equal to the target, returning the new length — O(n) time, O(1) space — C#.",
+    "url": "concepts/coding-problems/remove-element.html"
+  },
+  {
+    "title": "Move Zeroes",
+    "category": "coding-problems",
+    "tags": ["arrays", "two-pointers", "easy", "in-place", "stable", "interview"],
+    "description": "Move all zeros to the end of an array while keeping the order of non-zeros, using a slow write pointer for non-zero values then filling the rest with zeros — O(n) time, O(1) space — C#.",
+    "url": "concepts/coding-problems/move-zeroes.html"
+  },
+  {
+    "title": "Sort Colors",
+    "category": "coding-problems",
+    "tags": ["arrays", "two-pointers", "medium", "dutch-flag", "partition", "interview"],
+    "description": "Sort an array of 0s, 1s, and 2s in a single pass with the Dutch National Flag three-pointer partition, swapping values into low, mid, and high regions — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/sort-colors.html"
+  },
+  {
+    "title": "Rotate Array",
+    "category": "coding-problems",
+    "tags": ["arrays", "in-place", "medium", "reversal", "rotation", "interview"],
+    "description": "Rotate an array right by k steps in place using the reverse trick: reverse the whole array, then reverse the first k and the remaining n-k elements — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/rotate-array.html"
+  },
+  {
+    "title": "Find the Duplicate Number",
+    "category": "coding-problems",
+    "tags": ["arrays", "two-pointers", "medium", "floyd", "cycle", "interview"],
+    "description": "Find the single duplicate in an array of n+1 numbers from 1..n without modifying it or using extra space, by treating values as next-pointers and running Floyd cycle detection — O(n), O(1) — C#.",
+    "url": "concepts/coding-problems/find-the-duplicate-number.html"
+  },
+  {
+    "title": "Set Matrix Zeroes",
+    "category": "coding-problems",
+    "tags": ["matrix", "arrays", "medium", "in-place", "markers", "interview"],
+    "description": "Zero out the entire row and column of every zero in a matrix in place by using the first row and column as markers, with two flags for their own state — O(m·n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/set-matrix-zeroes.html"
+  },
+  {
+    "title": "Spiral Matrix",
+    "category": "coding-problems",
+    "tags": ["matrix", "arrays", "medium", "simulation", "boundaries", "interview"],
+    "description": "Return all elements of a matrix in spiral order by tracking four shrinking boundaries (top, bottom, left, right) and traversing each edge in turn — O(m·n) — with a C# solution.",
+    "url": "concepts/coding-problems/spiral-matrix.html"
+  },
+  {
+    "title": "Rotate Image",
+    "category": "coding-problems",
+    "tags": ["matrix", "arrays", "medium", "in-place", "transpose", "interview"],
+    "description": "Rotate an n×n matrix 90 degrees clockwise in place by transposing it then reversing each row, avoiding a copy — O(n^2) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/rotate-image.html"
+  },
+  {
+    "title": "Subarray Sum Equals K",
+    "category": "coding-problems",
+    "tags": ["arrays", "prefix-sum", "hashing", "medium", "counting", "interview"],
+    "description": "Count subarrays summing to k in O(n) with prefix sums and a hash map of prefix-sum frequencies: at each index add the count of prefix sums equal to current minus k — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/subarray-sum-equals-k.html"
+  },
+  {
+    "title": "Valid Sudoku",
+    "category": "coding-problems",
+    "tags": ["matrix", "hashing", "medium", "constraints", "sets", "interview"],
+    "description": "Validate a partially filled Sudoku board by checking rows, columns, and 3x3 boxes for duplicates in a single pass using hash sets keyed by row, column, and box index — O(1) for the fixed 9x9 — C#.",
+    "url": "concepts/coding-problems/valid-sudoku.html"
+  },
+  {
+    "title": "Encode and Decode Strings",
+    "category": "coding-problems",
+    "tags": ["strings", "design", "medium", "serialization", "length-prefix", "interview"],
+    "description": "Serialize a list of strings into one string and parse it back unambiguously by length-prefixing each string (length + delimiter + content), so any characters are safe — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/encode-and-decode-strings.html"
+  },
+  {
+    "title": "Longest Common Prefix",
+    "category": "coding-problems",
+    "tags": ["strings", "easy", "scanning", "prefix", "interview"],
+    "description": "Find the longest common prefix of an array of strings by vertical scanning — compare each character position across all strings and stop at the first mismatch — O(total characters) — with a C# solution.",
+    "url": "concepts/coding-problems/longest-common-prefix.html"
+  },
+  {
+    "title": "Roman to Integer",
+    "category": "coding-problems",
+    "tags": ["strings", "math", "easy", "parsing", "lookup", "interview"],
+    "description": "Convert a Roman numeral to an integer by scanning left to right and subtracting a symbol when it is smaller than the one to its right, otherwise adding it — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/roman-to-integer.html"
+  },
+  {
+    "title": "String to Integer (atoi)",
+    "category": "coding-problems",
+    "tags": ["strings", "math", "medium", "parsing", "overflow", "interview"],
+    "description": "Implement atoi by skipping whitespace, reading an optional sign, accumulating digits, and clamping to the 32-bit signed range on overflow before the multiply — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/string-to-integer-atoi.html"
+  },
+  {
+    "title": "Find the Index of the First Occurrence",
+    "category": "coding-problems",
+    "tags": ["strings", "two-pointers", "easy", "pattern-matching", "kmp", "interview"],
+    "description": "Find the first index where a needle occurs in a haystack, with a clear sliding-window check and a note on the KMP failure function for the optimal O(n+m) linear-time matcher — with a C# solution.",
+    "url": "concepts/coding-problems/find-index-of-first-occurrence.html"
+  },
+  {
+    "title": "Minimum Size Subarray Sum",
+    "category": "coding-problems",
+    "tags": ["sliding-window", "arrays", "medium", "two-pointers", "positive", "interview"],
+    "description": "Find the shortest contiguous subarray with sum at least target using an expanding/shrinking sliding window over positive numbers — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/minimum-size-subarray-sum.html"
+  },
+  {
+    "title": "Find All Anagrams in a String",
+    "category": "coding-problems",
+    "tags": ["sliding-window", "strings", "medium", "frequency", "anagram", "interview"],
+    "description": "Find all start indices where an anagram of a pattern occurs in a string using a fixed-size sliding window of character counts compared against the pattern counts — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/find-all-anagrams-in-a-string.html"
+  },
+  {
+    "title": "Decode String",
+    "category": "coding-problems",
+    "tags": ["stack", "strings", "medium", "nested", "parsing", "interview"],
+    "description": "Decode a nested encoded string like 3[a2[c]] using two stacks — one for repeat counts and one for partial strings — building the result as brackets open and close — O(output length) — with a C# solution.",
+    "url": "concepts/coding-problems/decode-string.html"
+  },
+  {
+    "title": "Next Greater Element II",
+    "category": "coding-problems",
+    "tags": ["stack", "monotonic-stack", "arrays", "medium", "circular", "interview"],
+    "description": "Find the next greater element for each item in a circular array using a monotonic decreasing stack of indices and iterating twice around the array — O(n) time, O(n) space — with a C# solution.",
+    "url": "concepts/coding-problems/next-greater-element-ii.html"
+  },
+  {
+    "title": "Search Insert Position",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "easy", "lower-bound", "sorted", "interview"],
+    "description": "Find the index of a target in a sorted array, or where it would be inserted, with a lower-bound binary search that converges on the first position not less than the target — O(log n) — with a C# solution.",
+    "url": "concepts/coding-problems/search-insert-position.html"
+  },
+  {
+    "title": "Find First and Last Position of Element in Sorted Array",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "medium", "boundaries", "duplicates", "interview"],
+    "description": "Find the first and last index of a target in a sorted array with duplicates by running two boundary binary searches — leftmost and rightmost occurrence — in O(log n) — with a C# solution.",
+    "url": "concepts/coding-problems/find-first-and-last-position.html"
+  },
+  {
+    "title": "Find Peak Element",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "medium", "peak", "slope", "interview"],
+    "description": "Find any peak (an element greater than its neighbors) in O(log n) by binary searching toward the higher neighbor, since an uphill direction always leads to a peak — with a C# solution.",
+    "url": "concepts/coding-problems/find-peak-element.html"
+  },
+  {
+    "title": "Middle of the Linked List",
+    "category": "coding-problems",
+    "tags": ["linked-list", "two-pointers", "easy", "fast-slow", "middle", "interview"],
+    "description": "Find the middle node of a linked list in one pass using slow and fast pointers, where the slow pointer lands on the middle when the fast pointer reaches the end — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/middle-of-the-linked-list.html"
+  },
+  {
+    "title": "Intersection of Two Linked Lists",
+    "category": "coding-problems",
+    "tags": ["linked-list", "two-pointers", "easy", "intersection", "length-align", "interview"],
+    "description": "Find the node where two linked lists merge by advancing two pointers that switch to the other list at the end, so both travel the same total length and meet at the intersection — O(n+m) time, O(1) space — C#.",
+    "url": "concepts/coding-problems/intersection-of-two-linked-lists.html"
+  },
+  {
+    "title": "Swap Nodes in Pairs",
+    "category": "coding-problems",
+    "tags": ["linked-list", "pointers", "medium", "dummy-head", "relink", "interview"],
+    "description": "Swap every two adjacent nodes of a linked list by relinking pointers (not values) with a dummy head, advancing two nodes at a time — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/swap-nodes-in-pairs.html"
+  },
+  {
+    "title": "Lowest Common Ancestor of a Binary Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "medium", "lca", "interview"],
+    "description": "Find the lowest common ancestor of two nodes in a general binary tree (no BST ordering) with a post-order recursion that returns a match up from each subtree; the node seeing both is the LCA — O(n) — C#.",
+    "url": "concepts/coding-problems/lowest-common-ancestor-binary-tree.html"
+  },
+  {
+    "title": "Path Sum",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "dfs", "easy", "root-to-leaf", "interview"],
+    "description": "Decide if a binary tree has a root-to-leaf path summing to a target by recursing down while subtracting node values and checking the remainder equals the leaf value — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/path-sum.html"
+  },
+  {
+    "title": "Binary Tree Zigzag Level Order Traversal",
+    "category": "coding-problems",
+    "tags": ["trees", "bfs", "queue", "medium", "levels", "interview"],
+    "description": "Traverse a binary tree level by level alternating left-to-right and right-to-left, using BFS and reversing every other level (or inserting at the front) — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/binary-tree-zigzag-level-order-traversal.html"
+  },
+  {
+    "title": "Flatten Binary Tree to Linked List",
+    "category": "coding-problems",
+    "tags": ["trees", "recursion", "medium", "in-place", "preorder", "interview"],
+    "description": "Flatten a binary tree into a right-skewed linked list in preorder, in place, using a reverse-preorder traversal that prepends each node, achieving O(1) extra space — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/flatten-binary-tree-to-linked-list.html"
+  },
+  {
+    "title": "Number of Provinces",
+    "category": "coding-problems",
+    "tags": ["graphs", "union-find", "dfs", "medium", "components", "interview"],
+    "description": "Count provinces (connected groups of directly or indirectly connected cities) from an adjacency matrix using union-find or DFS over the matrix — O(n^2) — with a C# solution.",
+    "url": "concepts/coding-problems/number-of-provinces.html"
+  },
+  {
+    "title": "Is Graph Bipartite",
+    "category": "coding-problems",
+    "tags": ["graphs", "bfs", "coloring", "medium", "bipartite", "interview"],
+    "description": "Determine if a graph is bipartite by 2-coloring it with BFS or DFS — assigning alternating colors and failing if an edge connects two same-colored nodes — across all components — O(V+E) — C#.",
+    "url": "concepts/coding-problems/is-graph-bipartite.html"
+  },
+  {
+    "title": "Combinations",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "medium", "combinatorics", "pruning", "interview"],
+    "description": "Generate all k-sized combinations of numbers 1..n with backtracking that uses a start index to enforce increasing order, with pruning when not enough numbers remain — O(k·C(n,k)) — with a C# solution.",
+    "url": "concepts/coding-problems/combinations.html"
+  },
+  {
+    "title": "Permutations II",
+    "category": "coding-problems",
+    "tags": ["backtracking", "recursion", "medium", "dedupe", "permutations", "interview"],
+    "description": "Generate all unique permutations of an array with duplicates by sorting and skipping a duplicate at the same recursion level unless its identical predecessor was used — O(n·n!) — with a C# solution.",
+    "url": "concepts/coding-problems/permutations-ii.html"
+  },
+  {
+    "title": "Minimum Path Sum",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "2d-dp", "grid", "medium", "paths", "interview"],
+    "description": "Find the minimum-sum path from top-left to bottom-right of a grid moving only right or down with a DP where each cell adds the smaller of the top or left neighbor — O(m·n) — with a C# solution.",
+    "url": "concepts/coding-problems/minimum-path-sum.html"
+  },
+  {
+    "title": "Unique Paths II",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "2d-dp", "grid", "medium", "obstacles", "interview"],
+    "description": "Count paths from top-left to bottom-right of a grid with obstacles by the same right/down DP, but forcing any obstacle cell to zero paths — O(m·n) time, O(n) space — with a C# solution.",
+    "url": "concepts/coding-problems/unique-paths-ii.html"
+  },
+  {
+    "title": "Maximal Square",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "2d-dp", "matrix", "medium", "min-neighbors", "interview"],
+    "description": "Find the largest all-ones square in a binary matrix with a DP where each 1-cell stores the side of the largest square ending there as 1 + min of its top, left, and top-left neighbors — O(m·n) — C#.",
+    "url": "concepts/coding-problems/maximal-square.html"
+  },
+  {
+    "title": "Perfect Squares",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "bfs", "medium", "knapsack", "min-count", "interview"],
+    "description": "Find the fewest perfect-square numbers summing to n with an unbounded-knapsack DP where dp[i] = 1 + min over squares s≤i of dp[i-s] — O(n·sqrt n) — with a C# solution.",
+    "url": "concepts/coding-problems/perfect-squares.html"
+  },
+  {
+    "title": "Reorganize String",
+    "category": "coding-problems",
+    "tags": ["heap", "greedy", "strings", "medium", "scheduling", "interview"],
+    "description": "Rearrange a string so no two adjacent characters are equal by greedily placing the most frequent remaining character (max-heap), never repeating the one just used — O(n log k) — with a C# solution.",
+    "url": "concepts/coding-problems/reorganize-string.html"
+  },
+  {
+    "title": "Candy",
+    "category": "coding-problems",
+    "tags": ["greedy", "arrays", "hard", "two-pass", "ratings", "interview"],
+    "description": "Distribute the minimum candies so higher-rated children get more than each neighbor with two greedy passes — left to right, then right to left — taking the max requirement per child — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/candy.html"
   }
 ]

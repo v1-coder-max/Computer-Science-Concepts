@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valid Sudoku — DevLens</title>
+  <meta name="description" content="Validate a partially filled Sudoku board by checking rows, columns, and 3x3 boxes for duplicates in a single pass using hash sets keyed by row, column, and box index — O(1) for the fixed 9x9 — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="valid-sudoku" data-title="Valid Sudoku">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Valid Sudoku</h1>
+          <p class="lede">Is the 9×9 board valid so far? Track seen digits per <strong>row, column, and 3×3 box</strong> with sets — any repeat fails.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#matrix</span>
+            <span class="tag">#hashing</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#constraints</span>
+            <span class="tag">#sets</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Determine if a partially filled 9×9 Sudoku board is valid: each row, each column, and each of the nine 3×3 sub-boxes must contain the digits 1–9 without repetition. Empty cells are <code>.</code>.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p>A board with a repeated 8 in a column → <code>false</code>; otherwise → <code>true</code>.</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Separately scan each row, each column, and each box for duplicates — three passes, more code, easy to get the box indexing wrong. One pass with three sets per constraint is cleaner.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Use sets keyed by constraint: one per <strong>row</strong>, one per <strong>column</strong>, and one per <strong>box</strong> (box index = <code>(r/3)*3 + c/3</code>). Scan every filled cell once; if its digit already appears in that cell’s row, column, or box set, the board is invalid. Otherwise add it to all three. The board size is fixed (81 cells), so this is effectively constant work.</p><p><strong>Time O(1) (fixed 9×9), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Row, column, box sets in one pass">
+              <text class="dgm-sub" x="20" y="24">box index = (r/3)*3 + (c/3)</text>
+              <text class="dgm-sub" x="20" y="52">digit seen in row/col/box set → invalid</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">else add to all three sets</text>
+            </svg>
+            <figcaption>Figure 1 — Three constraint sets per cell catch any duplicate in a single sweep.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public bool IsValidSudoku(char[][] board)
+{
+    var rows = new HashSet&lt;char&gt;[9];
+    var cols = new HashSet&lt;char&gt;[9];
+    var boxes = new HashSet&lt;char&gt;[9];
+    for (int i = 0; i &lt; 9; i++) { rows[i] = new(); cols[i] = new(); boxes[i] = new(); }
+
+    for (int r = 0; r &lt; 9; r++)
+        for (int c = 0; c &lt; 9; c++)
+        {
+            char d = board[r][c];
+            if (d == '.') continue;
+            int b = (r / 3) * 3 + c / 3;
+            if (!rows[r].Add(d) || !cols[c].Add(d) || !boxes[b].Add(d))
+                return false;          // Add returns false if already present
+        }
+    return true;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(1) — fixed 81 cells (O(n²) for a general n×n).</li>
+              <li><strong>Space:</strong> O(1) — 27 small sets.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Three constraint sets — <strong>row, column, 3×3 box</strong> — in one pass.</li>
+              <li>Box index formula: <code>(r/3)*3 + c/3</code>.</li>
+              <li><code>HashSet.Add</code> returning false is a tidy duplicate check.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/group-anagrams.html"><span class="rc-cat">Coding</span><span class="rc-title">Group Anagrams</span></a>
+            <a class="related-card" href="../coding-problems/contains-duplicate.html"><span class="rc-cat">Coding</span><span class="rc-title">Contains Duplicate</span></a>
+            <a class="related-card" href="../coding-problems/set-matrix-zeroes.html"><span class="rc-cat">Coding</span><span class="rc-title">Set Matrix Zeroes</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The only tricky part is the box index formula — get that right and the rest is set membership. One pass beats three separate scans; mention you only validate, not solve (that’s the backtracking follow-up).</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

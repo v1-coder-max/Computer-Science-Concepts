@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merge Sorted Array — DevLens</title>
+  <meta name="description" content="Merge two sorted arrays in place into the first using a three-pointer fill from the back, so writing the largest elements first never overwrites unread values — O(m+n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="merge-sorted-array" data-title="Merge Sorted Array">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Merge Sorted Array</h1>
+          <p class="lede">Merge <code>nums2</code> into <code>nums1</code> in place. The trick: fill from the <strong>back</strong>, writing the largest elements first so you never overwrite unread data.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#arrays</span>
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#easy</span>
+            <span class="tag">#in-place</span>
+            <span class="tag">#merge</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given sorted <code>nums1</code> (length <code>m+n</code>, with <code>m</code> values then <code>n</code> zeros) and sorted <code>nums2</code> (length <code>n</code>), merge <code>nums2</code> into <code>nums1</code> as one sorted array, in place.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums1=[1,2,3,0,0,0], m=3, nums2=[2,5,6], n=3</code> → <code>[1,2,2,3,5,6]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Copy both into a new array, sort, and write back — O((m+n) log(m+n)) and extra space, ignoring that both inputs are already sorted. Merging front-to-back in place would overwrite unread <code>nums1</code> values, so we go backwards.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Use three pointers: <code>i = m−1</code> (end of real <code>nums1</code> values), <code>j = n−1</code> (end of <code>nums2</code>), and <code>k = m+n−1</code> (write position). Compare <code>nums1[i]</code> and <code>nums2[j]</code> and place the <strong>larger</strong> at <code>k</code>, stepping that pointer and <code>k</code> back. The free space is always at or ahead of <code>k</code>, so nothing unread is clobbered.</p><p><strong>Time O(m+n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Fill from the back, largest first">
+              <text class="dgm-sub" x="20" y="24">i = m-1, j = n-1, write at k = m+n-1</text>
+              <text class="dgm-sub" x="20" y="52">place max(nums1[i], nums2[j]) at k, step back</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">tail space never overwrites unread values</text>
+            </svg>
+            <figcaption>Figure 1 — Writing the biggest remaining value into the tail keeps the in-place merge safe.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public void Merge(int[] nums1, int m, int[] nums2, int n)
+{
+    int i = m - 1, j = n - 1, k = m + n - 1;
+    while (j &gt;= 0)                          // until nums2 is fully placed
+    {
+        if (i &gt;= 0 &amp;&amp; nums1[i] &gt; nums2[j]) nums1[k--] = nums1[i--];
+        else                              nums1[k--] = nums2[j--];
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(m+n) — each element placed once.</li>
+              <li><strong>Space:</strong> O(1) — in place.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Merge sorted arrays in place by writing from the <strong>back</strong>.</li>
+              <li>Largest-first fill keeps the write pointer ahead of unread data.</li>
+              <li>Stop when <code>nums2</code> is exhausted — remaining <code>nums1</code> is already in place.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-two-sorted-lists.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge Two Sorted Lists</span></a>
+            <a class="related-card" href="../coding-problems/remove-duplicates-from-sorted-array.html"><span class="rc-cat">Coding</span><span class="rc-title">Remove Duplicates from Sorted Array</span></a>
+            <a class="related-card" href="../coding-problems/sort-colors.html"><span class="rc-cat">Coding</span><span class="rc-title">Sort Colors</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The reason to merge backwards — avoiding overwrites — is the whole insight. Say it before coding. It’s a tiny problem but a classic warm-up that screens for in-place thinking.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

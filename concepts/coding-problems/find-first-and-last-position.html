@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find First and Last Position of Element in Sorted Array — DevLens</title>
+  <meta name="description" content="Find the first and last index of a target in a sorted array with duplicates by running two boundary binary searches — leftmost and rightmost occurrence — in O(log n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="find-first-and-last-position" data-title="Find First and Last Position of Element in Sorted Array">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Find First and Last Position of Element in Sorted Array</h1>
+          <p class="lede">The first and last index of a target in a sorted array with duplicates. Run <strong>two boundary binary searches</strong> — one biased left, one biased right.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#binary-search</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#boundaries</span>
+            <span class="tag">#duplicates</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a sorted array <code>nums</code> and a <code>target</code>, return the starting and ending indices of <code>target</code>, or <code>[-1, -1]</code> if absent. Must be O(log n).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums=[5,7,7,8,8,10], target=8</code> → <code>[3,4]</code> &nbsp;·&nbsp; <code>target=6</code> → <code>[-1,-1]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Find the target with one binary search, then expand linearly to both ends — O(log n + count), which is O(n) if the target fills the array. Two boundary searches keep it strictly O(log n).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Do <strong>two binary searches</strong>. For the <strong>leftmost</strong> occurrence, when <code>nums[mid] == target</code> keep searching left (<code>hi = mid − 1</code>) while remembering the index. For the <strong>rightmost</strong>, on a match search right (<code>lo = mid + 1</code>). Each is a standard binary search with the equality case biased toward one side.</p><p><strong>Time O(log n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Two boundary searches">
+              <text class="dgm-sub" x="20" y="24">left search: on match, go left, record index</text>
+              <text class="dgm-sub" x="20" y="52">right search: on match, go right, record index</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">target 8 in [5,7,7,8,8,10] → [3, 4]</text>
+            </svg>
+            <figcaption>Figure 1 — Biasing the equality case left then right finds both ends in two log-n searches.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[] SearchRange(int[] nums, int target)
+{
+    return new[] { Bound(true), Bound(false) };
+
+    int Bound(bool leftmost)
+    {
+        int lo = 0, hi = nums.Length - 1, idx = -1;
+        while (lo &lt;= hi)
+        {
+            int mid = lo + (hi - lo) / 2;
+            if (nums[mid] == target)
+            {
+                idx = mid;
+                if (leftmost) hi = mid - 1; else lo = mid + 1;   // bias the search
+            }
+            else if (nums[mid] &lt; target) lo = mid + 1;
+            else hi = mid - 1;
+        }
+        return idx;
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(log n) — two binary searches.</li>
+              <li><strong>Space:</strong> O(1).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Find boundaries with <strong>two biased binary searches</strong>.</li>
+              <li>On a match, keep going left (first) or right (last), recording the index.</li>
+              <li>Strictly O(log n) — don’t expand linearly from a found index.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+            <a class="related-card" href="../coding-problems/search-insert-position.html"><span class="rc-cat">Coding</span><span class="rc-title">Search Insert Position</span></a>
+            <a class="related-card" href="../coding-problems/find-peak-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Find Peak Element</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The key is keeping it O(log n) — linear expansion from a hit fails when the target dominates the array. Two boundary searches with the equality bias is the clean answer.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

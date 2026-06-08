@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>String to Integer (atoi) — DevLens</title>
+  <meta name="description" content="Implement atoi by skipping whitespace, reading an optional sign, accumulating digits, and clamping to the 32-bit signed range on overflow before the multiply — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="string-to-integer-atoi" data-title="String to Integer (atoi)">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>String to Integer (atoi)</h1>
+          <p class="lede">Parse a string to a 32-bit int like C’s <code>atoi</code>: skip spaces, read an optional sign, gather digits, and <strong>clamp on overflow</strong> before it happens.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#strings</span>
+            <span class="tag">#math</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#parsing</span>
+            <span class="tag">#overflow</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Implement <code>MyAtoi(s)</code>: skip leading whitespace, read an optional <code>+/-</code>, then consecutive digits, ignoring the rest. Clamp the result to the 32-bit signed range <code>[-2³¹, 2³¹−1]</code>.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>"   -42"</code> → <code>-42</code> &nbsp;·&nbsp; <code>"4193 with words"</code> → <code>4193</code> &nbsp;·&nbsp; <code>"2147483648"</code> → <code>2147483647</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Parsing into a <code>long</code> or <code>BigInteger</code> then clamping is easy but sidesteps the real challenge: handling overflow with bounded integer types and the messy leading-whitespace/sign rules.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Step through the string: (1) skip leading spaces, (2) read an optional sign, (3) accumulate digits into <code>result</code>. Before each <code>result = result * 10 + digit</code>, check whether it <strong>would overflow</strong> <code>int</code> — if <code>result</code> exceeds <code>int.MaxValue / 10</code>, or equals it with a digit that pushes past the bound — and clamp to <code>int.MaxValue</code>/<code>int.MinValue</code> accordingly. Stop at the first non-digit.</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Skip, sign, digits, clamp-before-overflow">
+              <text class="dgm-sub" x="20" y="24">skip spaces → read +/- → read digits</text>
+              <text class="dgm-sub" x="20" y="52">check overflow BEFORE result*10 + d</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">clamp to int.MaxValue / int.MinValue</text>
+            </svg>
+            <figcaption>Figure 1 — Checking the bound before multiplying prevents the overflow rather than detecting it after.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MyAtoi(string s)
+{
+    int i = 0, n = s.Length;
+    while (i &lt; n &amp;&amp; s[i] == ' ') i++;             // 1) whitespace
+    int sign = 1;
+    if (i &lt; n &amp;&amp; (s[i] == '+' || s[i] == '-')) sign = s[i++] == '-' ? -1 : 1;  // 2) sign
+
+    int result = 0;
+    while (i &lt; n &amp;&amp; char.IsDigit(s[i]))            // 3) digits
+    {
+        int d = s[i++] - '0';
+        if (result &gt; int.MaxValue / 10 || (result == int.MaxValue / 10 &amp;&amp; d &gt; 7))
+            return sign == 1 ? int.MaxValue : int.MinValue;   // clamp
+        result = result * 10 + d;
+    }
+    return result * sign;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one scan.</li>
+              <li><strong>Space:</strong> O(1).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Four phases: <strong>whitespace, sign, digits, clamp</strong>.</li>
+              <li>Check overflow <em>before</em> the multiply, not after.</li>
+              <li>Use the <code>int.MaxValue/10</code> and last-digit comparison for a pure-int solution.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/reverse-integer.html"><span class="rc-cat">Coding</span><span class="rc-title">Reverse Integer</span></a>
+            <a class="related-card" href="../coding-problems/roman-to-integer.html"><span class="rc-cat">Coding</span><span class="rc-title">Roman to Integer</span></a>
+            <a class="related-card" href="../coding-problems/multiply-strings.html"><span class="rc-cat">Coding</span><span class="rc-title">Multiply Strings</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>It’s 90% edge cases: whitespace, sign, non-digits, and overflow. Walk the four phases methodically and show the pre-multiply overflow guard — that’s exactly what the interviewer is probing.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

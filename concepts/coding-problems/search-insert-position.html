@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Insert Position — DevLens</title>
+  <meta name="description" content="Find the index of a target in a sorted array, or where it would be inserted, with a lower-bound binary search that converges on the first position not less than the target — O(log n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="search-insert-position" data-title="Search Insert Position">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Search Insert Position</h1>
+          <p class="lede">Find a target in a sorted array, or where it would go. It’s a <strong>lower-bound</strong> binary search — the first index whose value is ≥ the target.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#binary-search</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#easy</span>
+            <span class="tag">#lower-bound</span>
+            <span class="tag">#sorted</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a sorted array of distinct integers and a <code>target</code>, return the index if found, otherwise the index where it would be inserted to keep the array sorted.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,3,5,6], target=5</code> → <code>2</code> &nbsp;·&nbsp; <code>target=2</code> → <code>1</code> &nbsp;·&nbsp; <code>target=7</code> → <code>4</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Linearly scan for the first element ≥ target — O(n). Binary search finds the same boundary in O(log n).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Run a <strong>lower-bound</strong> binary search: maintain <code>[lo, hi]</code> with <code>hi = n</code> (one past the end). While <code>lo &lt; hi</code>, if <code>nums[mid] &lt; target</code> move <code>lo = mid + 1</code>, else <code>hi = mid</code>. When they converge, <code>lo</code> is the first index whose value is ≥ target — exactly the found index or the correct insertion point.</p><p><strong>Time O(log n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Lower-bound binary search">
+              <text class="dgm-sub" x="20" y="24">nums[mid] < target → lo = mid + 1</text>
+              <text class="dgm-sub" x="20" y="52">else hi = mid</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">lo = first index with value ≥ target</text>
+            </svg>
+            <figcaption>Figure 1 — Converging on the first not-less-than position gives both found and insertion indices.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int SearchInsert(int[] nums, int target)
+{
+    int lo = 0, hi = nums.Length;       // hi is exclusive
+    while (lo &lt; hi)
+    {
+        int mid = lo + (hi - lo) / 2;
+        if (nums[mid] &lt; target) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(log n).</li>
+              <li><strong>Space:</strong> O(1).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>It’s the <strong>lower-bound</strong> (first ≥ target) search.</li>
+              <li>Use an exclusive <code>hi = n</code> so the insert-at-end case works.</li>
+              <li>The same template gives upper bound and counts in sorted data.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+            <a class="related-card" href="../coding-problems/find-first-and-last-position.html"><span class="rc-cat">Coding</span><span class="rc-title">Find First and Last Position of Element in Sorted Array</span></a>
+            <a class="related-card" href="../coding-problems/find-peak-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Find Peak Element</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Frame it as lower-bound and the boundaries fall out. The exclusive <code>hi</code> handling the insert-at-end case is the detail that distinguishes a correct answer.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

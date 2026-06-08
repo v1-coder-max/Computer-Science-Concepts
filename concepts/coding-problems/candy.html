@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Candy — DevLens</title>
+  <meta name="description" content="Distribute the minimum candies so higher-rated children get more than each neighbor with two greedy passes — left to right, then right to left — taking the max requirement per child — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="candy" data-title="Candy">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Candy</h1>
+          <p class="lede">Give the fewest candies so each child outscores its higher-rated neighbors. Two greedy passes — <strong>left-to-right then right-to-left</strong> — settle both constraints.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#greedy</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#hard</span>
+            <span class="tag">#two-pass</span>
+            <span class="tag">#ratings</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Children stand in a line with integer <code>ratings</code>. Each gets at least one candy, and any child with a higher rating than an adjacent child must get more candies. Return the minimum total candies.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,0,2]</code> → <code>5</code> (2,1,2) &nbsp;·&nbsp; <code>[1,2,2]</code> → <code>4</code> (1,2,1)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Repeatedly bumping candies until no rule is violated converges but can be O(n²). Two directional passes encode the left and right neighbor constraints in O(n).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Start everyone at 1 candy. <strong>Left-to-right pass</strong>: if <code>ratings[i] &gt; ratings[i−1]</code>, give <code>candies[i] = candies[i−1] + 1</code> (satisfies the left neighbor). <strong>Right-to-left pass</strong>: if <code>ratings[i] &gt; ratings[i+1]</code>, set <code>candies[i] = max(candies[i], candies[i+1] + 1)</code> (satisfies the right neighbor without breaking the left). The <code>max</code> keeps both constraints. Sum the array.</p><p><strong>Time O(n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Two directional passes, take the max">
+              <text class="dgm-sub" x="20" y="24">L→R: rating up → prev + 1</text>
+              <text class="dgm-sub" x="20" y="52">R→L: rating up → max(cur, next + 1)</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[1,0,2] → 2+1+2 = 5</text>
+            </svg>
+            <figcaption>Figure 1 — Each pass enforces one neighbor; the max merges both requirements.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int Candy(int[] ratings)
+{
+    int n = ratings.Length;
+    var candies = new int[n];
+    Array.Fill(candies, 1);
+
+    for (int i = 1; i &lt; n; i++)                       // left neighbor
+        if (ratings[i] &gt; ratings[i - 1]) candies[i] = candies[i - 1] + 1;
+
+    for (int i = n - 2; i &gt;= 0; i--)                  // right neighbor
+        if (ratings[i] &gt; ratings[i + 1])
+            candies[i] = Math.Max(candies[i], candies[i + 1] + 1);
+
+    return candies.Sum();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — two linear passes.</li>
+              <li><strong>Space:</strong> O(n) for the candies array.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Split a two-sided constraint into <strong>two directional passes</strong>.</li>
+              <li>Take the <strong>max</strong> in the second pass to keep both rules.</li>
+              <li>Each child ends with the larger of its left- and right-driven requirement.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/gas-station.html"><span class="rc-cat">Coding</span><span class="rc-title">Gas Station</span></a>
+            <a class="related-card" href="../coding-problems/jump-game-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Jump Game II</span></a>
+            <a class="related-card" href="../coding-problems/partition-labels.html"><span class="rc-cat">Coding</span><span class="rc-title">Partition Labels</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The two-pass-with-max idea — handle each neighbor direction separately, then merge — is the reusable trick (also Trapping Rain Water’s prefix/suffix). Explain why the max preserves both constraints.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

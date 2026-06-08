@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Permutations II — DevLens</title>
+  <meta name="description" content="Generate all unique permutations of an array with duplicates by sorting and skipping a duplicate at the same recursion level unless its identical predecessor was used — O(n·n!) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="permutations-ii" data-title="Permutations II">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Permutations II</h1>
+          <p class="lede">Permutations when the input has duplicates and the output must be unique. <strong>Sort</strong>, then skip a duplicate at the same level unless its twin was just used.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#backtracking</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#dedupe</span>
+            <span class="tag">#permutations</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a collection <code>nums</code> that may contain duplicates, return all unique permutations.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,1,2]</code> → <code>[[1,1,2],[1,2,1],[2,1,1]]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Generate all <code>n!</code> permutations and dedupe with a set — wasteful and memory-heavy. Pruning duplicate branches during backtracking avoids generating repeats at all.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Backtrack with a <code>used[]</code> array as in standard permutations, but first <strong>sort</strong> so equal values are adjacent. At each level, <strong>skip</strong> a value if it equals the previous value <em>and</em> that previous value is currently <strong>unused</strong> (<code>i &gt; 0 &amp;&amp; nums[i] == nums[i-1] &amp;&amp; !used[i-1]</code>). That condition ensures duplicates are placed in a fixed left-to-right order, so each distinct permutation is produced once.</p><p><strong>Time O(n · n!), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Skip duplicate siblings during recursion">
+              <text class="dgm-sub" x="20" y="24">sort so equal values are adjacent</text>
+              <text class="dgm-sub" x="20" y="52">skip nums[i]==nums[i-1] when !used[i-1]</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">each distinct permutation made once</text>
+            </svg>
+            <figcaption>Figure 1 — Forcing duplicates to be used left-to-right removes permuted repeats.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;int&gt;&gt; PermuteUnique(int[] nums)
+{
+    Array.Sort(nums);
+    var result = new List&lt;IList&lt;int&gt;&gt;();
+    var used = new bool[nums.Length];
+    Backtrack(new List&lt;int&gt;());
+    return result;
+
+    void Backtrack(List&lt;int&gt; path)
+    {
+        if (path.Count == nums.Length) { result.Add(new List&lt;int&gt;(path)); return; }
+        for (int i = 0; i &lt; nums.Length; i++)
+        {
+            if (used[i]) continue;
+            if (i &gt; 0 &amp;&amp; nums[i] == nums[i - 1] &amp;&amp; !used[i - 1]) continue;   // dedupe
+            used[i] = true; path.Add(nums[i]);
+            Backtrack(path);
+            used[i] = false; path.RemoveAt(path.Count - 1);
+        }
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n · n!) worst case (fewer with duplicates).</li>
+              <li><strong>Space:</strong> O(n) recursion depth.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Sort, then skip <code>nums[i]==nums[i-1] &amp;&amp; !used[i-1]</code>.</li>
+              <li>The <code>!used[i-1]</code> condition fixes duplicate ordering.</li>
+              <li>It’s Permutations plus the standard backtracking dedupe rule.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/permutations.html"><span class="rc-cat">Coding</span><span class="rc-title">Permutations</span></a>
+            <a class="related-card" href="../coding-problems/subsets-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Subsets II</span></a>
+            <a class="related-card" href="../coding-problems/combination-sum-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Combination Sum II</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The exact dedupe condition (<code>!used[i-1]</code>) trips people — explain that it forces equal values to be consumed in order, so you never build the same permutation twice.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

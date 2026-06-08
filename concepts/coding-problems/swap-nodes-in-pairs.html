@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Swap Nodes in Pairs — DevLens</title>
+  <meta name="description" content="Swap every two adjacent nodes of a linked list by relinking pointers (not values) with a dummy head, advancing two nodes at a time — O(n) time, O(1) space — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="swap-nodes-in-pairs" data-title="Swap Nodes in Pairs">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Swap Nodes in Pairs</h1>
+          <p class="lede">Swap every two adjacent nodes — by relinking pointers, not values. A <strong>dummy head</strong> and careful pointer surgery handle it in one pass.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#linked-list</span>
+            <span class="tag">#pointers</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#dummy-head</span>
+            <span class="tag">#relink</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a linked list, swap every two adjacent nodes and return its head. You must swap the nodes themselves (not just their values).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>1→2→3→4</code> → <code>2→1→4→3</code> &nbsp;·&nbsp; <code>1→2→3</code> → <code>2→1→3</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Swapping the <em>values</em> of each pair is trivial but violates the “swap nodes” constraint. Relinking pointers is the intended solution and only marginally harder.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Use a <strong>dummy</strong> before the head. Keep a <code>prev</code> pointer; while two nodes remain, identify <code>first = prev.next</code> and <code>second = first.next</code>, then relink: <code>prev.next = second</code>, <code>first.next = second.next</code>, <code>second.next = first</code>. Advance <code>prev</code> to <code>first</code> (now the second of the swapped pair) and repeat. A leftover single node stays in place.</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Relink each adjacent pair">
+              <text class="dgm-sub" x="20" y="24">first = prev.next, second = first.next</text>
+              <text class="dgm-sub" x="20" y="52">prev→second, first→second.next, second→first</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">1→2→3→4 → 2→1→4→3</text>
+            </svg>
+            <figcaption>Figure 1 — Three pointer reassignments swap a pair; the dummy anchors the first swap.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public ListNode SwapPairs(ListNode head)
+{
+    var dummy = new ListNode { next = head };
+    ListNode prev = dummy;
+
+    while (prev.next != null &amp;&amp; prev.next.next != null)
+    {
+        ListNode first = prev.next, second = first.next;
+        first.next = second.next;     // first points past second
+        second.next = first;          // second points to first
+        prev.next = second;           // prev points to second
+        prev = first;                 // advance two nodes
+    }
+    return dummy.next;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each node touched once.</li>
+              <li><strong>Space:</strong> O(1).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Relink <strong>nodes</strong>, not values, with three pointer assignments.</li>
+              <li>A <strong>dummy head</strong> anchors the first swap uniformly.</li>
+              <li>It’s the k=2 case of Reverse Nodes in k-Group.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/reverse-linked-list.html"><span class="rc-cat">Coding</span><span class="rc-title">Reverse Linked List</span></a>
+            <a class="related-card" href="../coding-problems/reverse-nodes-in-k-group.html"><span class="rc-cat">Coding</span><span class="rc-title">Reverse Nodes in k-Group</span></a>
+            <a class="related-card" href="../coding-problems/reorder-list.html"><span class="rc-cat">Coding</span><span class="rc-title">Reorder List</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Resist the value-swap shortcut — they want pointer relinking. The dummy head and the exact order of the three reassignments are what to get right; it’s Reverse-k-Group with k=2.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

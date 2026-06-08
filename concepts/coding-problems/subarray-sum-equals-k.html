@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subarray Sum Equals K — DevLens</title>
+  <meta name="description" content="Count subarrays summing to k in O(n) with prefix sums and a hash map of prefix-sum frequencies: at each index add the count of prefix sums equal to current minus k — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="subarray-sum-equals-k" data-title="Subarray Sum Equals K">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Subarray Sum Equals K</h1>
+          <p class="lede">Count subarrays that sum to <code>k</code>. <strong>Prefix sums + a hash map</strong> of how often each prefix sum has appeared turns it into a one-pass complement lookup.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#arrays</span>
+            <span class="tag">#prefix-sum</span>
+            <span class="tag">#hashing</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#counting</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an integer array <code>nums</code> and an integer <code>k</code>, return the number of contiguous subarrays whose sum equals <code>k</code> (values may be negative).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums=[1,1,1], k=2</code> → <code>2</code> &nbsp;·&nbsp; <code>nums=[1,2,3], k=3</code> → <code>2</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Check every subarray’s sum — O(n²) (or O(n³) without running sums). Negative numbers rule out a sliding window. Prefix sums plus a hash map cut it to O(n).</p>
+
+          <h2>Optimized approach</h2>
+          <p>A subarray <code>(i, j]</code> sums to <code>k</code> iff <code>prefix[j] − prefix[i] == k</code>, i.e. <code>prefix[i] == prefix[j] − k</code>. Sweep, maintaining the running prefix sum and a <strong>map from prefix-sum value → how many times it has occurred</strong>. At each index, add <code>count[prefix − k]</code> to the answer, then record the current prefix. Seed the map with <code>{0: 1}</code> to count subarrays starting at index 0.</p><p><strong>Time O(n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Prefix-sum complement count">
+              <text class="dgm-sub" x="20" y="24">need prefix[i] == prefix[j] − k</text>
+              <text class="dgm-sub" x="20" y="52">ans += count[prefix − k]; count[prefix]++</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">seed count[0] = 1 for index-0 subarrays</text>
+            </svg>
+            <figcaption>Figure 1 — Each prefix sum looks up how many earlier prefixes complete a sum of k.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int SubarraySum(int[] nums, int k)
+{
+    var count = new Dictionary&lt;int, int&gt; { [0] = 1 };   // empty prefix
+    int prefix = 0, result = 0;
+    foreach (int n in nums)
+    {
+        prefix += n;
+        if (count.TryGetValue(prefix - k, out int c)) result += c;   // complement
+        count[prefix] = count.GetValueOrDefault(prefix) + 1;
+    }
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one pass.</li>
+              <li><strong>Space:</strong> O(n) — the prefix-sum frequency map.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Prefix sum + hash map</strong> of prefix frequencies = O(n) subarray-sum counting.</li>
+              <li>Look up the complement <code>prefix − k</code> before inserting the current prefix.</li>
+              <li>Seed <code>{0:1}</code> so subarrays starting at index 0 are counted.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/two-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Two Sum</span></a>
+            <a class="related-card" href="../coding-problems/maximum-subarray.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Subarray</span></a>
+            <a class="related-card" href="../coding-problems/contains-duplicate.html"><span class="rc-cat">Coding</span><span class="rc-title">Contains Duplicate</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>It’s “Two Sum on prefix sums.” The seed <code>{0:1}</code> and looking up the complement before inserting are the two details that decide correctness. Stress that negatives kill the sliding-window approach.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
