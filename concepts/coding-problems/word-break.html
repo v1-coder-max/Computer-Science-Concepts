@@ -93,18 +93,7 @@
           </p>
           <p><strong>Time O(n²) (×word length for substring), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Reachability over prefix boundaries">
-              <text class="dgm-sub" x="20" y="22">dp[i] true if dp[j] &amp;&amp; s[j..i] in dict</text>
-              <rect class="dgm-box-accent" x="20" y="40" width="80" height="28" rx="5"/><text class="dgm-sub" x="60" y="59" text-anchor="middle">dp0 ✓</text>
-              <rect class="dgm-box" x="104" y="40" width="120" height="28" rx="5"/><text class="dgm-sub" x="164" y="59" text-anchor="middle">"leet" ✓</text>
-              <rect class="dgm-box-accent" x="228" y="40" width="80" height="28" rx="5"/><text class="dgm-sub" x="268" y="59" text-anchor="middle">dp4 ✓</text>
-              <rect class="dgm-box" x="312" y="40" width="120" height="28" rx="5"/><text class="dgm-sub" x="372" y="59" text-anchor="middle">"code" ✓</text>
-              <rect class="dgm-box-accent" x="436" y="40" width="80" height="28" rx="5"/><text class="dgm-sub" x="476" y="59" text-anchor="middle">dp8 ✓</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">dp[n] reachable → true</text>
-            </svg>
-            <figcaption>Figure 1 — Each reachable boundary opens new ones via a dictionary word; reaching the end means success.</figcaption>
-          </figure>
+          <div class="viz" data-viz="word-break"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -185,5 +174,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

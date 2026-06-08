@@ -85,21 +85,7 @@
           </p>
           <p><strong>Time O(n), Space O(h)</strong> recursion depth.</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Comparing two trees node by node">
-              <circle class="dgm-box-accent" cx="110" cy="28" r="15"/><text class="dgm-sub" x="110" y="33" text-anchor="middle">1</text>
-              <circle class="dgm-box" cx="75" cy="72" r="15"/><text class="dgm-sub" x="75" y="77" text-anchor="middle">2</text>
-              <circle class="dgm-box" cx="150" cy="72" r="15"/><text class="dgm-sub" x="150" y="77" text-anchor="middle">3</text>
-              <line class="dgm-line" x1="100" y1="40" x2="83" y2="58"/><line class="dgm-line" x1="120" y1="40" x2="142" y2="58"/>
-              <text x="220" y="50" style="font:600 16px var(--font-sans)" fill="var(--c-text-soft)">≟</text>
-              <circle class="dgm-box-accent" cx="360" cy="28" r="15"/><text class="dgm-sub" x="360" y="33" text-anchor="middle">1</text>
-              <circle class="dgm-box" cx="325" cy="72" r="15"/><text class="dgm-sub" x="325" y="77" text-anchor="middle">2</text>
-              <circle class="dgm-box" cx="400" cy="72" r="15"/><text class="dgm-sub" x="400" y="77" text-anchor="middle">3</text>
-              <line class="dgm-line" x1="350" y1="40" x2="333" y2="58"/><line class="dgm-line" x1="370" y1="40" x2="392" y2="58"/>
-              <text class="dgm-sub" x="470" y="55" fill="var(--c-success)" style="font:600 12px var(--font-sans)">all pairs equal → true</text>
-            </svg>
-            <figcaption>Figure 1 — Recurse over both trees together; equality holds iff value, left, and right all match.</figcaption>
-          </figure>
+          <div class="viz" data-viz="same-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -173,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -92,17 +92,7 @@
           </p>
           <p><strong>All operations O(1); Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Min stack storing value and running min">
-              <text class="dgm-sub" x="20" y="22">push -2, 0, -3 — each cell stores (value, minSoFar)</text>
-              <rect class="dgm-box" x="20" y="34" width="150" height="30" rx="5"/><text class="dgm-sub" x="95" y="54" text-anchor="middle">(-3, min = -3) ← top</text>
-              <rect class="dgm-box" x="20" y="66" width="150" height="30" rx="5"/><text class="dgm-sub" x="95" y="86" text-anchor="middle">(0, min = -2)</text>
-              <rect class="dgm-box" x="20" y="98" width="150" height="30" rx="5"/><text class="dgm-sub" x="95" y="118" text-anchor="middle">(-2, min = -2)</text>
-              <text class="dgm-sub" x="200" y="54" fill="var(--c-success)" style="font:600 12px var(--font-sans)">GetMin = top's min = -3</text>
-              <text class="dgm-sub" x="200" y="86">after Pop → GetMin = -2 (no rescan)</text>
-            </svg>
-            <figcaption>Figure 1 — Each element carries the min as of its push, so pops restore the previous min for free.</figcaption>
-          </figure>
+          <div class="viz" data-viz="min-stack"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -182,5 +172,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -80,14 +80,7 @@
             (single char) and even centers (gap between chars).
           </p>
           <p><strong>Time O(n²), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Count every successful expansion">
-              <text class="dgm-sub" x="20" y="24">expand around each of 2n−1 centers</text>
-              <text class="dgm-sub" x="20" y="56">every matching expansion = one palindrome</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 12px var(--font-sans)">"aaa" → 3 singles + 2 doubles + 1 triple = 6 ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Counting each valid expansion (not just the widest) tallies all palindromic substrings.</figcaption>
-          </figure>
+          <div class="viz" data-viz="palindromic-substrings"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -165,5 +158,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Step through the string: (1) skip leading spaces, (2) read an optional sign, (3) accumulate digits into <code>result</code>. Before each <code>result = result * 10 + digit</code>, check whether it <strong>would overflow</strong> <code>int</code> — if <code>result</code> exceeds <code>int.MaxValue / 10</code>, or equals it with a digit that pushes past the bound — and clamp to <code>int.MaxValue</code>/<code>int.MinValue</code> accordingly. Stop at the first non-digit.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Skip, sign, digits, clamp-before-overflow">
-              <text class="dgm-sub" x="20" y="24">skip spaces → read +/- → read digits</text>
-              <text class="dgm-sub" x="20" y="52">check overflow BEFORE result*10 + d</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">clamp to int.MaxValue / int.MinValue</text>
-            </svg>
-            <figcaption>Figure 1 — Checking the bound before multiplying prevents the overflow rather than detecting it after.</figcaption>
-          </figure>
+          <div class="viz" data-viz="string-to-integer-atoi"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -163,5 +156,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

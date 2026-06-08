@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>The product of an <code>m</code>-digit and <code>n</code>-digit number has at most <code>m + n</code> digits. Use a result array of that size. Multiply every digit pair: <code>num1[i] * num2[j]</code> contributes to result positions <code>i + j</code> (carry) and <code>i + j + 1</code> (units). Add into those slots and propagate carries. Finally, build the string, skipping a single leading zero (unless the product is 0).</p><p><strong>Time O(m·n), Space O(m+n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Digit i×j lands at i+j and i+j+1">
-              <text class="dgm-sub" x="20" y="24">result size = m + n</text>
-              <text class="dgm-sub" x="20" y="52">p = d1*d2; pos i+j+1 += p; carry to i+j</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"123" × "456" = "56088"</text>
-            </svg>
-            <figcaption>Figure 1 — Positional bookkeeping replaces big-integer arithmetic.</figcaption>
-          </figure>
+          <div class="viz" data-viz="multiply-strings"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -166,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

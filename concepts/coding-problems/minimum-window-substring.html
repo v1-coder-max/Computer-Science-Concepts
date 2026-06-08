@@ -86,17 +86,7 @@
           </p>
           <p><strong>Time O(|s| + |t|), Space O(|t|).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Expand to valid then contract to minimal">
-              <text class="dgm-sub" x="20" y="22">need {A,B,C} · expand → valid, then shrink left</text>
-              <rect class="dgm-box-accent" x="20" y="36" width="36" height="28" rx="5"/><text class="dgm-sub" x="38" y="55" text-anchor="middle">B</text>
-              <rect class="dgm-box-accent" x="58" y="36" width="36" height="28" rx="5"/><text class="dgm-sub" x="76" y="55" text-anchor="middle">A</text>
-              <rect class="dgm-box-accent" x="96" y="36" width="36" height="28" rx="5"/><text class="dgm-sub" x="114" y="55" text-anchor="middle">N</text>
-              <rect class="dgm-box-accent" x="134" y="36" width="36" height="28" rx="5"/><text class="dgm-sub" x="152" y="55" text-anchor="middle">C</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">smallest valid window = "BANC"</text>
-            </svg>
-            <figcaption>Figure 1 — Grow until all of t is covered, then shrink the left edge while it stays covered.</figcaption>
-          </figure>
+          <div class="viz" data-viz="minimum-window-substring"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -188,5 +178,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

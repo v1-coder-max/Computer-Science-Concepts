@@ -85,16 +85,7 @@
           </p>
           <p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Stack evaluation of postfix tokens">
-              <text class="dgm-sub" x="20" y="22">["2","1","+","3","*"]</text>
-              <text class="dgm-sub" x="20" y="48">push 2, push 1 → '+' pops 1,2 → push 3 → stack [3]</text>
-              <text class="dgm-sub" x="20" y="72">push 3 → '*' pops 3,3 → push 9</text>
-              <rect class="dgm-box-accent" x="20" y="82" width="120" height="22" rx="5"/>
-              <text x="80" y="98" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">result = 9</text>
-            </svg>
-            <figcaption>Figure 1 — Operands stack up; each operator collapses the top two into one result.</figcaption>
-          </figure>
+          <div class="viz" data-viz="evaluate-reverse-polish-notation"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -183,5 +174,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

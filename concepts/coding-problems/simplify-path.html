@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Split the path on <code>/</code>. Walk the segments with a <strong>stack</strong>: skip empty strings and <code>.</code> (current directory); on <code>..</code>, pop one directory if the stack is non-empty (can’t go above root); otherwise push the real directory name. Finally join the stack with <code>/</code> and prepend a leading slash.</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Stack of directory names">
-              <text class="dgm-sub" x="20" y="24">split on "/"; skip "" and "."</text>
-              <text class="dgm-sub" x="20" y="52">".." → pop · real name → push</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">/a/./b/../c → /a/c</text>
-            </svg>
-            <figcaption>Figure 1 — The stack holds the surviving directory chain; double-dot pops the last.</figcaption>
-          </figure>
+          <div class="viz" data-viz="simplify-path"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

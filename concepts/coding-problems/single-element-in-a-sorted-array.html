@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Before the single element, pairs start at <strong>even</strong> indices (<code>(0,1), (2,3), …</code>); after it, the pairing shifts to odd starts. Binary search on <strong>even midpoints</strong>: force <code>mid</code> to be even; if <code>nums[mid] == nums[mid+1]</code>, the single element is to the <strong>right</strong> (pairing still intact), so <code>lo = mid + 2</code>; otherwise it’s at <code>mid</code> or to the <strong>left</strong>, so <code>hi = mid</code>. Convergence lands on the single element.</p><p><strong>Time O(log n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search on pair parity">
-              <text class="dgm-sub" x="20" y="24">before single: pairs at even indices</text>
-              <text class="dgm-sub" x="20" y="52">mid even & nums[mid]==nums[mid+1] → go right</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">else single is at mid or left</text>
-            </svg>
-            <figcaption>Figure 1 — The single element disturbs the even-index pairing, which binary search detects.</figcaption>
-          </figure>
+          <div class="viz" data-viz="single-element-in-a-sorted-array"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -158,5 +151,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

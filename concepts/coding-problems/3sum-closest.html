@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p><strong>Sort</strong> the array. Fix index <code>i</code>, then run two pointers <code>lo, hi</code> on the rest. Compute the triple sum; if it’s closer to the target than the best seen, update the answer. Then move toward the target: if the sum is <strong>less</strong> than target, <code>lo++</code> (increase the sum); if <strong>more</strong>, <code>hi−−</code>. An exact match returns immediately.</p><p><strong>Time O(n²), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two-pointer scan toward the target">
-              <text class="dgm-sub" x="20" y="24">sort; fix i, two pointers on the rest</text>
-              <text class="dgm-sub" x="20" y="52">sum < target → lo++ · sum > target → hi--</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">track the sum with the smallest |sum − target|</text>
-            </svg>
-            <figcaption>Figure 1 — Moving the pointer that nudges the sum toward the target converges on the closest triple.</figcaption>
-          </figure>
+          <div class="viz" data-viz="3sum-closest"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -164,5 +157,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Scan, building each number. When you hit an operator (or the end), act on the <strong>previous</strong> operator: for <code>+</code> push the number, for <code>−</code> push its negation, for <code>*</code> or <code>/</code> pop the top and push the product/quotient. Higher-precedence <code>*</code>/<code>/</code> thus combine with the immediate top, while <code>+</code>/<code>−</code> terms just accumulate. The answer is the <strong>sum of the stack</strong>.</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Apply * and / against the stack top">
-              <text class="dgm-sub" x="20" y="24">+ → push n · − → push −n</text>
-              <text class="dgm-sub" x="20" y="52">* / → pop top, push top·n or top/n</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">answer = sum of the stack</text>
-            </svg>
-            <figcaption>Figure 1 — Resolving high-precedence ops immediately leaves a sum of signed terms.</figcaption>
-          </figure>
+          <div class="viz" data-viz="basic-calculator-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -169,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

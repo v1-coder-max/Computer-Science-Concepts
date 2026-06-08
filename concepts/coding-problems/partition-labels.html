@@ -80,14 +80,7 @@
             start the next. It’s an interval-merge in disguise.
           </p>
           <p><strong>Time O(n), Space O(1)</strong> (26 letters).</p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Extend the cut to the latest last-index">
-              <text class="dgm-sub" x="20" y="24">last[ch] = final index of each letter</text>
-              <text class="dgm-sub" x="20" y="56">end = max(end, last[s[i]]); cut when i == end</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">each cut → one self-contained part ✓</text>
-            </svg>
-            <figcaption>Figure 1 — The part grows to swallow the last occurrence of every letter inside it.</figcaption>
-          </figure>
+          <div class="viz" data-viz="partition-labels"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -166,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

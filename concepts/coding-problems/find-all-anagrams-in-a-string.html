@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Build a frequency array for <code>p</code> and a sliding window of the same width over <code>s</code>. Slide one character at a time: <strong>add</strong> the entering character and <strong>remove</strong> the leaving one in O(1). When the window’s counts equal <code>p</code>’s counts, record the start index. Tracking how many of the 26 letter-counts currently match keeps each comparison O(1).</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Fixed window of letter counts">
-              <text class="dgm-sub" x="20" y="24">window width = |p|; counts updated in O(1)</text>
-              <text class="dgm-sub" x="20" y="52">window counts == p counts → record start</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">s="cbaebabacd", p="abc" → [0, 6]</text>
-            </svg>
-            <figcaption>Figure 1 — An equal letter-count window is an anagram, recorded by its start index.</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-all-anagrams-in-a-string"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -163,5 +156,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>The sequence of digit-square sums is like a linked list that either reaches 1 or enters a cycle — exactly the setup for <strong>Floyd’s tortoise and hare</strong>. Advance <code>slow</code> one step and <code>fast</code> two steps through the transformation; if they meet at a value that isn’t 1, there’s a cycle → not happy. If <code>fast</code> reaches 1, it’s happy. O(1) extra space.</p><p><strong>Time O(log n) per step, Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Floyd cycle detection on digit-square sums">
-              <text class="dgm-sub" x="20" y="24">next(n) = sum of squares of digits</text>
-              <text class="dgm-sub" x="20" y="52">slow +1, fast +2; meet → cycle</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">fast reaches 1 → happy ✓</text>
-            </svg>
-            <figcaption>Figure 1 — The sequence either reaches 1 or cycles; fast/slow catch the cycle in O(1) space.</figcaption>
-          </figure>
+          <div class="viz" data-viz="happy-number"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -163,5 +156,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

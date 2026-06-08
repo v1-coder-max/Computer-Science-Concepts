@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>It’s the general <strong>k-Sum</strong> pattern. <strong>Sort</strong> the array. Fix the first index <code>i</code> and second index <code>j</code> with two loops, then run the <strong>two-pointer</strong> 2Sum on the remainder to find pairs hitting <code>target − nums[i] − nums[j]</code>. Skip equal values at every level to avoid duplicate quadruples. Use a 64-bit sum to dodge overflow.</p><p><strong>Time O(n³), Space O(1)</strong> (excluding output).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Fix two, two-pointer the rest">
-              <text class="dgm-sub" x="20" y="24">sort; fix i, fix j (skip dup values)</text>
-              <text class="dgm-sub" x="20" y="52">two-pointer for target − nums[i] − nums[j]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">skip duplicates at all four levels</text>
-            </svg>
-            <figcaption>Figure 1 — Each fixed pair reduces 4Sum to a sorted two-pointer 2Sum.</figcaption>
-          </figure>
+          <div class="viz" data-viz="4sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -176,5 +169,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

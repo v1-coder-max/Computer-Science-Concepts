@@ -81,14 +81,7 @@
             does substring matching, but the direct double recursion is the expected answer.)
           </p>
           <p><strong>Time O(m·n), Space O(h).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Same-tree check tried at every node">
-              <text class="dgm-sub" x="20" y="24">for each node in root: SameTree(node, subRoot)?</text>
-              <text class="dgm-sub" x="20" y="52">node 3 → no · node 4 → compare subtree …</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">subtree at 4 == [4,1,2] → match ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Run the identical-tree comparison anchored at each node until one matches.</figcaption>
-          </figure>
+          <div class="viz" data-viz="subtree-of-another-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -163,5 +156,6 @@ private bool SameTree(TreeNode a, TreeNode b)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

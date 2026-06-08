@@ -81,14 +81,7 @@
             the peak.
           </p>
           <p><strong>Time O(n log n), Space O(n).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Min-heap of end times tracks busy rooms">
-              <text class="dgm-sub" x="20" y="24">sort by start; heap = end times of busy rooms</text>
-              <text class="dgm-sub" x="20" y="56">earliest end ≤ start → reuse; else new room</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">max rooms in use = answer ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Reuse the soonest-freeing room when possible; the heap’s peak size is the room count.</figcaption>
-          </figure>
+          <div class="viz" data-viz="meeting-rooms-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -163,5 +156,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

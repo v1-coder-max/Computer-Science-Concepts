@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Encode each string as <strong>length + a delimiter + the string</strong> (e.g. <code>"4#lint"</code>). To decode, read digits up to the <code>#</code> to get the length <code>L</code>, then take exactly the next <code>L</code> characters — regardless of what they are — and repeat. Because you always know how many characters to read, the content can contain any character, including <code>#</code>.</p><p><strong>Time O(total length), Space O(total length).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Length prefix makes parsing unambiguous">
-              <text class="dgm-sub" x="20" y="24">encode: len + "#" + string  (e.g. 4#lint)</text>
-              <text class="dgm-sub" x="20" y="52">decode: read len, then take exactly len chars</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">content may contain # safely</text>
-            </svg>
-            <figcaption>Figure 1 — Knowing each string’s length up front removes any delimiter ambiguity.</figcaption>
-          </figure>
+          <div class="viz" data-viz="encode-and-decode-strings"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -167,5 +160,6 @@ public IList&lt;string&gt; Decode(string s)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

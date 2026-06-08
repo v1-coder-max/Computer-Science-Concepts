@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>First normalize <code>k %= n</code>. Then: <strong>reverse the entire array</strong>, <strong>reverse the first <code>k</code></strong> elements, and <strong>reverse the remaining <code>n−k</code></strong>. The full reverse puts the last <code>k</code> at the front (but reversed); the two partial reverses fix their internal order. Three linear reversals, all in place.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reverse all, then reverse two parts">
-              <text class="dgm-sub" x="20" y="24">k %= n; reverse whole array</text>
-              <text class="dgm-sub" x="20" y="52">reverse [0..k-1] and [k..n-1]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[1..7] k=3 → [5,6,7,1,2,3,4]</text>
-            </svg>
-            <figcaption>Figure 1 — Three reversals achieve the rotation without extra memory.</figcaption>
-          </figure>
+          <div class="viz" data-viz="rotate-array"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -159,5 +152,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Scan from the <strong>last digit</strong>. If a digit is less than 9, increment it and return — no further carry. If it’s 9, set it to 0 and continue the carry left. If you fall off the front (every digit was 9), the number rolled over (like 999→1000), so <strong>prepend a 1</strong> to a zero-filled array.</p><p><strong>Time O(n), Space O(1)</strong> (O(n) only for the all-nines new array).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Carry from the least significant digit">
-              <text class="dgm-sub" x="20" y="24">digit < 9 → increment, done</text>
-              <text class="dgm-sub" x="20" y="52">digit == 9 → set 0, carry left</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">all nines → prepend 1 → [1,0,0,0]</text>
-            </svg>
-            <figcaption>Figure 1 — The carry stops at the first non-9; all-nines grows the array by one.</figcaption>
-          </figure>
+          <div class="viz" data-viz="plus-one"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -158,5 +151,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

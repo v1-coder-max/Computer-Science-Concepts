@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Walk with a <code>current</code> pointer. While <code>current.next</code> has the <strong>same value</strong> as <code>current</code>, relink <code>current.next = current.next.next</code> to skip the duplicate (don’t advance). When the next value differs, advance <code>current</code>. One pass keeps the first occurrence of each value.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Skip nodes equal to the current value">
-              <text class="dgm-sub" x="20" y="24">while current.next.val == current.val</text>
-              <text class="dgm-sub" x="20" y="52">current.next = current.next.next (skip)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">1→1→2→3→3 → 1→2→3</text>
-            </svg>
-            <figcaption>Figure 1 — Adjacent duplicates are unlinked, keeping the first of each value.</figcaption>
-          </figure>
+          <div class="viz" data-viz="remove-duplicates-from-sorted-list"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -158,5 +151,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

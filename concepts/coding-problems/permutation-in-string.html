@@ -87,17 +87,7 @@
           </p>
           <p><strong>Time O(n), Space O(1)</strong> (26-letter arrays).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Fixed window sliding while comparing counts">
-              <text class="dgm-sub" x="20" y="22">need {a:1, b:1} · window size 2 over s2</text>
-              <rect class="dgm-box" x="20" y="36" width="40" height="28" rx="5"/><text class="dgm-sub" x="40" y="55" text-anchor="middle">e</text>
-              <rect class="dgm-box" x="64" y="36" width="40" height="28" rx="5"/><text class="dgm-sub" x="84" y="55" text-anchor="middle">i</text>
-              <rect class="dgm-box-accent" x="152" y="36" width="40" height="28" rx="5"/><text class="dgm-sub" x="172" y="55" text-anchor="middle">b</text>
-              <rect class="dgm-box-accent" x="196" y="36" width="40" height="28" rx="5"/><text class="dgm-sub" x="216" y="55" text-anchor="middle">a</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">window "ba" counts == need → true</text>
-            </svg>
-            <figcaption>Figure 1 — Slide a window of s1’s length; an exact count match anywhere means a permutation exists.</figcaption>
-          </figure>
+          <div class="viz" data-viz="permutation-in-string"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -179,5 +169,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

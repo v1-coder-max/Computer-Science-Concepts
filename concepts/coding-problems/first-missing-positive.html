@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>The answer must be in <code>[1, n+1]</code>. <strong>Cyclic sort</strong>: for each position, while <code>nums[i]</code> is in range <code>[1, n]</code> and not already at its correct slot, <strong>swap</strong> it to index <code>nums[i] − 1</code>. After this, each in-range value <code>v</code> sits at index <code>v−1</code>. Scan: the first index <code>i</code> where <code>nums[i] != i+1</code> means <code>i+1</code> is missing; if all match, the answer is <code>n+1</code>.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Place value v at index v−1, then scan">
-              <text class="dgm-sub" x="20" y="24">swap nums[i] toward index nums[i]−1</text>
-              <text class="dgm-sub" x="20" y="52">after: value v lives at slot v−1</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">first slot where nums[i] != i+1 → answer</text>
-            </svg>
-            <figcaption>Figure 1 — Using indices as buckets reveals the first gap in O(1) space.</figcaption>
-          </figure>
+          <div class="viz" data-viz="first-missing-positive"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -160,5 +153,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

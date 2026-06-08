@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Process asteroids left to right with a <strong>stack</strong> of survivors. A <strong>right-moving</strong> asteroid is just pushed. A <strong>left-moving</strong> one (negative) collides with right-movers on top of the stack: while the top is a positive asteroid smaller than the incoming one, pop it (it explodes); if the top equals it, pop and stop (both gone); if the top is larger, the incoming one explodes. If no right-mover blocks it, push it. The stack ends as the surviving asteroids in order.</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Stack resolves each collision">
-              <text class="dgm-sub" x="20" y="24">right-mover → push</text>
-              <text class="dgm-sub" x="20" y="52">left-mover → pop smaller right-movers</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[5,10,-5] → [5,10]</text>
-            </svg>
-            <figcaption>Figure 1 — A left-mover eats stacked right-movers until blocked or destroyed.</figcaption>
-          </figure>
+          <div class="viz" data-viz="asteroid-collision"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -165,5 +158,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

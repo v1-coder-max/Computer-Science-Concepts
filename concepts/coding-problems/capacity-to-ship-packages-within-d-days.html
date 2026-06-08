@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>The capacity is in <code>[max(weights), sum(weights)]</code> — at least the heaviest package, at most everything in one day. For a candidate capacity, greedily <strong>simulate the days</strong>: pack packages until the next would exceed capacity, then start a new day. If the day count ≤ <code>days</code>, the capacity is <strong>feasible</strong> (search lower); else search higher. Binary search the smallest feasible capacity.</p><p><strong>Time O(n · log(sum)), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search capacity, simulate days">
-              <text class="dgm-sub" x="20" y="24">range [max(w), sum(w)]</text>
-              <text class="dgm-sub" x="20" y="52">check(cap): simulate days, days ≤ D ?</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">smallest feasible capacity is the answer</text>
-            </svg>
-            <figcaption>Figure 1 — A bigger ship never needs more days, so feasibility is monotonic.</figcaption>
-          </figure>
+          <div class="viz" data-viz="capacity-to-ship-packages-within-d-days"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -168,5 +161,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

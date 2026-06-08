@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Put the <strong>head of each list</strong> into a min-heap keyed by value. Pop the smallest, append it to the result, and push that node’s <code>next</code> (if any). The heap never holds more than <code>k</code> nodes, so each of the <code>N</code> nodes costs O(log k). Divide-and-conquer (pairwise-merge halves, like merge sort) achieves the same O(N log k) without a heap.</p><p><strong>Time O(N log k), Space O(k).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Min-heap of k current heads">
-              <text class="dgm-sub" x="20" y="24">heap holds one head per list (≤ k)</text>
-              <text class="dgm-sub" x="20" y="52">pop smallest → append → push its next</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">each node costs O(log k) → O(N log k)</text>
-            </svg>
-            <figcaption>Figure 1 — The heap always knows the global minimum among the k frontiers.</figcaption>
-          </figure>
+          <div class="viz" data-viz="merge-k-sorted-lists"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

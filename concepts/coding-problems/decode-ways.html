@@ -81,14 +81,7 @@
             <code>10</code> or <code>20</code>. Roll two variables for O(1) space.
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Sum one-digit and two-digit decodings">
-              <text class="dgm-sub" x="20" y="24">dp[i] = (s[i]∈1..9 ? dp[i−1] : 0)</text>
-              <text class="dgm-sub" x="20" y="56">       + (s[i−1..i]∈10..26 ? dp[i−2] : 0)</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"226" → 3 ways ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Each position adds the valid single-digit and two-digit continuations.</figcaption>
-          </figure>
+          <div class="viz" data-viz="decode-ways"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -166,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

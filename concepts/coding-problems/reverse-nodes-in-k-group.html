@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Work group by group. First check that <code>k</code> nodes remain (peek ahead); if not, stop — the tail stays untouched. Reverse the next <code>k</code> nodes in place (the standard three-pointer reversal bounded to <code>k</code> steps), then connect the previous group’s tail to the new head and remember the new tail as the connection point for the next group. A <strong>dummy head</strong> simplifies the first stitch.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reverse each full k-block, stitch segments">
-              <text class="dgm-sub" x="20" y="24">peek k ahead; if fewer than k, stop</text>
-              <text class="dgm-sub" x="20" y="52">reverse the group, relink prevTail → newHead</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">1→2→3→4→5, k=2 → 2→1→4→3→5</text>
-            </svg>
-            <figcaption>Figure 1 — Each complete group is reversed and spliced; the short remainder is left alone.</figcaption>
-          </figure>
+          <div class="viz" data-viz="reverse-nodes-in-k-group"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -169,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

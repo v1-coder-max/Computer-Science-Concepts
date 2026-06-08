@@ -80,14 +80,7 @@
             and take the larger. Handle the single-house edge case directly.
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two linear runs cover the circle">
-              <text class="dgm-sub" x="20" y="24">circle ⇒ never rob both first and last</text>
-              <text class="dgm-sub" x="20" y="56">max( rob(0..n−2),  rob(1..n−1) )</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">reuse the O(1) linear DP twice ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Excluding the first or the last house removes the wrap-around conflict.</figcaption>
-          </figure>
+          <div class="viz" data-viz="house-robber-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -166,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

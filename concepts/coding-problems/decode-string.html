@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Scan the string with a <strong>count stack</strong> and a <strong>string stack</strong>. On a digit, build the multi-digit number. On <code>[</code>, push the current number and current partial string, then reset them. On <code>]</code>, pop a count <code>k</code> and a previous string, and set <code>current = previous + current·k</code>. On a letter, append it to the current string. The stacks restore the enclosing context each time a bracket closes.</p><p><strong>Time O(output length), Space O(output length).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Count stack + string stack on brackets">
-              <text class="dgm-sub" x="20" y="24">[ → push (count, current), reset</text>
-              <text class="dgm-sub" x="20" y="52">] → current = prev + current * k</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">3[a2[c]] → accaccacc</text>
-            </svg>
-            <figcaption>Figure 1 — Each close-bracket multiplies the inner string and restores the outer context.</figcaption>
-          </figure>
+          <div class="viz" data-viz="decode-string"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -170,5 +163,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

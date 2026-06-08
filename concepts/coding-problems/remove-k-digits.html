@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>To minimize, a digit should be removed when it’s <strong>larger than the digit to its right</strong> (a descent makes the number bigger). Use a stack: for each digit, while the budget <code>k &gt; 0</code> and the stack top is greater than the current digit, pop it (spend a removal). Push the current digit. If removals remain after the pass, trim from the end. Finally strip leading zeros; an empty result is "0".</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Pop larger digits before a smaller one">
-              <text class="dgm-sub" x="20" y="24">top > current and k>0 → pop, k--</text>
-              <text class="dgm-sub" x="20" y="52">leftover k → trim from the end</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"1432219", k=3 → "1219"</text>
-            </svg>
-            <figcaption>Figure 1 — Removing a digit at each descent yields the lexicographically smallest result.</figcaption>
-          </figure>
+          <div class="viz" data-viz="remove-k-digits"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -160,5 +153,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

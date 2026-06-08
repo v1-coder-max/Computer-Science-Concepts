@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Slide a window keeping a <strong>count map of fruit types</strong> inside it. Expand <code>right</code>, adding the new type. While the map has <strong>more than 2 distinct types</strong>, shrink from <code>left</code>, decrementing counts and removing a type when its count hits 0. Track the maximum window length.</p><p><strong>Time O(n), Space O(1)</strong> (≤ 3 map entries).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Window with at most two distinct types">
-              <text class="dgm-sub" x="20" y="24">count map of types in the window</text>
-              <text class="dgm-sub" x="20" y="52">distinct > 2 → shrink left, drop a type</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[1,2,3,2,2] → 4</text>
-            </svg>
-            <figcaption>Figure 1 — Allowing only two types in the window models the two baskets.</figcaption>
-          </figure>
+          <div class="viz" data-viz="fruit-into-baskets"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>
