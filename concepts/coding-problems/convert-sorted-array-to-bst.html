@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>For a sorted array, the <strong>middle element</strong> makes an ideal root: everything left is smaller (left subtree), everything right is larger (right subtree), and both halves have nearly equal size, so the tree stays balanced. Recurse: <code>root = mid</code>, build the left subtree from <code>[lo, mid−1]</code> and the right from <code>[mid+1, hi]</code>.</p><p><strong>Time O(n), Space O(log n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Middle element as the root, recurse halves">
-              <text class="dgm-sub" x="20" y="24">mid = (lo + hi) / 2 → root</text>
-              <text class="dgm-sub" x="20" y="52">left = [lo, mid-1], right = [mid+1, hi]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">equal halves → balanced tree</text>
-            </svg>
-            <figcaption>Figure 1 — Centering each subtree on its middle keeps the BST height-balanced.</figcaption>
-          </figure>
+          <div class="viz" data-viz="convert-sorted-array-to-bst"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

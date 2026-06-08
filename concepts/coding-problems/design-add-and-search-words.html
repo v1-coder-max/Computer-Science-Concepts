@@ -80,14 +80,7 @@
             end. The wildcard is what turns a straight walk into a branching search.
           </p>
           <p><strong>Time O(L) typical, O(26<sup>L</sup>) worst (all dots); Space O(total chars).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Wildcard branches into all children">
-              <text class="dgm-sub" x="20" y="24">normal letter → follow one child</text>
-              <text class="dgm-sub" x="20" y="56">"." → recurse into every child node</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">end of pattern AND isEnd → match ✓</text>
-            </svg>
-            <figcaption>Figure 1 — A dot fans the DFS out across all children; a letter narrows to one.</figcaption>
-          </figure>
+          <div class="viz" data-viz="design-add-and-search-words"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -175,5 +168,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

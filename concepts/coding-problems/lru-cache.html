@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Pair a <strong>hash map</strong> (key → node) with a <strong>doubly linked list</strong> ordered most-recent at the head, least-recent at the tail. <code>Get</code>: look up the node and move it to the head. <code>Put</code>: update or insert at the head; if over capacity, remove the tail node and its map entry. Doubly-linked so any node unlinks in O(1); the map makes lookup O(1). (C#’s <code>LinkedList&lt;T&gt;</code> nodes work, or roll your own.)</p><p><strong>Time O(1) per op, Space O(capacity).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Hash map + doubly linked recency list">
-              <text class="dgm-sub" x="20" y="24">map: key → list node (O(1) lookup)</text>
-              <text class="dgm-sub" x="20" y="52">list: head = most recent, tail = LRU</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">access → move to head; full → evict tail</text>
-            </svg>
-            <figcaption>Figure 1 — The map finds the node; the list reorders it; the tail is always the eviction target.</figcaption>
-          </figure>
+          <div class="viz" data-viz="lru-cache"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -173,5 +166,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

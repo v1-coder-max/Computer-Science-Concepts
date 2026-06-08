@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Recurse using the BST ordering: go left if <code>key &lt; node.val</code>, right if greater. When you find the node: if it has <strong>no child or one child</strong>, return that child (splice it out). If it has <strong>two children</strong>, find the <strong>in-order successor</strong> (smallest value in the right subtree), copy its value into the node, then recursively delete the successor from the right subtree. The successor has at most one child, so its removal is simple.</p><p><strong>Time O(h), Space O(h).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two children → replace with successor">
-              <text class="dgm-sub" x="20" y="24">0/1 child → return the (possibly null) child</text>
-              <text class="dgm-sub" x="20" y="52">2 children → copy in-order successor value</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">delete the successor from the right subtree</text>
-            </svg>
-            <figcaption>Figure 1 — Swapping in the in-order successor keeps the ordering valid.</figcaption>
-          </figure>
+          <div class="viz" data-viz="delete-node-in-a-bst"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

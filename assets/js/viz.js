@@ -1038,6 +1038,33 @@
       snap4("Border-connected O's are marked safe (blue). Everything else is enclosed.");
       for (var r3 = 0; r3 < R; r3++) for (var c3 = 0; c3 < C; c3++) g[r3][c3] = g[r3][c3] === "#" ? "O" : "X";
       frames.push(draw(function (rr, cc) { return g[rr][cc] === "O" ? { fill: "var(--surface-2)", t: "O", lab: "var(--text-muted)" } : { fill: "var(--surface-hover)", t: "X", lab: "var(--text-faint)" }; }, "Enclosed O's flipped to X; safe ones restored to O."));
+    } else if (mode === "pacific-atlantic") {
+      function reach(starts) { var seen = Array.from({ length: R }, function () { return new Array(C).fill(false); }); var st = []; starts.forEach(function (p) { seen[p[0]][p[1]] = true; st.push(p); }); while (st.length) { var p = st.pop(); dirs.forEach(function (d) { var nr = p[0] + d[0], nc = p[1] + d[1]; if (nr >= 0 && nc >= 0 && nr < R && nc < C && !seen[nr][nc] && g[nr][nc] >= g[p[0]][p[1]]) { seen[nr][nc] = true; st.push([nr, nc]); } }); } return seen; }
+      var pacStarts = [], atlStarts = [];
+      for (var c = 0; c < C; c++) { pacStarts.push([0, c]); atlStarts.push([R - 1, c]); }
+      for (var r = 0; r < R; r++) { pacStarts.push([r, 0]); atlStarts.push([r, C - 1]); }
+      var pac = reach(pacStarts), atl = reach(atlStarts);
+      function pcell(rr, cc, show) { var base = { t: g[rr][cc], lab: "var(--text-faint)" }; if (show === "pac") return pac[rr][cc] ? { fill: "var(--c-info-bg)", stroke: "var(--accent)", t: g[rr][cc], lab: "var(--accent)" } : base; if (show === "atl") return atl[rr][cc] ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", t: g[rr][cc], lab: "var(--c-success)" } : base; return (pac[rr][cc] && atl[rr][cc]) ? { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", t: g[rr][cc], lab: "var(--c-warning)", sw: 2.2 } : (pac[rr][cc] || atl[rr][cc]) ? { fill: "var(--surface-hover)", t: g[rr][cc], lab: "var(--text-muted)" } : base; }
+      frames.push(draw(function (rr, cc) { return { t: g[rr][cc], lab: "var(--text-faint)" }; }, "Water flows from a cell to equal-or-lower neighbours. Find cells that reach <b>both</b> the Pacific (top &amp; left edges) and the Atlantic (bottom &amp; right)."));
+      frames.push(draw(function (rr, cc) { return pcell(rr, cc, "pac"); }, "Reverse-flood from the <b>Pacific</b> border, climbing only to cells ≥ the current height."));
+      frames.push(draw(function (rr, cc) { return pcell(rr, cc, "atl"); }, "Reverse-flood from the <b>Atlantic</b> border the same way."));
+      var both = []; for (var rr = 0; rr < R; rr++) for (var cc = 0; cc < C; cc++) if (pac[rr][cc] && atl[rr][cc]) both.push("(" + rr + "," + cc + ")");
+      frames.push(draw(function (rr, cc) { return pcell(rr, cc, "both"); }, `Cells reaching <b>both</b> oceans (gold): ${both.join(" ")}.`));
+    } else if (mode === "swim") {
+      var INF = 1e9, time = Array.from({ length: R }, function () { return new Array(C).fill(INF); }); time[0][0] = g[0][0];
+      var settled = Array.from({ length: R }, function () { return new Array(C).fill(false); });
+      function snapS(active, cap) { frames.push(draw(function (rr, cc) { if (active && active[0] === rr && active[1] === cc) return { fill: "var(--brand-soft)", stroke: "var(--accent)", t: g[rr][cc], lab: "var(--accent)", sw: 2.4 }; if (settled[rr][cc]) return { fill: "var(--c-info-bg)", stroke: "var(--accent)", t: time[rr][cc], lab: "var(--accent)" }; return { t: g[rr][cc], lab: "var(--text-faint)" }; }, cap)); }
+      snapS(null, "Swim in rising water: minimise the <b>highest</b> elevation crossed from corner to corner. Dijkstra where a path's cost is the maximum cell on it.");
+      var guardS = 0;
+      while (guardS++ < R * C + 2) { var bu = null, bt = INF; for (var rr = 0; rr < R; rr++) for (var cc = 0; cc < C; cc++) if (!settled[rr][cc] && time[rr][cc] < bt) { bt = time[rr][cc]; bu = [rr, cc]; } if (!bu) break; settled[bu[0]][bu[1]] = true; if (bu[0] === R - 1 && bu[1] === C - 1) { snapS(bu, `Reached the far corner — least possible max-elevation = <b>${time[bu[0]][bu[1]]}</b> (the answer time).`); break; } dirs.forEach(function (d) { var nr = bu[0] + d[0], nc = bu[1] + d[1]; if (nr >= 0 && nc >= 0 && nr < R && nc < C && !settled[nr][nc]) { var nt = Math.max(time[bu[0]][bu[1]], g[nr][nc]); if (nt < time[nr][nc]) time[nr][nc] = nt; } }); snapS(bu, `Settle (${bu[0]},${bu[1]}) at time ${time[bu[0]][bu[1]]}; relax neighbours with cost = max(time, their elevation).`); }
+    } else if (mode === "word-search") {
+      var word = cfg.word, path = [], foundPath = null;
+      var vis = Array.from({ length: R }, function () { return new Array(C).fill(false); });
+      function snapW(cap, bad) { var sp = path.slice(); frames.push(draw(function (rr, cc) { if (foundPath && foundPath.some(function (p) { return p[0] === rr && p[1] === cc; })) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", t: g[rr][cc], lab: "var(--c-success)", sw: 2.2 }; var pi = -1; for (var z = 0; z < sp.length; z++) if (sp[z][0] === rr && sp[z][1] === cc) pi = z; if (pi === sp.length - 1) return { fill: bad ? "var(--c-warning-bg)" : "var(--brand-soft)", stroke: bad ? "var(--c-warning)" : "var(--accent)", t: g[rr][cc], lab: bad ? "var(--c-warning)" : "var(--accent)", sw: 2.4 }; if (pi >= 0) return { fill: "var(--c-info-bg)", stroke: "var(--accent)", t: g[rr][cc], lab: "var(--accent)" }; return { t: g[rr][cc], lab: "var(--text-faint)" }; }, cap)); }
+      frames.push(draw(function (rr, cc) { return { t: g[rr][cc], lab: "var(--text-faint)" }; }, `Search the grid for "<b>${word}</b>" with DFS: match letters along 4-directional paths, backtracking the moment one mismatches.`));
+      function dfsW(r, c, k) { if (foundPath) return true; if (r < 0 || c < 0 || r >= R || c >= C || vis[r][c] || g[r][c] !== word[k]) return false; vis[r][c] = true; path.push([r, c]); if (k === word.length - 1) { foundPath = path.slice(); snapW(`Matched the last letter '${word[k]}' → <b>found "${word}"</b>!`); return true; } snapW(`'${g[r][c]}' = word[${k}] ✓ — extend the path.`); for (var di = 0; di < dirs.length; di++) { if (dfsW(r + dirs[di][0], c + dirs[di][1], k + 1)) return true; } vis[r][c] = false; path.pop(); return false; }
+      for (var r = 0; r < R && !foundPath; r++) for (var c = 0; c < C && !foundPath; c++) if (g[r][c] === word[0]) dfsW(r, c, 0);
+      if (!foundPath) frames.push(draw(function (rr, cc) { return { t: g[rr][cc], lab: "var(--text-faint)" }; }, `"${word}" is not in the grid.`));
     }
     return frames;
   }
@@ -1050,8 +1077,9 @@
     var rows, cols, label0, recur, rowHdr = null, colHdr = null, init;
     var A = cfg.a, B = cfg.b, grid = cfg.grid;
     if (mode === "unique-paths") { rows = cfg.m; cols = cfg.n; }
-    else if (mode === "min-path-sum") { rows = grid.length; cols = grid[0].length; }
-    else if (mode === "maximal-square") { rows = grid.length; cols = grid[0].length; }
+    else if (mode === "min-path-sum" || mode === "maximal-square" || mode === "unique-paths-obstacles") { rows = grid.length; cols = grid[0].length; }
+    else if (mode === "triangle") { rows = grid.length; cols = grid.length; }
+    else if (mode === "cooldown") { rows = cfg.prices.length; cols = 3; }
     else { rows = A.length + 1; cols = B.length + 1; }
     var cw = Math.min(46, (W - 80) / cols), ch = 32, sx = 60, sy = (A ? 60 : 40);
     var H = sy + rows * (ch + 4) + 16;
@@ -1085,6 +1113,31 @@
       frames.push(draw(dp, null, null, "Largest all-1 square. Each 1-cell stores the side of the biggest square ending there = 1 + min(top, left, top-left)."));
       for (var r3 = 0; r3 < rows; r3++) for (var c3 = 0; c3 < cols; c3++) { if (grid[r3][c3] === 0) { dp[r3][c3] = 0; frames.push(draw(dp, [r3, c3], null, `Cell is 0 → square side 0.`)); } else if (r3 === 0 || c3 === 0) { dp[r3][c3] = 1; best = Math.max(best, 1); frames.push(draw(dp, [r3, c3], null, `Edge 1-cell → side 1.`)); } else { dp[r3][c3] = 1 + Math.min(dp[r3 - 1][c3], dp[r3][c3 - 1], dp[r3 - 1][c3 - 1]); best = Math.max(best, dp[r3][c3]); frames.push(draw(dp, [r3, c3], [[r3 - 1, c3], [r3, c3 - 1], [r3 - 1, c3 - 1]], `1 + min(${dp[r3 - 1][c3]}, ${dp[r3][c3 - 1]}, ${dp[r3 - 1][c3 - 1]}) = <b>${dp[r3][c3]}</b>.`)); } }
       frames.push(draw(dp, null, null, `Largest side = ${best}, so area = <b>${best * best}</b>.`));
+    } else if (mode === "unique-paths-obstacles") {
+      frames.push(draw(dp, null, null, "Count right/down paths avoiding obstacles. An obstacle cell has 0 ways; otherwise ways = above + left."));
+      for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) { if (grid[r][c] === 1) { dp[r][c] = 0; frames.push(draw(dp, [r, c], null, `(${r},${c}) is an obstacle → 0 ways.`)); } else if (r === 0 && c === 0) { dp[r][c] = 1; frames.push(draw(dp, [0, 0], null, "Start cell = 1 way.")); } else { var up = r > 0 ? dp[r - 1][c] : 0, lf = c > 0 ? dp[r][c - 1] : 0; dp[r][c] = up + lf; frames.push(draw(dp, [r, c], [[r - 1, c], [r, c - 1]].filter(function (p) { return p[0] >= 0 && p[1] >= 0; }), `${up} (above) + ${lf} (left) = <b>${dp[r][c]}</b>.`)); } }
+      frames.push(draw(dp, [rows - 1, cols - 1], null, `Paths to the goal = <b>${dp[rows - 1][cols - 1]}</b>.`));
+    } else if (mode === "interleaving") {
+      var s1 = A, s2 = B, s3 = cfg.s3, can = (s1.length + s2.length) === s3.length;
+      frames.push(draw(dp, null, null, can ? `Can "${s3}" be formed by interleaving "${s1}" and "${s2}"? dp[i][j] = can the first i of s1 and j of s2 build the first i+j of s3.` : `Lengths don't add up → can't interleave.`));
+      if (!can) return frames;
+      dp[0][0] = "T"; frames.push(draw(dp, [0, 0], null, "Empty + empty builds the empty prefix → T."));
+      for (var i = 0; i < rows; i++) for (var j = 0; j < cols; j++) { if (i === 0 && j === 0) continue; var con = [], ok = false; if (i > 0 && dp[i - 1][j] === "T" && s1[i - 1] === s3[i + j - 1]) { ok = true; con.push([i - 1, j]); } if (j > 0 && dp[i][j - 1] === "T" && s2[j - 1] === s3[i + j - 1]) { ok = true; con.push([i, j - 1]); } dp[i][j] = ok ? "T" : "F"; frames.push(draw(dp, [i, j], con.length ? con : null, ok ? `s3[${i + j - 1}]='${s3[i + j - 1]}' continues a valid prefix → <b>T</b>.` : `No matching predecessor → F.`)); }
+      frames.push(draw(dp, [rows - 1, cols - 1], null, dp[rows - 1][cols - 1] === "T" ? `Bottom-right T → <b>yes</b>, it interleaves.` : `Bottom-right F → no.`));
+    } else if (mode === "triangle") {
+      frames.push(draw(dp, null, null, "Minimum path sum top→bottom, each step to an adjacent cell below. Fill <b>bottom-up</b>: every cell adds the cheaper of the two beneath it."));
+      for (var r = rows - 1; r >= 0; r--) for (var c = 0; c <= r; c++) { if (r === rows - 1) { dp[r][c] = grid[r][c]; frames.push(draw(dp, [r, c], null, `Bottom row stays as-is: ${grid[r][c]}.`)); } else { dp[r][c] = grid[r][c] + Math.min(dp[r + 1][c], dp[r + 1][c + 1]); frames.push(draw(dp, [r, c], [[r + 1, c], [r + 1, c + 1]], `${grid[r][c]} + min(${dp[r + 1][c]}, ${dp[r + 1][c + 1]}) = <b>${dp[r][c]}</b>.`)); } }
+      frames.push(draw(dp, [0, 0], null, `The apex holds the minimum total = <b>${dp[0][0]}</b>.`));
+    } else if (mode === "cooldown") {
+      var pr = cfg.prices;
+      dp[0][0] = -pr[0]; dp[0][1] = 0; dp[0][2] = 0;
+      frames.push(draw(dp, [0, 0], null, `Max profit with a 1-day cooldown after selling. Three states per day (columns): <b>hold</b> a share, <b>sold</b> today, <b>rest</b>. Day 0: hold = −${pr[0]}.`));
+      for (var i = 1; i < rows; i++) {
+        dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][2] - pr[i]); frames.push(draw(dp, [i, 0], [[i - 1, 0], [i - 1, 2]], `Day ${i} (price ${pr[i]}): hold = max(keep ${dp[i - 1][0]}, buy after rest ${dp[i - 1][2]}−${pr[i]}) = <b>${dp[i][0]}</b>.`));
+        dp[i][1] = dp[i - 1][0] + pr[i]; frames.push(draw(dp, [i, 1], [[i - 1, 0]], `sold = previous hold ${dp[i - 1][0]} + ${pr[i]} = <b>${dp[i][1]}</b>.`));
+        dp[i][2] = Math.max(dp[i - 1][2], dp[i - 1][1]); frames.push(draw(dp, [i, 2], [[i - 1, 1], [i - 1, 2]], `rest = max(prev rest ${dp[i - 1][2]}, prev sold ${dp[i - 1][1]}) = <b>${dp[i][2]}</b>.`));
+      }
+      frames.push(draw(dp, [rows - 1, 1], null, `Best profit = max(sold, rest) on the last day = <b>${Math.max(dp[rows - 1][1], dp[rows - 1][2])}</b>.`));
     } else { // lcs / edit-distance
       var isEdit = mode === "edit-distance";
       for (var i = 0; i < rows; i++) dp[i][0] = isEdit ? i : 0;
@@ -1148,7 +1201,7 @@
   function dpLinear(cfg) {
     var mode = cfg.mode, a = cfg.data, W = 600, H = 150;
     var labels, n;
-    if (mode === "coin-change") { n = cfg.amount + 1; } else if (mode === "perfect-squares") { n = cfg.n + 1; } else { n = a.length; }
+    if (mode === "coin-change") { n = cfg.amount + 1; } else if (mode === "perfect-squares" || mode === "catalan") { n = cfg.n + 1; } else { n = a.length; }
     var grid = valueCells(new Array(n).fill(0).map(function (_, i) { return i; }), { W: W, y: 70, h: 36, maxCw: 48 });
     function draw(dp, cur, contrib, caption) {
       var s = "";
@@ -1156,7 +1209,7 @@
         var x = grid.x(i), isCur = i === cur, isCon = contrib && contrib.indexOf(i) >= 0;
         s += rect(x, grid.y, grid.cw, grid.h, { fill: isCur ? "var(--brand-soft)" : isCon ? "var(--c-info-bg)" : dp[i] != null ? "var(--c-success-bg)" : "var(--surface-2)", stroke: isCur ? "var(--accent)" : isCon ? "var(--accent)" : dp[i] != null ? "var(--c-success)" : "var(--border)", sw: isCur ? 2.2 : 1.2, r: 6 });
         s += `<text x="${x + grid.cw / 2}" y="${grid.y + grid.h / 2 + 5}" text-anchor="middle" fill="var(--text)" style="font:700 14px var(--font-sans)">${dp[i] == null ? "?" : dp[i]}</text>`;
-        var idxLabel = (mode === "coin-change" || mode === "perfect-squares");
+        var idxLabel = (mode === "coin-change" || mode === "perfect-squares" || mode === "catalan");
         var sub = idxLabel ? i : a[i];
         s += `<text x="${x + grid.cw / 2}" y="${grid.y - 10}" text-anchor="middle" fill="var(--text-faint)" style="font:500 10px var(--font-mono)">${sub}</text>`;
       }
@@ -1207,6 +1260,10 @@
       frames.push(draw(dp.slice(), 0, null, `Fewest perfect squares summing to each value 0..${target}. dp[i] = 1 + min over squares k² ≤ i of dp[i−k²]. dp[0]=0.`));
       for (var v = 1; v <= target; v++) { var bestS = Infinity, fromS = []; for (var kk = 1; kk * kk <= v; kk++) { if (dp[v - kk * kk] + 1 < bestS) { bestS = dp[v - kk * kk] + 1; fromS = [v - kk * kk]; } } dp[v] = bestS; frames.push(draw(dp.slice(), v, fromS, `dp[${v}] = 1 + min over k²≤${v} of dp[${v}−k²] = <b>${dp[v]}</b>.`)); }
       frames.push(draw(dp.slice(), -1, null, `Fewest perfect squares for ${target} = <b>${dp[target]}</b>.`));
+    } else if (mode === "catalan") {
+      dp[0] = 1; frames.push(draw(dp.slice(), 0, null, `Count BST shapes with i nodes. Any value can be the root, splitting into left (j−1 nodes) and right (i−j) subtrees: dp[i] = Σ dp[left]·dp[right]. dp[0]=1.`));
+      for (var v = 1; v < n; v++) { var sum = 0; for (var j = 1; j <= v; j++) sum += dp[j - 1] * dp[v - j]; dp[v] = sum; frames.push(draw(dp.slice(), v, null, `dp[${v}] = Σ over each root of dp[left]·dp[right] = <b>${sum}</b>.`)); }
+      frames.push(draw(dp.slice(), -1, null, `Unique BSTs with ${cfg.n} nodes = <b>${dp[cfg.n]}</b> (the ${cfg.n}-th Catalan number).`));
     }
     return frames;
   }
@@ -1515,7 +1572,7 @@
       return frames;
     }
 
-    if (mode === "odd-even" || mode === "rotate" || mode === "dedup" || mode === "reverse-k") {
+    if (mode === "odd-even" || mode === "rotate" || mode === "dedup" || mode === "reverse-k" || mode === "sort") {
       var H6 = 150;
       function frR(arr, hi, dim, cap) {
         var L = lay(arr, 60), inner = "";
@@ -1549,6 +1606,17 @@
         frames.push(frR(rotated.slice(), rotated.map(function (_, i) { return i < kk ? i : -1; }).filter(function (x) { return x >= 0; }), null, `Move the last ${kk} node(s) to the front → [${rotated.join(", ")}].`));
         return frames;
       }
+      if (mode === "sort") {
+        var sv = v;
+        frames.push(frR(sv.slice(), [], null, "Sort a linked list in O(n log n) with <b>merge sort</b>: split into halves (fast/slow finds the middle), sort each, then merge the two sorted lists."));
+        var mid = sv.length >> 1, leftH = sv.slice(0, mid), rightH = sv.slice(mid);
+        frames.push(frR(sv.slice(), sv.map(function (_, i) { return i; }).slice(0, mid), sv.map(function (_, i) { return i; }).slice(mid), `Split into [${leftH.join(", ")}] and [${rightH.join(", ")}].`));
+        var sl = leftH.slice().sort(function (a, b) { return a - b; }), sr = rightH.slice().sort(function (a, b) { return a - b; });
+        frames.push(frR(sl.concat(sr), [], null, `Recursively sort each half → [${sl.join(", ")}] and [${sr.join(", ")}].`));
+        var merged = [], mi = 0, mj = 0; while (mi < sl.length && mj < sr.length) { if (sl[mi] <= sr[mj]) merged.push(sl[mi++]); else merged.push(sr[mj++]); } while (mi < sl.length) merged.push(sl[mi++]); while (mj < sr.length) merged.push(sr[mj++]);
+        frames.push(frR(merged.slice(), [], null, `Merge the two sorted halves → [${merged.join(", ")}].`));
+        return frames;
+      }
       // reverse-k
       var kg = cfg.k, src = v.slice(), res = [];
       frames.push(frR(src.slice(), [], null, `Reverse the list in groups of <b>${kg}</b>. Reverse each full group; a trailing group shorter than ${kg} is left untouched.`));
@@ -1561,6 +1629,40 @@
       frames.push(frR(res.slice(), [], null, `Result: [${res.join(", ")}].`));
       return frames;
     }
+
+    if (mode === "duplicate") {
+      var nums = cfg.data, dn = nums.length, H6 = 175;
+      function cells(slow, fast, cap, panel) {
+        var cw = Math.min(48, (W - 40 - 6 * (dn - 1)) / dn), gap = 6, total = cw * dn + gap * (dn - 1), sx = (W - total) / 2, y = 70, h = 44, s = "";
+        for (var i = 0; i < dn; i++) { var isS = i === slow, isF = i === fast; var f = (isS && isF) ? "var(--c-success-bg)" : isS ? "var(--brand-soft)" : isF ? "var(--c-info-bg)" : "var(--surface-2)"; var stk = (isS || isF) ? (isS && isF ? "var(--c-success)" : "var(--accent)") : "var(--border)"; s += rect(sx + i * (cw + gap), y, cw, h, { fill: f, stroke: stk, sw: (isS || isF) ? 2.2 : 1.2, r: 6 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + h / 2 + 5}" text-anchor="middle" fill="${(isS || isF) ? stk : "var(--text)"}" style="font:700 16px var(--font-sans)">${nums[i]}</text>`; s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + h + 14}" text-anchor="middle" fill="var(--text-faint)" style="font:500 10px var(--font-mono)">${i}</text>`; }
+        if (slow >= 0) s += `<text x="${sx + slow * (cw + gap) + cw / 2}" y="${y - 9}" text-anchor="middle" fill="var(--accent)" style="font:700 11px var(--font-sans)">slow</text>`;
+        if (fast >= 0 && fast !== slow) s += `<text x="${sx + fast * (cw + gap) + cw / 2}" y="${y - 9}" text-anchor="middle" fill="var(--accent)" style="font:700 11px var(--font-sans)">fast</text>`;
+        if (panel) s += `<text x="${W / 2}" y="${H6 - 10}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`;
+        return { svg: `<svg viewBox="0 0 ${W} ${H6}" role="img" aria-label="find duplicate">${s}</svg>`, caption: cap };
+      }
+      frames.push(cells(0, 0, "Treat index i as a pointer to nums[i]. A repeated value makes two indices point to the same place → a <b>cycle</b>. Floyd's algorithm finds its entrance, which equals the duplicate.", "phase 1 · slow=fast at index 0"));
+      var slow = 0, fast = 0, g = 0;
+      do { slow = nums[slow]; fast = nums[nums[fast]]; frames.push(cells(slow, fast, `Phase 1: slow → index ${slow}, fast → index ${fast} (fast moves twice as far).`, "phase 1")); } while (slow !== fast && g++ < 40);
+      frames.push(cells(slow, fast, `They meet at index ${slow} — somewhere inside the cycle.`, "cycle detected"));
+      var slow2 = 0; frames.push(cells(slow2, fast, "Phase 2: reset one pointer to the start; advance both by <b>one</b> step until they meet — that's the cycle's entrance.", "phase 2"));
+      g = 0; while (slow2 !== fast && g++ < 40) { slow2 = nums[slow2]; fast = nums[fast]; frames.push(cells(slow2, fast, `slow → ${slow2}, fast → ${fast}.`, "phase 2")); }
+      frames.push(cells(slow2, fast, `They meet at index ${slow2} → the duplicate number is <b>${slow2}</b>.`, "duplicate = " + slow2));
+      return frames;
+    }
+
+    if (mode === "copy-random") {
+      var v = cfg.data, rnd = cfg.random, n = v.length, H6 = 190;
+      function arc(i, j, y, color) { if (j < 0) return ""; var L = lay(v, 0); var x1 = L.cx(i), x2 = L.cx(j); var midY = y - 28 - Math.abs(i - j) * 4; return `<path d="M${x1} ${y} Q ${(x1 + x2) / 2} ${midY} ${x2} ${y}" fill="none" stroke="${color}" stroke-width="1.4" stroke-dasharray="4 3"/><path d="M${x2} ${y} l-4 -7 l8 0 z" fill="${color}"/>`; }
+      function rowAt(arr, yTop, label) { var L = { n: arr.length, nw: 40, gap: Math.min((W - 70 - 40 * arr.length) / (arr.length > 1 ? arr.length - 1 : 1), 30) }; var total = L.nw * arr.length + L.gap * (arr.length - 1), sx = (W - total) / 2; var cx = function (i) { return sx + i * (L.nw + L.gap) + L.nw / 2; }; var s = `<text x="20" y="${yTop + 22}" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">${label}</text>`; for (var i = 0; i < arr.length; i++) { var x = sx + i * (L.nw + L.gap); s += rect(x, yTop, L.nw, 32, { fill: ("" + arr[i]).indexOf("'") >= 0 ? "var(--c-success-bg)" : "var(--surface-2)", stroke: ("" + arr[i]).indexOf("'") >= 0 ? "var(--c-success)" : "var(--border)", sw: 1.3, r: 7 }); s += `<text x="${cx(i)}" y="${yTop + 21}" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-sans)">${arr[i]}</text>`; if (i < arr.length - 1) s += fwd(x + L.nw + 3, x + L.nw + L.gap - 3, yTop + 16, "var(--border)"); } return { s: s, cx: cx, yTop: yTop }; }
+      function frame(arr, label, randoms, cap) { var r = rowAt(arr, 70, label), inner = r.s; (randoms || []).forEach(function (pair) { inner += arc(pair[0], pair[1], 70, "var(--accent)"); }); return { svg: `<svg viewBox="0 0 ${W} ${H6}" role="img" aria-label="copy random list">${inner}</svg>`, caption: cap }; }
+      var randoms = rnd.map(function (j, i) { return [i, j]; });
+      frames.push(frame(v.slice(), "list", randoms, "Each node also has a <b>random</b> pointer (dashed). The O(1)-space trick weaves clones into the list so a clone's random is just original.random.next."));
+      var inter = []; v.forEach(function (val) { inter.push(val); inter.push(val + "'"); });
+      frames.push(frame(inter, "woven", null, "Step 1: insert a copy (a′) right after each original node."));
+      frames.push(frame(inter, "woven", null, "Step 2: for each clone, set clone.random = original.random's clone (the node just after it)."));
+      frames.push(frame(v.map(function (val) { return val + "'"; }), "clone", rnd.map(function (j, i) { return [i, j]; }), "Step 3: unweave the two lists — the clone is an exact, independent copy."));
+      return frames;
+    }
     return frames;
   }
 
@@ -1571,6 +1673,23 @@
   function backtracking(cfg) {
     var mode = cfg.mode, W = 600, top = 26, levelH = 50;
     function isPal(s) { for (var i = 0, j = s.length - 1; i < j; i++, j--) if (s[i] !== s[j]) return false; return true; }
+
+    if (mode === "n-queens") {
+      var N = cfg.n, cell = Math.min(56, (W - 60) / N), sx = (W - N * cell) / 2, sy = 18, Hq = sy + N * cell + 16, qf = [];
+      function qdraw(placed, tryRC, conflict, cap) {
+        var s = "";
+        for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) { var dark = (r + c) % 2 === 1; s += rect(sx + c * cell, sy + r * cell, cell, cell, { fill: dark ? "var(--surface-hover)" : "var(--surface-2)", stroke: "var(--border)", sw: 0.5, r: 0 }); }
+        placed.forEach(function (col, r) { s += `<text x="${sx + col * cell + cell / 2}" y="${sy + r * cell + cell / 2 + 7}" text-anchor="middle" fill="var(--c-success)" style="font:700 ${Math.round(cell * 0.5)}px var(--font-sans)">♛</text>`; });
+        if (tryRC) { var c2 = tryRC[1], r2 = tryRC[0]; s += rect(sx + c2 * cell, sy + r2 * cell, cell, cell, { fill: conflict ? "var(--c-warning-bg)" : "var(--brand-soft)", stroke: conflict ? "var(--c-warning)" : "var(--accent)", sw: 2.4, r: 0 }); s += `<text x="${sx + c2 * cell + cell / 2}" y="${sy + r2 * cell + cell / 2 + 7}" text-anchor="middle" fill="${conflict ? "var(--c-warning)" : "var(--accent)"}" style="font:700 ${Math.round(cell * 0.5)}px var(--font-sans)">♛</text>`; }
+        return { svg: `<svg viewBox="0 0 ${W} ${Hq}" role="img" aria-label="n-queens board">${s}</svg>`, caption: cap };
+      }
+      function safe(placed, r, c) { for (var i = 0; i < r; i++) if (placed[i] === c || Math.abs(placed[i] - c) === Math.abs(i - r)) return false; return true; }
+      var placed = [], done = false;
+      qf.push(qdraw([], null, false, `Place ${N} queens so none attack each other. Backtracking: try a safe column in each row; a dead end means undo and try the next column.`));
+      (function solve(r) { if (done) return; if (r === N) { done = true; qf.push(qdraw(placed.slice(), null, false, `All ${N} queens placed with no attacks — a valid solution!`)); return; } for (var c = 0; c < N && !done; c++) { var ok = safe(placed, r, c); qf.push(qdraw(placed.slice(), [r, c], !ok, ok ? `Row ${r}, column ${c}: safe → place a queen and recurse.` : `Row ${r}, column ${c}: attacked by an earlier queen → skip.`)); if (ok) { placed.push(c); solve(r + 1); if (!done) placed.pop(); } } if (!done) qf.push(qdraw(placed.slice(), null, false, `Row ${r}: no safe column remains → backtrack to the previous row.`)); })(0);
+      return qf;
+    }
+
     var root;
     if (mode === "subsets" || mode === "subsets-ii") {
       var nums = cfg.data.slice(); if (mode === "subsets-ii") nums.sort(function (a, b) { return a - b; });
@@ -1858,6 +1977,37 @@
       return frames;
     }
 
+    if (mode === "reorganize") {
+      var s = cfg.s, Hg = 215, freq = {}; for (var ci = 0; ci < s.length; ci++) freq[s[ci]] = (freq[s[ci]] || 0) + 1;
+      var rh = makeHeap(function (a, b) { return b.n - a.n; });
+      Object.keys(freq).forEach(function (k) { rh.push({ c: k, n: freq[k] }); });
+      var result = "", prev = null;
+      function snapR(cap) { var inner = heapTree(rh.a.map(function (e) { return e.c + ":" + e.n; }), function (i) { return i === 0 ? { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.4, lab: "var(--accent)" } : {}; }); if (prev) inner += `<text x="${W / 2}" y="${Hg - 26}" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">cooldown: ${prev.c}:${prev.n}</text>`; inner += `<text x="${W / 2}" y="${Hg - 8}" text-anchor="middle" fill="var(--c-success)" style="font:600 13px var(--font-mono)">result: "${result}"</text>`; return { svg: `<svg viewBox="0 0 ${W} ${Hg}" role="img" aria-label="reorganize">${inner}</svg>`, caption: cap }; }
+      frames.push(snapR("Rearrange so no two neighbours match. Greedily take the <b>most frequent</b> available char (max-heap), holding the just-used one aside one step so it can't repeat."));
+      var guardR = 0;
+      while ((rh.size() || (prev && prev.n > 0)) && guardR++ < 60) {
+        if (rh.size() === 0) { frames.push(snapR(`Only ${prev.c} remains but it's on cooldown → <b>impossible</b>.`)); return frames; }
+        var top = rh.pop(); result += top.c; top.n--;
+        if (prev && prev.n > 0) rh.push(prev);
+        frames.push(snapR(`Append <b>${top.c}</b>${prev ? `; release ${prev.c} back to the heap` : ""}.`));
+        prev = top.n > 0 ? top : null;
+      }
+      frames.push(snapR(`Done → "<b>${result}</b>" — no two adjacent characters equal.`));
+      return frames;
+    }
+
+    if (mode === "twitter") {
+      var feeds = cfg.feeds, Ht = 210, K = cfg.k;
+      var th = makeHeap(function (a, b) { return b.t - a.t; }), ptr = feeds.map(function (f) { return f.length - 1; });
+      feeds.forEach(function (f, fi) { if (f.length) th.push({ t: f[f.length - 1][0], id: f[f.length - 1][1], fi: fi }); });
+      var feed = [];
+      function snapTw(cap) { var inner = heapTree(th.a.map(function (e) { return "#" + e.id; }), function (i) { return i === 0 ? { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.4, lab: "var(--accent)" } : {}; }); inner += `<text x="${W / 2}" y="${Ht - 8}" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-mono)">feed (newest first): ${feed.map(function (x) { return "#" + x; }).join(", ")}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${Ht}" role="img" aria-label="twitter feed">${inner}</svg>`, caption: cap }; }
+      frames.push(snapTw(`Build a news feed by merging each followee's tweets newest-first with a max-heap (keyed by time). Pop the latest, then push that user's next-newest. Take the top ${K}.`));
+      while (th.size() && feed.length < K) { var m = th.pop(); feed.push(m.id); ptr[m.fi]--; if (ptr[m.fi] >= 0) th.push({ t: feeds[m.fi][ptr[m.fi]][0], id: feeds[m.fi][ptr[m.fi]][1], fi: m.fi }); frames.push(snapTw(`Newest unseen tweet is <b>#${m.id}</b> (time ${m.t}) → add to feed; push that user's previous tweet.`)); }
+      frames.push(snapTw(`Top ${K} feed: ${feed.map(function (x) { return "#" + x; }).join(", ")}.`));
+      return frames;
+    }
+
     // task-scheduler
     var tasks = cfg.tasks, cool = cfg.cooldown, H5 = 150;
     var cnt = {}; tasks.forEach(function (t) { cnt[t] = (cnt[t] || 0) + 1; });
@@ -1983,6 +2133,121 @@
         frames.push(snapw(l2, atEnd ? `Layer ${l2} reaches "<b>${end}</b>"! The shortest ladder is <b>${l2 + 1}</b> words long.` : `Layer ${l2}: all words one step from the previous layer light up.`));
         if (atEnd) break;
       }
+      return frames;
+    }
+
+    function gout(inner, cap) { return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="graph">${inner}</svg>`, caption: cap }; }
+    function panelLine(t) { return `<text x="${W / 2}" y="${H - 12}" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">${t}</text>`; }
+    function lbl(i) { return cfg.labels ? cfg.labels[i] : i; }
+    function wEdge(a, b, w, color, sw, directed) { var e = directed ? dirEdge(a, b, color, sw) : undirEdge(a, b, color, sw); var pa = pos(a), pb = pos(b); e += `<text x="${(pa.x + pb.x) / 2}" y="${(pa.y + pb.y) / 2 - 4}" text-anchor="middle" fill="var(--text-faint)" style="font:700 10px var(--font-mono)">${w}</text>`; return e; }
+
+    if (mode === "bipartite") {
+      var adjB = Array.from({ length: n }, function () { return []; }); cfg.edges.forEach(function (e) { adjB[e[0]].push(e[1]); adjB[e[1]].push(e[0]); });
+      var color = new Array(n).fill(-1), COL = ["var(--accent)", "var(--c-warning)"], ok = true, badE = -1;
+      function colorPanel() { return "colours: " + color.map(function (c, i) { return i + ":" + (c < 0 ? "·" : c === 0 ? "A" : "B"); }).join(" "); }
+      function findEdge(u, v) { for (var i = 0; i < cfg.edges.length; i++) { if ((cfg.edges[i][0] === u && cfg.edges[i][1] === v) || (cfg.edges[i][0] === v && cfg.edges[i][1] === u)) return i; } return -1; }
+      function snapB(active, cap) { var inner = ""; cfg.edges.forEach(function (e, ei) { inner += undirEdge(e[0], e[1], ei === badE ? "var(--c-warning)" : "var(--border)", ei === badE ? 3 : 1.6); }); for (var i = 0; i < n; i++) { var st = {}; if (color[i] >= 0) { st.stroke = COL[color[i]]; st.lab = COL[color[i]]; st.sw = 2.2; } if (i === active) { st.fill = "var(--brand-soft)"; st.sw = 2.6; } inner += nodeC(i, st); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      frames.push(snapB(-1, { t: "Bipartite check: 2-colour the graph with BFS so adjacent nodes always differ. A neighbour already the same colour breaks it.", p: "colours: none" }));
+      for (var s = 0; s < n && ok; s++) { if (color[s] >= 0) continue; color[s] = 0; var q = [s]; frames.push(snapB(s, { t: `Start node ${s} with colour <b>A</b>.`, p: colorPanel() })); while (q.length && ok) { var u = q.shift(); for (var vi = 0; vi < adjB[u].length; vi++) { var v = adjB[u][vi]; if (color[v] === -1) { color[v] = color[u] ^ 1; q.push(v); frames.push(snapB(v, { t: `Colour ${v} opposite to ${u} → <b>${color[v] === 0 ? "A" : "B"}</b>.`, p: colorPanel() })); } else if (color[v] === color[u]) { ok = false; badE = findEdge(u, v); frames.push(snapB(v, { t: `${u} and ${v} are adjacent but both ${color[v] === 0 ? "A" : "B"} → <b>not bipartite</b>.`, p: "conflict!" })); break; } } } }
+      if (ok) frames.push(snapB(-1, { t: "Every edge joins different colours → <b>bipartite</b>.", p: colorPanel() }));
+      return frames;
+    }
+
+    if (mode === "dijkstra") {
+      var src = cfg.src, dist = new Array(n).fill(Infinity); dist[src] = 0; var settled = new Array(n).fill(false);
+      var adjD = Array.from({ length: n }, function () { return []; }); cfg.edges.forEach(function (e) { adjD[e[0]].push([e[1], e[2]]); });
+      function distArr() { return "[" + dist.map(function (d) { return d === Infinity ? "∞" : d; }).join(",") + "]"; }
+      function snapD(active, cap) { var inner = ""; cfg.edges.forEach(function (e) { inner += wEdge(e[0], e[1], e[2], settled[e[0]] ? "var(--c-success)" : "var(--border)", 1.6, true); }); for (var i = 0; i < n; i++) { var st = { txt: i + ":" + (dist[i] === Infinity ? "∞" : dist[i]) }; if (settled[i]) { st.stroke = "var(--c-success)"; st.lab = "var(--c-success)"; } if (i === active) { st.fill = "var(--brand-soft)"; st.sw = 2.6; st.stroke = "var(--accent)"; st.lab = "var(--accent)"; } inner += nodeC(i, st); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      frames.push(snapD(-1, { t: `Dijkstra from node ${src}: repeatedly settle the nearest unfinished node and relax its outgoing edges. Labels show the best distance so far.`, p: "dist = " + distArr() }));
+      for (var it = 0; it < n; it++) { var bu = -1, bd = Infinity; for (var i = 0; i < n; i++) if (!settled[i] && dist[i] < bd) { bd = dist[i]; bu = i; } if (bu < 0) break; settled[bu] = true; var rel = []; adjD[bu].forEach(function (pr) { if (dist[bu] + pr[1] < dist[pr[0]]) { dist[pr[0]] = dist[bu] + pr[1]; rel.push(pr[0]); } }); frames.push(snapD(bu, { t: `Settle node <b>${bu}</b> (distance ${dist[bu]})${rel.length ? " → relax improves " + rel.join(", ") : " (no improvement)"}.`, p: "dist = " + distArr() })); }
+      var mx = Math.max.apply(null, dist); frames.push(snapD(-1, { t: mx === Infinity ? "Some node stays ∞ — unreachable → -1." : `All settled. The slowest arrival (network delay) = <b>${mx}</b>.`, p: "dist = " + distArr() }));
+      return frames;
+    }
+
+    if (mode === "bellman") {
+      var bsrc = cfg.src, bdst = cfg.dst, K = cfg.k, bdist = new Array(n).fill(Infinity); bdist[bsrc] = 0;
+      function bArr() { return "[" + bdist.map(function (d) { return d === Infinity ? "∞" : d; }).join(",") + "]"; }
+      function snapBe(round, cap) { var inner = ""; cfg.edges.forEach(function (e) { inner += wEdge(e[0], e[1], e[2], "var(--border)", 1.6, true); }); for (var i = 0; i < n; i++) { var st = { txt: i + ":" + (bdist[i] === Infinity ? "∞" : bdist[i]) }; if (i === bsrc) { st.stroke = "var(--accent)"; st.lab = "var(--accent)"; } if (i === bdst) { st.stroke = "var(--c-success)"; st.lab = "var(--c-success)"; } inner += nodeC(i, st); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      frames.push(snapBe(0, { t: `Bellman–Ford with ≤ ${K} stops: relax all edges ${K + 1} times, each round from a <b>snapshot</b> so a path grows by at most one edge per round.`, p: "dist = " + bArr() }));
+      for (var r = 0; r <= K; r++) { var tmp = bdist.slice(); cfg.edges.forEach(function (e) { if (bdist[e[0]] + e[2] < tmp[e[1]]) tmp[e[1]] = bdist[e[0]] + e[2]; }); bdist = tmp; frames.push(snapBe(-1, { t: `Round ${r + 1}: paths may now use ${r + 1} edge(s).`, p: "dist = " + bArr() })); }
+      frames.push(snapBe(-1, { t: bdist[bdst] === Infinity ? `No route within ${K} stops → -1.` : `Cheapest ${bsrc}→${bdst} with ≤ ${K} stops = <b>${bdist[bdst]}</b>.`, p: "answer = " + (bdist[bdst] === Infinity ? "-1" : bdist[bdst]) }));
+      return frames;
+    }
+
+    if (mode === "mst") {
+      var pts = cfg.points, np = pts.length;
+      var mnX = Math.min.apply(null, pts.map(function (p) { return p[0]; })), mxX = Math.max.apply(null, pts.map(function (p) { return p[0]; }));
+      var mnY = Math.min.apply(null, pts.map(function (p) { return p[1]; })), mxY = Math.max.apply(null, pts.map(function (p) { return p[1]; }));
+      var sxp = function (x) { return 60 + (x - mnX) / ((mxX - mnX) || 1) * (W - 120); }, syp = function (y) { return 50 + (y - mnY) / ((mxY - mnY) || 1) * (H - 100); };
+      function dman(i, j) { return Math.abs(pts[i][0] - pts[j][0]) + Math.abs(pts[i][1] - pts[j][1]); }
+      var inTree = new Array(np).fill(false), treeEdges = [], total = 0;
+      function snapM(active, cap) { var inner = ""; treeEdges.forEach(function (e) { inner += line(sxp(pts[e[0]][0]), syp(pts[e[0]][1]), sxp(pts[e[1]][0]), syp(pts[e[1]][1]), { stroke: "var(--c-success)", sw: 2.4 }); }); for (var i = 0; i < np; i++) { var x = sxp(pts[i][0]), y = syp(pts[i][1]); var f = inTree[i] ? "var(--c-success-bg)" : "var(--surface-2)", st = inTree[i] ? "var(--c-success)" : "var(--border)"; if (i === active) { f = "var(--brand-soft)"; st = "var(--accent)"; } inner += `<circle cx="${x}" cy="${y}" r="14" fill="${f}" stroke="${st}" stroke-width="2"/><text x="${x}" y="${y + 4}" text-anchor="middle" fill="var(--text)" style="font:700 11px var(--font-sans)">${i}</text>`; } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      inTree[0] = true; frames.push(snapM(0, { t: "Prim's MST: grow a tree from node 0, each step adding the cheapest edge (Manhattan distance) to a not-yet-connected point.", p: "cost = 0" }));
+      for (var c = 1; c < np; c++) { var bu2 = -1, bv = -1, bw = Infinity; for (var i = 0; i < np; i++) { if (!inTree[i]) continue; for (var j = 0; j < np; j++) { if (inTree[j]) continue; var d = dman(i, j); if (d < bw) { bw = d; bu2 = i; bv = j; } } } inTree[bv] = true; treeEdges.push([bu2, bv]); total += bw; frames.push(snapM(bv, { t: `Cheapest link to a new point: ${bu2}–${bv} (cost ${bw}). Add it.`, p: "cost = " + total })); }
+      frames.push(snapM(-1, { t: `All points connected — minimum total cost = <b>${total}</b>.`, p: "cost = " + total }));
+      return frames;
+    }
+
+    if (mode === "alien-topo") {
+      var words = cfg.words, idxA = {}; cfg.labels.forEach(function (ch, i) { idxA[ch] = i; });
+      var edgesA = []; for (var w = 0; w < words.length - 1; w++) { var aw = words[w], bw2 = words[w + 1], LL = Math.min(aw.length, bw2.length); for (var cc = 0; cc < LL; cc++) { if (aw[cc] !== bw2[cc]) { edgesA.push([idxA[aw[cc]], idxA[bw2[cc]]]); break; } } }
+      var indegA = new Array(n).fill(0), adjA = Array.from({ length: n }, function () { return []; }); edgesA.forEach(function (e) { adjA[e[0]].push(e[1]); indegA[e[1]]++; });
+      var orderA = [], doneA = new Array(n).fill(false);
+      function snapA(active, cap) { var inner = ""; edgesA.forEach(function (e) { inner += dirEdge(e[0], e[1], "var(--border)", 1.6); }); for (var i = 0; i < n; i++) { var st = { txt: lbl(i) + "(" + indegA[i] + ")" }; if (doneA[i]) { st.stroke = "var(--c-success)"; st.lab = "var(--c-success)"; } if (i === active) { st.fill = "var(--brand-soft)"; st.sw = 2.6; } inner += nodeC(i, st); } inner += panelLine("order: " + orderA.map(function (i) { return cfg.labels[i]; }).join("")); return gout(inner, cap); }
+      var qA = []; for (var i = 0; i < n; i++) if (indegA[i] === 0) qA.push(i);
+      frames.push(snapA(-1, "Derive letter-order rules from each pair of adjacent words (their first differing character), then topologically sort. Labels show in-degree."));
+      while (qA.length) { var u = qA.shift(); doneA[u] = true; orderA.push(u); adjA[u].forEach(function (v) { indegA[v]--; if (indegA[v] === 0) qA.push(v); }); frames.push(snapA(u, `Letter <b>${cfg.labels[u]}</b> has no unmet predecessor → next in the alien alphabet.`)); }
+      frames.push(snapA(-1, `Alien alphabet order: <b>${orderA.map(function (i) { return cfg.labels[i]; }).join("")}</b>.`));
+      return frames;
+    }
+
+    if (mode === "euler") {
+      var idxE = {}; cfg.labels.forEach(function (ch, i) { idxE[ch] = i; });
+      var adjE = Array.from({ length: n }, function () { return []; }); cfg.tickets.forEach(function (t) { adjE[idxE[t[0]]].push(idxE[t[1]]); }); adjE.forEach(function (l) { l.sort(function (a, b) { return a - b; }); });
+      function snapE(routeArr, active, cap) { var inner = ""; cfg.tickets.forEach(function (t) { inner += dirEdge(idxE[t[0]], idxE[t[1]], "var(--border)", 1.4); }); for (var i = 0; i < n; i++) { var st = { txt: lbl(i) }; if (i === active) { st.fill = "var(--brand-soft)"; st.sw = 2.6; st.stroke = "var(--accent)"; st.lab = "var(--accent)"; } inner += nodeC(i, st); } inner += panelLine("route: " + routeArr.map(function (i) { return cfg.labels[i]; }).join(" → ")); return gout(inner, cap); }
+      var route = [], stack = [idxE[cfg.start]], usedE = adjE.map(function () { return 0; });
+      frames.push(snapE([], idxE[cfg.start], "Reconstruct the itinerary as an <b>Eulerian path</b> (every ticket once). Hierholzer's: follow lexicographically-smallest edges until stuck, then peel onto the route and reverse."));
+      while (stack.length) { var u = stack[stack.length - 1]; if (usedE[u] < adjE[u].length) { var v = adjE[u][usedE[u]++]; stack.push(v); frames.push(snapE(route.slice().reverse(), v, `Fly ${cfg.labels[u]} → ${cfg.labels[v]}.`)); } else { route.push(stack.pop()); frames.push(snapE(route.slice().reverse(), stack.length ? stack[stack.length - 1] : -1, `Dead end at ${cfg.labels[u]} → add to the route, backtrack.`)); } }
+      route.reverse();
+      frames.push(snapE(route.slice(), -1, `Final itinerary: <b>${route.map(function (i) { return cfg.labels[i]; }).join(" → ")}</b>.`));
+      return frames;
+    }
+
+    if (mode === "evaluate-division") {
+      var adjV = Array.from({ length: n }, function () { return []; }); cfg.edges.forEach(function (e) { adjV[e[0]].push([e[1], e[2]]); adjV[e[1]].push([e[0], 1 / e[2]]); });
+      function rnd(x) { return Math.round(x * 1000) / 1000; }
+      function snapV(pathNodes, active, cap) { var inner = ""; cfg.edges.forEach(function (e) { inner += wEdge(e[0], e[1], e[2], "var(--border)", 1.6, true); }); for (var i = 0; i < n; i++) { var st = { txt: lbl(i) }; if (pathNodes.indexOf(i) >= 0) { st.stroke = "var(--c-success)"; st.lab = "var(--c-success)"; } if (i === active) { st.fill = "var(--brand-soft)"; st.sw = 2.6; } inner += nodeC(i, st); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      var ia = cfg.labels.indexOf(cfg.query[0]), ib = cfg.labels.indexOf(cfg.query[1]), qa = cfg.query[0], qb = cfg.query[1];
+      frames.push(snapV([], ia, { t: `Evaluate ${qa}/${qb} as a path product: each edge a→b carries the ratio a/b (and b→a carries 1/that). DFS multiplying weights.`, p: `${qa}/${qb} = ?` }));
+      var resVal = null, vis = new Array(n).fill(false), pathArr = [];
+      (function dfs(u, acc) { if (resVal !== null) return; vis[u] = true; pathArr.push(u); if (u === ib) { resVal = acc; frames.push(snapV(pathArr.slice(), u, { t: `Reached ${qb}. Product of ratios = <b>${rnd(acc)}</b>.`, p: `${qa}/${qb} = ${rnd(acc)}` })); return; } frames.push(snapV(pathArr.slice(), u, { t: `At <b>${cfg.labels[u]}</b> (running product ${rnd(acc)}). Follow its ratios.`, p: `${qa}/${qb} = ?` })); for (var k = 0; k < adjV[u].length; k++) { if (!vis[adjV[u][k][0]]) { dfs(adjV[u][k][0], acc * adjV[u][k][1]); if (resVal !== null) return; } } pathArr.pop(); })(ia, 1);
+      if (resVal === null) frames.push(snapV([], -1, { t: `No path connects ${qa} and ${qb} → -1.`, p: `${qa}/${qb} = -1` }));
+      return frames;
+    }
+
+    if (mode === "accounts-merge") {
+      var par = []; for (var i = 0; i < n; i++) par.push(i); function find(x) { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; }
+      var PAL = ["var(--accent)", "var(--c-success)", "var(--c-warning)", "var(--c-info)"];
+      function cmap() { var roots = [], m = {}; for (var i = 0; i < n; i++) { var rr = find(i); if (roots.indexOf(rr) < 0) roots.push(rr); } roots.forEach(function (rr, k) { m[rr] = PAL[k % PAL.length]; }); return m; }
+      function snapAc(activeEdge, cap) { var cm = cmap(), inner = ""; cfg.edges.forEach(function (e, ei) { inner += undirEdge(e[0], e[1], ei === activeEdge ? "var(--accent)" : "var(--border-soft)", ei === activeEdge ? 3 : 1.6); }); for (var i = 0; i < n; i++) { var c = cm[find(i)]; inner += nodeC(i, { txt: lbl(i), stroke: c, lab: c, sw: 2 }); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      frames.push(snapAc(-1, { t: "Accounts sharing any email belong to one person. Union-Find merges accounts joined by a shared email; each final colour group is one merged person.", p: "people = " + n }));
+      var comps = n;
+      for (var ei = 0; ei < cfg.edges.length; ei++) { var e = cfg.edges[ei], ra = find(e[0]), rb = find(e[1]); if (ra !== rb) { par[ra] = rb; comps--; frames.push(snapAc(ei, { t: `${cfg.labels[e[0]]} and ${cfg.labels[e[1]]} share an email → <b>merge</b>. People: ${comps}.`, p: "people = " + comps })); } else frames.push(snapAc(ei, { t: `${cfg.labels[e[0]]} and ${cfg.labels[e[1]]} are already the same person.`, p: "people = " + comps })); }
+      frames.push(snapAc(-1, { t: `Merged into <b>${comps}</b> distinct people.`, p: "people = " + comps }));
+      return frames;
+    }
+
+    if (mode === "lock-path") {
+      var dead = {}; cfg.deadends.forEach(function (d) { dead[d] = true; }); var target = cfg.target, startS = "0000", H2 = 175;
+      function nbrs(s) { var r = []; for (var i = 0; i < 4; i++) { var d = +s[i]; [(d + 1) % 10, (d + 9) % 10].forEach(function (nd) { r.push(s.slice(0, i) + nd + s.slice(i + 1)); }); } return r; }
+      var prev = {}, dseen = {}, path = [];
+      if (!dead[startS]) { var q = [startS]; dseen[startS] = 0; while (q.length) { var u = q.shift(); if (u === target) break; nbrs(u).forEach(function (v) { if (dseen[v] === undefined && !dead[v]) { dseen[v] = dseen[u] + 1; prev[v] = u; q.push(v); } }); } if (dseen[target] !== undefined) { var cur = target; while (cur !== undefined) { path.unshift(cur); cur = prev[cur]; } } }
+      function lock(state, turned) { var s = "", x0 = (W - 4 * 44) / 2; for (var i = 0; i < 4; i++) { var hot = turned === i; s += rect(x0 + i * 44, 60, 38, 48, { fill: hot ? "var(--brand-soft)" : "var(--surface-2)", stroke: hot ? "var(--accent)" : "var(--border)", sw: hot ? 2.4 : 1.2, r: 7 }); s += `<text x="${x0 + i * 44 + 19}" y="${90}" text-anchor="middle" fill="${hot ? "var(--accent)" : "var(--text)"}" style="font:700 20px var(--font-mono)">${state[i]}</text>`; } return s; }
+      function o2(inner, t, pt) { return { svg: `<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="lock"><text x="${W / 2}" y="${H2 - 12}" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">${pt}</text>${inner}</svg>`, caption: t }; }
+      if (!path.length) { frames.push(o2(lock(startS, -1), `Target ${target} is unreachable (blocked by deadends) → -1.`, "unreachable")); return frames; }
+      frames.push(o2(lock(startS, -1), `Open the lock: each move turns one wheel ±1, avoiding deadends. BFS finds the fewest moves from 0000 to ${target}.`, "BFS distance 0"));
+      for (var i = 1; i < path.length; i++) { var turned = -1; for (var k = 0; k < 4; k++) if (path[i][k] !== path[i - 1][k]) turned = k; frames.push(o2(lock(path[i], turned), `Move ${i}: turn wheel ${turned} → <b>${path[i]}</b>.`, "BFS distance " + i)); }
+      frames.push(o2(lock(target, -1), `Reached ${target} in <b>${path.length - 1}</b> moves — the BFS-optimal answer.`, "done"));
       return frames;
     }
 
@@ -2125,6 +2390,25 @@
   function bsearch(cfg) {
     var mode = cfg.mode, W = 600, H = 162;
     if (mode === "koko" || mode === "sqrtx" || mode === "capacity") return bsearchAnswer(cfg);
+    if (mode === "median2") {
+      var A = cfg.a, B = cfg.b; if (A.length > B.length) { var tt = A; A = B; B = tt; }
+      var m = A.length, nn = B.length, half = (m + nn + 1) >> 1, Hm = 195, fr = [];
+      function rowM(arr, y, part, label) { var nz = arr.length, cw = Math.min(46, (W - 80) / Math.max(nz, 1)), gap = 6, total = cw * nz + gap * (nz - 1), sx = (W - total) / 2, s = `<text x="20" y="${y + 24}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">${label}</text>`; for (var i = 0; i < nz; i++) { var left = i < part; s += rect(sx + i * (cw + gap), y, cw, 36, { fill: left ? "var(--c-info-bg)" : "var(--surface-2)", stroke: left ? "var(--accent)" : "var(--border)", sw: 1.3, r: 5 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 23}" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-mono)">${arr[i]}</text>`; } if (part >= 0 && part <= nz) { var px = sx + part * (cw + gap) - gap / 2; s += line(px, y - 4, px, y + 40, { stroke: "var(--c-warning)", sw: 2.4 }); } return s; }
+      function fm(pa, pb, cap) { return { svg: `<svg viewBox="0 0 ${W} ${Hm}" role="img" aria-label="median of two arrays">${rowM(A, 40, pa, "A")}${rowM(B, 110, pb, "B")}</svg>`, caption: cap }; }
+      var lo = 0, hi = m, guard = 0;
+      fr.push(fm(0, half, `Median of two sorted arrays in O(log min(m,n)). Binary-search a partition of the smaller array A; B's partition is then fixed so the left side holds half the values. Adjust until maxLeft ≤ minRight.`));
+      while (lo <= hi && guard++ < 40) { var pa = (lo + hi) >> 1, pb = half - pa; var Al = pa > 0 ? A[pa - 1] : -Infinity, Ar = pa < m ? A[pa] : Infinity, Bl = pb > 0 ? B[pb - 1] : -Infinity, Br = pb < nn ? B[pb] : Infinity; if (Al <= Br && Bl <= Ar) { var med = (m + nn) % 2 ? Math.max(Al, Bl) : (Math.max(Al, Bl) + Math.min(Ar, Br)) / 2; fr.push(fm(pa, pb, `Balanced: maxLeft = ${Math.max(Al, Bl)} ≤ minRight = ${Math.min(Ar, Br)} → median = <b>${med}</b>.`)); break; } else if (Al > Br) { fr.push(fm(pa, pb, `A's left max ${Al} &gt; B's right ${Br} → move A's partition <b>left</b>.`)); hi = pa - 1; } else { fr.push(fm(pa, pb, `B's left max ${Bl} &gt; A's right ${Ar} → move A's partition <b>right</b>.`)); lo = pa + 1; } }
+      return fr;
+    }
+    if (mode === "k-closest-elements") {
+      var arrK = cfg.data, x = cfg.x, kk = cfg.k, nk = arrK.length, gk = valueCells(arrK, { W: W, y: 56, h: 44, maxCw: 52 }), fk = [];
+      function fkf(left, right, cap) { var inner = gk.draw(function (i) { if (i >= left && i <= right) return { fill: "var(--c-info-bg)", stroke: "var(--accent)" }; return { op: 0.3 }; }, true); inner += ptrMark(gk, left, "L", "var(--accent)", true); inner += ptrMark(gk, right, "R", "var(--accent)", true); inner += `<text x="${W / 2}" y="22" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-sans)">x = ${x}, keep ${kk} closest</text>`; return { svg: `<svg viewBox="0 0 ${W} 162" role="img" aria-label="k closest elements">${inner}</svg>`, caption: cap }; }
+      var left = 0, right = nk - 1;
+      fk.push(fkf(left, right, `Find the ${kk} elements closest to <b>${x}</b> in a sorted array. Shrink a window from both ends, dropping whichever end is <b>farther</b> from x, until ${kk} remain.`));
+      while (right - left + 1 > kk) { if (x - arrK[left] > arrK[right] - x) { fk.push(fkf(left, right, `|${arrK[left]}−${x}| = ${Math.abs(arrK[left] - x)} &gt; |${arrK[right]}−${x}| = ${Math.abs(arrK[right] - x)} → drop the left end.`)); left++; } else { fk.push(fkf(left, right, `The right end is at least as far from ${x} → drop the right end.`)); right--; } }
+      fk.push(fkf(left, right, `The ${kk} closest: [${arrK.slice(left, right + 1).join(", ")}].`));
+      return fk;
+    }
     var a = mode === "search-2d" ? [].concat.apply([], cfg.grid) : cfg.data;
     var target = cfg.target, n = a.length;
     var grid = valueCells(a, { W: W, y: 56, h: 44, maxCw: 52 });
@@ -2248,6 +2532,23 @@
         (function (rr, snapG) { frames.push(snap(snapG, function (a, b) { if (a === rr) return { fill: "var(--c-info-bg)", stroke: "var(--accent)" }; return {}; }, `Reverse row ${rr}.`, "reversing rows…")); })(r3, g.map(function (row) { return row.slice(); }));
       }
       frames.push(snap(g.map(function (row) { return row.slice(); }), function () { return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; }, "Done — the matrix is rotated 90° clockwise.", "rotated"));
+      return frames;
+    }
+
+    if (mode === "sudoku") {
+      function boxLines() { var s = ""; for (var b = 0; b <= 3; b++) { var lw = 2; s += line(cx(0) - gap / 2, sy + b * 3 * (cell + gap) - gap / 2, cx(C - 1) + cell + gap / 2, sy + b * 3 * (cell + gap) - gap / 2, { stroke: "var(--text-faint)", sw: lw }); s += line(cx(b * 3) - gap / 2, sy - gap / 2, cx(b * 3) - gap / 2, sy + R * (cell + gap) - gap / 2, { stroke: "var(--text-faint)", sw: lw }); } return s; }
+      function sdraw(state, note) { var f = draw(g0, state, note); f.svg = f.svg.replace("</svg>", boxLines() + "</svg>"); return f; }
+      frames.push((function () { var f = sdraw(function (rr, cc) { return { v: g0[rr][cc] === "." ? "" : g0[rr][cc], lab: "var(--text)", fs: 13 }; }, "scan filled cells"); f.caption = "A board is valid if no row, column, or 3×3 box repeats a digit. Scan every filled cell, recording it in three sets; a clash anywhere fails."; return f; })());
+      var rowsSeen = {}, colsSeen = {}, boxSeen = {}, bad = false;
+      for (var r = 0; r < 9 && !bad; r++) for (var c = 0; c < 9 && !bad; c++) {
+        var ch = g0[r][c]; if (ch === ".") continue;
+        var bi = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+        var clash = (rowsSeen["r" + r + ch] || colsSeen["c" + c + ch] || boxSeen["b" + bi + ch]);
+        var rr2 = r, cc2 = c, bii = bi, chh = ch;
+        if (clash) { bad = true; frames.push((function () { var f = sdraw(function (a, b) { var inRow = a === rr2, inCol = b === cc2, inBox = Math.floor(a / 3) * 3 + Math.floor(b / 3) === bii; if (a === rr2 && b === cc2) return { v: g0[a][b], fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)", sw: 2.4, fs: 13 }; if ((inRow || inCol || inBox) && g0[a][b] === chh) return { v: g0[a][b], fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)", fs: 13 }; return { v: g0[a][b] === "." ? "" : g0[a][b], lab: "var(--text-faint)", fs: 13 }; }, ""); f.caption = `Digit ${chh} at (${rr2},${cc2}) already appears in its ${rowsSeen["r" + rr2 + chh] ? "row" : colsSeen["c" + cc2 + chh] ? "column" : "3×3 box"} → <b>invalid</b>.`; return f; })()); }
+        else { rowsSeen["r" + r + ch] = true; colsSeen["c" + c + ch] = true; boxSeen["b" + bi + ch] = true; frames.push((function () { var f = sdraw(function (a, b) { if (a === rr2 && b === cc2) return { v: g0[a][b], fill: "var(--brand-soft)", stroke: "var(--accent)", lab: "var(--accent)", sw: 2.2, fs: 13 }; return { v: g0[a][b] === "." ? "" : g0[a][b], lab: g0[a][b] === "." ? "var(--text-faint)" : "var(--text-muted)", fs: 13 }; }, ""); f.caption = `${chh} at (${rr2},${cc2}) is new to its row, column, and box ✓.`; return f; })()); }
+      }
+      if (!bad) frames.push((function () { var f = sdraw(function (a, b) { return { v: g0[a][b] === "." ? "" : g0[a][b], fill: g0[a][b] !== "." ? "var(--c-success-bg)" : "var(--surface-2)", stroke: g0[a][b] !== "." ? "var(--c-success)" : "var(--border)", lab: "var(--c-success)", fs: 13 }; }, ""); f.caption = "No clashes anywhere → the board is <b>valid</b>."; return f; })());
       return frames;
     }
 
@@ -2557,6 +2858,27 @@
       return frames;
     }
 
+    if (mode === "candy") {
+      var rat = cfg.data, n = rat.length, candy = new Array(n).fill(1), H8 = 190;
+      function rowC(arr, y, hi, label) { var cw = Math.min(48, (W - 60) / n), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2, s = `<text x="20" y="${y + 24}" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">${label}</text>`; for (var i = 0; i < n; i++) { var h = i === hi; s += rect(sx + i * (cw + gap), y, cw, 36, { fill: h ? "var(--brand-soft)" : "var(--surface-2)", stroke: h ? "var(--accent)" : "var(--border)", sw: h ? 2.2 : 1.2, r: 5 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 23}" text-anchor="middle" fill="${h ? "var(--accent)" : "var(--text)"}" style="font:700 14px var(--font-sans)">${arr[i]}</text>`; } return s; }
+      function tot() { return candy.reduce(function (a, b) { return a + b; }, 0); }
+      function frameC(hi, cap) { return { svg: `<svg viewBox="0 0 ${W} ${H8}" role="img" aria-label="candy">${rowC(rat, 40, hi, "ratings")}${rowC(candy, 110, hi, "candy")}<text x="${W / 2}" y="${H8 - 10}" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-mono)">total = ${tot()}</text></svg>`, caption: cap }; }
+      frames.push(frameC(-1, "Every child gets ≥ 1 candy, and a higher rating than a neighbour means more candy. Two greedy passes: left→right enforces the left rule, right→left the right rule."));
+      for (var i = 1; i < n; i++) { if (rat[i] > rat[i - 1]) candy[i] = candy[i - 1] + 1; frames.push(frameC(i, rat[i] > rat[i - 1] ? `Left pass: ${rat[i]} &gt; ${rat[i - 1]} → candy = ${candy[i - 1]}+1 = ${candy[i]}.` : `Left pass: ${rat[i]} ≤ ${rat[i - 1]} → keep ${candy[i]}.`)); }
+      for (var j = n - 2; j >= 0; j--) { if (rat[j] > rat[j + 1]) candy[j] = Math.max(candy[j], candy[j + 1] + 1); frames.push(frameC(j, rat[j] > rat[j + 1] ? `Right pass: ${rat[j]} &gt; ${rat[j + 1]} → candy = max(prev, ${candy[j + 1] + 1}) = ${candy[j]}.` : `Right pass: ${rat[j]} ≤ ${rat[j + 1]} → keep ${candy[j]}.`)); }
+      frames.push(frameC(-1, `Minimum candies = <b>${tot()}</b>.`));
+      return frames;
+    }
+
+    if (mode === "hand") {
+      var hand = cfg.data.slice().sort(function (a, b) { return a - b; }), gs = cfg.groupSize, n = hand.length, H9 = 170, used = new Array(n).fill(false), groups = [];
+      function frameH(hi, cap) { var cw = Math.min(46, (W - 40 - 6 * (n - 1)) / n), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2, y = 58, s = ""; for (var i = 0; i < n; i++) { var h = hi && hi.indexOf(i) >= 0; s += rect(sx + i * (cw + gap), y, cw, 40, { fill: used[i] && !h ? "var(--c-success-bg)" : h ? "var(--brand-soft)" : "var(--surface-2)", stroke: used[i] && !h ? "var(--c-success)" : h ? "var(--accent)" : "var(--border)", sw: h ? 2.2 : 1.2, r: 6, op: used[i] && !h ? 0.6 : 1 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 25}" text-anchor="middle" fill="${h ? "var(--accent)" : used[i] ? "var(--c-success)" : "var(--text)"}" style="font:700 15px var(--font-sans)">${hand[i]}</text>`; } s += `<text x="${W / 2}" y="${H9 - 10}" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">groups: ${groups.map(function (g) { return "[" + g.join(",") + "]"; }).join(" ")}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${H9}" role="img" aria-label="hand of straights">${s}</svg>`, caption: cap }; }
+      frames.push(frameH(null, `Can the hand split into groups of ${gs} consecutive cards? Greedily start each run from the smallest unused card; if a needed card is missing, it's impossible.`));
+      for (var start = 0; start < n; start++) { if (used[start]) continue; var grp = [], idxs = [], base = hand[start], okGrp = true; for (var d = 0; d < gs; d++) { var want = base + d, found = -1; for (var i = 0; i < n; i++) if (!used[i] && hand[i] === want) { found = i; break; } if (found < 0) { okGrp = false; break; } used[found] = true; grp.push(want); idxs.push(found); } if (!okGrp) { frames.push(frameH(idxs, `Run from ${base} needs ${base + grp.length} but it's gone → <b>impossible</b>.`)); return frames; } groups.push(grp); frames.push(frameH(idxs, `Form a consecutive run from ${base}: [${grp.join(", ")}].`)); }
+      frames.push(frameH(null, `All cards used across ${groups.length} consecutive group(s) → <b>possible</b>.`));
+      return frames;
+    }
+
     // squares  &  merge — two-row layouts (sorted output built from the back)
     if (mode === "squares") {
       var a6 = cfg.data, n6 = a6.length, out = new Array(n6).fill(null), l = 0, r = n6 - 1, pos = n6 - 1, H6 = 200;
@@ -2675,6 +2997,7 @@
   function knapsack(cfg) {
     var mode = cfg.mode, W = 600, items, cap;
     if (mode === "subset-sum") { items = cfg.data; cap = items.reduce(function (a, b) { return a + b; }, 0) / 2; }
+    else if (mode === "target-sum") { items = cfg.data; cap = (cfg.data.reduce(function (a, b) { return a + b; }, 0) + cfg.target) / 2; }
     else { items = cfg.coins; cap = cfg.amount; }
     var capInt = Math.floor(cap), rows = items.length + 1, cols = capInt + 1;
     var cw = Math.min(40, (W - 90) / cols), ch = 28, sx = 70, sy = 46, H = sy + rows * (ch + 4) + 16;
@@ -2702,6 +3025,13 @@
       frames.push(draw(dp, null, null, `Can a subset sum to <b>${capInt}</b> (half of ${total})? dp[i][c] = can the first i numbers reach sum c. Column 0 is always T (the empty subset).`));
       for (var i = 1; i < rows; i++) { var it = items[i - 1]; for (var cc2 = 1; cc2 < cols; cc2++) { if (it > cc2) { dp[i][cc2] = dp[i - 1][cc2]; frames.push(draw(dp, [i, cc2], [[i - 1, cc2]], `${it} &gt; ${cc2} → can't use it; copy from above: ${dp[i][cc2] ? "T" : "F"}.`)); } else { dp[i][cc2] = dp[i - 1][cc2] || dp[i - 1][cc2 - it]; frames.push(draw(dp, [i, cc2], [[i - 1, cc2], [i - 1, cc2 - it]], `Skip (above ${dp[i - 1][cc2] ? "T" : "F"}) OR take ${it} (dp[${i - 1}][${cc2 - it}] = ${dp[i - 1][cc2 - it] ? "T" : "F"}) → <b>${dp[i][cc2] ? "T" : "F"}</b>.`)); } } }
       frames.push(draw(dp, [rows - 1, cols - 1], null, dp[rows - 1][cols - 1] ? `Bottom-right is T → the set splits into two equal halves. <b>true</b>.` : `Bottom-right is F → no equal split. <b>false</b>.`));
+      return frames;
+    }
+    if (mode === "target-sum") {
+      dp[0][0] = 1; for (var c0 = 1; c0 < cols; c0++) dp[0][c0] = 0;
+      frames.push(draw(dp, null, null, `Target Sum reduces to counting subsets summing to P = (total + target)/2 = <b>${capInt}</b>. dp[i][c] = #subsets of the first i numbers totalling c.`));
+      for (var i = 1; i < rows; i++) { var it = items[i - 1]; for (var cc = 0; cc < cols; cc++) { var skip = dp[i - 1][cc], take = (cc >= it) ? dp[i - 1][cc - it] : 0; dp[i][cc] = skip + take; frames.push(draw(dp, [i, cc], cc >= it ? [[i - 1, cc], [i - 1, cc - it]] : [[i - 1, cc]], cc === 0 ? `Sum 0 stays 1 way (take nothing).` : `${it}: skip (${skip})${cc >= it ? " + take (" + take + ")" : ""} = <b>${dp[i][cc]}</b>.`)); } }
+      frames.push(draw(dp, [rows - 1, cols - 1], null, `#subsets summing to ${capInt} = <b>${dp[rows - 1][cols - 1]}</b> — the number of valid ± sign assignments.`));
       return frames;
     }
     for (var r2 = 0; r2 < rows; r2++) dp[r2][0] = 1; for (var c2 = 1; c2 < cols; c2++) dp[0][c2] = 0;
@@ -2815,6 +3145,16 @@
       return frames;
     }
 
+    if (mode === "car-fleet") {
+      var target = cfg.target, pos = cfg.positions, sp = cfg.speeds;
+      var cars = pos.map(function (p, i) { return { p: p, t: Math.round((target - p) / sp[i] * 10) / 10 }; }).sort(function (a, b) { return b.p - a.p; });
+      var tokens = cars.map(function (c) { return c.p + "·" + c.t + "h"; }), stack = [];
+      frames.push(fr(inputRow(tokens, -1) + stackCol(stack), `Cars can't pass each other; a faster car behind merges into the one ahead. Sort by position (closest to target first); a car joins the fleet ahead when its arrival time ≤ that fleet's, else it starts a new fleet.`));
+      for (var i = 0; i < cars.length; i++) { var t = cars[i].t; if (stack.length && cars[i].t <= stack[stack.length - 1]) frames.push(fr(inputRow(tokens, i) + stackCol(stack.map(String)), `Car at ${cars[i].p} arrives in ${t}h ≤ the fleet ahead (${stack[stack.length - 1]}h) → it <b>joins</b> that fleet.`)); else { stack.push(t); frames.push(fr(inputRow(tokens, i) + stackCol(stack.map(String), null, [stack.length - 1]), `Car at ${cars[i].p} arrives in ${t}h → can't catch the fleet ahead, starts a <b>new fleet</b>.`)); } }
+      frames.push(fr(inputRow(tokens, -1) + stackCol(stack.map(String)), `Number of fleets = <b>${stack.length}</b>.`));
+      return frames;
+    }
+
     // valid-parenthesis-string ( '*' = '(' or ')' or '' ) — greedy low/high range
     var s2 = cfg.s, toks2 = s2.split(""), lo = 0, hi = 0;
     function vp(cur, cap, bad) { var inner = inputRow(toks2, cur) + `<text x="${W / 2}" y="${H / 2 + 10}" text-anchor="middle" fill="${bad ? "var(--c-warning)" : "var(--text)"}" style="font:700 15px var(--font-sans)">possible open count: ${lo} … ${hi}</text>`; return fr(inner, cap); }
@@ -2859,6 +3199,27 @@
       for (; i >= 0 && carry; i--) { var sum = digits[i] + carry; digits[i] = sum % 10; carry = Math.floor(sum / 10); frames.push((function (idx, cy) { var f = row(digits.slice(), idx, cy); f.caption = `Digit ${idx}: ${(digits[idx] + cy * 10) || digits[idx]} → write ${digits[idx]}, carry ${cy}.`; return f; })(i, carry)); }
       if (carry) digits.unshift(1);
       frames.push((function () { var f = row(digits.slice(), carry ? 0 : -1, 0); f.caption = `Result: <b>[${digits.join(", ")}]</b>${carry ? " (a new leading 1 was prepended)" : ""}.`; return f; })());
+      return frames;
+    }
+
+    if (mode === "pow") {
+      var x = cfg.x, nexp = cfg.n, e = Math.abs(nexp), bits = e.toString(2);
+      frames.push(fr(bigText([{ t: `${x}^${nexp}` }, { t: "exponent in binary: " + bits, c: "var(--text-faint)", s: 13 }]), "Fast power: square the base while halving the exponent, multiplying it into the result whenever the current low bit is 1. O(log n) multiplications."));
+      var ee = e, base = x, res2 = 1, guardP = 0;
+      while (ee > 0 && guardP++ < 40) { var setb = ee & 1; if (setb) res2 *= base; frames.push(fr(bigText([{ t: `result = ${res2}`, c: "var(--accent)" }, { t: `base = ${base}, exp = ${ee}`, s: 14, c: "var(--text-muted)" }]), `Low bit ${setb ? "1 → result ×= base" : "0 → skip"}; then square base (${base} → ${base * base}) and shift exp right.`)); base *= base; ee >>= 1; }
+      var fin = nexp < 0 ? 1 / res2 : res2;
+      frames.push(fr(bigText([{ t: `${x}^${nexp} = ${fin}`, c: "var(--c-success)" }]), `Result = <b>${fin}</b>${nexp < 0 ? " (negative exponent → take the reciprocal)" : ""}.`));
+      return frames;
+    }
+
+    if (mode === "range-sum") {
+      var data = cfg.data, n = data.length, ql = cfg.query[0], qr = cfg.query[1], H2 = 195;
+      var prefix = [0]; for (var i = 0; i < n; i++) prefix.push(prefix[i] + data[i]);
+      function rowRS(arr, y, hi, label, off) { var cw = Math.min(46, (W - 70) / arr.length), gap = 6, total = cw * arr.length + gap * (arr.length - 1), sx = (W - total) / 2, s = `<text x="20" y="${y + 24}" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">${label}</text>`; for (var i = 0; i < arr.length; i++) { var h = hi && hi.indexOf(i) >= 0; s += rect(sx + i * (cw + gap), y, cw, 32, { fill: h ? "var(--brand-soft)" : "var(--surface-2)", stroke: h ? "var(--accent)" : "var(--border)", sw: h ? 2.2 : 1.2, r: 5 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 21}" text-anchor="middle" fill="${h ? "var(--accent)" : "var(--text)"}" style="font:700 13px var(--font-mono)">${arr[i]}</text>`; if (off) s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y - 6}" text-anchor="middle" fill="var(--text-faint)" style="font:500 9px var(--font-mono)">${i}</text>`; } return s; }
+      function frameRS(prefHi, dataHi, cap) { return { svg: `<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="prefix sum">${rowRS(data, 40, dataHi, "nums", false)}${rowRS(prefix, 110, prefHi, "prefix", true)}</svg>`, caption: cap }; }
+      frames.push(frameRS(null, null, "Precompute <b>prefix sums</b> (prefix[k] = sum of the first k values). Then any range sum is a single subtraction — each query answered in O(1)."));
+      for (var k = 1; k <= n; k++) frames.push(frameRS([k], [k - 1], `prefix[${k}] = prefix[${k - 1}] + nums[${k - 1}] = ${prefix[k]}.`));
+      frames.push(frameRS([qr + 1, ql], null, `sumRange(${ql}, ${qr}) = prefix[${qr + 1}] − prefix[${ql}] = ${prefix[qr + 1]} − ${prefix[ql]} = <b>${prefix[qr + 1] - prefix[ql]}</b>.`));
       return frames;
     }
 
@@ -2993,6 +3354,194 @@
     return frames;
   }
 
+  /* ============================================================
+     RENDERER — tree operations (delete-BST, tree-DP, connect-next,
+     build-from-sorted, build-from-traversals, serialize, BST iterator)
+     ============================================================ */
+  function treeOps(cfg) {
+    var mode = cfg.mode, W = 600, levelH = 54, top = 38;
+    function geom(root) { var L = layoutTree(root), pad = 26, span = (W - 2 * pad) / Math.max(L.count, 1); return { X: function (n) { return pad + (n._ox + 0.5) * span; }, Y: function (n) { return top + n._d * levelH; }, all: L.all, maxD: L.maxD }; }
+    function frame(root, stateOf, overlay, cap, hpad) { var L = layoutTree(root); var h = top + L.maxD * levelH + (hpad || 42); return { svg: `<svg viewBox="0 0 ${W} ${h}" role="img" aria-label="tree">${drawTree(root, W, levelH, top, stateOf)}${overlay || ""}</svg>`, caption: cap }; }
+    var frames = [];
+
+    if (mode === "delete-bst") {
+      var root = treeFromHeap(cfg.data), key = cfg.key, st = new Map();
+      function so(n) { return st.get(n) || "default"; }
+      frames.push(frame(root, so, null, `Delete <b>${key}</b> from the BST: walk down in BST order to find it, then patch the tree.`));
+      var cur = root, par = null;
+      while (cur && cur.val !== key) { st.set(cur, "visited"); par = cur; cur = key < cur.val ? cur.left : cur.right; frames.push(frame(root, so, null, `${key} ${key < par.val ? "&lt;" : "&gt;"} ${par.val} → go ${key < par.val ? "left" : "right"}.`)); }
+      if (!cur) { frames.push(frame(root, so, null, `${key} isn't in the tree.`)); return frames; }
+      st.set(cur, "active");
+      if (!cur.left || !cur.right) { var child = cur.left || cur.right; frames.push(frame(root, so, null, `${key} has ${child ? "one child" : "no children"} → splice it out${child ? ", linking its child to the parent" : ""}.`)); if (!par) root = child; else if (par.left === cur) par.left = child; else par.right = child; st.delete(cur); frames.push(frame(root, so, null, `Removed — still a valid BST.`)); }
+      else { var sp = cur, succ = cur.right; while (succ.left) { sp = succ; succ = succ.left; } st.set(succ, "warn"); frames.push(frame(root, so, null, `${key} has two children → replace it with its in-order successor <b>${succ.val}</b> (smallest value in the right subtree).`)); cur.val = succ.val; st.delete(succ); st.set(cur, "visited"); if (sp.left === succ) sp.left = succ.right; else sp.right = succ.right; frames.push(frame(root, so, null, `Copy ${cur.val} up and delete the duplicate successor node.`)); }
+      return frames;
+    }
+
+    if (mode === "rob-tree") {
+      var root = treeFromHeap(cfg.data), st = new Map(), info = new Map();
+      function so(n) { return st.get(n) || "default"; }
+      function ov() { var g = geom(root), s = ""; g.all.forEach(function (n) { var inf = info.get(n); if (inf) s += `<text x="${g.X(n)}" y="${g.Y(n) + 30}" text-anchor="middle" fill="var(--text-faint)" style="font:600 9px var(--font-mono)">[${inf[0]},${inf[1]}]</text>`; }); return s; }
+      frames.push(frame(root, so, ov(), "Rob a binary tree, no two directly-connected nodes. Post-order returns <b>[rob, skip]</b> per node: rob = value + children's skip; skip = sum of children's better option.", 50));
+      (function dfs(n) { if (!n) return [0, 0]; var l = dfs(n.left), r = dfs(n.right); st.set(n, "active"); var rob = n.val + l[1] + r[1], skip = Math.max(l[0], l[1]) + Math.max(r[0], r[1]); info.set(n, [rob, skip]); frames.push(frame(root, so, ov(), `At <b>${n.val}</b>: rob = ${n.val}+${l[1]}+${r[1]} = ${rob}; skip = ${Math.max(l[0], l[1])}+${Math.max(r[0], r[1])} = ${skip}.`, 50)); st.set(n, "visited"); return [rob, skip]; })(root);
+      var res = info.get(root); frames.push(frame(root, so, ov(), `Answer = max(rob, skip) at the root = <b>${Math.max(res[0], res[1])}</b>.`, 50));
+      return frames;
+    }
+
+    if (mode === "connect-next") {
+      var root = treeFromHeap(cfg.data), st = new Map();
+      function so(n) { return st.get(n) || "default"; }
+      function arrows(upto) { var g = geom(root), byL = {}; g.all.forEach(function (n) { (byL[n._d] = byL[n._d] || []).push(n); }); var s = ""; Object.keys(byL).forEach(function (d) { if (+d > upto) return; var row = byL[d].slice().sort(function (a, b) { return a._ox - b._ox; }); for (var i = 0; i < row.length - 1; i++) { var a = row[i], b = row[i + 1]; s += line(g.X(a) + 16, g.Y(a), g.X(b) - 18, g.Y(b), { stroke: "var(--c-success)", sw: 1.6, dash: "4 3" }) + `<path d="M${g.X(b) - 18} ${g.Y(b)} l-6 -3 l0 6 z" fill="var(--c-success)"/>`; } }); return s; }
+      var g0 = geom(root), levels = []; g0.all.forEach(function (n) { if (levels.indexOf(n._d) < 0) levels.push(n._d); }); levels.sort(function (a, b) { return a - b; });
+      frames.push(frame(root, so, "", "Populate each node's <b>next</b> pointer to its right neighbour on the same level (a BFS). Watch the horizontal links appear level by level.", 50));
+      levels.forEach(function (d) { frames.push(frame(root, so, arrows(d), `Level ${d}: thread each node to the next one on its right.`, 50)); });
+      frames.push(frame(root, so, arrows(99), "Every level is now linked left-to-right.", 50));
+      return frames;
+    }
+
+    if (mode === "sorted-to-bst") {
+      top = 74; var arr = cfg.data, order = [];
+      function build(lo, hi) { if (lo > hi) return null; var mid = (lo + hi) >> 1, node = { val: arr[mid], left: null, right: null, _lo: lo, _hi: hi }; order.push(node); node.left = build(lo, mid - 1); node.right = build(mid + 1, hi); return node; }
+      var root = build(0, arr.length - 1), revealed = new Set(), lastNode = null;
+      function so(n) { if (!revealed.has(n)) return "dim"; return lastNode === n ? "active" : "visited"; }
+      function arrRow(node) { var cw = Math.min(46, (W - 60) / arr.length), gap = 6, total = cw * arr.length + gap * (arr.length - 1), sx = (W - total) / 2, s = ""; for (var i = 0; i < arr.length; i++) { var hot = node && i >= node._lo && i <= node._hi, ismid = node && i === ((node._lo + node._hi) >> 1); s += rect(sx + i * (cw + gap), 8, cw, 28, { fill: ismid ? "var(--brand-soft)" : hot ? "var(--c-info-bg)" : "var(--surface-2)", stroke: ismid ? "var(--accent)" : hot ? "var(--accent)" : "var(--border)", sw: ismid ? 2.2 : 1.2, r: 5 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${27}" text-anchor="middle" fill="${ismid ? "var(--accent)" : "var(--text)"}" style="font:700 13px var(--font-mono)">${arr[i]}</text>`; } return s; }
+      frames.push(frame(root, so, arrRow(null), "Build a height-balanced BST from a sorted array: the <b>middle</b> element is the root, then recurse on the left and right halves.", 46));
+      order.forEach(function (n) { revealed.add(n); lastNode = n; frames.push(frame(root, so, arrRow(n), `Range [${n._lo}..${n._hi}] → middle ${arr[(n._lo + n._hi) >> 1]} becomes a node.`, 46)); });
+      lastNode = null; frames.push(frame(root, so, arrRow(null), "Balanced BST built in O(n), with minimal height.", 46));
+      return frames;
+    }
+
+    if (mode === "construct") {
+      top = 84; var pre = cfg.preorder, ino = cfg.inorder, order = [], preIdx = 0;
+      function build(il, ir) { if (il > ir) return null; var v = pre[preIdx++], k = ino.indexOf(v), node = { val: v, left: null, right: null, _il: il, _ir: ir, _k: k }; order.push(node); node.left = build(il, k - 1); node.right = build(k + 1, ir); return node; }
+      var root = build(0, ino.length - 1), revealed = new Set(), lastNode = null;
+      function so(n) { if (!revealed.has(n)) return "dim"; return lastNode === n ? "active" : "visited"; }
+      function arrays(node) { var n = pre.length, cw = Math.min(40, (W - 80) / n), gap = 5, total = cw * n + gap * (n - 1), sx = (W - total) / 2, s = ""; s += `<text x="${sx - 22}" y="${24}" text-anchor="end" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">pre</text>`; s += `<text x="${sx - 22}" y="${56}" text-anchor="end" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">in</text>`; for (var i = 0; i < n; i++) { var isRoot = node && pre[i] === node.val && i === (node._pi != null ? node._pi : -1); var hotPre = node && pre[i] === node.val; s += rect(sx + i * (cw + gap), 8, cw, 26, { fill: hotPre ? "var(--brand-soft)" : "var(--surface-2)", stroke: hotPre ? "var(--accent)" : "var(--border)", sw: hotPre ? 2.2 : 1.2, r: 4 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${26}" text-anchor="middle" fill="${hotPre ? "var(--accent)" : "var(--text)"}" style="font:700 12px var(--font-mono)">${pre[i]}</text>`; var inRange = node && i >= node._il && i <= node._ir, isK = node && i === node._k; s += rect(sx + i * (cw + gap), 40, cw, 26, { fill: isK ? "var(--brand-soft)" : inRange ? "var(--c-info-bg)" : "var(--surface-2)", stroke: isK ? "var(--accent)" : inRange ? "var(--accent)" : "var(--border)", sw: isK ? 2.2 : 1.2, r: 4 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${58}" text-anchor="middle" fill="${isK ? "var(--accent)" : "var(--text)"}" style="font:700 12px var(--font-mono)">${ino[i]}</text>`; } return s; }
+      frames.push(frame(root, so, arrays(null), "Rebuild the tree from preorder + inorder: preorder's first value is the root; its position in inorder splits the left and right subtrees.", 46));
+      order.forEach(function (n) { revealed.add(n); lastNode = n; frames.push(frame(root, so, arrays(n), `Root <b>${n.val}</b> splits inorder [${n._il}..${n._ir}] at index ${n._k} → left & right subtrees.`, 46)); });
+      lastNode = null; frames.push(frame(root, so, arrays(null), "Tree fully reconstructed.", 46));
+      return frames;
+    }
+
+    if (mode === "serialize") {
+      var root = treeFromHeap(cfg.data), st = new Map(), out = [];
+      function so(n) { return st.get(n) || "default"; }
+      function ov() { return `<text x="${W / 2}" y="${top + geom(root).maxD * levelH + 36}" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-mono)">"${out.join(",")}"</text>`; }
+      frames.push(frame(root, so, ov(), "Serialize with level-order BFS: append each value, and a '#' for every missing child, so the exact shape can be rebuilt.", 56));
+      var q = [root];
+      while (q.length) { var n = q.shift(); st.set(n, "active"); out.push("" + n.val); var note = ""; if (n.left) q.push(n.left); else out.push("#"); if (n.right) q.push(n.right); else out.push("#"); frames.push(frame(root, so, ov(), `Visit <b>${n.val}</b> → append "${n.val}"${(!n.left || !n.right) ? " plus '#' for its missing child" + (!n.left && !n.right ? "ren" : "") : ""}.`, 56)); st.set(n, "visited"); }
+      frames.push(frame(root, so, ov(), `Serialized string complete. Deserialize replays it level-by-level to rebuild the identical tree.`, 56));
+      return frames;
+    }
+
+    // bst-iterator
+    var root = treeFromHeap(cfg.data), stack = [], returned = new Set();
+    function so(n) { if (returned.has(n)) return "visited"; if (stack.indexOf(n) >= 0) return "active"; return "default"; }
+    function stackCol() { var s = `<text x="${W - 46}" y="${20}" text-anchor="middle" fill="var(--text-faint)" style="font:600 10px var(--font-sans)">stack</text>`, baseY = top + geom(root).maxD * levelH + 20, bw = 56, bh = 22, x = W - 80; for (var i = 0; i < stack.length; i++) { var yy = baseY - (i + 1) * (bh + 3); s += rect(x, yy, bw, bh, { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: i === stack.length - 1 ? 2 : 1.3, r: 4 }); s += `<text x="${x + bw / 2}" y="${yy + bh / 2 + 4}" text-anchor="middle" fill="var(--accent)" style="font:700 12px var(--font-sans)">${stack[i].val}</text>`; } return s; }
+    function pushLeft(n) { while (n) { stack.push(n); n = n.left; } }
+    frames.push(frame(root, so, stackCol(), "A BST iterator yields values in sorted order using a stack holding the path to the next-smallest node. Start by pushing the whole left spine.", 56));
+    pushLeft(root); frames.push(frame(root, so, stackCol(), "Push the leftmost spine — the top of the stack is the smallest value.", 56));
+    var outv = [];
+    for (var i = 0; i < cfg.calls && stack.length; i++) { var node = stack.pop(); returned.add(node); outv.push(node.val); frames.push(frame(root, so, stackCol(), `next() → pop &amp; return <b>${node.val}</b>; then push the left spine of its right child. So far: [${outv.join(", ")}].`, 56)); pushLeft(node.right); }
+    frames.push(frame(root, so, stackCol(), `In-order output so far: <b>[${outv.join(", ")}]</b> — each next() is amortised O(1).`, 56));
+    return frames;
+  }
+
+  /* ============================================================
+     RENDERER — trie (insert + search, with optional '.' wildcard)
+     ============================================================ */
+  function trieViz(cfg) {
+    var W = 600, levelH = 46, top = 30;
+    var root = { ch: "•", children: {}, end: false, _kids: [] };
+    function insert(word) { var node = root; for (var i = 0; i < word.length; i++) { var c = word[i]; if (!node.children[c]) { node.children[c] = { ch: c, children: {}, end: false, _kids: [] }; node._kids.push(node.children[c]); } node = node.children[c]; } node.end = true; }
+    cfg.words.forEach(insert);
+    var leaves = 0, maxD = 0, all = [];
+    (function lay(n, d) { n._d = d; maxD = Math.max(maxD, d); all.push(n); if (!n._kids.length) n._x = leaves++; else { n._kids.forEach(function (c) { lay(c, d + 1); }); n._x = (n._kids[0]._x + n._kids[n._kids.length - 1]._x) / 2; } })(root, 0);
+    var pad = 24, H = top + maxD * levelH + 34, span = (W - 2 * pad) / Math.max(leaves, 1);
+    function X(n) { return pad + (n._x + 0.5) * span; } function Y(n) { return top + n._d * levelH; }
+    function draw(stateOf, cap, panel) { var s = ""; all.forEach(function (n) { n._kids.forEach(function (c) { s += line(X(n), Y(n) + 11, X(c), Y(c) - 11, { stroke: "var(--border)", sw: 1.2 }); }); }); all.forEach(function (n) { var st = stateOf(n) || {}; s += `<circle cx="${X(n)}" cy="${Y(n)}" r="14" fill="${st.fill || "var(--surface-2)"}" stroke="${st.stroke || (n.end ? "var(--c-success)" : "var(--border)")}" stroke-width="${st.sw || (n.end ? 2 : 1.3)}"/>`; s += `<text x="${X(n)}" y="${Y(n) + 5}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 12px var(--font-mono)">${n.ch}</text>`; if (n.end) s += `<text x="${X(n)}" y="${Y(n) + 25}" text-anchor="middle" fill="var(--c-success)" style="font:600 8px var(--font-sans)">end</text>`; }); if (panel) s += `<text x="${W / 2}" y="${H - 10}" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">${panel}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="trie">${s}</svg>`, caption: cap }; }
+    function findPath(node, word, k) { if (k === word.length) return node.end ? [node] : null; var c = word[k]; var tryK = (cfg.wild && c === ".") ? Object.keys(node.children) : (node.children[c] ? [c] : []); for (var i = 0; i < tryK.length; i++) { var sub = findPath(node.children[tryK[i]], word, k + 1); if (sub) return [node].concat(sub); } return null; }
+    var frames = [draw(function () { return {}; }, `A trie stores words as shared character paths. Inserted: ${cfg.words.map(function (w) { return '"' + w + '"'; }).join(", ")}. A green ring marks where a word ends.`, "built")];
+    cfg.queries.forEach(function (q) {
+      var word = q[0], path = findPath(root, word, 0);
+      if (path) { var inP = path; frames.push(draw(function (n) { return inP.indexOf(n) >= 0 ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)", sw: 2.4 } : {}; }, `search("${word}")${cfg.wild ? " ('.' matches any child)" : ""} reaches an end node → <b>true</b>.`, "match")); }
+      else { var node = root, pn = [root]; for (var i = 0; i < word.length; i++) { var c = word[i]; if (cfg.wild && c === ".") { var ks = Object.keys(node.children); if (!ks.length) break; node = node.children[ks[0]]; pn.push(node); } else if (node.children[c]) { node = node.children[c]; pn.push(node); } else break; } frames.push(draw(function (n) { return pn.indexOf(n) >= 0 ? { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)" } : {}; }, `search("${word}")${pn.length - 1 < word.length ? " hits a missing edge" : " ends on a non-terminal node"} → <b>false</b>.`, "no match")); }
+    });
+    return frames;
+  }
+
+  /* ============================================================
+     RENDERER — monotonic deque (Sliding Window Maximum)
+     ============================================================ */
+  function dequeViz(cfg) {
+    var a = cfg.data, k = cfg.k, W = 600, H = 200, grid = valueCells(a, { W: W, y: 50, h: 42 });
+    var dq = [], out = [];
+    function frame(i, cap) {
+      var inner = grid.draw(function (j) { if (i >= 0 && j >= i - k + 1 && j <= i) { if (j === dq[0]) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", sw: 2.2, lab: "var(--c-success)" }; if (dq.indexOf(j) >= 0) return { fill: "var(--brand-soft)", stroke: "var(--accent)", lab: "var(--accent)" }; return { fill: "var(--c-info-bg)", stroke: "var(--accent)" }; } return { op: 0.3 }; }, true);
+      inner += `<text x="20" y="${H - 30}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">deque (indices, values ↓): [${dq.join(", ")}]</text>`;
+      inner += `<text x="20" y="${H - 10}" fill="var(--c-success)" style="font:600 11px var(--font-mono)">window maxes: [${out.join(", ")}]</text>`;
+      return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="sliding window maximum">${inner}</svg>`, caption: cap };
+    }
+    var frames = [frame(-1, `Sliding-window maximum via a <b>monotonic deque</b> of indices (their values decreasing). The front index is always the current window's maximum, so each answer is O(1).`)];
+    for (var i = 0; i < a.length; i++) {
+      while (dq.length && dq[0] <= i - k) dq.shift();
+      while (dq.length && a[dq[dq.length - 1]] < a[i]) dq.pop();
+      dq.push(i);
+      var note = `Index ${i} (value ${a[i]}): pop smaller tail values, drop a front that left the window, push ${i}.`;
+      if (i >= k - 1) { out.push(a[dq[0]]); note += ` Window max = <b>${a[dq[0]]}</b>.`; }
+      frames.push(frame(i, note));
+    }
+    frames.push(frame(a.length - 1, `All window maxima: [${out.join(", ")}].`));
+    return frames;
+  }
+
+  /* ============================================================
+     RENDERER — data-structure design (LRU, RandomizedSet, TimeMap)
+     ============================================================ */
+  function designViz(cfg) {
+    var mode = cfg.mode, W = 600;
+    function box(x, y, w, h, txt, st) { st = st || {}; return rect(x, y, w, h, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: st.sw || 1.3, r: 6 }) + `<text x="${x + w / 2}" y="${y + h / 2 + 5}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 13px var(--font-sans)">${txt}</text>`; }
+    var frames = [];
+
+    if (mode === "lru") {
+      var cap = cfg.cap, cache = [], H = 170;
+      function snap(opLabel, hi, cap2) { var bw = 64, gap = 10, sx = (W - (cap * (bw + gap) - gap)) / 2, s = `<text x="${W / 2}" y="30" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-mono)">${opLabel}</text><text x="${sx}" y="60" fill="var(--text-faint)" style="font:600 10px var(--font-sans)">MRU →</text><text x="${sx + cap * (bw + gap) - gap}" y="60" text-anchor="end" fill="var(--text-faint)" style="font:600 10px var(--font-sans)">→ LRU</text>`; for (var i = 0; i < cap; i++) { var e = cache[i]; s += box(sx + i * (bw + gap), 70, bw, 44, e ? e[0] + ":" + e[1] : "—", { fill: i === hi ? "var(--brand-soft)" : e ? "var(--c-info-bg)" : "var(--surface-2)", stroke: i === hi ? "var(--accent)" : e ? "var(--accent)" : "var(--border)", lab: e ? "var(--text)" : "var(--text-faint)", sw: i === hi ? 2.2 : 1.3 }); } s += `<text x="${W / 2}" y="${H - 10}" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-mono)">${cap2}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="lru cache">${s}</svg>`, caption: opLabel2 }; }
+      var opLabel2 = "";
+      function doSnap(label, hi, panel, cap3) { opLabel2 = cap3; frames.push(snap(label, hi, panel)); }
+      doSnap("LRU cache", -1, "capacity " + cap, `An LRU cache keeps entries ordered most-recently-used → least. Every get/put moves a key to the front; a put over capacity evicts the back (LRU). A hash map + doubly-linked list makes both O(1).`);
+      cfg.ops.forEach(function (op) {
+        if (op[0] === "put") { var key = op[1], val = op[2], at = cache.findIndex(function (e) { return e[0] === key; }); if (at >= 0) cache.splice(at, 1); cache.unshift([key, val]); var evicted = ""; if (cache.length > cap) { var ev = cache.pop(); evicted = ` Evicted LRU key ${ev[0]}.`; } doSnap(`put(${key}, ${val})`, 0, "front = " + key, `Insert/refresh ${key} at the front.${evicted}`); }
+        else { var key2 = op[1], at2 = cache.findIndex(function (e) { return e[0] === key2; }); if (at2 >= 0) { var e2 = cache.splice(at2, 1)[0]; cache.unshift(e2); doSnap(`get(${key2}) → ${e2[1]}`, 0, "front = " + key2, `Hit: return ${e2[1]} and move ${key2} to the front.`); } else doSnap(`get(${key2}) → -1`, -1, "miss", `${key2} isn't cached → -1.`); }
+      });
+      return frames;
+    }
+
+    if (mode === "randomized-set") {
+      var H2 = 200, arr = [], idx = {};
+      function snap(label, hi, cap2) { var n = Math.max(arr.length, 1), cw = Math.min(50, (W - 80) / n), gap = 6, sx = (W - (arr.length * (cw + gap) - gap)) / 2, s = `<text x="${W / 2}" y="30" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-mono)">${label}</text><text x="30" y="60" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">array</text>`; for (var i = 0; i < arr.length; i++) { s += box(sx + i * (cw + gap), 70, cw, 40, arr[i], { fill: i === hi ? "var(--brand-soft)" : "var(--c-info-bg)", stroke: i === hi ? "var(--accent)" : "var(--accent)", sw: i === hi ? 2.4 : 1.3 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${124}" text-anchor="middle" fill="var(--text-faint)" style="font:500 9px var(--font-mono)">${i}</text>`; } s += `<text x="${W / 2}" y="${160}" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">map val→index: {${Object.keys(idx).map(function (k) { return k + ":" + idx[k]; }).join(", ")}}</text>`; s += `<text x="${W / 2}" y="${H2 - 10}" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-mono)">${cap2}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="randomized set">${s}</svg>`, caption: label2 }; }
+      var label2 = "";
+      function doSnap(label, hi, cap3) { label2 = cap3; frames.push(snap(label, hi, "")); }
+      doSnap("RandomizedSet", -1, "An array gives O(1) random access; a map of value→index gives O(1) insert/remove. Remove swaps the target with the last element, then pops — keeping the array gap-free.");
+      cfg.ops.forEach(function (op) {
+        if (op[0] === "insert") { var v = op[1]; if (idx[v] === undefined) { idx[v] = arr.length; arr.push(v); doSnap(`insert(${v})`, arr.length - 1, `Append ${v} at index ${idx[v]} and record it in the map.`); } else doSnap(`insert(${v}) → false`, -1, `${v} already present.`); }
+        else if (op[0] === "remove") { var v2 = op[1], pos = idx[v2], last = arr[arr.length - 1]; arr[pos] = last; idx[last] = pos; arr.pop(); delete idx[v2]; doSnap(`remove(${v2})`, pos < arr.length ? pos : -1, `Move last value ${last} into slot ${pos}, pop the end, drop ${v2} from the map — all O(1).`); }
+        else { var ri = Math.floor(arr.length / 2); doSnap(`getRandom() → ${arr[ri]}`, ri, `Pick a uniformly random index → ${arr[ri]}.`); }
+      });
+      return frames;
+    }
+
+    // time-based key-value store
+    var entries = [], H3 = 190;
+    function snap(label, hi, panel) { var n = Math.max(entries.length, 1), cw = Math.min(70, (W - 80) / n), gap = 8, sx = (W - (entries.length * (cw + gap) - gap)) / 2, s = `<text x="${W / 2}" y="30" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-mono)">${label}</text>`; for (var i = 0; i < entries.length; i++) { s += box(sx + i * (cw + gap), 64, cw, 44, "t" + entries[i][0] + ":" + entries[i][1], { fill: hi && hi.indexOf(i) >= 0 ? "var(--brand-soft)" : "var(--c-info-bg)", stroke: hi && hi.indexOf(i) >= 0 ? "var(--accent)" : "var(--accent)", sw: hi && hi.indexOf(i) >= 0 ? 2.4 : 1.3 }); } if (panel) s += `<text x="${W / 2}" y="${H3 - 12}" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-mono)">${panel}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${H3}" role="img" aria-label="time map">${s}</svg>`, caption: tlabel }; }
+    var tlabel = "";
+    function dsnap(label, hi, panel, cap2) { tlabel = cap2; frames.push(snap(label, hi, panel)); }
+    dsnap("TimeMap", null, "key \"" + cfg.query[0] + "\"", `A TimeMap stores each key's values as a list ordered by timestamp. set appends; get(key, t) <b>binary-searches</b> for the newest entry with timestamp ≤ t.`);
+    cfg.sets.forEach(function (st) { entries.push([st[2], st[1]]); dsnap(`set("${st[0]}", "${st[1]}", ${st[2]})`, [entries.length - 1], "timestamps: " + entries.map(function (e) { return e[0]; }).join(", "), `Append (t=${st[2]}, "${st[1]}").`); });
+    var qt = cfg.query[1], lo = 0, hi = entries.length - 1, ans = "";
+    while (lo <= hi) { var mid = (lo + hi) >> 1; if (entries[mid][0] <= qt) { ans = entries[mid][1]; dsnap(`get("${cfg.query[0]}", ${qt})`, [mid], "candidate \"" + ans + "\"", `t${entries[mid][0]} ≤ ${qt} → "${entries[mid][1]}" works; search right for something newer.`); lo = mid + 1; } else { dsnap(`get("${cfg.query[0]}", ${qt})`, [mid], "too new", `t${entries[mid][0]} &gt; ${qt} → too new, search left.`); hi = mid - 1; } }
+    dsnap(`get("${cfg.query[0]}", ${qt}) → "${ans}"`, null, "answer \"" + ans + "\"", `Newest value at or before t=${qt} is <b>"${ans}"</b>.`);
+    return frames;
+  }
+
   /* ---------- renderer registry ---------- */
   var RENDERERS = {
     "intervals-arrows": intervalsArrows,
@@ -3026,7 +3575,11 @@
     "math-steps": mathSteps,
     "two-tree": twoTree,
     "dp-string": dpString,
-    "expand-center": expandCenter
+    "expand-center": expandCenter,
+    "tree-ops": treeOps,
+    "trie": trieViz,
+    "deque": dequeViz,
+    "design": designViz
   };
 
   /* ---------- problem configs (keyed by data-viz) ---------- */
@@ -3313,7 +3866,85 @@
 
     /* ----- heap extras ----- */
     "merge-k-sorted-lists": { title: "Watch the heap pick the next smallest", type: "heap", mode: "merge-k", lists: [[1, 4, 5], [1, 3, 4], [2, 6]] },
-    "meeting-rooms-ii": { title: "Watch the end-time heap count rooms", type: "heap", mode: "meeting-rooms-ii", data: [[0, 30], [5, 10], [15, 20]] }
+    "meeting-rooms-ii": { title: "Watch the end-time heap count rooms", type: "heap", mode: "meeting-rooms-ii", data: [[0, 30], [5, 10], [15, 20]] },
+
+    /* ===== batch K (final) ===== */
+    /* ----- graphs ----- */
+    "is-graph-bipartite": { title: "Watch the 2-colouring BFS", type: "graph", mode: "bipartite", n: 4, edges: [[0, 1], [1, 2], [2, 3], [3, 0]] },
+    "network-delay-time": { title: "Watch Dijkstra settle distances", type: "graph", mode: "dijkstra", n: 4, src: 0, edges: [[0, 1, 1], [0, 2, 4], [1, 2, 1], [2, 3, 1]] },
+    "cheapest-flights-k-stops": { title: "Watch Bellman-Ford relax by rounds", type: "graph", mode: "bellman", n: 3, src: 0, dst: 2, k: 1, edges: [[0, 1, 100], [1, 2, 100], [0, 2, 500]] },
+    "min-cost-connect-points": { title: "Watch Prim grow the MST", type: "graph", mode: "mst", points: [[0, 0], [2, 2], [3, 10], [5, 2], [7, 0]] },
+    "reconstruct-itinerary": { title: "Watch Hierholzer build the Euler path", type: "graph", mode: "euler", n: 3, labels: ["JFK", "ATL", "SFO"], start: "JFK", tickets: [["JFK", "SFO"], ["JFK", "ATL"], ["SFO", "ATL"], ["ATL", "JFK"], ["ATL", "SFO"]] },
+    "alien-dictionary": { title: "Watch letter order emerge via topo sort", type: "graph", mode: "alien-topo", n: 5, labels: ["w", "e", "r", "t", "f"], words: ["wrt", "wrf", "er", "ett", "rftt"] },
+    "evaluate-division": { title: "Watch ratios multiply along a path", type: "graph", mode: "evaluate-division", n: 3, labels: ["a", "b", "c"], edges: [[0, 1, 2], [1, 2, 3]], query: ["a", "c"] },
+    "accounts-merge": { title: "Watch union-find merge accounts", type: "graph", mode: "accounts-merge", n: 4, labels: ["John", "John", "Mary", "John"], edges: [[0, 1], [2, 3]] },
+    "open-the-lock": { title: "Watch BFS turn to the target", type: "graph", mode: "lock-path", deadends: ["0201", "0101", "0102", "1212", "2002"], target: "0202" },
+
+    /* ----- grid / matrix ----- */
+    "pacific-atlantic": { title: "Watch both oceans flood inward", type: "grid", mode: "pacific-atlantic", data: [[1, 2, 2, 3, 5], [3, 2, 3, 4, 4], [2, 4, 5, 3, 1], [6, 7, 1, 4, 5], [5, 1, 1, 2, 4]] },
+    "swim-in-rising-water": { title: "Watch Dijkstra minimise the max", type: "grid", mode: "swim", data: [[0, 2], [1, 3]] },
+    "word-search": { title: "Watch DFS trace the word", type: "grid", mode: "word-search", data: [["A", "B", "C", "E"], ["S", "F", "C", "S"], ["A", "D", "E", "E"]], word: "ABCCED" },
+    "word-search-ii": { title: "Watch DFS find a word on the board", type: "grid", mode: "word-search", data: [["o", "a", "a", "n"], ["e", "t", "a", "e"], ["i", "h", "k", "r"], ["i", "f", "l", "v"]], word: "eat" },
+    "valid-sudoku": { title: "Watch row/col/box sets catch a clash", type: "matrix", mode: "sudoku", data: [["5", "3", ".", ".", "7", ".", ".", ".", "."], ["6", ".", ".", "1", "9", "5", ".", ".", "."], [".", "9", "8", ".", ".", ".", ".", "6", "."], ["8", ".", ".", ".", "6", ".", ".", ".", "3"], ["4", ".", ".", "8", ".", "3", ".", ".", "1"], ["7", ".", ".", ".", "2", ".", ".", ".", "6"], [".", "6", ".", ".", ".", ".", "2", "8", "."], [".", ".", ".", "4", "1", "9", ".", ".", "5"], [".", ".", ".", ".", "8", ".", ".", "7", "5"]] },
+
+    /* ----- tree operations ----- */
+    "delete-node-in-a-bst": { title: "Watch the successor replace the node", type: "tree-ops", mode: "delete-bst", data: [5, 3, 6, 2, 4, null, 7], key: 3 },
+    "house-robber-iii": { title: "Watch [rob, skip] bubble up", type: "tree-ops", mode: "rob-tree", data: [3, 2, 3, null, 3, null, 1] },
+    "populating-next-right-pointers": { title: "Watch each level thread rightward", type: "tree-ops", mode: "connect-next", data: [1, 2, 3, 4, 5, 6, 7] },
+    "convert-sorted-array-to-bst": { title: "Watch the middle become each root", type: "tree-ops", mode: "sorted-to-bst", data: [-10, -3, 0, 5, 9] },
+    "construct-binary-tree-preorder-inorder": { title: "Watch preorder + inorder rebuild", type: "tree-ops", mode: "construct", preorder: [3, 9, 20, 15, 7], inorder: [9, 3, 15, 20, 7] },
+    "serialize-and-deserialize-binary-tree": { title: "Watch BFS serialize to a string", type: "tree-ops", mode: "serialize", data: [1, 2, 3, null, null, 4, 5] },
+    "binary-search-tree-iterator": { title: "Watch the stack drive in-order", type: "tree-ops", mode: "bst-iterator", data: [7, 3, 15, null, null, 9, 20], calls: 4 },
+
+    /* ----- DP grids ----- */
+    "unique-paths-ii": { title: "Watch obstacles zero out paths", type: "dp-grid", mode: "unique-paths-obstacles", grid: [[0, 0, 0], [0, 1, 0], [0, 0, 0]] },
+    "interleaving-string": { title: "Watch two strings weave into one", type: "dp-grid", mode: "interleaving", a: "aab".split(""), b: "axy".split(""), s3: "aaxaby" },
+    "longest-palindromic-subsequence": { title: "Watch LCS of s and its reverse", type: "dp-grid", mode: "lcs", a: "bbbab".split(""), b: "babbb".split("") },
+    "triangle": { title: "Watch the minimum bubble to the apex", type: "dp-grid", mode: "triangle", grid: [[2], [3, 4], [6, 5, 7], [4, 1, 8, 3]] },
+    "best-time-to-buy-sell-cooldown": { title: "Watch hold/sold/rest each day", type: "dp-grid", mode: "cooldown", prices: [1, 2, 3, 0, 2] },
+
+    /* ----- DP misc ----- */
+    "target-sum": { title: "Watch subset counts accumulate", type: "knapsack", mode: "target-sum", data: [1, 1, 1, 1, 1], target: 3 },
+    "unique-binary-search-trees": { title: "Watch the Catalan recurrence fill", type: "dp-linear", mode: "catalan", n: 4 },
+
+    /* ----- linked list ----- */
+    "sort-list": { title: "Watch merge sort split and merge", type: "linked-list", mode: "sort", data: [4, 2, 1, 3] },
+    "find-the-duplicate-number": { title: "Watch Floyd find the cycle entrance", type: "linked-list", mode: "duplicate", data: [1, 3, 4, 2, 2] },
+    "copy-list-with-random-pointer": { title: "Watch the weave-and-split clone", type: "linked-list", mode: "copy-random", data: [7, 13, 11, 10, 1], random: [-1, 0, 4, 2, 0] },
+
+    /* ----- binary search ----- */
+    "median-of-two-sorted-arrays": { title: "Watch the partition balance", type: "bsearch", mode: "median2", a: [1, 3], b: [2, 7] },
+    "find-k-closest-elements": { title: "Watch the window drop the far end", type: "bsearch", mode: "k-closest-elements", data: [1, 2, 3, 4, 5], k: 4, x: 3 },
+
+    /* ----- stack / mono ----- */
+    "car-fleet": { title: "Watch fleets form on the stack", type: "stack-ops", mode: "car-fleet", target: 12, positions: [10, 8, 0, 5, 3], speeds: [2, 4, 1, 1, 3] },
+
+    /* ----- math ----- */
+    "pow-x-n": { title: "Watch fast exponentiation by squaring", type: "math-steps", mode: "pow", x: 2, n: 10 },
+    "range-sum-query-immutable": { title: "Watch prefix sums answer in O(1)", type: "math-steps", mode: "range-sum", data: [-2, 0, 3, -5, 2, -1], query: [2, 5] },
+
+    /* ----- greedy ----- */
+    "candy": { title: "Watch the two greedy passes", type: "array-rewrite", mode: "candy", data: [1, 0, 2, 4, 3] },
+    "hand-of-straights": { title: "Watch consecutive runs form", type: "array-rewrite", mode: "hand", data: [1, 2, 3, 6, 2, 3, 4, 7, 8], groupSize: 3 },
+
+    /* ----- greedy / heap ----- */
+    "reorganize-string": { title: "Watch the most-frequent char placed", type: "heap", mode: "reorganize", s: "aab" },
+    "design-twitter": { title: "Watch the heap merge recent tweets", type: "heap", mode: "twitter", k: 4, feeds: [[[1, 101], [4, 104]], [[2, 102], [5, 105]], [[3, 103]]] },
+
+    /* ----- backtracking ----- */
+    "n-queens": { title: "Watch queens place and backtrack", type: "backtracking", mode: "n-queens", n: 4 },
+
+    /* ----- trie ----- */
+    "implement-trie": { title: "Watch words share character paths", type: "trie", words: ["apple", "app"], queries: [["app", true], ["ap", false]], wild: false },
+    "design-add-and-search-words": { title: "Watch '.' branch to any child", type: "trie", words: ["bad", "dad", "mad"], queries: [[".ad", true], ["b..", true]], wild: true },
+
+    /* ----- deque ----- */
+    "sliding-window-maximum": { title: "Watch the monotonic deque front", type: "deque", data: [1, 3, -1, -3, 5, 3, 6, 7], k: 3 },
+
+    /* ----- design ----- */
+    "lru-cache": { title: "Watch MRU↔LRU ordering and eviction", type: "design", mode: "lru", cap: 2, ops: [["put", 1, 1], ["put", 2, 2], ["get", 1], ["put", 3, 3], ["get", 2], ["put", 4, 4], ["get", 3]] },
+    "insert-delete-getrandom-o1": { title: "Watch swap-remove keep O(1)", type: "design", mode: "randomized-set", ops: [["insert", 1], ["insert", 2], ["remove", 1], ["insert", 3], ["getRandom"]] },
+    "time-based-key-value-store": { title: "Watch binary search by timestamp", type: "design", mode: "timemap", sets: [["foo", "bar", 1], ["foo", "bar2", 4]], query: ["foo", 3] }
   };
 
   /* ---------- engine ---------- */

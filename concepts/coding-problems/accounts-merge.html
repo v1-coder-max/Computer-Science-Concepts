@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Treat each <strong>email as a node</strong>. For every account, <strong>union</strong> all its emails together (and map each email to its owner name). Transitive sharing — A shares with B, B with C — is handled automatically by the disjoint-set structure. Finally, group emails by their <strong>root</strong>, sort each group, and prepend the owner’s name. Path compression keeps it near-linear.</p><p><strong>Time ~O(N·α + sorting), Space O(N).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Union emails, group by root">
-              <text class="dgm-sub" x="20" y="24">union all emails within an account</text>
-              <text class="dgm-sub" x="20" y="52">transitive shares merge automatically</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">group by root, sort, prepend name</text>
-            </svg>
-            <figcaption>Figure 1 — Emails in the same connected set belong to one merged account.</figcaption>
-          </figure>
+          <div class="viz" data-viz="accounts-merge"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -173,5 +166,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

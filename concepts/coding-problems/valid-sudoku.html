@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Use sets keyed by constraint: one per <strong>row</strong>, one per <strong>column</strong>, and one per <strong>box</strong> (box index = <code>(r/3)*3 + c/3</code>). Scan every filled cell once; if its digit already appears in that cell’s row, column, or box set, the board is invalid. Otherwise add it to all three. The board size is fixed (81 cells), so this is effectively constant work.</p><p><strong>Time O(1) (fixed 9×9), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Row, column, box sets in one pass">
-              <text class="dgm-sub" x="20" y="24">box index = (r/3)*3 + (c/3)</text>
-              <text class="dgm-sub" x="20" y="52">digit seen in row/col/box set → invalid</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">else add to all three sets</text>
-            </svg>
-            <figcaption>Figure 1 — Three constraint sets per cell catch any duplicate in a single sweep.</figcaption>
-          </figure>
+          <div class="viz" data-viz="valid-sudoku"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -164,5 +157,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

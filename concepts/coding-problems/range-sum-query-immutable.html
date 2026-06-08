@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Precompute <code>prefix[k]</code> = sum of the first <code>k</code> elements, with <code>prefix[0] = 0</code>. Then <code>SumRange(i, j) = prefix[j+1] − prefix[i]</code> — the total up to <code>j</code> minus the total before <code>i</code>. Build is O(n); every query is O(1) thereafter.</p><p><strong>Build O(n), Query O(1), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Range sum = prefix[j+1] − prefix[i]">
-              <text class="dgm-sub" x="20" y="24">prefix[k] = sum of first k elements</text>
-              <text class="dgm-sub" x="20" y="52">sumRange(i,j) = prefix[j+1] − prefix[i]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">O(1) per query after O(n) build</text>
-            </svg>
-            <figcaption>Figure 1 — A range total is the difference of two cumulative sums.</figcaption>
-          </figure>
+          <div class="viz" data-viz="range-sum-query-immutable"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -159,5 +152,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

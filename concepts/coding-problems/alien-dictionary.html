@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Compare each <strong>adjacent pair</strong> of words; the first differing characters <code>(a, b)</code> give the edge <code>a → b</code> (a comes before b). Edge case: if a word is a prefix of a longer word that precedes it (e.g. <code>"abc"</code> before <code>"ab"</code>), the input is invalid → <code>""</code>. Then run a <strong>topological sort</strong> (Kahn’s in-degree BFS) over the letter graph; if a cycle prevents finishing all letters, return <code>""</code>.</p><p><strong>Time O(total chars), Space O(1)</strong> (≤ 26 letters).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Constraints from adjacent words, then topo-sort">
-              <text class="dgm-sub" x="20" y="24">first differing chars of adjacent words → edge</text>
-              <text class="dgm-sub" x="20" y="52">prefix-of-shorter-after-longer → invalid</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">topological order of the letter graph = answer</text>
-            </svg>
-            <figcaption>Figure 1 — Each adjacent word pair contributes one precedence edge to topologically sort.</figcaption>
-          </figure>
+          <div class="viz" data-viz="alien-dictionary"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -170,5 +163,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

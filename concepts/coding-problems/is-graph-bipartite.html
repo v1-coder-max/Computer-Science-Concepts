@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Maintain a <code>color</code> array (0 = uncolored). For each uncolored node, start a BFS/DFS, assigning it one color and each neighbor the <strong>opposite</strong> color. If you ever reach a neighbor already colored the <strong>same</strong> as the current node, there’s an odd cycle → not bipartite. Repeat across all components (the graph may be disconnected).</p><p><strong>Time O(V + E), Space O(V).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Greedy 2-coloring detects odd cycles">
-              <text class="dgm-sub" x="20" y="24">color a node, neighbors get the opposite</text>
-              <text class="dgm-sub" x="20" y="52">neighbor same color as current → conflict</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">no conflict across all components → bipartite</text>
-            </svg>
-            <figcaption>Figure 1 — A same-color edge reveals an odd cycle, the obstruction to bipartiteness.</figcaption>
-          </figure>
+          <div class="viz" data-viz="is-graph-bipartite"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -168,5 +161,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Let <code>P</code> be the positive subset and <code>N</code> the negative one. Then <code>P − N = target</code> and <code>P + N = total</code>, so <code>P = (total + target) / 2</code>. The problem becomes: <strong>count subsets that sum to <code>P</code></strong>. That’s a 1-D DP: <code>dp[s] += dp[s − num]</code> for each num, with <code>dp[0] = 1</code>. (If <code>total + target</code> is odd or negative, the answer is 0.)</p><p><strong>Time O(n · P), Space O(P).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reduce to subset sum P">
-              <text class="dgm-sub" x="20" y="24">P − N = target,  P + N = total</text>
-              <text class="dgm-sub" x="20" y="52">→ P = (total + target) / 2</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">count subsets summing to P → answer</text>
-            </svg>
-            <figcaption>Figure 1 — The sign assignment collapses to counting subsets that reach P.</figcaption>
-          </figure>
+          <div class="viz" data-viz="target-sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -159,5 +152,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

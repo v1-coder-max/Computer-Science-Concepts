@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Require <code>len(s1) + len(s2) == len(s3)</code>. Let <code>dp[i][j]</code> = can the first <code>i + j</code> chars of <code>s3</code> be formed from the first <code>i</code> of <code>s1</code> and first <code>j</code> of <code>s2</code>. Then <code>dp[i][j]</code> is true if either <code>dp[i−1][j] &amp;&amp; s1[i−1] == s3[i+j−1]</code> (take from s1) or <code>dp[i][j−1] &amp;&amp; s2[j−1] == s3[i+j−1]</code> (take from s2).</p><p><strong>Time O(m·n), Space O(m·n)</strong> (reducible to O(n)).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reach (i,j) from above or left if char matches">
-              <text class="dgm-sub" x="20" y="24">dp[i][j] = (dp[i-1][j] && s1[i-1]==s3[i+j-1])</text>
-              <text class="dgm-sub" x="20" y="52">        or (dp[i][j-1] && s2[j-1]==s3[i+j-1])</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">len(s1)+len(s2) must equal len(s3)</text>
-            </svg>
-            <figcaption>Figure 1 — Each interleaving position is reachable if a matching char extends a reachable predecessor.</figcaption>
-          </figure>
+          <div class="viz" data-viz="interleaving-string"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

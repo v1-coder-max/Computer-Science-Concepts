@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Run <strong>Prim’s algorithm</strong>. Start from any point; keep a min-heap of <code>(cost, point)</code> edges crossing out of the visited set. Repeatedly pop the cheapest edge to an unvisited point, add its cost, mark it visited, and push its edges. Stop when all points are in. Because the graph is complete (every pair connectable), Prim’s with a heap is natural; Kruskal’s with union-find also works.</p><p><strong>Time O(n² log n), Space O(n²).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Prim grows the MST cheapest-edge-first">
-              <text class="dgm-sub" x="20" y="24">heap of edges crossing the visited frontier</text>
-              <text class="dgm-sub" x="20" y="52">pop cheapest edge to a NEW point, add cost</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">all points connected → minimum total cost</text>
-            </svg>
-            <figcaption>Figure 1 — Each step pulls in the nearest unconnected point until the tree spans everything.</figcaption>
-          </figure>
+          <div class="viz" data-viz="min-cost-connect-points"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -168,5 +161,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

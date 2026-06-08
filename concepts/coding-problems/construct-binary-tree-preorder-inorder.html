@@ -81,14 +81,7 @@
             of a scan.
           </p>
           <p><strong>Time O(n), Space O(n).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Root from preorder, split from inorder">
-              <text class="dgm-sub" x="20" y="24">preorder[0] = 3 = root</text>
-              <text class="dgm-sub" x="20" y="56">inorder: [9 | 3 | 15 20 7] → left {9}, right {15,20,7}</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">recurse on each side</text>
-            </svg>
-            <figcaption>Figure 1 — Preorder gives the root; its inorder position partitions the remaining nodes.</figcaption>
-          </figure>
+          <div class="viz" data-viz="construct-binary-tree-preorder-inorder"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -167,5 +160,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>The answer is a contiguous window of length <code>k</code>. Binary search the window’s <strong>start index</strong> in <code>[0, n−k]</code>: at <code>mid</code>, compare <code>x − arr[mid]</code> (left gap) with <code>arr[mid+k] − x</code> (right gap). If the left gap is larger, the window should slide right (<code>lo = mid + 1</code>); otherwise <code>hi = mid</code>. Convergence gives the optimal start; return that length-<code>k</code> slice.</p><p><strong>Time O(log(n−k) + k), Space O(k).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search the window start">
-              <text class="dgm-sub" x="20" y="24">compare x − arr[mid] vs arr[mid+k] − x</text>
-              <text class="dgm-sub" x="20" y="52">left gap bigger → slide right (lo = mid+1)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">best start → return k-length slice</text>
-            </svg>
-            <figcaption>Figure 1 — Comparing the two boundary gaps tells you which way the optimal window lies.</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-k-closest-elements"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Each car’s time to the target is <code>(target − position) / speed</code>. Sort cars by <strong>start position descending</strong> (closest to the target first) and walk through them, keeping the <strong>slowest arrival time so far</strong> (the front of the current fleet). If a car’s arrival time is <strong>greater</strong> than that front time, it can’t catch up — it starts a <strong>new fleet</strong> and becomes the new front; otherwise it merges into the fleet ahead. Count the new fronts. (The non-increasing fronts behave like a monotonic stack.)</p><p><strong>Time O(n log n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Arrival times in position order">
-              <text class="dgm-sub" x="20" y="24">time = (target − pos) / speed</text>
-              <text class="dgm-sub" x="20" y="52">sort by pos desc; track slowest front time</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">arrival > front → new fleet; else merge</text>
-            </svg>
-            <figcaption>Figure 1 — A car that would arrive later than the one ahead is blocked into its fleet.</figcaption>
-          </figure>
+          <div class="viz" data-viz="car-fleet"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -165,5 +158,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

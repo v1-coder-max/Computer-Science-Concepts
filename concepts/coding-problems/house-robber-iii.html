@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>For each node, compute a pair <code>(rob, skip)</code>. If you <strong>rob</strong> this node, you must skip both children: <code>rob = node.val + left.skip + right.skip</code>. If you <strong>skip</strong> it, each child takes its own best: <code>skip = max(left.rob, left.skip) + max(right.rob, right.skip)</code>. Return the pair up; the answer at the root is <code>max(rob, skip)</code>. One post-order traversal, no repeated work.</p><p><strong>Time O(n), Space O(h).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Return (rob, skip) pair per node">
-              <text class="dgm-sub" x="20" y="24">rob = val + left.skip + right.skip</text>
-              <text class="dgm-sub" x="20" y="52">skip = max(left) + max(right)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">answer = max(root.rob, root.skip)</text>
-            </svg>
-            <figcaption>Figure 1 — Carrying both choices up the tree avoids recomputing grandchildren.</figcaption>
-          </figure>
+          <div class="viz" data-viz="house-robber-iii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

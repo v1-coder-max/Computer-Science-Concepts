@@ -81,14 +81,7 @@
             all the words’ shared prefixes into one search.
           </p>
           <p><strong>Time O(m·n·4·3<sup>L−1</sup>), Space O(total chars).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Trie-guided DFS prunes the board">
-              <text class="dgm-sub" x="20" y="24">trie of all words guides the board DFS</text>
-              <text class="dgm-sub" x="20" y="56">letter not in trie → prune that path early</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">trie node isEnd → collect that word</text>
-            </svg>
-            <figcaption>Figure 1 — One trie-driven DFS explores all words at once and abandons dead prefixes fast.</figcaption>
-          </figure>
+          <div class="viz" data-viz="word-search-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -180,5 +173,6 @@ public class Node { public Node[] Next = new Node[26]; public string Word; }</co
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

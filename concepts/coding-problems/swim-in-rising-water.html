@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>This is a <strong>minimax path</strong>: minimize the maximum elevation crossed. Use a min-heap keyed by the <strong>path’s running maximum elevation</strong>. Pop the cell with the smallest such max, update the answer with its elevation, and push neighbors with <code>max(currentMax, neighborElevation)</code>. The first time you pop the bottom-right cell, its key is the answer. It’s Dijkstra with “max along path” replacing “sum.”</p><p><strong>Time O(n² log n), Space O(n²).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Min-heap on the path running-max">
-              <text class="dgm-sub" x="20" y="24">key = max elevation seen on the path so far</text>
-              <text class="dgm-sub" x="20" y="52">pop smallest max; push neighbor max(cur, elev)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">reach bottom-right → key is the answer</text>
-            </svg>
-            <figcaption>Figure 1 — Expanding the lowest running-peak first yields the minimax-elevation path.</figcaption>
-          </figure>
+          <div class="viz" data-viz="swim-in-rising-water"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -169,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

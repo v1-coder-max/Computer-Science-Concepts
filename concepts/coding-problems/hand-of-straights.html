@@ -80,14 +80,7 @@
             min-heap / <code>SortedDictionary</code>) gives the smallest card quickly.
           </p>
           <p><strong>Time O(n log n), Space O(n).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Greedily start at the smallest card">
-              <text class="dgm-sub" x="20" y="24">count cards; smallest present must start a group</text>
-              <text class="dgm-sub" x="20" y="56">remove x, x+1, …, x+w−1 from counts</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">any missing → false; all consumed → true ✓</text>
-            </svg>
-            <figcaption>Figure 1 — The minimum card anchors a group; consume the run upward and repeat.</figcaption>
-          </figure>
+          <div class="viz" data-viz="hand-of-straights"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -167,5 +160,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

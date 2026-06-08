@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Keep a stack holding the current path of <strong>leftmost</strong> nodes. Initialize by pushing the root and all its left descendants. <code>Next</code>: pop the top (the smallest unvisited), and if it has a right child, push that child and all of <em>its</em> leftmost descendants. <code>HasNext</code> is just “stack not empty.” Each node is pushed and popped once, so <code>Next</code> is amortized O(1), and the stack never exceeds the tree height.</p><p><strong>Next amortized O(1), Space O(h).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Stack of leftmost nodes drives in-order">
-              <text class="dgm-sub" x="20" y="24">init: push root and all left descendants</text>
-              <text class="dgm-sub" x="20" y="52">next: pop; push right child + its lefts</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">amortized O(1) per next, O(h) space</text>
-            </svg>
-            <figcaption>Figure 1 — The stack always holds the path to the next-smallest value.</figcaption>
-          </figure>
+          <div class="viz" data-viz="binary-search-tree-iterator"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -166,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

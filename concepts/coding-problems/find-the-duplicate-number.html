@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Read each index <code>i → nums[i]</code> as a linked-list jump. Since values are in <code>[1, n]</code> and there are <code>n+1</code> of them, two indices point to the same value — that creates a <strong>cycle</strong>, and the cycle’s entrance is the duplicate. Apply <strong>Floyd’s tortoise and hare</strong>: find a meeting point, then reset one pointer to the start and advance both by one until they meet — that meeting node is the duplicate.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Values as pointers → cycle entrance">
-              <text class="dgm-sub" x="20" y="24">i → nums[i] forms a linked structure</text>
-              <text class="dgm-sub" x="20" y="52">duplicate value = where two jumps collide → cycle</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">Floyd: meet, reset to start, meet again = dup</text>
-            </svg>
-            <figcaption>Figure 1 — The repeated value is the entry node of the cycle, found like Linked List Cycle II.</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-the-duplicate-number"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Count letter frequencies. If any letter occurs more than <code>(n + 1) / 2</code> times, it’s impossible → <code>""</code>. Otherwise use a <strong>max-heap</strong> by remaining count. Repeatedly pop the most frequent letter that isn’t the one just placed, append it, decrement its count, and <strong>hold it aside</strong> until after the next placement (so it can’t be picked twice in a row). Re-add held letters with remaining count. This always succeeds when the feasibility check passes.</p><p><strong>Time O(n log k), Space O(k).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Max-heap, skip the just-used letter">
-              <text class="dgm-sub" x="20" y="24">impossible if max freq > (n+1)/2</text>
-              <text class="dgm-sub" x="20" y="52">place most-frequent ≠ previous; hold it one step</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"aab" → "aba"</text>
-            </svg>
-            <figcaption>Figure 1 — Spacing out the most common letter first prevents adjacent repeats.</figcaption>
-          </figure>
+          <div class="viz" data-viz="reorganize-string"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -169,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

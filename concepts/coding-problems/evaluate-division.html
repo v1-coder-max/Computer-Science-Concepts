@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Build a graph: each equation <code>a/b = v</code> adds edge <code>a→b</code> with weight <code>v</code> and <code>b→a</code> with weight <code>1/v</code>. For a query <code>x/y</code>, <strong>DFS/BFS</strong> from <code>x</code> to <code>y</code>, multiplying edge weights along the path; the accumulated product is the answer. If <code>x</code> or <code>y</code> is unknown or unreachable, return <code>-1</code>. (Weighted union-find that stores each node’s ratio to its root answers queries in near-O(1).)</p><p><strong>Time O(Q·(V+E)), Space O(V+E).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Product of edge weights along a path">
-              <text class="dgm-sub" x="20" y="24">a→b weight v, b→a weight 1/v</text>
-              <text class="dgm-sub" x="20" y="52">query x/y: DFS path, multiply weights</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">a/b=2, b/c=3 → a/c = 6</text>
-            </svg>
-            <figcaption>Figure 1 — A ratio query is a path whose weights multiply to the answer.</figcaption>
-          </figure>
+          <div class="viz" data-viz="evaluate-division"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -180,5 +173,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

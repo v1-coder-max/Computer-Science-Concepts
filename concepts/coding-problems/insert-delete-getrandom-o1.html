@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Keep a dynamic <strong>list</strong> of values (for O(1) random indexing) and a <strong>map from value → its index</strong> in the list. <strong>Insert</strong>: append to the list, record its index. <strong>Remove</strong>: look up the index, <strong>swap that element with the last</strong>, update the moved element’s index in the map, then pop the last (O(1), no shifting). <strong>GetRandom</strong>: index the list with a random position.</p><p><strong>Time O(1) average per op, Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Array + value→index map, swap-with-last delete">
-              <text class="dgm-sub" x="20" y="24">list = values · map = value → index</text>
-              <text class="dgm-sub" x="20" y="52">remove: swap target with last, pop, fix index</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">getRandom = list[rand()]</text>
-            </svg>
-            <figcaption>Figure 1 — Swapping the removed value with the last keeps deletion O(1) and the array compact.</figcaption>
-          </figure>
+          <div class="viz" data-viz="insert-delete-getrandom-o1"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -172,5 +165,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

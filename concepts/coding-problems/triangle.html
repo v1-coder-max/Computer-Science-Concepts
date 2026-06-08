@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Process rows from the <strong>bottom up</strong>. Keep a <code>dp</code> array seeded with the last row. For each higher row, replace <code>dp[i]</code> with <code>triangle[row][i] + min(dp[i], dp[i+1])</code> — the cell’s value plus the cheaper of its two children below. After collapsing all rows, <code>dp[0]</code> holds the minimum path sum. Only one row of memory is needed.</p><p><strong>Time O(n²), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Collapse rows bottom-up">
-              <text class="dgm-sub" x="20" y="24">dp seeded with the bottom row</text>
-              <text class="dgm-sub" x="20" y="52">dp[i] = tri[r][i] + min(dp[i], dp[i+1])</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">dp[0] = minimum path sum</text>
-            </svg>
-            <figcaption>Figure 1 — Each cell adds the cheaper of its two children, folding the triangle upward.</figcaption>
-          </figure>
+          <div class="viz" data-viz="triangle"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Process level by level using the current level’s <code>next</code> chain as a linked list to reach all nodes (no queue). For each node on the current level, link its children: <code>node.left.next = node.right</code>, and <code>node.right.next = node.next?.left</code> (the next node’s left child). A <code>leftmost</code> pointer descends to the start of each level. Because the tree is perfect, every node has two children until the leaves.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Use the level’s next chain, link children">
-              <text class="dgm-sub" x="20" y="24">node.left.next = node.right</text>
-              <text class="dgm-sub" x="20" y="52">node.right.next = node.next?.left</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">traverse level via next; descend leftmost</text>
-            </svg>
-            <figcaption>Figure 1 — The parent level’s next pointers thread the children without a queue.</figcaption>
-          </figure>
+          <div class="viz" data-viz="populating-next-right-pointers"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -163,5 +156,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

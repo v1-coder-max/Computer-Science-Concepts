@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p><strong>Top-down merge sort</strong>: find the middle with slow/fast pointers, split into two halves, recursively sort each, and <strong>merge</strong> the two sorted lists (the Merge Two Sorted Lists routine). That’s O(n log n) time and O(log n) recursion stack. The <strong>bottom-up</strong> variant merges runs of size 1, 2, 4, … iteratively for O(1) auxiliary space. Linked lists are ideal for merge sort because merging only relinks pointers.</p><p><strong>Time O(n log n), Space O(log n) top-down (O(1) bottom-up).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Merge sort: split, sort, merge">
-              <text class="dgm-sub" x="20" y="24">slow/fast → middle, split into halves</text>
-              <text class="dgm-sub" x="20" y="52">recursively sort, then merge two sorted lists</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">O(n log n); lists merge by relinking</text>
-            </svg>
-            <figcaption>Figure 1 — Merge sort suits lists since merging is pure pointer relinking.</figcaption>
-          </figure>
+          <div class="viz" data-viz="sort-list"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -171,5 +164,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

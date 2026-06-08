@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Binary search a cut in the <strong>smaller</strong> array. A cut <code>i</code> in <code>nums1</code> forces a cut <code>j</code> in <code>nums2</code> so the combined left side holds exactly half the elements. The partition is correct when <code>leftMax1 ≤ rightMin2</code> and <code>leftMax2 ≤ rightMin1</code> (everything on the left ≤ everything on the right). Adjust the search by comparing the four boundary values. The median is then computed from those boundaries (averaging two for an even total).</p><p><strong>Time O(log(min(m,n))), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search the correct partition">
-              <text class="dgm-sub" x="20" y="24">cut nums1 at i → cut nums2 at j (halves total)</text>
-              <text class="dgm-sub" x="20" y="52">valid when L1 ≤ R2 and L2 ≤ R1</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">median from the four boundary values</text>
-            </svg>
-            <figcaption>Figure 1 — The right partition splits both arrays so every left element ≤ every right element.</figcaption>
-          </figure>
+          <div class="viz" data-viz="median-of-two-sorted-arrays"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -172,5 +165,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

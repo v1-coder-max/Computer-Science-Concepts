@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Let <code>dp[k]</code> = number of unique BSTs with <code>k</code> nodes. Choosing root <code>i</code> (1-indexed) puts <code>i−1</code> nodes on the left and <code>k−i</code> on the right; those subtrees are independent, so the count is <code>dp[i−1] · dp[k−i]</code>. Sum over all roots: <code>dp[k] = Σ dp[i−1]·dp[k−i]</code>, with <code>dp[0] = dp[1] = 1</code>. This is exactly the <strong>Catalan number</strong> recurrence.</p><p><strong>Time O(n²), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Sum over roots of left × right counts">
-              <text class="dgm-sub" x="20" y="24">root i → dp[i-1] left × dp[k-i] right</text>
-              <text class="dgm-sub" x="20" y="52">dp[k] = sum over all roots i</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">Catalan: 1, 1, 2, 5, 14, …</text>
-            </svg>
-            <figcaption>Figure 1 — Independent subtrees mean the counts multiply, then sum over root choices.</figcaption>
-          </figure>
+          <div class="viz" data-viz="unique-binary-search-trees"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

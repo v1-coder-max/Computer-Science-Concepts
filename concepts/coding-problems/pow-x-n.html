@@ -93,17 +93,7 @@
           </p>
           <p><strong>Time O(log n), Space O(1)</strong> (iterative).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Squaring the base while halving the exponent">
-              <text class="dgm-sub" x="20" y="22">2^10 — square base, halve exponent</text>
-              <rect class="dgm-box" x="20" y="40" width="110" height="30" rx="5"/><text class="dgm-sub" x="75" y="60" text-anchor="middle">2^10 = (4)^5</text>
-              <rect class="dgm-box" x="140" y="40" width="120" height="30" rx="5"/><text class="dgm-sub" x="200" y="60" text-anchor="middle">4·(16)^2</text>
-              <rect class="dgm-box" x="270" y="40" width="120" height="30" rx="5"/><text class="dgm-sub" x="330" y="60" text-anchor="middle">4·(256)^1</text>
-              <rect class="dgm-box-accent" x="400" y="40" width="120" height="30" rx="5"/><text class="dgm-sub" x="460" y="60" text-anchor="middle">= 1024</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">~log₂(10) ≈ 4 multiplications instead of 10</text>
-            </svg>
-            <figcaption>Figure 1 — Halving the exponent each step collapses n multiplications into log n.</figcaption>
-          </figure>
+          <div class="viz" data-viz="pow-x-n"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -182,5 +172,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

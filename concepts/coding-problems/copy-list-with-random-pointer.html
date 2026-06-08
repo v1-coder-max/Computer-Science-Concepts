@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p><strong>Two passes with a hash map.</strong> Pass 1: create a clone for every node and store <code>original → clone</code>. Pass 2: for each original, set <code>clone.next = map[orig.next]</code> and <code>clone.random = map[orig.random]</code>. The map turns “find this node’s clone” into O(1). An O(1)-space variant <strong>interleaves</strong> each clone right after its original, copies randoms via <code>orig.next</code>, then unzips the two lists.</p><p><strong>Time O(n), Space O(n)</strong> (O(1) with interleaving).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Map original → clone, then wire pointers">
-              <text class="dgm-sub" x="20" y="24">pass 1: clone every node, map[orig]=clone</text>
-              <text class="dgm-sub" x="20" y="52">pass 2: clone.random = map[orig.random]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">O(1) clone lookup → both pointers wired</text>
-            </svg>
-            <figcaption>Figure 1 — The map resolves each random target’s clone in constant time.</figcaption>
-          </figure>
+          <div class="viz" data-viz="copy-list-with-random-pointer"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

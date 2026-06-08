@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Run <strong>Dijkstra</strong> from <code>k</code>: a min-heap of <code>(distance, node)</code>, always expanding the closest unsettled node and relaxing its neighbors. The answer is the <strong>maximum</strong> of the final shortest distances (the slowest node to hear the signal); if any node is never settled, return <code>-1</code>.</p><p><strong>Time O(E log V), Space O(V + E).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Dijkstra then take the max distance">
-              <text class="dgm-sub" x="20" y="24">min-heap pops the closest unsettled node</text>
-              <text class="dgm-sub" x="20" y="52">relax neighbors: dist[v] = min(dist[v], d+w)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">answer = max settled distance (or -1)</text>
-            </svg>
-            <figcaption>Figure 1 — Dijkstra settles nodes nearest-first; the last to settle bounds the delay.</figcaption>
-          </figure>
+          <div class="viz" data-viz="network-delay-time"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -173,5 +166,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

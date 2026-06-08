@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Let <code>dp[i][j]</code> = longest palindromic subsequence within <code>s[i..j]</code>. If <code>s[i] == s[j]</code>, they extend the best inner palindrome: <code>dp[i][j] = 2 + dp[i+1][j−1]</code> (or 1 if <code>i == j</code>). If they differ, drop one end: <code>dp[i][j] = max(dp[i+1][j], dp[i][j−1])</code>. Single characters are length-1 palindromes. Fill by increasing interval length; the answer is <code>dp[0][n−1]</code>.</p><p><strong>Time O(n²), Space O(n²).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Interval DP over substrings">
-              <text class="dgm-sub" x="20" y="24">s[i]==s[j] → 2 + dp[i+1][j-1]</text>
-              <text class="dgm-sub" x="20" y="52">else max(dp[i+1][j], dp[i][j-1])</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"bbbab" → 4</text>
-            </svg>
-            <figcaption>Figure 1 — Matching ends grow the palindrome; mismatches discard the less useful end.</figcaption>
-          </figure>
+          <div class="viz" data-viz="longest-palindromic-subsequence"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -160,5 +153,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

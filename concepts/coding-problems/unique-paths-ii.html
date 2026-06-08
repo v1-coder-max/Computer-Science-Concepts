@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Use <code>dp[r][c] = dp[r−1][c] + dp[r][c−1]</code> as in Unique Paths, but set <code>dp[r][c] = 0</code> whenever the cell is an obstacle (no path can pass through). Initialize the first row/column to 1 only up to the first obstacle (everything after it is unreachable). If the start cell is an obstacle, the answer is 0. A rolling 1-D array works the same way.</p><p><strong>Time O(m·n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Obstacle cells contribute zero">
-              <text class="dgm-sub" x="20" y="24">dp[r][c] = top + left</text>
-              <text class="dgm-sub" x="20" y="52">obstacle → dp[r][c] = 0</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">first row/col stop at the first obstacle</text>
-            </svg>
-            <figcaption>Figure 1 — Obstacles break the accumulation by zeroing their cell.</figcaption>
-          </figure>
+          <div class="viz" data-viz="unique-paths-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -160,5 +153,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

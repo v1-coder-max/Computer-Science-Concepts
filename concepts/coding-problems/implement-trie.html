@@ -81,14 +81,7 @@
             enough. Every operation is O(word length), independent of how many words are stored.
           </p>
           <p><strong>Time O(L) per op, Space O(total characters).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Shared character paths with end flags">
-              <text class="dgm-sub" x="20" y="24">insert "apple", "app" → shared prefix a-p-p</text>
-              <text class="dgm-sub" x="20" y="56">isEnd marks where a real word finishes</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 12px var(--font-sans)">StartsWith walks letters; Search also checks isEnd</text>
-            </svg>
-            <figcaption>Figure 1 — Words share prefix paths; an end flag distinguishes a stored word from a mere prefix.</figcaption>
-          </figure>
+          <div class="viz" data-viz="implement-trie"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -176,5 +169,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -81,14 +81,7 @@
             consumes tokens in exactly the right order.
           </p>
           <p><strong>Time O(n), Space O(n).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Preorder with null markers">
-              <text class="dgm-sub" x="20" y="24">serialize (preorder): node, then left, then right</text>
-              <text class="dgm-sub" x="20" y="56">null → "#"  so structure is unambiguous</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">deserialize reads tokens in the same order ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Null sentinels make the preorder stream uniquely decodable.</figcaption>
-          </figure>
+          <div class="viz" data-viz="serialize-and-deserialize-binary-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -173,5 +166,6 @@ public TreeNode deserialize(string data)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

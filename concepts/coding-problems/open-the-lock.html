@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Treat each 4-digit combination as a graph node; its <strong>8 neighbors</strong> turn one wheel up or down (with 0↔9 wrap). Run <strong>BFS</strong> from <code>"0000"</code>, skipping deadends and visited states, counting levels. The first time you dequeue the target, the level count is the minimum number of moves. If <code>"0000"</code> is a deadend, return −1 immediately.</p><p><strong>Time O(10⁴ · 8), Space O(10⁴).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="BFS over lock states, 8 neighbors each">
-              <text class="dgm-sub" x="20" y="24">state = 4 digits; neighbor = one wheel ±1</text>
-              <text class="dgm-sub" x="20" y="52">skip deadends and visited states</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">first reach of target = min moves</text>
-            </svg>
-            <figcaption>Figure 1 — Unit-cost moves make BFS the natural minimum-moves solver.</figcaption>
-          </figure>
+          <div class="viz" data-viz="open-the-lock"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -176,5 +169,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

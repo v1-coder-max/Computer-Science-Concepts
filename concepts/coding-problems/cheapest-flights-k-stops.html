@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Run <strong>Bellman-Ford</strong> for exactly <code>k + 1</code> rounds (each round may add one more edge/stop). Crucially, relax against a <strong>snapshot</strong> of the previous round’s distances so a single round can’t chain multiple new edges. After <code>k + 1</code> rounds, <code>dist[dst]</code> is the cheapest price within the stop budget.</p><p><strong>Time O(k · E), Space O(V).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Bellman-Ford bounded to k+1 rounds">
-              <text class="dgm-sub" x="20" y="24">each round relaxes all edges once</text>
-              <text class="dgm-sub" x="20" y="52">relax against a SNAPSHOT → ≤1 new edge/round</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">k+1 rounds = at most k stops</text>
-            </svg>
-            <figcaption>Figure 1 — Limiting rounds limits how many edges (stops) a path may use.</figcaption>
-          </figure>
+          <div class="viz" data-viz="cheapest-flights-k-stops"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -164,5 +157,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

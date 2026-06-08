@@ -80,14 +80,7 @@
             10 times, pushing the next-older tweet from whichever list you popped. Timestamps give a global order.
           </p>
           <p><strong>Feed O(F + 10 log F), Space O(users + tweets).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Max-heap merges newest tweets across followees">
-              <text class="dgm-sub" x="20" y="24">each user: list of (time, tweetId); follow set</text>
-              <text class="dgm-sub" x="20" y="56">heap on timestamp, seed with each list head</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">pop 10 newest → news feed</text>
-            </svg>
-            <figcaption>Figure 1 — Merging k sorted tweet lists by timestamp with a heap yields the 10 most recent.</figcaption>
-          </figure>
+          <div class="viz" data-viz="design-twitter"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -176,5 +169,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

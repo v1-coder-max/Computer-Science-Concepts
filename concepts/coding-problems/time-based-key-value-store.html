@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Map each <strong>key</strong> to a list of <code>(timestamp, value)</code> appended in increasing time (already sorted). For <code>Get</code>, <strong>binary search</strong> for the rightmost entry whose timestamp ≤ the query (a floor / upper-bound search) and return its value, or <code>""</code> if all timestamps exceed the query.</p><p><strong>Set O(1), Get O(log n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search the timestamp floor">
-              <text class="dgm-sub" x="20" y="24">key → sorted list of (timestamp, value)</text>
-              <text class="dgm-sub" x="20" y="52">get: find rightmost timestamp ≤ query</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">return its value, or "" if none</text>
-            </svg>
-            <figcaption>Figure 1 — Increasing-time inserts keep each key sorted, enabling a floor binary search.</figcaption>
-          </figure>
+          <div class="viz" data-viz="time-based-key-value-store"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -170,5 +163,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

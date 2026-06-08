@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Instead of asking “can this cell reach the ocean,” ask “which cells can the ocean reach if water flowed <strong>uphill</strong>.” From all <strong>Pacific border</strong> cells, DFS/BFS to neighbors with <em>height ≥</em> current, marking a <code>pacific</code> set; do the same from the <strong>Atlantic border</strong> into an <code>atlantic</code> set. Any cell in <strong>both</strong> sets can drain to both oceans.</p><p><strong>Time O(m·n), Space O(m·n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reverse search from each ocean, then intersect">
-              <text class="dgm-sub" x="20" y="24">from Pacific border, climb to height ≥ cur</text>
-              <text class="dgm-sub" x="20" y="52">from Atlantic border, same uphill flood</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">cells in BOTH reachable sets = answer</text>
-            </svg>
-            <figcaption>Figure 1 — Reverse uphill floods from each border meet at the cells that drain to both.</figcaption>
-          </figure>
+          <div class="viz" data-viz="pacific-atlantic"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -166,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

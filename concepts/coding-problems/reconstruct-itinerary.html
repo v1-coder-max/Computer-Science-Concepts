@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Build an adjacency list with destinations sorted (use a min-heap or sorted multiset per node so you always take the smallest next code). Run <strong>Hierholzer’s algorithm</strong>: DFS, consuming edges as you go; when a node has no unused outgoing edges, <strong>append it to the route</strong>. The route built this way is reversed, so reverse it at the end. Appending post-order naturally handles dead-end detours.</p><p><strong>Time O(E log E), Space O(E).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Hierholzer: post-order append then reverse">
-              <text class="dgm-sub" x="20" y="24">always take smallest unused destination</text>
-              <text class="dgm-sub" x="20" y="52">stuck → append node, backtrack</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">reverse the post-order list = itinerary</text>
-            </svg>
-            <figcaption>Figure 1 — Dead-end airports are appended first; reversing yields the valid Eulerian path.</figcaption>
-          </figure>
+          <div class="viz" data-viz="reconstruct-itinerary"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -166,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>
