@@ -93,18 +93,7 @@
           </p>
           <p><strong>Time O(amount × coins), Space O(amount).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="DP table filling minimum coins per amount">
-              <text class="dgm-sub" x="20" y="22">coins [1,2,5] — dp[a] = 1 + min(dp[a-coin])</text>
-              <rect class="dgm-box" x="20" y="40" width="55" height="30" rx="5"/><text class="dgm-sub" x="47" y="60" text-anchor="middle">0:0</text>
-              <rect class="dgm-box" x="80" y="40" width="55" height="30" rx="5"/><text class="dgm-sub" x="107" y="60" text-anchor="middle">1:1</text>
-              <rect class="dgm-box" x="140" y="40" width="55" height="30" rx="5"/><text class="dgm-sub" x="167" y="60" text-anchor="middle">2:1</text>
-              <rect class="dgm-box" x="200" y="40" width="55" height="30" rx="5"/><text class="dgm-sub" x="227" y="60" text-anchor="middle">5:1</text>
-              <rect class="dgm-box-accent" x="260" y="40" width="70" height="30" rx="5"/><text class="dgm-sub" x="295" y="60" text-anchor="middle">11:3</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">dp[11] = 1 + min(dp[10], dp[9], dp[6]) = 3</text>
-            </svg>
-            <figcaption>Figure 1 — Fill the table upward; each amount picks the best coin to land on it from a smaller solved amount.</figcaption>
-          </figure>
+          <div class="viz" data-viz="coin-change"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -182,5 +171,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

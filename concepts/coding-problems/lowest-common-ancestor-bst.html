@@ -85,16 +85,7 @@
           </p>
           <p><strong>Time O(h), Space O(1)</strong> iterative (h = tree height).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Walking down a BST until the targets split">
-              <circle class="dgm-box-accent" cx="300" cy="26" r="16"/><text class="dgm-sub" x="300" y="31" text-anchor="middle">6</text>
-              <circle class="dgm-box" cx="200" cy="70" r="16"/><text class="dgm-sub" x="200" y="75" text-anchor="middle">2</text>
-              <circle class="dgm-box" cx="400" cy="70" r="16"/><text class="dgm-sub" x="400" y="75" text-anchor="middle">8</text>
-              <line class="dgm-line" x1="288" y1="38" x2="212" y2="58"/><line class="dgm-line" x1="312" y1="38" x2="388" y2="58"/>
-              <text class="dgm-sub" x="300" y="104" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">p=2 (left) and q=8 (right) split at 6 → LCA = 6</text>
-            </svg>
-            <figcaption>Figure 1 — Go left when both targets are smaller, right when both larger; the split node is the LCA.</figcaption>
-          </figure>
+          <div class="viz" data-viz="lowest-common-ancestor-bst"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -170,5 +161,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

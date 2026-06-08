@@ -79,14 +79,7 @@
             an explicit stack lets you stop the instant you reach <code>k</code> without walking the whole tree.
           </p>
           <p><strong>Time O(h + k), Space O(h).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="In-order visit order of a BST">
-              <text class="dgm-sub" x="20" y="24">in-order(BST) = sorted: 1, 2, 3, 4</text>
-              <text class="dgm-sub" x="20" y="56">count to k, stop at the kth popped node</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">k = 3 → 3rd visited = 3 ✓</text>
-            </svg>
-            <figcaption>Figure 1 — In-order traversal yields sorted values; the kth one popped is the answer.</figcaption>
-          </figure>
+          <div class="viz" data-viz="kth-smallest-element-bst"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -160,5 +153,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

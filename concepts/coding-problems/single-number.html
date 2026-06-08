@@ -91,16 +91,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="XOR canceling duplicate pairs">
-              <text class="dgm-sub" x="20" y="22">4 ^ 1 ^ 2 ^ 1 ^ 2</text>
-              <text class="dgm-sub" x="20" y="50">= 4 ^ (1 ^ 1) ^ (2 ^ 2)   ← regroup pairs</text>
-              <text class="dgm-sub" x="20" y="76">= 4 ^ 0 ^ 0</text>
-              <rect class="dgm-box-accent" x="20" y="84" width="120" height="22" rx="5"/>
-              <text x="80" y="100" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">= 4 ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Duplicate pairs XOR to zero; the unique number survives.</figcaption>
-          </figure>
+          <div class="viz" data-viz="single-number"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -172,5 +163,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -90,21 +90,7 @@
           </p>
           <p><strong>Time O(n), Space O(h)</strong> (recursion/stack depth = tree height).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Swapping children mirrors the tree">
-              <circle class="dgm-box-accent" cx="120" cy="30" r="16"/><text class="dgm-sub" x="120" y="35" text-anchor="middle">4</text>
-              <circle class="dgm-box" cx="80" cy="80" r="16"/><text class="dgm-sub" x="80" y="85" text-anchor="middle">2</text>
-              <circle class="dgm-box" cx="160" cy="80" r="16"/><text class="dgm-sub" x="160" y="85" text-anchor="middle">7</text>
-              <line class="dgm-line" x1="110" y1="42" x2="88" y2="66"/><line class="dgm-line" x1="130" y1="42" x2="152" y2="66"/>
-              <text x="220" y="60" style="font:600 18px var(--font-sans)" fill="var(--c-text-soft)">→</text>
-              <circle class="dgm-box-accent" cx="380" cy="30" r="16"/><text class="dgm-sub" x="380" y="35" text-anchor="middle">4</text>
-              <circle class="dgm-box" cx="340" cy="80" r="16"/><text class="dgm-sub" x="340" y="85" text-anchor="middle">7</text>
-              <circle class="dgm-box" cx="420" cy="80" r="16"/><text class="dgm-sub" x="420" y="85" text-anchor="middle">2</text>
-              <line class="dgm-line" x1="370" y1="42" x2="348" y2="66"/><line class="dgm-line" x1="390" y1="42" x2="412" y2="66"/>
-              <text class="dgm-sub" x="300" y="120" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">swap children at every node</text>
-            </svg>
-            <figcaption>Figure 1 — Swapping left/right at each node, recursively, produces the mirror image.</figcaption>
-          </figure>
+          <div class="viz" data-viz="invert-binary-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -193,5 +179,6 @@ public TreeNode InvertIterative(TreeNode root)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

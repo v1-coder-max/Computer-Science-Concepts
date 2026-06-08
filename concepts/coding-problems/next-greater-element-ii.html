@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Keep a stack of <strong>indices</strong> whose values are awaiting a next-greater element, decreasing down the stack. Iterate <code>i</code> from <code>0</code> to <code>2n−1</code>, using <code>nums[i % n]</code> to simulate the circular wrap. While the current value is greater than the value at the stack’s top index, pop and set that index’s answer to the current value. Push indices only during the first pass (<code>i &lt; n</code>); the second pass just resolves leftovers via the wrap.</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Monotonic stack over a doubled loop">
-              <text class="dgm-sub" x="20" y="24">iterate i in 0..2n-1, use nums[i % n]</text>
-              <text class="dgm-sub" x="20" y="52">current > top value → pop, set its answer</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">wrap-around pass resolves the rest</text>
-            </svg>
-            <figcaption>Figure 1 — Going around twice lets the circular wrap settle the elements left unresolved.</figcaption>
-          </figure>
+          <div class="viz" data-viz="next-greater-element-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

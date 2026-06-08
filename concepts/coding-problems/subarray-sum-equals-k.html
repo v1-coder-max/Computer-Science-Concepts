@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>A subarray <code>(i, j]</code> sums to <code>k</code> iff <code>prefix[j] − prefix[i] == k</code>, i.e. <code>prefix[i] == prefix[j] − k</code>. Sweep, maintaining the running prefix sum and a <strong>map from prefix-sum value → how many times it has occurred</strong>. At each index, add <code>count[prefix − k]</code> to the answer, then record the current prefix. Seed the map with <code>{0: 1}</code> to count subarrays starting at index 0.</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Prefix-sum complement count">
-              <text class="dgm-sub" x="20" y="24">need prefix[i] == prefix[j] − k</text>
-              <text class="dgm-sub" x="20" y="52">ans += count[prefix − k]; count[prefix]++</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">seed count[0] = 1 for index-0 subarrays</text>
-            </svg>
-            <figcaption>Figure 1 — Each prefix sum looks up how many earlier prefixes complete a sum of k.</figcaption>
-          </figure>
+          <div class="viz" data-viz="subarray-sum-equals-k"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -158,5 +151,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

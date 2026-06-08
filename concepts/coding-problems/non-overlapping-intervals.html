@@ -81,14 +81,7 @@
             kept.
           </p>
           <p><strong>Time O(n log n), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Keep earliest-ending, drop overlaps">
-              <text class="dgm-sub" x="20" y="24">sort by END time</text>
-              <text class="dgm-sub" x="20" y="56">start ≥ lastEnd → keep (extend lastEnd)</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">else overlap → remove (count++)</text>
-            </svg>
-            <figcaption>Figure 1 — Greedily keeping the earliest-ending interval maximizes how many survive.</figcaption>
-          </figure>
+          <div class="viz" data-viz="non-overlapping-intervals"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

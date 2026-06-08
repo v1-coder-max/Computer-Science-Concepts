@@ -93,18 +93,7 @@
           </p>
           <p><strong>Time O(n), Space O(h).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Bounds propagated down the tree">
-              <circle class="dgm-box-accent" cx="120" cy="28" r="16"/><text class="dgm-sub" x="120" y="33" text-anchor="middle">5</text>
-              <circle class="dgm-box" cx="70" cy="78" r="16"/><text class="dgm-sub" x="70" y="83" text-anchor="middle">1</text>
-              <circle class="dgm-box" cx="170" cy="78" r="16"/><text class="dgm-sub" x="170" y="83" text-anchor="middle">4</text>
-              <line class="dgm-line" x1="110" y1="40" x2="80" y2="64"/><line class="dgm-line" x1="130" y1="40" x2="160" y2="64"/>
-              <text class="dgm-sub" x="120" y="20">root ∈ (−∞, +∞)</text>
-              <text class="dgm-sub" x="20" y="110">left ∈ (−∞, 5)</text>
-              <text class="dgm-sub" x="220" y="78" fill="var(--c-warning)" style="font:600 12px var(--font-sans)">right ∈ (5, +∞) → 4 fails ✗</text>
-            </svg>
-            <figcaption>Figure 1 — Bounds shrink as you descend; node 4 violates the (5, +∞) range inherited from the root.</figcaption>
-          </figure>
+          <div class="viz" data-viz="validate-bst"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -180,5 +169,6 @@ private bool Valid(TreeNode node, long low, long high)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

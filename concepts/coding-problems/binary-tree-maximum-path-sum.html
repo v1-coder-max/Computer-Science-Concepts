@@ -81,14 +81,7 @@
             <code>node.val + max(0, max(leftGain, rightGain))</code>.
           </p>
           <p><strong>Time O(n), Space O(h).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Bend updates global, single branch returns up">
-              <text class="dgm-sub" x="20" y="24">gain(node) = node + max(0, best child gain)</text>
-              <text class="dgm-sub" x="20" y="56">best = max(best, node + leftGain + rightGain)</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">clamp negative children to 0 → 15+20+7 = 42 ✓</text>
-            </svg>
-            <figcaption>Figure 1 — The bent path updates the answer; only one branch may extend upward.</figcaption>
-          </figure>
+          <div class="viz" data-viz="binary-tree-maximum-path-sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -164,5 +157,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

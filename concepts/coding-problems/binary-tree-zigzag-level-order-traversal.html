@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Run the usual <strong>level-order BFS</strong> (freeze the queue size per level). Keep a <code>leftToRight</code> flag that toggles each level; when it’s false, either <strong>reverse</strong> the collected level or <strong>insert each value at the front</strong> of the level list (a deque/LinkedList makes front-insertion O(1)). Enqueue children left-then-right as normal regardless of direction.</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="BFS with alternating level direction">
-              <text class="dgm-sub" x="20" y="24">standard level-order BFS, freeze level size</text>
-              <text class="dgm-sub" x="20" y="52">flag toggles; reverse / front-insert odd levels</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[[3],[20,9],[15,7]]</text>
-            </svg>
-            <figcaption>Figure 1 — Children always enqueue left-to-right; only the output order of alternate levels flips.</figcaption>
-          </figure>
+          <div class="viz" data-viz="binary-tree-zigzag-level-order-traversal"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -171,5 +164,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

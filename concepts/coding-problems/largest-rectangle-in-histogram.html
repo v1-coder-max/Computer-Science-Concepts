@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Keep a stack of indices with <strong>increasing</strong> heights. When the current bar is <strong>shorter</strong> than the stack top, that top bar can’t extend further right — pop it and compute its rectangle: height is the popped bar’s height, and the width spans from the new stack top (its left boundary) to the current index (its right boundary). Push the current bar. Process a sentinel 0 at the end to flush the stack. Each bar is pushed and popped once.</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Monotonic stack settles each bar’s rectangle">
-              <text class="dgm-sub" x="20" y="24">stack holds increasing-height indices</text>
-              <text class="dgm-sub" x="20" y="52">shorter bar → pop, width = i − stackTop − 1</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[2,1,5,6,2,3] → 5×2 = 10</text>
-            </svg>
-            <figcaption>Figure 1 — A bar’s rectangle is finalized when a shorter bar bounds it on the right.</figcaption>
-          </figure>
+          <div class="viz" data-viz="largest-rectangle-in-histogram"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -165,5 +158,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

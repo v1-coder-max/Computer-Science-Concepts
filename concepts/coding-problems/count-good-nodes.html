@@ -80,14 +80,7 @@
             subtrees plus this node.
           </p>
           <p><strong>Time O(n), Space O(h).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Running path-max decides good nodes">
-              <text class="dgm-sub" x="20" y="24">carry maxSoFar down · good if node.val ≥ maxSoFar</text>
-              <text class="dgm-sub" x="20" y="56">root 3 (good) → 4 ≥ 3 (good) → 5 ≥ 4 (good) …</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">count all good nodes on every path</text>
-            </svg>
-            <figcaption>Figure 1 — Each branch tracks its own path maximum; a node is good when it ties or beats it.</figcaption>
-          </figure>
+          <div class="viz" data-viz="count-good-nodes"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -160,5 +153,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

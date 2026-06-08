@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Let <code>dp[r][c]</code> = side length of the largest all-1s square whose <strong>bottom-right corner</strong> is that cell. For a <code>1</code> cell, <code>dp[r][c] = 1 + min(dp[r−1][c], dp[r][c−1], dp[r−1][c−1])</code> — a square can only grow if all three neighboring squares support it. For a <code>0</code> cell it’s 0. Track the maximum side; the answer is its square. First row/column equal the cell value.</p><p><strong>Time O(m·n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Side = 1 + min(top, left, top-left)">
-              <text class="dgm-sub" x="20" y="24">dp[r][c] = 1 + min(↑, ←, ↖)  for a 1-cell</text>
-              <text class="dgm-sub" x="20" y="52">0-cell → dp = 0</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">answer = (max side)²</text>
-            </svg>
-            <figcaption>Figure 1 — A square extends only as far as its weakest neighboring square allows.</figcaption>
-          </figure>
+          <div class="viz" data-viz="maximal-square"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -169,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

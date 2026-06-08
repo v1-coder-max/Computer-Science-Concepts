@@ -87,20 +87,7 @@
           </p>
           <p><strong>Time O(m·n), Space O(m·n)</strong> worst case (recursion/queue).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Flood fill marking an island visited">
-              <g>
-                <rect class="dgm-box-accent" x="20" y="20" width="34" height="34"/><rect class="dgm-box-accent" x="56" y="20" width="34" height="34"/>
-                <rect class="dgm-box" x="92" y="20" width="34" height="34"/>
-                <rect class="dgm-box-accent" x="20" y="56" width="34" height="34"/><rect class="dgm-box-accent" x="56" y="56" width="34" height="34"/>
-                <rect class="dgm-box" x="92" y="56" width="34" height="34"/>
-              </g>
-              <text class="dgm-sub" x="160" y="40">hit first '1' → count = 1</text>
-              <text class="dgm-sub" x="160" y="66">DFS floods the connected 1s →</text>
-              <text class="dgm-sub" x="160" y="92" fill="var(--c-success)" style="font:600 12px var(--font-sans)">mark them visited so they aren't recounted</text>
-            </svg>
-            <figcaption>Figure 1 — Each unvisited land cell starts a new island; the flood-fill sinks the rest of that island.</figcaption>
-          </figure>
+          <div class="viz" data-viz="number-of-islands"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -182,5 +169,6 @@ private void Sink(char[][] grid, int r, int c)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Use <strong>multi-source BFS</strong>: enqueue <strong>all gates</strong> first (distance 0). Expand level by level; when you reach an empty room (still INF), set its distance to <code>current + 1</code> and enqueue it. Because all gates start together, the first time a room is dequeued it’s via a shortest path, so no room is updated twice.</p><p><strong>Time O(m·n), Space O(m·n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Multi-source BFS from all gates">
-              <text class="dgm-sub" x="20" y="24">enqueue every gate (distance 0) up front</text>
-              <text class="dgm-sub" x="20" y="52">expand; first reach of a room = nearest gate</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">rooms left INF are unreachable</text>
-            </svg>
-            <figcaption>Figure 1 — Waves from all gates spread together, labelling each room by its closest gate.</figcaption>
-          </figure>
+          <div class="viz" data-viz="walls-and-gates"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -170,5 +163,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

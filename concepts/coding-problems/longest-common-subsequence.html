@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Let <code>dp[i][j]</code> = LCS of the first <code>i</code> chars of <code>text1</code> and first <code>j</code> of <code>text2</code>. If the characters match, <code>dp[i][j] = dp[i−1][j−1] + 1</code> (extend the diagonal). Otherwise <code>dp[i][j] = max(dp[i−1][j], dp[i][j−1])</code> (drop a char from one side). Build up from the empty-string base of all zeros.</p><p><strong>Time O(m·n), Space O(m·n)</strong> (reducible to O(min(m,n))).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Match extends diagonal, else max neighbor">
-              <text class="dgm-sub" x="20" y="24">match: dp[i][j] = dp[i-1][j-1] + 1</text>
-              <text class="dgm-sub" x="20" y="52">mismatch: dp[i][j] = max(dp[i-1][j], dp[i][j-1])</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"abcde" vs "ace" → 3</text>
-            </svg>
-            <figcaption>Figure 1 — Equal characters reward the diagonal; unequal ones inherit the better neighbor.</figcaption>
-          </figure>
+          <div class="viz" data-viz="longest-common-subsequence"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

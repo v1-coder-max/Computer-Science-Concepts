@@ -91,19 +91,7 @@
           </p>
           <p><strong>Time O(n), Space O(h)</strong> (call-stack depth = height).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Depth as one plus the taller subtree">
-              <circle class="dgm-box-accent" cx="120" cy="28" r="16"/><text class="dgm-sub" x="120" y="33" text-anchor="middle">3</text>
-              <circle class="dgm-box" cx="70" cy="74" r="16"/><text class="dgm-sub" x="70" y="79" text-anchor="middle">9</text>
-              <circle class="dgm-box" cx="170" cy="74" r="16"/><text class="dgm-sub" x="170" y="79" text-anchor="middle">20</text>
-              <circle class="dgm-box" cx="140" cy="116" r="14"/><text class="dgm-sub" x="140" y="121" text-anchor="middle">15</text>
-              <circle class="dgm-box" cx="200" cy="116" r="14"/><text class="dgm-sub" x="200" y="121" text-anchor="middle">7</text>
-              <line class="dgm-line" x1="110" y1="40" x2="80" y2="62"/><line class="dgm-line" x1="130" y1="40" x2="160" y2="62"/>
-              <line class="dgm-line" x1="162" y1="86" x2="146" y2="104"/><line class="dgm-line" x1="178" y1="86" x2="194" y2="104"/>
-              <text class="dgm-sub" x="320" y="74" fill="var(--c-success)" style="font:600 13px var(--font-sans)">1 + max(1, 2) = 3</text>
-            </svg>
-            <figcaption>Figure 1 — Each node returns 1 + the deeper of its subtrees; the root yields the tree’s height.</figcaption>
-          </figure>
+          <div class="viz" data-viz="max-depth-binary-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -193,5 +181,6 @@ public int MaxDepthBfs(TreeNode root)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

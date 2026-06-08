@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p><code>dp[i][j]</code> = edits to turn the first <code>i</code> chars of <code>word1</code> into the first <code>j</code> of <code>word2</code>. If the current chars are equal, <code>dp[i][j] = dp[i−1][j−1]</code> (free). Otherwise it’s <code>1 + min(</code> <code>dp[i−1][j]</code> delete, <code>dp[i][j−1]</code> insert, <code>dp[i−1][j−1]</code> replace <code>)</code>. Base cases: converting to/from an empty string costs its length.</p><p><strong>Time O(m·n), Space O(m·n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Equal carries diagonal, else 1 + min(3)">
-              <text class="dgm-sub" x="20" y="24">equal: dp[i][j] = dp[i-1][j-1]</text>
-              <text class="dgm-sub" x="20" y="52">else: 1 + min(delete, insert, replace)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"horse" → "ros" = 3 edits</text>
-            </svg>
-            <figcaption>Figure 1 — Each unequal cell pays one operation over the cheapest of delete/insert/replace.</figcaption>
-          </figure>
+          <div class="viz" data-viz="edit-distance"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

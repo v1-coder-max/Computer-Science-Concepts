@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Invert the logic: an <code>O</code> is <strong>safe</strong> iff it’s reachable from a border <code>O</code>. DFS/BFS from every <code>O</code> on the four edges, marking reached cells with a temporary sentinel (e.g. <code>#</code>). After that, every remaining <code>O</code> is enclosed → flip it to <code>X</code>, and restore the sentinels back to <code>O</code>.</p><p><strong>Time O(m·n), Space O(m·n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Mark border-connected O safe, flip the rest">
-              <text class="dgm-sub" x="20" y="24">flood from edge O’s → mark safe (#)</text>
-              <text class="dgm-sub" x="20" y="52">remaining O = enclosed → flip to X</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">restore # back to O</text>
-            </svg>
-            <figcaption>Figure 1 — Only border-linked O’s survive; everything else is captured.</figcaption>
-          </figure>
+          <div class="viz" data-viz="surrounded-regions"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

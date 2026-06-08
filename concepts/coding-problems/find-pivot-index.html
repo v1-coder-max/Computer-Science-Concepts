@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Compute the <strong>total</strong> sum. Scan with a running <code>leftSum</code>. At index <code>i</code>, the right side is <code>total − leftSum − nums[i]</code>. If <code>leftSum == rightSum</code>, return <code>i</code>. Otherwise add <code>nums[i]</code> to <code>leftSum</code> and continue. The first match is the pivot.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Right = total − left − nums[i]">
-              <text class="dgm-sub" x="20" y="24">total = sum(nums)</text>
-              <text class="dgm-sub" x="20" y="52">at i: right = total − leftSum − nums[i]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">leftSum == right → pivot index</text>
-            </svg>
-            <figcaption>Figure 1 — Knowing the total turns each balance check into O(1).</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-pivot-index"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

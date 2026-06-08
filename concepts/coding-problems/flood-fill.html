@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Record the <strong>original color</strong> at the start. If it already equals <code>newColor</code>, return immediately (otherwise you’d loop forever). Otherwise DFS/BFS from the start: recolor the current cell and recurse into the four neighbors that still hold the original color. Each cell is recolored once, so it terminates after touching the region.</p><p><strong>Time O(m·n), Space O(m·n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Flood the connected same-color region">
-              <text class="dgm-sub" x="20" y="24">remember original color at start</text>
-              <text class="dgm-sub" x="20" y="52">if original == newColor → return (no loop)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">DFS recolors 4-connected same-color cells</text>
-            </svg>
-            <figcaption>Figure 1 — The equal-color guard is what prevents the flood from looping forever.</figcaption>
-          </figure>
+          <div class="viz" data-viz="flood-fill"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

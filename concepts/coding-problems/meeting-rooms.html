@@ -79,14 +79,7 @@
             answer is <code>false</code>. One linear scan after sorting settles it.
           </p>
           <p><strong>Time O(n log n), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Adjacent overlap after sorting by start">
-              <text class="dgm-sub" x="20" y="24">sort by start time</text>
-              <text class="dgm-sub" x="20" y="56">if start[i] < end[i−1] → overlap → false</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">no adjacent overlap → can attend all ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Once sorted by start, only neighbours can conflict.</figcaption>
-          </figure>
+          <div class="viz" data-viz="meeting-rooms"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

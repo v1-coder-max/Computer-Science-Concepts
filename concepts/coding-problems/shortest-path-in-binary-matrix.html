@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>If the start or end cell is blocked, return −1. <strong>BFS</strong> from <code>(0,0)</code>, exploring all <strong>8 neighbors</strong>, counting path length by level. Mark cells visited (or set them to 1) as you enqueue them so each is processed once. The first time you reach the bottom-right, its level is the answer.</p><p><strong>Time O(n²), Space O(n²).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="8-directional BFS, count cells">
-              <text class="dgm-sub" x="20" y="24">start/end blocked → -1</text>
-              <text class="dgm-sub" x="20" y="52">BFS with 8 neighbors, mark visited</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">first reach of bottom-right = path length</text>
-            </svg>
-            <figcaption>Figure 1 — Eight-way unit moves make BFS the shortest-path tool.</figcaption>
-          </figure>
+          <div class="viz" data-viz="shortest-path-in-binary-matrix"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -174,5 +167,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

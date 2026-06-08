@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Let <code>dp[i]</code> = minimum cost to <em>reach</em> step <code>i</code>. You arrive from step <code>i−1</code> or <code>i−2</code>, paying that step’s cost: <code>dp[i] = min(dp[i−1] + cost[i−1], dp[i−2] + cost[i−2])</code>. The top is index <code>n</code>. Since only the last two values matter, track two rolling variables for O(1) space.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reach a step from one or two below">
-              <text class="dgm-sub" x="20" y="24">dp[i] = min(dp[i-1]+cost[i-1], dp[i-2]+cost[i-2])</text>
-              <text class="dgm-sub" x="20" y="52">top = index n; start free at 0 or 1</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[1,100,1,1,1,100,1,1,100,1] → 6</text>
-            </svg>
-            <figcaption>Figure 1 — Each step takes the cheaper of its two possible predecessors.</figcaption>
-          </figure>
+          <div class="viz" data-viz="min-cost-climbing-stairs"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

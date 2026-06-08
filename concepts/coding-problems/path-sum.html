@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Pass the <strong>remaining target</strong> down the recursion, subtracting the current node’s value. At a <strong>leaf</strong> (no children), the path is valid iff the remaining target equals the leaf’s value (i.e. it hits 0 after subtracting). Otherwise recurse into the children with the reduced target; succeed if either branch does. Empty tree returns false.</p><p><strong>Time O(n), Space O(h).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Subtract down, check at the leaf">
-              <text class="dgm-sub" x="20" y="24">pass target − node.val into children</text>
-              <text class="dgm-sub" x="20" y="52">leaf: remaining == 0 → path found</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">5→4→11→2 sums to 22 ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Reaching a leaf with the target exactly consumed means a valid path.</figcaption>
-          </figure>
+          <div class="viz" data-viz="path-sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

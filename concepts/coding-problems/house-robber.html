@@ -92,18 +92,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Take-or-skip rolling maximum">
-              <text class="dgm-sub" x="20" y="22">dp[i] = max(skip = dp[i-1],  rob = nums[i] + dp[i-2])</text>
-              <rect class="dgm-box" x="20" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="50" y="60" text-anchor="middle">2</text>
-              <rect class="dgm-box" x="85" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="115" y="60" text-anchor="middle">7</text>
-              <rect class="dgm-box-accent" x="150" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="180" y="60" text-anchor="middle">9</text>
-              <rect class="dgm-box" x="215" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="245" y="60" text-anchor="middle">3</text>
-              <rect class="dgm-box-accent" x="280" y="40" width="60" height="30" rx="5"/><text class="dgm-sub" x="310" y="60" text-anchor="middle">1</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">best = 2 + 9 + 1 = 12 (non-adjacent picks)</text>
-            </svg>
-            <figcaption>Figure 1 — Each house compares “skip” vs “rob + best two back”; the running max is the answer.</figcaption>
-          </figure>
+          <div class="viz" data-viz="house-robber"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -181,5 +170,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

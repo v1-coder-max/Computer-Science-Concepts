@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Recurse, but handle the single-child case: if a node has only a left or only a right child, the minimum depth must go down the <strong>existing</strong> side, so return <code>1 + that side</code>. Only when both children exist do you take <code>1 + min(left, right)</code>. Even better, a <strong>BFS</strong> returns the depth at the <strong>first leaf</strong> it reaches — naturally the shallowest — and can stop early.</p><p><strong>Time O(n), Space O(h) or O(width).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="One-child nodes aren’t leaves">
-              <text class="dgm-sub" x="20" y="24">one child missing → go down the present side</text>
-              <text class="dgm-sub" x="20" y="52">both children → 1 + min(left, right)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">BFS stops at the first leaf reached</text>
-            </svg>
-            <figcaption>Figure 1 — The missing-child special case prevents an incorrectly small minimum.</figcaption>
-          </figure>
+          <div class="viz" data-viz="minimum-depth-of-binary-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -153,5 +146,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

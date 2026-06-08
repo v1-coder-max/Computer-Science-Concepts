@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Let <code>dp[r][c]</code> = minimum cost to reach that cell. It equals <code>grid[r][c] + min(dp[r−1][c], dp[r][c−1])</code>, with the first row/column accumulating along the only path into them. Fill row by row; the answer is <code>dp[m−1][n−1]</code>. Since each row depends only on the previous, a single rolling row gives O(n) space (or update the grid in place).</p><p><strong>Time O(m·n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Min of top and left, plus cell value">
-              <text class="dgm-sub" x="20" y="24">dp[r][c] = grid[r][c] + min(top, left)</text>
-              <text class="dgm-sub" x="20" y="52">first row/col accumulate the only path</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[[1,3,1],[1,5,1],[4,2,1]] → 7</text>
-            </svg>
-            <figcaption>Figure 1 — Each cell takes the cheaper incoming neighbor plus its own value.</figcaption>
-          </figure>
+          <div class="viz" data-viz="minimum-path-sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

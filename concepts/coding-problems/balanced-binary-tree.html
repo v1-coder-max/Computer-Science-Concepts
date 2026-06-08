@@ -81,14 +81,7 @@
             propagate <code>-1</code> up. One pass, O(n).
           </p>
           <p><strong>Time O(n), Space O(h).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Bottom-up height with imbalance sentinel">
-              <text class="dgm-sub" x="20" y="24">height(node) returns -1 if any subtree unbalanced</text>
-              <text class="dgm-sub" x="20" y="56">|leftH − rightH| > 1  →  return -1 and stop</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">root height ≠ -1 → balanced ✓</text>
-            </svg>
-            <figcaption>Figure 1 — A −1 sentinel turns the O(n²) repeated-height check into one bottom-up pass.</figcaption>
-          </figure>
+          <div class="viz" data-viz="balanced-binary-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@ private int Height(TreeNode node)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

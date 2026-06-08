@@ -91,17 +91,7 @@
           </p>
           <p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Monotonic decreasing stack of waiting days">
-              <text class="dgm-sub" x="20" y="22">stack holds colder waiting days (indices)</text>
-              <rect class="dgm-box-accent" x="20" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="50" y="55" text-anchor="middle">75</text>
-              <rect class="dgm-box-accent" x="84" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="114" y="55" text-anchor="middle">71</text>
-              <rect class="dgm-box-accent" x="148" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="178" y="55" text-anchor="middle">69</text>
-              <text class="dgm-sub" x="240" y="55">today 72 → pop 69, pop 71 (warmer)</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">answer[i] = today − popped index</text>
-            </svg>
-            <figcaption>Figure 1 — A warmer day pops all colder waiting days, resolving each with the index gap.</figcaption>
-          </figure>
+          <div class="viz" data-viz="daily-temperatures"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -183,5 +173,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>
