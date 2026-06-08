@@ -86,16 +86,7 @@
           </p>
           <p><strong>Time O(n · 2ⁿ), Space O(n)</strong> recursion depth.</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Branching on palindromic prefix cuts">
-              <text class="dgm-sub" x="20" y="22">"aab" — try each palindromic prefix</text>
-              <circle class="dgm-box-accent" cx="160" cy="60" r="16"/><text class="dgm-sub" x="160" y="65" text-anchor="middle">"a"</text>
-              <circle class="dgm-box-accent" cx="360" cy="60" r="16"/><text class="dgm-sub" x="360" y="65" text-anchor="middle">"aa"</text>
-              <text class="dgm-sub" x="160" y="96" text-anchor="middle">→ recurse on "ab"</text>
-              <text class="dgm-sub" x="360" y="96" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">→ recurse on "b" → ["aa","b"]</text>
-            </svg>
-            <figcaption>Figure 1 — Only palindromic prefixes branch; each path that consumes the whole string is a valid partition.</figcaption>
-          </figure>
+          <div class="viz" data-viz="palindrome-partitioning"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -184,5 +175,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

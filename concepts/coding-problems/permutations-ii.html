@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Backtrack with a <code>used[]</code> array as in standard permutations, but first <strong>sort</strong> so equal values are adjacent. At each level, <strong>skip</strong> a value if it equals the previous value <em>and</em> that previous value is currently <strong>unused</strong> (<code>i &gt; 0 &amp;&amp; nums[i] == nums[i-1] &amp;&amp; !used[i-1]</code>). That condition ensures duplicates are placed in a fixed left-to-right order, so each distinct permutation is produced once.</p><p><strong>Time O(n · n!), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Skip duplicate siblings during recursion">
-              <text class="dgm-sub" x="20" y="24">sort so equal values are adjacent</text>
-              <text class="dgm-sub" x="20" y="52">skip nums[i]==nums[i-1] when !used[i-1]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">each distinct permutation made once</text>
-            </svg>
-            <figcaption>Figure 1 — Forcing duplicates to be used left-to-right removes permuted repeats.</figcaption>
-          </figure>
+          <div class="viz" data-viz="permutations-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -167,5 +160,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

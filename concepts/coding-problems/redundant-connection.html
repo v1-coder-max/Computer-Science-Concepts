@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Process edges with a <strong>Disjoint Set Union</strong>. For each edge <code>(u, v)</code>, find their roots: if they’re <strong>already in the same set</strong>, this edge closes a cycle → it’s the redundant one. Otherwise union them. With path compression and union by rank, each operation is effectively O(1).</p><p><strong>Time ~O(n·α(n)), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Union-Find flags the cycle-closing edge">
-              <text class="dgm-sub" x="20" y="24">for each edge: find(u), find(v)</text>
-              <text class="dgm-sub" x="20" y="52">same root already → this edge is redundant</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">else union(u, v) and continue</text>
-            </svg>
-            <figcaption>Figure 1 — The first edge whose endpoints share a root is the one that creates the cycle.</figcaption>
-          </figure>
+          <div class="viz" data-viz="redundant-connection"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

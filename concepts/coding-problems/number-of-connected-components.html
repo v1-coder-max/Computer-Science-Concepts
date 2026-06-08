@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Initialize <code>count = n</code> (everyone isolated). For each edge, <code>union</code> its endpoints; if they were in <strong>different</strong> sets, the merge reduces the component count by 1. After processing all edges, <code>count</code> is the number of components. With path compression and union by rank it’s near-linear.</p><p><strong>Time ~O((n + e)·α(n)), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Start at n, decrement on each merge">
-              <text class="dgm-sub" x="20" y="24">count = n (all isolated)</text>
-              <text class="dgm-sub" x="20" y="52">edge joins different sets → count--</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">final count = number of components</text>
-            </svg>
-            <figcaption>Figure 1 — Every successful union fuses two pieces into one.</figcaption>
-          </figure>
+          <div class="viz" data-viz="number-of-connected-components"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

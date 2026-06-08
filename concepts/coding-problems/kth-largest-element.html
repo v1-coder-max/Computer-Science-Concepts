@@ -91,16 +91,7 @@
           </p>
           <p><strong>Time O(n log k), Space O(k).</strong> Quickselect averages O(n) (worst O(n²)).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Size-k min-heap keeping top k elements">
-              <text class="dgm-sub" x="20" y="22">k = 2 — keep the 2 largest seen so far</text>
-              <rect class="dgm-box-accent" x="20" y="40" width="180" height="30" rx="6"/><text class="dgm-sub" x="110" y="60" text-anchor="middle">heap (min on top): [5, 6]</text>
-              <text class="dgm-sub" x="20" y="96">push 4 → heap [4,5,6] over size → pop min(4) → [5,6]</text>
-              <rect class="dgm-box-accent" x="360" y="84" width="220" height="26" rx="6"/>
-              <text x="470" y="102" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">root = 5 = 2nd largest ✓</text>
-            </svg>
-            <figcaption>Figure 1 — A bounded min-heap discards everything below the top k; its root is the kth largest.</figcaption>
-          </figure>
+          <div class="viz" data-viz="kth-largest-element"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -180,5 +171,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

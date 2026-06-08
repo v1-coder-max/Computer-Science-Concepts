@@ -81,14 +81,7 @@
             <code>curEnd = farthest</code>. One pass, no per-jump scanning.
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Each jump is a reachable window">
-              <text class="dgm-sub" x="20" y="24">curEnd = edge of current jump · farthest = next reach</text>
-              <text class="dgm-sub" x="20" y="56">i hits curEnd → jumps++, curEnd = farthest</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">minimum jumps when curEnd ≥ last ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Riding each reachable window to its edge before jumping yields the minimum count.</figcaption>
-          </figure>
+          <div class="viz" data-viz="jump-game-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -163,5 +156,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

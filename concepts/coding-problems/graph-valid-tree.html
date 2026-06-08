@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>A tree on <code>n</code> nodes has exactly <code>n − 1</code> edges, so first check <code>edges.Length == n − 1</code> — fail fast otherwise. Then ensure connectivity with <strong>Union-Find</strong>: union every edge; if any edge connects two nodes already in the same set, there’s a cycle → false. With exactly <code>n − 1</code> edges and no cycle, the graph is automatically connected, so it’s a valid tree.</p><p><strong>Time ~O(n·α(n)), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="n−1 edges + no cycle ⇒ tree">
-              <text class="dgm-sub" x="20" y="24">edges != n − 1 → not a tree</text>
-              <text class="dgm-sub" x="20" y="52">union edges; same-set edge → cycle → false</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">n−1 edges + acyclic ⇒ connected tree ✓</text>
-            </svg>
-            <figcaption>Figure 1 — The edge count plus acyclicity guarantees full connectivity.</figcaption>
-          </figure>
+          <div class="viz" data-viz="graph-valid-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -88,15 +88,7 @@
           </ol>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Split, reverse second half, merge alternately">
-              <text class="dgm-sub" x="20" y="22">1 → 2 → 3 → 4 → 5</text>
-              <text class="dgm-sub" x="20" y="48">split: [1 2 3] | [4 5] → reverse → [5 4]</text>
-              <rect class="dgm-box-accent" x="20" y="64" width="320" height="26" rx="6"/>
-              <text x="180" y="82" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">merge alternately → 1 → 5 → 2 → 4 → 3</text>
-            </svg>
-            <figcaption>Figure 1 — Three composed steps: midpoint, reverse the tail, then zip the halves together.</figcaption>
-          </figure>
+          <div class="viz" data-viz="reorder-list"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -182,5 +174,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

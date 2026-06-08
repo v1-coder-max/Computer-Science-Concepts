@@ -91,21 +91,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 140" role="img" aria-label="Tortoise and hare meeting inside a cycle">
-              <text class="dgm-sub" x="20" y="22">slow +1 / step · fast +2 / step</text>
-              <circle class="dgm-box" cx="70" cy="80" r="20"/><text class="dgm-sub" x="70" y="85" text-anchor="middle">A</text>
-              <circle class="dgm-box" cx="160" cy="80" r="20"/><text class="dgm-sub" x="160" y="85" text-anchor="middle">B</text>
-              <circle class="dgm-box-accent" cx="260" cy="50" r="20"/><text class="dgm-sub" x="260" y="55" text-anchor="middle">C</text>
-              <circle class="dgm-box-accent" cx="260" cy="110" r="20"/><text class="dgm-sub" x="260" y="115" text-anchor="middle">D</text>
-              <path class="dgm-line" d="M90 80 H140"/>
-              <path class="dgm-line" d="M178 72 L244 56"/>
-              <path class="dgm-line" d="M260 70 V90"/>
-              <path class="dgm-line" d="M244 110 Q200 110 178 90"/>
-              <text x="380" y="80" fill="var(--c-success)" style="font:600 13px var(--font-sans)">fast laps and meets slow → cycle ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Inside a loop the fast pointer gains on the slow one and they collide; on a straight list fast just runs off the end.</figcaption>
-          </figure>
+          <div class="viz" data-viz="linked-list-cycle"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -181,5 +167,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

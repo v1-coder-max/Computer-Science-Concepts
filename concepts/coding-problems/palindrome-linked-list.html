@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Use slow/fast pointers to find the <strong>middle</strong>. <strong>Reverse</strong> the second half in place. Then walk the first half and the reversed second half together, comparing values — a mismatch means it’s not a palindrome. (Optionally restore the list by reversing the second half back.)</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Find middle, reverse half, compare">
-              <text class="dgm-sub" x="20" y="24">slow/fast → middle</text>
-              <text class="dgm-sub" x="20" y="52">reverse second half in place</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">compare halves node-by-node → palindrome?</text>
-            </svg>
-            <figcaption>Figure 1 — Reversing the back half lets the two halves be compared in lockstep.</figcaption>
-          </figure>
+          <div class="viz" data-viz="palindrome-linked-list"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -165,5 +158,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

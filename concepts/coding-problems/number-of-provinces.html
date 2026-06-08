@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p><strong>Union-Find</strong>: start with <code>n</code> provinces; for every pair <code>(i, j)</code> with <code>isConnected[i][j] == 1</code>, union them — each successful merge reduces the count by one. Alternatively, <strong>DFS</strong> from each unvisited city, marking everything reachable as one province and incrementing a counter per new DFS. Either is O(n²) since the matrix has n² entries.</p><p><strong>Time O(n²), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Connected components over a matrix">
-              <text class="dgm-sub" x="20" y="24">count = n; union connected city pairs</text>
-              <text class="dgm-sub" x="20" y="52">each successful merge → count--</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">remaining count = provinces</text>
-            </svg>
-            <figcaption>Figure 1 — Merging directly-connected cities collapses each province to one set.</figcaption>
-          </figure>
+          <div class="viz" data-viz="number-of-provinces"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -164,5 +157,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

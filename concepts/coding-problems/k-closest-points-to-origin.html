@@ -80,14 +80,7 @@
             when k is small. Quickselect gives O(n) average if you only need the set (unordered).
           </p>
           <p><strong>Time O(n log k), Space O(k).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Size-k max-heap keyed by distance">
-              <text class="dgm-sub" x="20" y="24">key = x² + y² (skip the sqrt)</text>
-              <text class="dgm-sub" x="20" y="56">max-heap size k → evict the farthest</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">remaining k = closest points ✓</text>
-            </svg>
-            <figcaption>Figure 1 — A bounded max-heap on squared distance keeps the nearest k and drops the rest.</figcaption>
-          </figure>
+          <div class="viz" data-viz="k-closest-points-to-origin"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -162,5 +155,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

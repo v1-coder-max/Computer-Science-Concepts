@@ -93,17 +93,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Water level bounded by the lower surrounding wall">
-              <rect class="dgm-box" x="60" y="40" width="20" height="60"/>
-              <rect class="dgm-box" x="200" y="70" width="20" height="30"/>
-              <rect class="dgm-box-accent" x="380" y="30" width="20" height="70"/>
-              <rect x="80" y="40" width="120" height="30" fill="var(--brand)" fill-opacity="0.25"/>
-              <rect x="220" y="40" width="160" height="30" fill="var(--brand)" fill-opacity="0.25"/>
-              <text class="dgm-sub" x="300" y="116" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">level = min(leftMax, rightMax); fill the dips below it</text>
-            </svg>
-            <figcaption>Figure 1 — Each dip fills up to the lower of its two surrounding peaks; sum the fills.</figcaption>
-          </figure>
+          <div class="viz" data-viz="trapping-rain-water"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -189,5 +179,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

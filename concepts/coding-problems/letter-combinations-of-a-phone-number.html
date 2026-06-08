@@ -80,14 +80,7 @@
             number of digits, record it.
           </p>
           <p><strong>Time O(4<sup>n</sup>·n), Space O(n).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Cartesian product via per-digit choices">
-              <text class="dgm-sub" x="20" y="24">2 → a b c · 3 → d e f</text>
-              <text class="dgm-sub" x="20" y="56">pick one letter per digit, recurse to next digit</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">length == #digits → record (ad, ae, …) ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Each digit contributes one character per level; the leaves are the full products.</figcaption>
-          </figure>
+          <div class="viz" data-viz="letter-combinations-of-a-phone-number"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -169,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -81,14 +81,7 @@
             heap pushes/pops to rebalance — O(log n).
           </p>
           <p><strong>Add O(log n), FindMedian O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two balanced heaps meet at the median">
-              <text class="dgm-sub" x="20" y="24">lo = max-heap (small half) · hi = min-heap (big half)</text>
-              <text class="dgm-sub" x="20" y="56">keep sizes within 1; every lo ≤ every hi</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 12px var(--font-sans)">median = top of larger, or average of tops</text>
-            </svg>
-            <figcaption>Figure 1 — The two heap tops straddle the middle, so the median is read in O(1).</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-median-from-data-stream"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -169,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

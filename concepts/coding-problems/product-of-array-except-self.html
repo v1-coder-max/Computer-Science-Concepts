@@ -94,16 +94,7 @@
             <strong>O(1) extra space</strong> (the output doesn’t count).
           </p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 150" role="img" aria-label="Prefix and suffix product passes">
-              <text class="dgm-sub" x="20" y="20">nums = [1, 2, 3, 4]</text>
-              <text class="dgm-sub" x="20" y="46">→ left products (prefix): [1, 1, 2, 6]</text>
-              <text class="dgm-sub" x="20" y="72">→ × right products (suffix): [24, 12, 4, 1]</text>
-              <rect class="dgm-box-accent" x="20" y="86" width="380" height="34" rx="6"/>
-              <text x="210" y="108" text-anchor="middle" fill="var(--c-success)" style="font:600 13px var(--font-sans)">answer = [24, 12, 8, 6]</text>
-            </svg>
-            <figcaption>Figure 1 — answer[i] = (product left of i) × (product right of i).</figcaption>
-          </figure>
+          <div class="viz" data-viz="product-of-array-except-self"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -187,5 +178,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

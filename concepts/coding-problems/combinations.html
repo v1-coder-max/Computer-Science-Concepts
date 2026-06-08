@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Backtrack with a <strong>start index</strong>: at each level, try numbers from <code>start..n</code>, append one, recurse from the next index, then un-choose. The start index guarantees increasing order so no combination repeats. <strong>Prune</strong> when the remaining numbers can’t fill the rest of the combination (<code>n − i + 1 &lt; k − path.Count</code>). Record when the path reaches length <code>k</code>.</p><p><strong>Time O(k · C(n,k)), Space O(k).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Start index + remaining-count prune">
-              <text class="dgm-sub" x="20" y="24">choose from start..n, recurse from i+1</text>
-              <text class="dgm-sub" x="20" y="52">prune when too few numbers remain</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">path length == k → record</text>
-            </svg>
-            <figcaption>Figure 1 — The start index avoids permutations; pruning skips branches that can’t complete.</figcaption>
-          </figure>
+          <div class="viz" data-viz="combinations"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -164,5 +157,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

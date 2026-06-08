@@ -81,14 +81,7 @@
             same subset from a later identical element.
           </p>
           <p><strong>Time O(n·2<sup>n</sup>), Space O(n).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Skip duplicates at the same level">
-              <text class="dgm-sub" x="20" y="24">sort → equal values adjacent</text>
-              <text class="dgm-sub" x="20" y="56">skip nums[i] if i>start and nums[i]==nums[i-1]</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">allows [2,2], blocks duplicate subsets ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Sorting plus the same-level skip rule prunes duplicate subsets while keeping legitimate repeats.</figcaption>
-          </figure>
+          <div class="viz" data-viz="subsets-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -168,5 +161,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

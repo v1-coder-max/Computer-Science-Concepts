@@ -82,14 +82,7 @@
             <code>start</code> works.
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reset start after a negative tank">
-              <text class="dgm-sub" x="20" y="24">tank += gas[i] − cost[i]</text>
-              <text class="dgm-sub" x="20" y="56">tank < 0 → start = i+1, tank = 0</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">total ≥ 0 → final start is the answer ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Anywhere the tank goes negative disqualifies the whole prefix; restart just after it.</figcaption>
-          </figure>
+          <div class="viz" data-viz="gas-station"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -166,5 +159,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

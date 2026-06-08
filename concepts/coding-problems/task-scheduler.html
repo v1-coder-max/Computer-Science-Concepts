@@ -82,14 +82,7 @@
             the same result.
           </p>
           <p><strong>Time O(n), Space O(1)</strong> (26 task types).</p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Most frequent task frames the schedule">
-              <text class="dgm-sub" x="20" y="24">A _ _ A _ _ A  ← (fmax−1) blocks of (n+1)</text>
-              <text class="dgm-sub" x="20" y="56">fill gaps with other tasks; tail = ties at fmax</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 12px var(--font-sans)">answer = max(len, (fmax−1)(n+1) + maxCount)</text>
-            </svg>
-            <figcaption>Figure 1 — The peak-frequency task sets the skeleton; remaining tasks fill the idle slots.</figcaption>
-          </figure>
+          <div class="viz" data-viz="task-scheduler"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

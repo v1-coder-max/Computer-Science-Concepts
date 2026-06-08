@@ -91,18 +91,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Greedy farthest-reach scan">
-              <text class="dgm-sub" x="20" y="22">[2, 3, 1, 1, 4] — farthest reach</text>
-              <rect class="dgm-box-accent" x="20" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="50" y="55" text-anchor="middle">2 → 2</text>
-              <rect class="dgm-box-accent" x="90" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="120" y="55" text-anchor="middle">3 → 4</text>
-              <rect class="dgm-box" x="160" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="190" y="55" text-anchor="middle">1 → 4</text>
-              <rect class="dgm-box" x="230" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="260" y="55" text-anchor="middle">1 → 4</text>
-              <rect class="dgm-box-accent" x="300" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="330" y="55" text-anchor="middle">4 end</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">farthest hits last index → reachable ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Keep the maximum reachable index; failure is when the current index outruns it.</figcaption>
-          </figure>
+          <div class="viz" data-viz="jump-game"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -178,5 +167,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

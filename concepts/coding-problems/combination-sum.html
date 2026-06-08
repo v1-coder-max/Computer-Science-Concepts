@@ -91,18 +91,7 @@
           <p>When <code>remaining == 0</code>, record the path.</p>
           <p><strong>Time:</strong> exponential in the worst case (bounded by the number of valid combinations); <strong>Space O(target/min)</strong> recursion depth.</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Backtracking subtracting from the remaining target">
-              <text class="dgm-sub" x="20" y="20">target 7, candidates [2,3,6,7]</text>
-              <circle class="dgm-box-accent" cx="300" cy="36" r="15"/><text class="dgm-sub" x="300" y="41" text-anchor="middle">7</text>
-              <line class="dgm-line" x1="288" y1="46" x2="180" y2="76"/><line class="dgm-line" x1="312" y1="46" x2="430" y2="76"/>
-              <circle class="dgm-box" cx="170" cy="88" r="15"/><text class="dgm-sub" x="170" y="93" text-anchor="middle">5</text>
-              <circle class="dgm-box" cx="440" cy="88" r="15"/><text class="dgm-sub" x="440" y="93" text-anchor="middle">0</text>
-              <text class="dgm-sub" x="150" y="120">take 2 → need 5 …</text>
-              <text class="dgm-sub" x="400" y="120" fill="var(--c-success)" style="font:600 11px var(--font-sans)">take 7 → 0 → record [7] ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Each branch subtracts a candidate from the remaining target; a branch that hits 0 is a valid combination, &lt;0 is pruned.</figcaption>
-          </figure>
+          <div class="viz" data-viz="combination-sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -186,5 +175,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

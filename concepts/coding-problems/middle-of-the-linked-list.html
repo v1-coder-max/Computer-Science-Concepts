@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Advance <code>slow</code> by one and <code>fast</code> by two each step. When <code>fast</code> runs off the end (or <code>fast.next</code> is null), <code>slow</code> has traveled half as far and is on the middle node. Starting both at <code>head</code> and looping while <code>fast</code> and <code>fast.next</code> exist returns the second middle for even lengths.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Fast moves twice as far as slow">
-              <text class="dgm-sub" x="20" y="24">slow += 1, fast += 2 each step</text>
-              <text class="dgm-sub" x="20" y="52">fast hits the end → slow is the middle</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">even length → returns the second middle</text>
-            </svg>
-            <figcaption>Figure 1 — Half the speed means slow stops at the midpoint when fast finishes.</figcaption>
-          </figure>
+          <div class="viz" data-viz="middle-of-the-linked-list"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -156,5 +149,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

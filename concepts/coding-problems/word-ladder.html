@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Model words as nodes with edges between words differing by one letter. Run <strong>BFS</strong> from <code>beginWord</code>, expanding level by level (each level = one transformation). To find neighbors without comparing all pairs, generate <strong>wildcard patterns</strong> (<code>h*t</code>, <code>*it</code>, …) and group dictionary words by pattern, so neighbor lookup is O(L) per word. The first time <code>endWord</code> appears, its level is the answer.</p><p><strong>Time O(N · L²), Space O(N · L).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="BFS over one-letter-apart words">
-              <text class="dgm-sub" x="20" y="24">neighbors via wildcards: h*t, *it, hi*</text>
-              <text class="dgm-sub" x="20" y="52">BFS level = one transformation step</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">first reach of endWord → shortest length</text>
-            </svg>
-            <figcaption>Figure 1 — Each BFS layer is one letter-change away; the first to hit the target is shortest.</figcaption>
-          </figure>
+          <div class="viz" data-viz="word-ladder"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -177,5 +170,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

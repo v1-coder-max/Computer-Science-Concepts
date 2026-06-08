@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Use a <strong>dummy</strong> before the head. Keep a <code>prev</code> pointer; while two nodes remain, identify <code>first = prev.next</code> and <code>second = first.next</code>, then relink: <code>prev.next = second</code>, <code>first.next = second.next</code>, <code>second.next = first</code>. Advance <code>prev</code> to <code>first</code> (now the second of the swapped pair) and repeat. A leftover single node stays in place.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Relink each adjacent pair">
-              <text class="dgm-sub" x="20" y="24">first = prev.next, second = first.next</text>
-              <text class="dgm-sub" x="20" y="52">prev→second, first→second.next, second→first</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">1→2→3→4 → 2→1→4→3</text>
-            </svg>
-            <figcaption>Figure 1 — Three pointer reassignments swap a pair; the dummy anchors the first swap.</figcaption>
-          </figure>
+          <div class="viz" data-viz="swap-nodes-in-pairs"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

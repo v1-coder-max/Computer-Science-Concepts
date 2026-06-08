@@ -87,16 +87,7 @@
           </p>
           <p><strong>Time O(max(n, m)), Space O(max(n, m)).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Digit-by-digit addition with carry">
-              <text class="dgm-sub" x="20" y="24">  2 4 3   (=342, reversed)</text>
-              <text class="dgm-sub" x="20" y="48">+ 5 6 4   (=465, reversed)</text>
-              <line class="dgm-line" x1="20" y1="58" x2="200" y2="58"/>
-              <text class="dgm-sub" x="20" y="80" fill="var(--c-success)" style="font:600 12px var(--font-sans)">  7 0 8   carry: 0→1→0</text>
-              <text class="dgm-sub" x="260" y="58">2+5=7 · 4+6=10→0 c1 · 3+4+1=8</text>
-            </svg>
-            <figcaption>Figure 1 — Add aligned digits plus the carry; emit <code>sum%10</code>, carry <code>sum/10</code>.</figcaption>
-          </figure>
+          <div class="viz" data-viz="add-two-numbers"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -179,5 +170,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

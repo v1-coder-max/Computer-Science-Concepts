@@ -79,14 +79,7 @@
             is exactly the kth largest. Each add is O(log k); resorting the whole stream would be far slower.
           </p>
           <p><strong>Time O(log k) per add, Space O(k).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Bounded min-heap keeps top k">
-              <text class="dgm-sub" x="20" y="24">min-heap size k holds the k largest so far</text>
-              <text class="dgm-sub" x="20" y="56">add → push, evict smallest if size > k</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">root = kth largest</text>
-            </svg>
-            <figcaption>Figure 1 — A size-k min-heap discards everything below the top k; its root is the kth largest.</figcaption>
-          </figure>
+          <div class="viz" data-viz="kth-largest-element-in-a-stream"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -165,5 +158,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

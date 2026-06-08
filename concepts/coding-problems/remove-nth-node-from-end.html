@@ -91,20 +91,7 @@
           </p>
           <p><strong>Time O(L), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Two pointers n apart">
-              <rect class="dgm-box-accent" x="20" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="50" y="59" text-anchor="middle">dummy</text>
-              <rect class="dgm-box" x="90" y="40" width="50" height="28" rx="5"/><text class="dgm-sub" x="115" y="59" text-anchor="middle">1</text>
-              <rect class="dgm-box" x="150" y="40" width="50" height="28" rx="5"/><text class="dgm-sub" x="175" y="59" text-anchor="middle">2</text>
-              <rect class="dgm-box" x="210" y="40" width="50" height="28" rx="5"/><text class="dgm-sub" x="235" y="59" text-anchor="middle">3</text>
-              <rect class="dgm-box" x="270" y="40" width="50" height="28" rx="5"/><text class="dgm-sub" x="295" y="59" text-anchor="middle">4</text>
-              <rect class="dgm-box" x="330" y="40" width="50" height="28" rx="5"/><text class="dgm-sub" x="355" y="59" text-anchor="middle">5</text>
-              <text class="dgm-sub" x="235" y="34" text-anchor="middle">slow</text>
-              <text class="dgm-sub" x="355" y="34" text-anchor="middle">fast (gap = n)</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">when fast hits end, slow.next is the node to delete</text>
-            </svg>
-            <figcaption>Figure 1 — Keep the pointers n apart; when fast reaches the end, slow is just before the target.</figcaption>
-          </figure>
+          <div class="viz" data-viz="remove-nth-node-from-end"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -180,5 +167,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

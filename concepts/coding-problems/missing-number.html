@@ -81,14 +81,7 @@
             overflow worries with the XOR version.
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Indices XOR values cancel pairs">
-              <text class="dgm-sub" x="20" y="24">acc = n, then acc ^= i ^ nums[i] for each i</text>
-              <text class="dgm-sub" x="20" y="56">present numbers appear twice → cancel</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">leftover = missing number ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Each present value pairs an index with a value and cancels; the gap remains.</figcaption>
-          </figure>
+          <div class="viz" data-viz="missing-number"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

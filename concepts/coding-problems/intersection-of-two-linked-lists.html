@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Walk <code>a</code> through list A and <code>b</code> through list B. When a pointer hits the end, redirect it to the <strong>other list’s head</strong>. After at most one switch each, both pointers have traversed <code>lenA + lenB</code> nodes, so they arrive at the intersection simultaneously (or both reach null together if there’s no intersection). No length precomputation needed.</p><p><strong>Time O(n + m), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Switch lists to equalize distance">
-              <text class="dgm-sub" x="20" y="24">a walks A then B; b walks B then A</text>
-              <text class="dgm-sub" x="20" y="52">both cover lenA + lenB nodes</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">they meet at the intersection (or both null)</text>
-            </svg>
-            <figcaption>Figure 1 — The list swap cancels the length difference so the pointers align.</figcaption>
-          </figure>
+          <div class="viz" data-viz="intersection-of-two-linked-lists"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -156,5 +149,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

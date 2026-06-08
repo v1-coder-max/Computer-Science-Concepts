@@ -81,14 +81,7 @@
             remaining target.
           </p>
           <p><strong>Time O(2<sup>n</sup>) worst, Space O(n).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Once-each with same-level dedupe">
-              <text class="dgm-sub" x="20" y="24">sort · recurse i+1 (use each once)</text>
-              <text class="dgm-sub" x="20" y="56">skip candidates[i]==candidates[i-1] at same level</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">break when candidate > remaining</text>
-            </svg>
-            <figcaption>Figure 1 — i+1 enforces single use; the same-level skip removes duplicate combinations.</figcaption>
-          </figure>
+          <div class="viz" data-viz="combination-sum-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -169,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

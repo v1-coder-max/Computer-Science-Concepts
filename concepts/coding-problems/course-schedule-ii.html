@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Build the graph (<code>prereq → course</code>) and each node’s in-degree. <strong>Kahn’s algorithm</strong>: queue all courses with in-degree 0, and repeatedly dequeue one (append it to the order), decrementing its dependents’ in-degrees and enqueuing any that reach 0. If you output all <code>numCourses</code> courses, that order is valid; if fewer (a cycle remains), return empty.</p><p><strong>Time O(V + E), Space O(V + E).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Emit courses as in-degree hits zero">
-              <text class="dgm-sub" x="20" y="24">queue in-degree-0 courses; pop → append</text>
-              <text class="dgm-sub" x="20" y="52">decrement dependents; new 0s → enqueue</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">all emitted → valid order; else cycle → []</text>
-            </svg>
-            <figcaption>Figure 1 — Kahn’s peels off prerequisite-free courses, building the order incrementally.</figcaption>
-          </figure>
+          <div class="viz" data-viz="course-schedule-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -164,5 +157,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

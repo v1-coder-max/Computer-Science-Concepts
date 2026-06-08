@@ -91,17 +91,7 @@
           </p>
           <p><strong>Time/Space O(4ⁿ / √n)</strong> (the nth Catalan number of results).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Backtracking tree with open/close rules">
-              <text class="dgm-sub" x="20" y="22">rules: add '(' if open&lt;n · add ')' if close&lt;open</text>
-              <circle class="dgm-box-accent" cx="300" cy="36" r="14"/><text class="dgm-sub" x="300" y="41" text-anchor="middle">(</text>
-              <line class="dgm-line" x1="288" y1="46" x2="200" y2="74"/><line class="dgm-line" x1="312" y1="46" x2="400" y2="74"/>
-              <circle class="dgm-box" cx="190" cy="86" r="14"/><text class="dgm-sub" x="190" y="91" text-anchor="middle">((</text>
-              <circle class="dgm-box" cx="410" cy="86" r="14"/><text class="dgm-sub" x="410" y="91" text-anchor="middle">()</text>
-              <text class="dgm-sub" x="20" y="104" fill="var(--c-success)" style="font:600 11px var(--font-sans)">only legal moves branch → all leaves valid</text>
-            </svg>
-            <figcaption>Figure 1 — Each level adds a legal bracket; invalid placements are pruned, so every leaf is balanced.</figcaption>
-          </figure>
+          <div class="viz" data-viz="generate-parentheses"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -191,5 +181,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>
