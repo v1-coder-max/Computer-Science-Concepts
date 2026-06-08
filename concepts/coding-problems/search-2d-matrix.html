@@ -86,18 +86,7 @@
           </p>
           <p><strong>Time O(log(m·n)), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Matrix viewed as one sorted array">
-              <text class="dgm-sub" x="20" y="22">flat index mid → (mid / n, mid % n)</text>
-              <rect class="dgm-box" x="20" y="34" width="44" height="26" rx="4"/><text class="dgm-sub" x="42" y="52" text-anchor="middle">1</text>
-              <rect class="dgm-box-accent" x="66" y="34" width="44" height="26" rx="4"/><text class="dgm-sub" x="88" y="52" text-anchor="middle">3</text>
-              <rect class="dgm-box" x="112" y="34" width="44" height="26" rx="4"/><text class="dgm-sub" x="134" y="52" text-anchor="middle">5</text>
-              <rect class="dgm-box" x="158" y="34" width="44" height="26" rx="4"/><text class="dgm-sub" x="180" y="52" text-anchor="middle">7</text>
-              <rect class="dgm-box" x="204" y="34" width="50" height="26" rx="4"/><text class="dgm-sub" x="229" y="52" text-anchor="middle">10…</text>
-              <text class="dgm-sub" x="20" y="92" fill="var(--c-success)" style="font:600 12px var(--font-sans)">treat as length m·n sorted array, binary search</text>
-            </svg>
-            <figcaption>Figure 1 — The grid is a sorted run; index/n and index%n recover the cell during the search.</figcaption>
-          </figure>
+          <div class="viz" data-viz="search-2d-matrix"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -177,5 +166,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

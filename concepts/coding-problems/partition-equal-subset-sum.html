@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>If the total is <strong>odd</strong>, return false immediately. Otherwise the target is <code>total / 2</code>, and the question becomes “can some subset reach <code>target</code>?” — a <strong>0/1 subset-sum</strong>. Use a 1-D boolean array <code>dp</code> where <code>dp[s]</code> means sum <code>s</code> is reachable; for each number, update <code>dp[s] |= dp[s − num]</code> iterating <code>s</code> <strong>downward</strong> so each number is used once. Return <code>dp[target]</code>.</p><p><strong>Time O(n · sum), Space O(sum).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Subset sum to total/2">
-              <text class="dgm-sub" x="20" y="24">odd total → false; else target = total/2</text>
-              <text class="dgm-sub" x="20" y="52">dp[s] |= dp[s − num], s descending (0/1)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">dp[target] reachable → can partition</text>
-            </svg>
-            <figcaption>Figure 1 — Equal partition exists iff a subset reaches half the total.</figcaption>
-          </figure>
+          <div class="viz" data-viz="partition-equal-subset-sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -159,5 +152,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

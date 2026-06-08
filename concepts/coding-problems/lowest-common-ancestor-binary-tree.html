@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Recurse: if the current node is null or equals <code>p</code> or <code>q</code>, return it. Recurse into both children. If <strong>both</strong> sides return non-null, the current node is where <code>p</code> and <code>q</code> split — it’s the LCA. If only one side is non-null, propagate that side up (the LCA is somewhere above or is that node). One post-order pass.</p><p><strong>Time O(n), Space O(h).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Both subtrees return a match → LCA">
-              <text class="dgm-sub" x="20" y="24">node == p or q → return node</text>
-              <text class="dgm-sub" x="20" y="52">left and right both non-null → this is LCA</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">one side non-null → bubble it up</text>
-            </svg>
-            <figcaption>Figure 1 — The first node receiving a match from both subtrees is the lowest common ancestor.</figcaption>
-          </figure>
+          <div class="viz" data-viz="lowest-common-ancestor-binary-tree"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -156,5 +149,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

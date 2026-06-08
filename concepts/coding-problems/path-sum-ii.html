@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>DFS with a running <code>path</code> list and the remaining target. At each node, append its value and subtract from the target. At a <strong>leaf</strong>, if the remaining target equals 0, record a <strong>copy</strong> of the path. Recurse into children, then <strong>backtrack</strong> by removing the node from the path so siblings reuse the buffer. This is Path Sum extended to collect the actual paths.</p><p><strong>Time O(n) traversal (plus O(paths·length) to build output), Space O(h).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Backtrack a shared path buffer">
-              <text class="dgm-sub" x="20" y="24">append node, subtract from target</text>
-              <text class="dgm-sub" x="20" y="52">leaf & remaining == 0 → record a copy</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">remove node on the way back up</text>
-            </svg>
-            <figcaption>Figure 1 — One path buffer is grown and shrunk; copies are taken only at qualifying leaves.</figcaption>
-          </figure>
+          <div class="viz" data-viz="path-sum-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -165,5 +158,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

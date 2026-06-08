@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Let <code>dp[a]</code> = number of ways to make amount <code>a</code>, starting with <code>dp[0] = 1</code> (one way: use nothing). Loop coins on the <strong>outside</strong> and amounts inside, doing <code>dp[a] += dp[a − coin]</code>. Iterating coins outermost means each combination is built in one fixed coin order, so <code>1+2</code> and <code>2+1</code> aren’t counted twice (that ordering is the key difference from the min-coins version).</p><p><strong>Time O(amount · coins), Space O(amount).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Coins outermost counts combinations once">
-              <text class="dgm-sub" x="20" y="24">dp[0] = 1; for each coin: dp[a] += dp[a-coin]</text>
-              <text class="dgm-sub" x="20" y="52">coin loop OUTSIDE → fixed order, no dup combos</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">coins [1,2,5], amount 5 → 4 ways</text>
-            </svg>
-            <figcaption>Figure 1 — Processing one coin fully before the next counts each combination exactly once.</figcaption>
-          </figure>
+          <div class="viz" data-viz="coin-change-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

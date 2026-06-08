@@ -80,14 +80,7 @@
             reversal. It’s the same mechanic as reversing the digits of a number.
           </p>
           <p><strong>Time O(32), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Peel lowest bit, push onto shifted result">
-              <text class="dgm-sub" x="20" y="24">result = (result << 1) | (n & 1)</text>
-              <text class="dgm-sub" x="20" y="56">n >>= 1  → next bit becomes lowest</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">32 steps → fully reversed ✓</text>
-            </svg>
-            <figcaption>Figure 1 — The first bit taken ends up highest after 32 left-shifts of the result.</figcaption>
-          </figure>
+          <div class="viz" data-viz="reverse-bits"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -158,5 +151,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

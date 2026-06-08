@@ -94,20 +94,7 @@
           </ul>
           <p><strong>Time O(log n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="One sorted half around the midpoint">
-              <text class="dgm-sub" x="20" y="22">target = 0 in [4, 5, 6, 7, 0, 1, 2]</text>
-              <rect class="dgm-box-accent" x="20" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="55" y="54" text-anchor="middle">4</text>
-              <rect class="dgm-box-accent" x="95" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="130" y="54" text-anchor="middle">5</text>
-              <rect class="dgm-box-accent" x="170" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="205" y="54" text-anchor="middle">6</text>
-              <rect class="dgm-box" x="245" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="280" y="54" text-anchor="middle">7=mid</text>
-              <rect class="dgm-box" x="320" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="355" y="54" text-anchor="middle">0</text>
-              <rect class="dgm-box" x="395" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="430" y="54" text-anchor="middle">1</text>
-              <rect class="dgm-box" x="470" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="505" y="54" text-anchor="middle">2</text>
-              <text class="dgm-sub" x="20" y="92" fill="var(--c-success)" style="font:600 12px var(--font-sans)">left [4..7] sorted; 0 not in it → search right half</text>
-            </svg>
-            <figcaption>Figure 1 — Whichever side is sorted tells you, by simple range check, which half can hold the target.</figcaption>
-          </figure>
+          <div class="viz" data-viz="search-rotated-sorted-array"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -193,5 +180,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

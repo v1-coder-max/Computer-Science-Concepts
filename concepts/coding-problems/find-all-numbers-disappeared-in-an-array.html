@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>For each value <code>v</code>, treat index <code>|v| − 1</code> as its bucket and <strong>negate</strong> the number there (if not already negative) to mark <code>v</code> as seen. Use the absolute value when reading, since earlier marks may have flipped signs. After the pass, any index still holding a <strong>positive</strong> value was never marked — so <code>index + 1</code> is missing. Restore signs afterward if the input must stay intact.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Negate the bucket of each seen value">
-              <text class="dgm-sub" x="20" y="24">for v: nums[|v|-1] = -|nums[|v|-1]|</text>
-              <text class="dgm-sub" x="20" y="52">positive slot i → i+1 never appeared</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[4,3,2,7,8,2,3,1] → [5, 6]</text>
-            </svg>
-            <figcaption>Figure 1 — Sign flips encode presence; the survivors that stayed positive are the missing numbers.</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-all-numbers-disappeared-in-an-array"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -159,5 +152,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

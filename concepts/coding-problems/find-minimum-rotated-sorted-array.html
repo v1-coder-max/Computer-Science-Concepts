@@ -86,18 +86,7 @@
           </p>
           <p><strong>Time O(log n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Binary search for the rotation dip">
-              <rect class="dgm-box" x="20" y="40" width="70" height="28" rx="5"/><text class="dgm-sub" x="55" y="59" text-anchor="middle">4</text>
-              <rect class="dgm-box" x="95" y="40" width="70" height="28" rx="5"/><text class="dgm-sub" x="130" y="59" text-anchor="middle">5</text>
-              <rect class="dgm-box" x="170" y="40" width="70" height="28" rx="5"/><text class="dgm-sub" x="205" y="59" text-anchor="middle">6=mid</text>
-              <rect class="dgm-box" x="245" y="40" width="70" height="28" rx="5"/><text class="dgm-sub" x="280" y="59" text-anchor="middle">7</text>
-              <rect class="dgm-box-accent" x="320" y="40" width="70" height="28" rx="5"/><text class="dgm-sub" x="355" y="59" text-anchor="middle">0 min</text>
-              <rect class="dgm-box" x="395" y="40" width="70" height="28" rx="5"/><text class="dgm-sub" x="430" y="59" text-anchor="middle">1</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">mid(6) &gt; hi(2) → dip is right → search right half</text>
-            </svg>
-            <figcaption>Figure 1 — Comparing mid to the right end tells you which side hides the rotation dip.</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-minimum-rotated-sorted-array"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -173,5 +162,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

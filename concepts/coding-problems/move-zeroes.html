@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Walk the array with a read index; whenever <code>nums[r]</code> is non-zero, place it at <code>nums[w]</code> and advance <code>w</code> (swap to keep values, or copy then zero-fill). After the pass, indices <code>w..end</code> are all zeros. A swap-based variant does it in one loop while preserving order.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Pack non-zeros, then zero-fill the tail">
-              <text class="dgm-sub" x="20" y="24">w packs non-zeros to the front in order</text>
-              <text class="dgm-sub" x="20" y="52">swap nums[w], nums[r] on non-zero</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">remaining slots become 0</text>
-            </svg>
-            <figcaption>Figure 1 — Stable compaction of non-zeros leaves the zeros at the end.</figcaption>
-          </figure>
+          <div class="viz" data-viz="move-zeroes"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -156,5 +149,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

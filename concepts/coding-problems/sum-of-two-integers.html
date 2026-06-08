@@ -80,14 +80,7 @@
             becomes 0. Use <code>unchecked</code> so overflow wraps like hardware.
           </p>
           <p><strong>Time O(1) (≤ 32 iterations), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="XOR is sum-without-carry, AND<<1 is carry">
-              <text class="dgm-sub" x="20" y="24">sum  = a ^ b      (add, ignore carry)</text>
-              <text class="dgm-sub" x="20" y="56">carry = (a & b) << 1</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">loop until carry == 0 → a is the sum ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Reapplying sum-without-carry and carry mimics a hardware adder.</figcaption>
-          </figure>
+          <div class="viz" data-viz="sum-of-two-integers"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

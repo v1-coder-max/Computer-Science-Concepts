@@ -88,15 +88,7 @@
           </p>
           <p><strong>Time O(n · log(max pile)), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Monotonic feasibility over speed">
-              <text class="dgm-sub" x="20" y="22">speed → hours needed (decreasing)</text>
-              <rect x="20" y="40" width="160" height="24" rx="5" fill="var(--c-warning)" fill-opacity="0.16" stroke="var(--c-warning)"/><text x="100" y="57" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">too slow (&gt; h)</text>
-              <rect class="dgm-box-accent" x="180" y="40" width="380" height="24" rx="5"/><text x="370" y="57" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">fits in h hours — find leftmost</text>
-              <text class="dgm-sub" x="20" y="92">binary search the boundary: smallest feasible k</text>
-            </svg>
-            <figcaption>Figure 1 — Feasibility flips once from “too slow” to “fits”; binary search the boundary speed.</figcaption>
-          </figure>
+          <div class="viz" data-viz="koko-eating-bananas"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -179,5 +171,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Use three pointers: <code>i = m−1</code> (end of real <code>nums1</code> values), <code>j = n−1</code> (end of <code>nums2</code>), and <code>k = m+n−1</code> (write position). Compare <code>nums1[i]</code> and <code>nums2[j]</code> and place the <strong>larger</strong> at <code>k</code>, stepping that pointer and <code>k</code> back. The free space is always at or ahead of <code>k</code>, so nothing unread is clobbered.</p><p><strong>Time O(m+n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Fill from the back, largest first">
-              <text class="dgm-sub" x="20" y="24">i = m-1, j = n-1, write at k = m+n-1</text>
-              <text class="dgm-sub" x="20" y="52">place max(nums1[i], nums2[j]) at k, step back</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">tail space never overwrites unread values</text>
-            </svg>
-            <figcaption>Figure 1 — Writing the biggest remaining value into the tail keeps the in-place merge safe.</figcaption>
-          </figure>
+          <div class="viz" data-viz="merge-sorted-array"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

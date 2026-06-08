@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Track <code>top, bottom, left, right</code>. Repeat: traverse the <strong>top row</strong> left→right then <code>top++</code>; the <strong>right column</strong> top→bottom then <code>right−−</code>; if rows remain, the <strong>bottom row</strong> right→left then <code>bottom−−</code>; if columns remain, the <strong>left column</strong> bottom→top then <code>left++</code>. Stop when the boundaries cross. The two guards prevent re-reading a row/column in thin matrices.</p><p><strong>Time O(m·n), Space O(1)</strong> (excluding output).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Four shrinking boundaries">
-              <text class="dgm-sub" x="20" y="24">top→ , right↓ , bottom← , left↑</text>
-              <text class="dgm-sub" x="20" y="52">shrink the boundary after each edge</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">guard bottom/left passes for thin grids</text>
-            </svg>
-            <figcaption>Figure 1 — Peeling one ring at a time via four boundaries yields the spiral.</figcaption>
-          </figure>
+          <div class="viz" data-viz="spiral-matrix"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

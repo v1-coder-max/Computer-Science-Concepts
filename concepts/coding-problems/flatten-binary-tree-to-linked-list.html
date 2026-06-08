@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Traverse in <strong>reverse preorder</strong> (right, then left, then node) while keeping a <code>prev</code> pointer to the previously processed node. At each node, set <code>node.right = prev</code>, <code>node.left = null</code>, then update <code>prev = node</code>. Because you visit nodes in the reverse of preorder, each node ends up pointing to its correct preorder successor. (A Morris-style O(1) version moves left subtrees to the right inline.)</p><p><strong>Time O(n), Space O(h).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reverse-preorder prepend">
-              <text class="dgm-sub" x="20" y="24">visit right → left → node (reverse preorder)</text>
-              <text class="dgm-sub" x="20" y="52">node.right = prev; node.left = null; prev = node</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">right-skewed list in preorder</text>
-            </svg>
-            <figcaption>Figure 1 — Building the list backward makes each node link to its preorder successor.</figcaption>
-          </figure>
+          <div class="viz" data-viz="flatten-binary-tree-to-linked-list"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@ public void Flatten(TreeNode root)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

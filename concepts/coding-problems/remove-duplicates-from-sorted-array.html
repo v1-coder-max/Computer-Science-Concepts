@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Keep a <strong>write index</strong> <code>w</code> (last position of a unique value). Scan with a read index <code>r</code>; whenever <code>nums[r]</code> differs from <code>nums[w]</code>, it’s new, so advance <code>w</code> and copy it there. Since the array is sorted, equal values are consecutive, so one comparison against the last kept value is enough. Return <code>w + 1</code>.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Slow write pointer keeps uniques">
-              <text class="dgm-sub" x="20" y="24">w = last unique index; r scans ahead</text>
-              <text class="dgm-sub" x="20" y="52">nums[r] != nums[w] → ++w, nums[w] = nums[r]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">return w + 1 = count of uniques</text>
-            </svg>
-            <figcaption>Figure 1 — The write pointer compacts uniques to the front as the scan passes duplicates.</figcaption>
-          </figure>
+          <div class="viz" data-viz="remove-duplicates-from-sorted-array"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

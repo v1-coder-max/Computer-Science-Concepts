@@ -77,14 +77,7 @@
           <h2>Optimized approach</h2>
           <p>Take the first string as a reference. For each character index <code>i</code>, check that every other string has the same character at <code>i</code> (and is long enough). The moment a string is too short or differs, return the prefix up to <code>i</code>. If you exhaust the reference string, it’s entirely a common prefix.</p><p><strong>Time O(total characters), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Vertical scan, stop at first mismatch">
-              <text class="dgm-sub" x="20" y="24">compare column i across all strings</text>
-              <text class="dgm-sub" x="20" y="52">mismatch or short string → stop</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">["flower","flow","flight"] → "fl"</text>
-            </svg>
-            <figcaption>Figure 1 — Scanning columns lets you halt the instant the prefix breaks.</figcaption>
-          </figure>
+          <div class="viz" data-viz="longest-common-prefix"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

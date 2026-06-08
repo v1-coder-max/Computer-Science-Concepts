@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Run a <strong>lower-bound</strong> binary search: maintain <code>[lo, hi]</code> with <code>hi = n</code> (one past the end). While <code>lo &lt; hi</code>, if <code>nums[mid] &lt; target</code> move <code>lo = mid + 1</code>, else <code>hi = mid</code>. When they converge, <code>lo</code> is the first index whose value is ≥ target — exactly the found index or the correct insertion point.</p><p><strong>Time O(log n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Lower-bound binary search">
-              <text class="dgm-sub" x="20" y="24">nums[mid] < target → lo = mid + 1</text>
-              <text class="dgm-sub" x="20" y="52">else hi = mid</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">lo = first index with value ≥ target</text>
-            </svg>
-            <figcaption>Figure 1 — Converging on the first not-less-than position gives both found and insertion indices.</figcaption>
-          </figure>
+          <div class="viz" data-viz="search-insert-position"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

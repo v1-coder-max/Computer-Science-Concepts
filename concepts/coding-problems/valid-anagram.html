@@ -84,15 +84,7 @@
           </p>
           <p><strong>Time O(n), Space O(1)</strong> (fixed-size alphabet) — or O(k) with a dictionary for Unicode.</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Character count balancing to zero">
-              <text class="dgm-sub" x="20" y="22">+1 for each char of "rat", −1 for each of "car"</text>
-              <text class="dgm-sub" x="20" y="48">counts: r:0  a:0  t:+1  c:−1  → not all zero</text>
-              <rect class="dgm-box-accent" x="20" y="62" width="260" height="30" rx="6"/>
-              <text x="150" y="82" text-anchor="middle" fill="var(--c-warning)" style="font:600 13px var(--font-sans)">nonzero counts → not an anagram</text>
-            </svg>
-            <figcaption>Figure 1 — Increment for one string, decrement for the other; all zero ⇒ anagram.</figcaption>
-          </figure>
+          <div class="viz" data-viz="valid-anagram"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -172,5 +164,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

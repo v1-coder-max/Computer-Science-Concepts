@@ -80,14 +80,7 @@
             just call <code>BitOperations.PopCount</code>.)
           </p>
           <p><strong>Time O(set bits), Space O(1).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="n &= n-1 clears the lowest set bit">
-              <text class="dgm-sub" x="20" y="24">1011 & 1010 = 1010  (cleared lowest 1)</text>
-              <text class="dgm-sub" x="20" y="56">1010 & 1001 = 1000 · 1000 & 0111 = 0000</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">3 iterations → 3 set bits ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Each AND-with-n−1 removes one set bit, so the count equals the iterations.</figcaption>
-          </figure>
+          <div class="viz" data-viz="number-of-1-bits"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -159,5 +152,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

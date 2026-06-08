@@ -80,14 +80,7 @@
             halved number plus 1 if <code>i</code> is odd. Since <code>i &gt;&gt; 1 &lt; i</code>, it’s already computed.
           </p>
           <p><strong>Time O(n), Space O(n).</strong></p>
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Reuse the halved number plus the last bit">
-              <text class="dgm-sub" x="20" y="24">dp[i] = dp[i >> 1] + (i & 1)</text>
-              <text class="dgm-sub" x="20" y="56">dp[5] = dp[2] + 1 = 1 + 1 = 2</text>
-              <text class="dgm-sub" x="20" y="88" fill="var(--c-success)" style="font:600 13px var(--font-sans)">each value built from a smaller, solved one ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Halving removes the last bit; add it back to get the count in O(1) per number.</figcaption>
-          </figure>
+          <div class="viz" data-viz="counting-bits"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -155,5 +148,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

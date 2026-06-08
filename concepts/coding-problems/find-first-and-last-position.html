@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Do <strong>two binary searches</strong>. For the <strong>leftmost</strong> occurrence, when <code>nums[mid] == target</code> keep searching left (<code>hi = mid − 1</code>) while remembering the index. For the <strong>rightmost</strong>, on a match search right (<code>lo = mid + 1</code>). Each is a standard binary search with the equality case biased toward one side.</p><p><strong>Time O(log n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two boundary searches">
-              <text class="dgm-sub" x="20" y="24">left search: on match, go left, record index</text>
-              <text class="dgm-sub" x="20" y="52">right search: on match, go right, record index</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">target 8 in [5,7,7,8,8,10] → [3, 4]</text>
-            </svg>
-            <figcaption>Figure 1 — Biasing the equality case left then right finds both ends in two log-n searches.</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-first-and-last-position"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -167,5 +160,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

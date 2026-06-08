@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Map each symbol to its value. Scan left to right: if the current symbol’s value is <strong>less than the next</strong> symbol’s value, <strong>subtract</strong> it (it’s the small part of a subtractive pair like IV); otherwise <strong>add</strong> it. One pass, no special pair table.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Subtract when smaller than the right neighbor">
-              <text class="dgm-sub" x="20" y="24">value[i] < value[i+1] → subtract</text>
-              <text class="dgm-sub" x="20" y="52">else add</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">IV = -1 + 5 = 4 · IX = -1 + 10 = 9</text>
-            </svg>
-            <figcaption>Figure 1 — A symbol left of a larger one represents a subtraction.</figcaption>
-          </figure>
+          <div class="viz" data-viz="roman-to-integer"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -160,5 +153,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

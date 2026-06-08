@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Keep a <strong>write index</strong> <code>w</code>. Scan with a read index; whenever <code>nums[r] != val</code>, copy it to <code>nums[w]</code> and advance <code>w</code>. At the end, <code>w</code> is the count of kept elements. (If removals are rare, swapping the matched element with the last and shrinking avoids extra writes.)</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Slow write pointer keeps non-matches">
-              <text class="dgm-sub" x="20" y="24">w = write index; r scans the array</text>
-              <text class="dgm-sub" x="20" y="52">nums[r] != val → nums[w++] = nums[r]</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">return w = count of kept elements</text>
-            </svg>
-            <figcaption>Figure 1 — The write pointer compacts the elements you keep to the front.</figcaption>
-          </figure>
+          <div class="viz" data-viz="remove-element"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -154,5 +147,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

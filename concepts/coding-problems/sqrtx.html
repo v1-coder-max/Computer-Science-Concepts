@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>The answer lies in <code>[0, x]</code> and the predicate “<code>m² ≤ x</code>” is monotonic, so <strong>binary search</strong> for the largest such <code>m</code>. Compare <code>m·m</code> with <code>x</code> using <code>long</code> (or compare <code>m</code> with <code>x / m</code>) to avoid overflow. Keep the best valid <code>m</code> as you narrow the range. (Newton’s method converges even faster.)</p><p><strong>Time O(log x), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search the largest m with m² ≤ x">
-              <text class="dgm-sub" x="20" y="24">predicate m*m ≤ x is monotonic</text>
-              <text class="dgm-sub" x="20" y="52">use long to avoid m*m overflow</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">x=8 → 2 · x=16 → 4</text>
-            </svg>
-            <figcaption>Figure 1 — The square test flips once, so binary search finds the floor root.</figcaption>
-          </figure>
+          <div class="viz" data-viz="sqrtx"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -158,5 +151,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Maintain a <code>HashSet</code> of the values in the current window of size <code>k</code>. As you scan index <code>i</code>: if <code>nums[i]</code> is already in the set, a duplicate within <code>k</code> exists → true. Otherwise add it, and once the window exceeds <code>k</code>, <strong>remove the value that fell out</strong> (<code>nums[i − k]</code>). The set never holds more than <code>k</code> elements.</p><p><strong>Time O(n), Space O(k).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Bounded set window of size k">
-              <text class="dgm-sub" x="20" y="24">set holds the last k values</text>
-              <text class="dgm-sub" x="20" y="52">nums[i] in set → duplicate within k</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">evict nums[i-k] as the window slides</text>
-            </svg>
-            <figcaption>Figure 1 — Restricting the set to the last k values answers the distance constraint directly.</figcaption>
-          </figure>
+          <div class="viz" data-viz="contains-duplicate-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

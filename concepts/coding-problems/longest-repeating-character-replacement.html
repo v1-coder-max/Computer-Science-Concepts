@@ -87,17 +87,7 @@
           </p>
           <p><strong>Time O(n), Space O(1)</strong> (26-letter count array).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Window valid while replacements needed stay under k">
-              <text class="dgm-sub" x="20" y="22">k = 1 · window "AABA": maxFreq(A)=3, len=4</text>
-              <rect class="dgm-box-accent" x="20" y="36" width="44" height="28" rx="5"/><text class="dgm-sub" x="42" y="55" text-anchor="middle">A</text>
-              <rect class="dgm-box-accent" x="68" y="36" width="44" height="28" rx="5"/><text class="dgm-sub" x="90" y="55" text-anchor="middle">A</text>
-              <rect class="dgm-box" x="116" y="36" width="44" height="28" rx="5"/><text class="dgm-sub" x="138" y="55" text-anchor="middle">B</text>
-              <rect class="dgm-box-accent" x="164" y="36" width="44" height="28" rx="5"/><text class="dgm-sub" x="186" y="55" text-anchor="middle">A</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">need = 4 − 3 = 1 ≤ k → valid, length 4</text>
-            </svg>
-            <figcaption>Figure 1 — Replacements needed = window length minus its most frequent letter’s count; keep that ≤ k.</figcaption>
-          </figure>
+          <div class="viz" data-viz="longest-repeating-character-replacement"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -179,5 +169,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

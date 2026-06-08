@@ -429,6 +429,27 @@
       frames.push(frame(-1, null, `Values should be 0..${a.length}. XOR <b>n</b> with every index and value — each present number cancels its own index, leaving the gap.`, `xor = ${mx}`));
       for (var mnum = 0; mnum < a.length; mnum++) { mx ^= mnum ^ a[mnum]; frames.push(frame(mnum, null, `xor ^ ${mnum} ^ ${a[mnum]} = <b>${mx}</b>.`, `xor = ${mx}`)); }
       frames.push(frame(-1, null, `The missing number is <b>${mx}</b>.`, `xor = ${mx}`));
+    } else if (mode === "contains-duplicate-ii") {
+      var kk = cfg.k, win = {};
+      frames.push(frame(-1, null, `Is there a duplicate within <b>k = ${kk}</b> indices? Slide a window of the last ${kk} values as a set; a hit inside it wins.`, "window = { }"));
+      for (var ci = 0; ci < a.length; ci++) {
+        if (win[a[ci]] !== undefined && ci - win[a[ci]] <= kk) { var mm = {}; mm[ci] = { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", sw: 2.2, lab: "var(--c-warning)" }; mm[win[a[ci]]] = { fill: "var(--c-success-bg)", stroke: "var(--c-success)", sw: 2.2, lab: "var(--c-success)" }; frames.push(frame(ci, mm, `<b>${a[ci]}</b> seen at index ${win[a[ci]]}, distance ${ci - win[a[ci]]} ≤ ${kk} → <b>true</b>.`, `dup within ${kk}`)); return frames; }
+        win[a[ci]] = ci;
+        frames.push(frame(ci, null, `Record ${a[ci]} → index ${ci}. No prior copy within ${kk}.`, `last index of ${a[ci]} = ${ci}`));
+      }
+      frames.push(frame(-1, null, "No close duplicate found → false.", "no match"));
+    } else if (mode === "majority-2") {
+      var c1 = null, c2 = null, n1 = 0, n2 = 0;
+      frames.push(frame(-1, null, "Elements appearing &gt; n/3 times — at most two exist. Extended Boyer–Moore tracks <b>two</b> candidates and counts.", "c1=— c2=—"));
+      for (var mi = 0; mi < a.length; mi++) {
+        var v = a[mi];
+        if (c1 === v) { n1++; } else if (c2 === v) { n2++; } else if (n1 === 0) { c1 = v; n1 = 1; } else if (n2 === 0) { c2 = v; n2 = 1; } else { n1--; n2--; }
+        frames.push(frame(mi, null, `See <b>${v}</b> → ${c1 === v || c2 === v ? "matches a candidate (+1)" : (n1 === 1 && c1 === v) || (n2 === 1 && c2 === v) ? "adopted as a candidate" : "both counts decremented"}.`, `c1=${c1}(${n1}) c2=${c2}(${n2})`));
+      }
+      n1 = 0; n2 = 0; a.forEach(function (v) { if (v === c1) n1++; else if (v === c2) n2++; });
+      var thr = Math.floor(a.length / 3);
+      var win2 = [c1, c2].filter(function (c, i) { return (i === 0 ? n1 : n2) > thr; });
+      frames.push(frame(-1, null, `Verify counts in a 2nd pass: keep those &gt; ⌊n/3⌋ = ${thr}. Answer: <b>[${win2.join(", ")}]</b>.`, `c1=${n1} c2=${n2}`));
     }
     function mark(i, fill, stroke) { var m = {}; m[i] = { fill: fill, stroke: stroke, sw: 2.2, lab: stroke }; return m; }
     function panelMap(o) { var e = Object.keys(o).map(function (k) { return k + "→" + o[k]; }); return "seen = { " + e.join(", ") + " }"; }
@@ -482,6 +503,35 @@
         frames.push(frame(left, right, s2, `${a[left]} + ${a[right]} = <b>${sum}</b> — ${dir}.`, `sum = ${sum}, target = ${target}`));
         if (sum < target) left++; else right--;
       }
+    } else if (mode === "3sum") {
+      var arr = a.slice().sort(function (x, y) { return x - y; });
+      grid = valueCells(arr, { W: W, y: 44, h: 44 });
+      var found = [];
+      function frame3(i, l, r, style, caption, panel) {
+        var inner = grid.draw(function (k) {
+          if (style && style[k]) return style[k];
+          if (k === i) return { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", sw: 2.2, lab: "var(--c-warning)" };
+          if (l >= 0 && (k < l || k > r)) return { op: 0.3 };
+          return {};
+        }, true);
+        inner += ptrMark(grid, i, "i", "var(--c-warning)", false);
+        inner += ptrMark(grid, l, "L", "var(--accent)", true);
+        inner += ptrMark(grid, r, "R", "var(--accent)", true);
+        if (panel) inner += `<text x="${W / 2}" y="${H - 8}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`;
+        return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="3sum two pointers">${inner}</svg>`, caption: caption };
+      }
+      frames.push(frame3(-1, -1, -1, null, "Sort first, then fix index <b>i</b> and two-pointer the rest for a pair summing to −nums[i]. Skipping duplicates keeps triplets unique.", "triplets: 0"));
+      for (var i = 0; i < arr.length - 2; i++) {
+        if (i > 0 && arr[i] === arr[i - 1]) continue;
+        var l = i + 1, r = arr.length - 1;
+        while (l < r) {
+          var sum3 = arr[i] + arr[l] + arr[r];
+          if (sum3 === 0) { found.push([arr[i], arr[l], arr[r]]); var st3 = {}; st3[i] = hl("var(--c-success)"); st3[l] = hl("var(--c-success)"); st3[r] = hl("var(--c-success)"); frames.push(frame3(i, l, r, st3, `${arr[i]} + ${arr[l]} + ${arr[r]} = 0 ✓ → triplet <b>[${arr[i]}, ${arr[l]}, ${arr[r]}]</b>.`, `triplets: ${found.length}`)); l++; r--; while (l < r && arr[l] === arr[l - 1]) l++; while (l < r && arr[r] === arr[r + 1]) r--; }
+          else if (sum3 < 0) { frames.push(frame3(i, l, r, null, `sum ${sum3} &lt; 0 → too small, move L right.`, `triplets: ${found.length}`)); l++; }
+          else { frames.push(frame3(i, l, r, null, `sum ${sum3} &gt; 0 → too big, move R left.`, `triplets: ${found.length}`)); r--; }
+        }
+      }
+      frames.push(frame3(-1, -1, -1, null, `Found <b>${found.length}</b> unique triplet(s): ${found.map(function (t) { return "[" + t.join(",") + "]"; }).join("   ")}.`, `triplets: ${found.length}`));
     }
     function hl(c) { return { fill: c === "var(--c-success)" ? "var(--c-success-bg)" : c === "var(--c-warning)" ? "var(--c-warning-bg)" : "var(--brand-soft)", stroke: c, sw: 2.2, lab: c }; }
     return frames;
@@ -491,9 +541,10 @@
      RENDERER — sliding window (Longest Substring Without Repeating)
      ============================================================ */
   function slidingWindow(cfg) {
-    var a = cfg.data, W = 600, H = 156;
-    var grid = valueCells(a, { W: W, y: 46, h: 44 });
-    function frame(left, right, inSet, best, caption, status) {
+    var a = cfg.data, mode = cfg.mode || "longest-unique", W = 600, H = 160;
+    var vals = (typeof a === "string") ? a.split("") : a;
+    var grid = valueCells(vals, { W: W, y: 46, h: 44 });
+    function frame(left, right, caption, panel) {
       var inner = grid.draw(function (i) {
         if (i >= left && i <= right) {
           if (i === right) return { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" };
@@ -503,22 +554,49 @@
       }, true);
       inner += ptrMark(grid, left, "L", "var(--accent)", true);
       inner += ptrMark(grid, right, "R", "var(--accent)", true);
-      inner += `<text x="${W / 2}" y="${H - 8}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">window = "${a.slice(left, right + 1).join("")}" · longest = ${best}</text>`;
+      if (panel) inner += `<text x="${W / 2}" y="${H - 8}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`;
       return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="sliding window">${inner}</svg>`, caption: caption };
     }
-    var frames = [], left = 0, best = 0, set = {};
-    frames.push(frame(0, -1, set, 0, "Grow a window on the right; if a character repeats, shrink from the left until it's unique again. Track the longest window."));
-    for (var right = 0; right < a.length; right++) {
-      while (set[a[right]]) {
-        delete set[a[left]];
-        frames.push(frame(left + 1, right, set, best, `'<b>${a[right]}</b>' is already in the window → drop '<b>${a[left]}</b>' from the left to remove the repeat.`));
-        left++;
+    var frames = [], left = 0, best = 0;
+    if (mode === "longest-unique") {
+      var set = {};
+      frames.push(frame(0, -1, "Grow a window on the right; if a character repeats, shrink from the left until it's unique again. Track the longest window.", "longest = 0"));
+      for (var right = 0; right < vals.length; right++) {
+        while (set[vals[right]]) { delete set[vals[left]]; frames.push(frame(left + 1, right, `'<b>${vals[right]}</b>' is already in the window → drop '<b>${vals[left]}</b>' from the left.`, `window = "${vals.slice(left + 1, right + 1).join("")}" · longest = ${best}`)); left++; }
+        set[vals[right]] = true; best = Math.max(best, right - left + 1);
+        frames.push(frame(left, right, `Add '<b>${vals[right]}</b>'. Window is unique, length <b>${right - left + 1}</b> — longest so far ${best}.`, `window = "${vals.slice(left, right + 1).join("")}" · longest = ${best}`));
       }
-      set[a[right]] = true;
-      best = Math.max(best, right - left + 1);
-      frames.push(frame(left, right, set, best, `Add '<b>${a[right]}</b>'. Window is now unique, length <b>${right - left + 1}</b> — longest so far is <b>${best}</b>.`));
+      frames.push(frame(left, vals.length - 1, `Longest substring without repeats has length <b>${best}</b>.`, `longest = ${best}`));
+    } else if (mode === "min-subarray-sum") {
+      var target = cfg.target, sum = 0; best = Infinity;
+      frames.push(frame(0, -1, `Find the shortest subarray summing to ≥ <b>${target}</b>. Expand right to grow the sum; once it's big enough, shrink from the left to minimise length.`, "sum = 0 · best = ∞"));
+      for (var r2 = 0; r2 < vals.length; r2++) {
+        sum += vals[r2];
+        frames.push(frame(left, r2, `Add ${vals[r2]} → sum = <b>${sum}</b>.`, `sum = ${sum} · best = ${best === Infinity ? "∞" : best}`));
+        while (sum >= target) { best = Math.min(best, r2 - left + 1); frames.push(frame(left, r2, `sum ${sum} ≥ ${target} → window length ${r2 - left + 1}; record best = <b>${best}</b>, then drop ${vals[left]} from the left.`, `sum = ${sum} · best = ${best}`)); sum -= vals[left]; left++; }
+      }
+      frames.push(frame(-1, -1, best === Infinity ? `No subarray reaches ${target} → return 0.` : `Shortest length = <b>${best}</b>.`, best === Infinity ? "best = 0" : `best = ${best}`));
+    } else if (mode === "longest-repeat") {
+      var k = cfg.k, count = {}, maxC = 0;
+      frames.push(frame(0, -1, `Longest substring of one repeated letter after ≤ <b>${k}</b> replacements. A window is valid when (length − count of its most frequent letter) ≤ ${k}.`, "best = 0"));
+      for (var r3 = 0; r3 < vals.length; r3++) {
+        count[vals[r3]] = (count[vals[r3]] || 0) + 1; maxC = Math.max(maxC, count[vals[r3]]);
+        while ((r3 - left + 1) - maxC > k) { count[vals[left]]--; left++; }
+        best = Math.max(best, r3 - left + 1);
+        frames.push(frame(left, r3, `Add '${vals[r3]}'. Window "${vals.slice(left, r3 + 1).join("")}" needs ${(r3 - left + 1) - maxC} replacement(s) (≤ ${k}) → length ${r3 - left + 1}, best <b>${best}</b>.`, `maxFreq = ${maxC} · best = ${best}`));
+      }
+      frames.push(frame(left, vals.length - 1, `Longest achievable run = <b>${best}</b>.`, `best = ${best}`));
+    } else { // max-ones (≤ k zeros)
+      var kz = cfg.k, zeros = 0;
+      frames.push(frame(0, -1, `Longest run of 1s if you may flip ≤ <b>${kz}</b> zeros. Keep a window with at most ${kz} zeros; when it has too many, shrink from the left.`, "zeros = 0 · best = 0"));
+      for (var r4 = 0; r4 < vals.length; r4++) {
+        if (vals[r4] === 0) zeros++;
+        while (zeros > kz) { if (vals[left] === 0) zeros--; left++; }
+        best = Math.max(best, r4 - left + 1);
+        frames.push(frame(left, r4, `Include index ${r4} (${vals[r4]}). Window has ${zeros} zero(s) ≤ ${kz} → length ${r4 - left + 1}, best <b>${best}</b>.`, `zeros = ${zeros} · best = ${best}`));
+      }
+      frames.push(frame(left, vals.length - 1, `Longest window of 1s with ≤ ${kz} flips = <b>${best}</b>.`, `best = ${best}`));
     }
-    frames.push(frame(left, a.length - 1, set, best, `The longest substring without repeating characters has length <b>${best}</b>.`));
     return frames;
   }
 
@@ -776,6 +854,21 @@
       push("Max path sum: post-order. Each node returns its best single-branch gain (clamped ≥ 0); the path bending here = node + leftGain + rightGain updates the global best.");
       (function gain(n) { if (!n) return 0; var lg = Math.max(0, gain(n.left)), rg = Math.max(0, gain(n.right)); active = n; best = Math.max(best, n.val + lg + rg); push(`At <b>${n.val}</b>: left gain ${lg}, right gain ${rg} → bend = ${n.val}+${lg}+${rg} = ${n.val + lg + rg}. Best: ${best}.`); visited.push(n); active = null; return n.val + Math.max(lg, rg); })(root);
       active = null; push(`Maximum path sum = <b>${best}</b>.`);
+    } else if (mode === "flatten") {
+      push("Flatten to a 'linked list' in <b>preorder</b> (root, left, right) where each node's right pointer goes to the next. The visit order below <i>is</i> the final list.");
+      var seq = [];
+      (function pre(n) { if (!n) return; active = n; seq.push(n.val); push(`Preorder visit <b>${n.val}</b> → next in the flattened list. So far: ${seq.join(" → ")}.`); visited.push(n); active = null; pre(n.left); pre(n.right); })(root);
+      active = null; push(`Flattened: <b>${seq.join(" → ")}</b> — left pointers nulled, right pointers chained.`);
+    } else if (mode === "lca-general") {
+      var pp = cfg.p, qq = cfg.q, ans = null;
+      push(`Lowest common ancestor of <b>${pp}</b> and <b>${qq}</b> in a plain binary tree. Post-order: a node with one target in each subtree (or itself a target with the other below) is the LCA.`);
+      (function dfs(n) { if (!n) return null; active = n; var self = (n.val === pp || n.val === qq); push(`At <b>${n.val}</b>${self ? " — a target!" : ""}.`); visited.push(n); active = null; var l = dfs(n.left), r = dfs(n.right); var found = (l ? 1 : 0) + (r ? 1 : 0) + (self ? 1 : 0); if (found >= 2 && ans === null) { ans = n.val; special[n.val] = "visited"; push(`<b>${n.val}</b> sees ${pp} and ${qq} on different sides → it's the <b>LCA</b>.`); } return (self || l || r) ? n : null; })(root);
+      active = null; push(`LCA(${pp}, ${qq}) = <b>${ans}</b>.`);
+    } else if (mode === "path-sum-ii") {
+      var target2 = cfg.target, foundPaths = [];
+      push(`Find <b>all</b> root-to-leaf paths summing to <b>${target2}</b>. DFS while subtracting each value; a leaf that hits exactly 0 is a winning path.`);
+      (function dfs(n, rem, path) { if (!n) return; active = n; rem -= n.val; var p2 = path.concat(n.val); var leaf = !n.left && !n.right; push(`At <b>${n.val}</b>, remaining ${rem}. Path: ${p2.join("→")}.${leaf ? (rem === 0 ? " Leaf with 0 left — match!" : " Leaf but ≠ 0.") : ""}`); if (leaf && rem === 0) { foundPaths.push(p2.slice()); p2.forEach(function (v) { special[v] = "visited"; }); push(`Recorded <b>[${p2.join(",")}]</b>. Found: ${foundPaths.length}.`); p2.forEach(function (v) { special[v] = null; }); } else { visited.push(n); } active = null; dfs(n.left, rem, p2); dfs(n.right, rem, p2); })(root, target2, []);
+      active = null; push(foundPaths.length ? `Paths summing to ${target2}: ${foundPaths.map(function (p) { return "[" + p.join(",") + "]"; }).join("   ")}.` : `No path sums to ${target2}.`);
     }
     return frames;
   }
@@ -1003,6 +1096,16 @@
       frames.push(draw(dp.slice(), 0, null, `Fewest coins for each amount 0..${amount}. dp[a] = 1 + min over coins of dp[a−coin]. dp[0]=0.`));
       for (var amt = 1; amt <= amount; amt++) { var best = INF, from = []; coins.forEach(function (c) { if (c <= amt && dp[amt - c] != null && dp[amt - c] + 1 < best) { best = dp[amt - c] + 1; from = [amt - c]; } }); dp[amt] = best >= INF ? null : best; frames.push(draw(dp.slice(), amt, from, dp[amt] == null ? `Amount ${amt}: no coin combination yet.` : `dp[${amt}] = 1 + min(dp[${amt}−coin]) = <b>${dp[amt]}</b> coins.`)); }
       frames.push(draw(dp.slice(), -1, null, dp[amount] == null ? `Amount ${amount} is unreachable → <b>-1</b>.` : `Fewest coins for ${amount} = <b>${dp[amount]}</b>.`));
+    } else if (mode === "lis") {
+      frames.push(draw(dp, -1, null, "Longest increasing subsequence <i>ending at</i> each index: dp[i] = 1 + the best dp[j] among earlier j with nums[j] &lt; nums[i]."));
+      var bestAll = 0;
+      for (var li = 0; li < n; li++) {
+        dp[li] = 1; var from2 = [];
+        for (var lj = 0; lj < li; lj++) { if (a[lj] < a[li] && dp[lj] + 1 > dp[li]) { dp[li] = dp[lj] + 1; from2 = [lj]; } }
+        bestAll = Math.max(bestAll, dp[li]);
+        frames.push(draw(dp.slice(), li, from2, from2.length ? `nums[${li}]=${a[li]}: extend the best smaller-ending run (index ${from2[0]}, dp ${dp[from2[0]]}) → dp[${li}] = <b>${dp[li]}</b>. Best ${bestAll}.` : `nums[${li}]=${a[li]}: nothing smaller precedes it → dp[${li}] = <b>1</b>.`));
+      }
+      frames.push(draw(dp.slice(), -1, null, `Longest increasing subsequence = <b>${bestAll}</b> (the max over all dp[i]).`));
     }
     return frames;
   }
@@ -1801,6 +1904,535 @@
     return frames;
   }
 
+  /* ============================================================
+     RENDERER — binary search variants + search-on-answer
+     ============================================================ */
+  function bsearchAnswer(cfg) {
+    var mode = cfg.mode, W = 600, H = 150, padL = 44, padR = 44, axisY = 84;
+    var lo, hi, feasible, intro, smallest;
+    if (mode === "koko") {
+      var piles = cfg.piles, hh = cfg.h; lo = 1; hi = Math.max.apply(null, piles); smallest = true;
+      feasible = function (k) { var t = 0; for (var i = 0; i < piles.length; i++) t += Math.ceil(piles[i] / k); return { ok: t <= hh, detail: "needs " + t + "h " + (t <= hh ? "≤ " + hh : "&gt; " + hh) }; };
+      intro = `Binary-search the <b>eating speed</b> itself, not an array. Speeds 1..${hi}; the total hours must stay ≤ ${hh}. Find the smallest speed that works.`;
+    } else {
+      var x = cfg.x; lo = 0; hi = x; smallest = false;
+      feasible = function (m) { return { ok: m * m <= x, detail: m + "² = " + (m * m) + (m * m <= x ? " ≤ " + x : " &gt; " + x) }; };
+      intro = `⌊√${x}⌋ by binary search on the answer space 0..${x}: the largest m with m² ≤ ${x}.`;
+    }
+    var lo0 = lo, hi0 = hi;
+    function X(v) { return padL + (v - lo0) / ((hi0 - lo0) || 1) * (W - padL - padR); }
+    function frame(lo, hi, mid, res, cap) {
+      var s = line(padL, axisY, W - padR, axisY, { stroke: "var(--border)", sw: 1.5 });
+      s += text(padL, axisY + 20, lo0, { size: 11, fill: "var(--text-faint)" });
+      s += text(W - padR, axisY + 20, hi0, { size: 11, anchor: "end", fill: "var(--text-faint)" });
+      s += rect(X(lo), axisY - 10, Math.max(X(hi) - X(lo), 2), 20, { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 1, r: 4, op: 0.45 });
+      s += `<text x="${X(lo)}" y="${axisY - 14}" text-anchor="middle" fill="var(--text-muted)" style="font:700 11px var(--font-sans)">lo=${lo}</text>`;
+      s += `<text x="${X(hi)}" y="${axisY - 14}" text-anchor="middle" fill="var(--text-muted)" style="font:700 11px var(--font-sans)">hi=${hi}</text>`;
+      if (mid != null) { var col = res ? (res.ok ? "var(--c-success)" : "var(--c-warning)") : "var(--accent)"; s += line(X(mid), axisY - 26, X(mid), axisY + 26, { stroke: col, sw: 2, dash: "3 3" }); s += `<text x="${X(mid)}" y="${axisY + 40}" text-anchor="middle" fill="${col}" style="font:700 12px var(--font-sans)">mid=${mid}</text>`; }
+      return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="binary search on answer">${s}</svg>`, caption: cap };
+    }
+    var frames = [frame(lo, hi, null, null, intro)], guard = 0;
+    if (smallest) {
+      while (lo < hi && guard++ < 40) { var mid = lo + ((hi - lo) >> 1), r = feasible(mid); if (r.ok) { frames.push(frame(lo, hi, mid, r, `Speed ${mid}: ${r.detail} → feasible, try <b>slower</b>: hi=${mid}.`)); hi = mid; } else { frames.push(frame(lo, hi, mid, r, `Speed ${mid}: ${r.detail} → too slow, go <b>faster</b>: lo=${mid + 1}.`)); lo = mid + 1; } }
+      frames.push(frame(lo, hi, null, null, `lo == hi → smallest workable speed is <b>${lo}</b>.`));
+    } else {
+      while (lo < hi && guard++ < 40) { var mid2 = lo + ((hi - lo + 1) >> 1), r2 = feasible(mid2); if (r2.ok) { frames.push(frame(lo, hi, mid2, r2, `${r2.detail} → fits, try <b>bigger</b>: lo=${mid2}.`)); lo = mid2; } else { frames.push(frame(lo, hi, mid2, r2, `${r2.detail} → too big, go <b>smaller</b>: hi=${mid2 - 1}.`)); hi = mid2 - 1; } }
+      frames.push(frame(lo, hi, null, null, `Converged → ⌊√${cfg.x}⌋ = <b>${lo}</b>.`));
+    }
+    return frames;
+  }
+  function bsearch(cfg) {
+    var mode = cfg.mode, W = 600, H = 162;
+    if (mode === "koko" || mode === "sqrtx") return bsearchAnswer(cfg);
+    var a = mode === "search-2d" ? [].concat.apply([], cfg.grid) : cfg.data;
+    var target = cfg.target, n = a.length;
+    var grid = valueCells(a, { W: W, y: 56, h: 44, maxCw: 52 });
+    function frame(lo, hi, mid, found, extra, cap) {
+      var inner = grid.draw(function (i) {
+        if (found === i) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", sw: 2.2, lab: "var(--c-success)" };
+        if (i === mid) return { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" };
+        if (extra && extra[i]) return extra[i];
+        if (i < lo || i > hi) return { op: 0.3 };
+        return {};
+      }, true);
+      inner += ptrMark(grid, lo, "lo", "var(--text-muted)", true);
+      inner += ptrMark(grid, hi, "hi", "var(--text-muted)", true);
+      if (mid >= 0 && found < 0) inner += ptrMark(grid, mid, "mid", "var(--accent)", false);
+      if (target != null) inner += `<text x="${W / 2}" y="22" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-sans)">target = ${target}</text>`;
+      return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="binary search">${inner}</svg>`, caption: cap };
+    }
+    function half(from, to, col) { var m = {}; for (var i = from; i <= to; i++) m[i] = { fill: "var(--c-info-bg)", stroke: col || "var(--accent)" }; return m; }
+    var frames = [], lo = 0, hi = n - 1, guard = 0;
+    if (mode === "rotated") {
+      frames.push(frame(lo, hi, -1, -1, null, `Rotated sorted array — find <b>${target}</b>. At each midpoint, one half is still sorted; decide whether the target lies inside it.`));
+      while (lo <= hi && guard++ < 40) {
+        var mid = lo + ((hi - lo) >> 1);
+        if (a[mid] === target) { frames.push(frame(lo, hi, mid, -1, null, `a[${mid}] = ${target} → <b>found</b> at index ${mid}.`)); frames.push(frame(lo, hi, -1, mid, null, `Return <b>${mid}</b>. Still O(log n) despite the rotation.`)); return frames; }
+        if (a[lo] <= a[mid]) {
+          if (a[lo] <= target && target < a[mid]) { frames.push(frame(lo, hi, mid, -1, half(lo, mid), `Left half [${a[lo]}..${a[mid]}] is sorted and holds ${target} → search left: hi=${mid - 1}.`)); hi = mid - 1; }
+          else { frames.push(frame(lo, hi, mid, -1, half(lo, mid), `Left half is sorted but ${target} isn't in it → search right: lo=${mid + 1}.`)); lo = mid + 1; }
+        } else {
+          if (a[mid] < target && target <= a[hi]) { frames.push(frame(lo, hi, mid, -1, half(mid, hi), `Right half [${a[mid]}..${a[hi]}] is sorted and holds ${target} → search right: lo=${mid + 1}.`)); lo = mid + 1; }
+          else { frames.push(frame(lo, hi, mid, -1, half(mid, hi), `Right half is sorted but ${target} isn't in it → search left: hi=${mid - 1}.`)); hi = mid - 1; }
+        }
+      }
+      frames.push(frame(0, -1, -1, -1, null, `Window empty → ${target} isn't present, return -1.`));
+    } else if (mode === "find-min") {
+      frames.push(frame(lo, hi, -1, -1, null, "Find the minimum of a rotated sorted array. Compare the midpoint to the <b>right end</b> to learn which side holds the dip."));
+      while (lo < hi && guard++ < 40) { var mm = lo + ((hi - lo) >> 1); if (a[mm] > a[hi]) { frames.push(frame(lo, hi, mm, -1, null, `a[mid]=${a[mm]} &gt; a[hi]=${a[hi]} → the min is to the <b>right</b>: lo=${mm + 1}.`)); lo = mm + 1; } else { frames.push(frame(lo, hi, mm, -1, null, `a[mid]=${a[mm]} ≤ a[hi]=${a[hi]} → the min is mid or <b>left</b>: hi=${mm}.`)); hi = mm; } }
+      frames.push(frame(lo, hi, -1, lo, null, `lo == hi at index ${lo} → minimum is <b>${a[lo]}</b>.`));
+    } else if (mode === "search-insert") {
+      frames.push(frame(lo, hi, -1, -1, null, `Find ${target}, or the index where it should be inserted to keep order.`));
+      while (lo <= hi && guard++ < 40) { var m3 = lo + ((hi - lo) >> 1); if (a[m3] === target) { frames.push(frame(lo, hi, -1, m3, null, `Found ${target} at index ${m3}.`)); return frames; } if (a[m3] < target) { frames.push(frame(lo, hi, m3, -1, null, `a[mid]=${a[m3]} &lt; ${target} → go right: lo=${m3 + 1}.`)); lo = m3 + 1; } else { frames.push(frame(lo, hi, m3, -1, null, `a[mid]=${a[m3]} &gt; ${target} → go left: hi=${m3 - 1}.`)); hi = m3 - 1; } }
+      var ins = {}; if (lo < n) ins[lo] = { fill: "var(--c-success-bg)", stroke: "var(--c-success)", sw: 2.2, lab: "var(--c-success)" };
+      frames.push(frame(-1, -1, -1, -1, ins, `Not found — lo stopped at index <b>${lo}</b>, so ${target} inserts there.`));
+    } else if (mode === "find-peak") {
+      frames.push(frame(lo, hi, -1, -1, null, "Find any peak (bigger than both neighbours). Walk uphill: compare mid to mid+1 and move toward the higher side."));
+      while (lo < hi && guard++ < 40) { var m4 = lo + ((hi - lo) >> 1); if (a[m4] < a[m4 + 1]) { frames.push(frame(lo, hi, m4, -1, null, `a[mid]=${a[m4]} &lt; a[mid+1]=${a[m4 + 1]} → a peak is to the <b>right</b>: lo=${m4 + 1}.`)); lo = m4 + 1; } else { frames.push(frame(lo, hi, m4, -1, null, `a[mid]=${a[m4]} ≥ a[mid+1]=${a[m4 + 1]} → a peak is mid or <b>left</b>: hi=${m4}.`)); hi = m4; } }
+      frames.push(frame(lo, hi, -1, lo, null, `Converged at index ${lo} → peak value <b>${a[lo]}</b>.`));
+    } else if (mode === "search-2d") {
+      var cols = cfg.grid[0].length;
+      frames.push(frame(lo, hi, -1, -1, null, `Read row by row, the matrix is one sorted list. Binary-search it for <b>${target}</b>, mapping index → (row, col).`));
+      while (lo <= hi && guard++ < 40) { var m5 = lo + ((hi - lo) >> 1), rc = `(r${Math.floor(m5 / cols)},c${m5 % cols})`; if (a[m5] === target) { frames.push(frame(lo, hi, -1, m5, null, `a[${m5}] ${rc} = ${target} → <b>found</b>.`)); return frames; } if (a[m5] < target) { frames.push(frame(lo, hi, m5, -1, null, `${a[m5]} at ${rc} &lt; ${target} → right: lo=${m5 + 1}.`)); lo = m5 + 1; } else { frames.push(frame(lo, hi, m5, -1, null, `${a[m5]} at ${rc} &gt; ${target} → left: hi=${m5 - 1}.`)); hi = m5 - 1; } }
+      frames.push(frame(0, -1, -1, -1, null, `Not in the matrix → false.`));
+    } else if (mode === "first-last") {
+      frames.push(frame(0, n - 1, -1, -1, null, `Find the first and last index of <b>${target}</b> using two biased binary searches.`));
+      var left = -1; lo = 0; hi = n - 1;
+      while (lo <= hi && guard++ < 60) { var ml = lo + ((hi - lo) >> 1); var goLeft = a[ml] >= target; if (a[ml] === target) left = ml; frames.push(frame(0, n - 1, ml, -1, range(left, left), `Left edge: a[${ml}]=${a[ml]} ${goLeft ? "≥" : "&lt;"} ${target} → go ${goLeft ? "left" : "right"}. best-left=${left}.`)); if (goLeft) hi = ml - 1; else lo = ml + 1; }
+      var right = -1; lo = 0; hi = n - 1;
+      while (lo <= hi && guard++ < 120) { var mr = lo + ((hi - lo) >> 1); var goRight = a[mr] <= target; if (a[mr] === target) right = mr; frames.push(frame(0, n - 1, mr, -1, range(left, right), `Right edge: a[${mr}]=${a[mr]} ${goRight ? "≤" : "&gt;"} ${target} → go ${goRight ? "right" : "left"}. best-right=${right}.`)); if (goRight) lo = mr + 1; else hi = mr - 1; }
+      frames.push(frame(0, n - 1, -1, -1, range(left, right), `Range of ${target} = <b>[${left}, ${right}]</b>.`));
+    }
+    function range(l, r) { var m = {}; if (l >= 0 && r >= l) for (var i = l; i <= r; i++) m[i] = { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; return m; }
+    return frames;
+  }
+
+  /* ============================================================
+     RENDERER — matrix (spiral traversal, rotate 90°, set zeroes)
+     ============================================================ */
+  function matrixViz(cfg) {
+    var mode = cfg.mode, W = 600;
+    var g0 = cfg.data, R = g0.length, C = g0[0].length;
+    var cell = Math.min(48, (W - 60) / C), gap = 5, sx = (W - (C * cell + (C - 1) * gap)) / 2, sy = 28;
+    var H = sy + R * (cell + gap) + 30;
+    function cx(c) { return sx + c * (cell + gap); }
+    function cy(r) { return sy + r * (cell + gap); }
+    function draw(g, state, note) {
+      var s = "";
+      for (var r = 0; r < R; r++) for (var c = 0; c < C; c++) {
+        var st = state(r, c) || {};
+        s += rect(cx(c), cy(r), cell, cell, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: st.sw || 1.2, r: 5 });
+        var v = st.v != null ? st.v : g[r][c];
+        s += `<text x="${cx(c) + cell / 2}" y="${cy(r) + cell / 2 + 5}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 14px var(--font-sans)">${v}</text>`;
+      }
+      if (note) s += `<text x="${W / 2}" y="${sy + R * (cell + gap) + 16}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${note}</text>`;
+      return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="matrix">${s}</svg>`, caption: note ? arguments[2] && false : null };
+    }
+    function snap(g, state, caption, note) { var f = draw(g, state, note); f.caption = caption; return f; }
+    var frames = [];
+
+    if (mode === "spiral") {
+      var order = [], top = 0, bot = R - 1, left = 0, right = C - 1;
+      while (top <= bot && left <= right) {
+        for (var c = left; c <= right; c++) order.push([top, c]); top++;
+        for (var r = top; r <= bot; r++) order.push([r, right]); right--;
+        if (top <= bot) { for (var c2 = right; c2 >= left; c2--) order.push([bot, c2]); bot--; }
+        if (left <= right) { for (var r2 = bot; r2 >= top; r2--) order.push([r2, left]); left++; }
+      }
+      var seen = {}, out = [];
+      frames.push(snap(g0, function () { return {}; }, "Spiral traversal: peel the matrix like an onion — top row →, right col ↓, bottom row ←, left col ↑ — shrinking the borders each loop.", "output = [ ]"));
+      for (var i = 0; i < order.length; i++) {
+        var p = order[i]; seen[p[0] + "," + p[1]] = true; out.push(g0[p[0]][p[1]]);
+        frames.push(snap(g0, function (rr, cc) { if (rr === p[0] && cc === p[1]) return { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.4, lab: "var(--accent)" }; if (seen[rr + "," + cc]) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; return {}; }, `Visit (${p[0]},${p[1]}) = <b>${g0[p[0]][p[1]]}</b>.`, "output = [" + out.join(", ") + "]"));
+      }
+      frames.push(snap(g0, function (rr, cc) { return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; }, `Full spiral: [${out.join(", ")}].`, "done"));
+      return frames;
+    }
+
+    if (mode === "rotate") {
+      var g = g0.map(function (row) { return row.slice(); });
+      frames.push(snap(g, function () { return {}; }, "Rotate 90° clockwise in place with a two-step trick: <b>transpose</b> (mirror over the main diagonal), then <b>reverse each row</b>.", "original"));
+      for (var i = 0; i < R; i++) for (var j = i + 1; j < C; j++) {
+        var t = g[i][j]; g[i][j] = g[j][i]; g[j][i] = t;
+        (function (ii, jj, snapG) { frames.push(snap(snapG, function (rr, cc) { if ((rr === ii && cc === jj) || (rr === jj && cc === ii)) return { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.4, lab: "var(--accent)" }; return {}; }, `Transpose: swap (${ii},${jj}) ↔ (${jj},${ii}).`, "transposing…")); })(i, j, g.map(function (row) { return row.slice(); }));
+      }
+      frames.push(snap(g.map(function (row) { return row.slice(); }), function () { return {}; }, "Transposed (rows and columns swapped). Now reverse each row left-to-right.", "transposed"));
+      for (var r3 = 0; r3 < R; r3++) {
+        g[r3].reverse();
+        (function (rr, snapG) { frames.push(snap(snapG, function (a, b) { if (a === rr) return { fill: "var(--c-info-bg)", stroke: "var(--accent)" }; return {}; }, `Reverse row ${rr}.`, "reversing rows…")); })(r3, g.map(function (row) { return row.slice(); }));
+      }
+      frames.push(snap(g.map(function (row) { return row.slice(); }), function () { return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; }, "Done — the matrix is rotated 90° clockwise.", "rotated"));
+      return frames;
+    }
+
+    // set-zeroes
+    var g2 = g0.map(function (row) { return row.slice(); });
+    var zeroRows = {}, zeroCols = {};
+    frames.push(snap(g2, function () { return {}; }, "Set entire row and column to 0 wherever a 0 appears — but record which rows/cols first, otherwise the new zeroes cascade.", "scan for zeroes"));
+    for (var r = 0; r < R; r++) for (var c4 = 0; c4 < C; c4++) {
+      if (g2[r][c4] === 0) {
+        zeroRows[r] = true; zeroCols[c4] = true;
+        (function (rr, cc) { frames.push(snap(g2, function (a, b) { if (a === rr && b === cc) return { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", sw: 2.4, lab: "var(--c-warning)" }; return {}; }, `Zero found at (${rr},${cc}) → mark row ${rr} and column ${cc}.`, "marked rows " + Object.keys(zeroRows).join(",") + " · cols " + Object.keys(zeroCols).join(","))); })(r, c4);
+      }
+    }
+    frames.push(snap(g2, function (a, b) { return (zeroRows[a] || zeroCols[b]) ? { fill: "var(--c-info-bg)", stroke: "var(--accent)" } : {}; }, "These are all the cells that will be zeroed (marked rows ∪ columns).", "applying…"));
+    for (var r5 = 0; r5 < R; r5++) for (var c5 = 0; c5 < C; c5++) if (zeroRows[r5] || zeroCols[c5]) g2[r5][c5] = 0;
+    frames.push(snap(g2, function (a, b) { return (zeroRows[a] || zeroCols[b]) ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" } : {}; }, "Marked rows and columns set to 0 — done.", "complete"));
+    return frames;
+  }
+
+  /* ============================================================
+     RENDERER — string operations (anagram, group-anagrams,
+     longest-consecutive, common-prefix, roman, substring search)
+     ============================================================ */
+  function stringOps(cfg) {
+    var mode = cfg.mode, W = 600;
+    function chars(str, y, opts) {
+      opts = opts || {}; var n = str.length, cw = Math.min(opts.cw || 38, (W - 60) / Math.max(n, 1)), gap = opts.gap || 5;
+      var total = cw * n + gap * (n - 1), sx = opts.sx != null ? opts.sx : (W - total) / 2;
+      return { n: n, cw: cw, y: y, sx: sx, x: function (i) { return sx + i * (cw + gap); }, cx: function (i) { return sx + i * (cw + gap) + cw / 2; } };
+    }
+    function box(row, i, ch, st, h) { st = st || {}; h = h || 34; return rect(row.x(i), row.y, row.cw, h, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: st.sw || 1.3, r: 6, op: st.op != null ? st.op : 1 }) + `<text x="${row.cx(i)}" y="${row.y + h / 2 + 5}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 14px var(--font-sans)">${ch}</text>`; }
+    var frames = [];
+
+    if (mode === "valid-anagram") {
+      var s = cfg.s, t = cfg.t, W2 = W, H = 200;
+      var rs = chars(s, 36), rt = chars(t, 100);
+      function panel(cnt) { var k = Object.keys(cnt).filter(function (x) { return cnt[x] !== 0; }); return "counts = {" + (k.length ? k.map(function (x) { return x + ":" + cnt[x]; }).join(", ") : "all 0") + "}"; }
+      function fr(si, ti, cnt, cap, bad) {
+        var inner = `<text x="20" y="${rs.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">s</text>`;
+        for (var i = 0; i < s.length; i++) inner += box(rs, i, s[i], i === si ? { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" } : i < si || si < 0 ? { op: 0.5 } : {});
+        inner += `<text x="20" y="${rt.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">t</text>`;
+        for (var j = 0; j < t.length; j++) inner += box(rt, j, t[j], j === ti ? { fill: bad ? "var(--c-warning-bg)" : "var(--c-info-bg)", stroke: bad ? "var(--c-warning)" : "var(--accent)", sw: 2.2, lab: bad ? "var(--c-warning)" : "var(--accent)" } : j < ti ? { op: 0.5 } : {});
+        inner += `<text x="${W2 / 2}" y="${H - 10}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel(cnt)}</text>`;
+        return { svg: `<svg viewBox="0 0 ${W2} ${H}" role="img" aria-label="anagram">${inner}</svg>`, caption: cap };
+      }
+      if (s.length !== t.length) { frames.push(fr(-1, -1, {}, "Different lengths → can't be anagrams.")); return frames; }
+      var cnt = {};
+      frames.push(fr(-1, -1, cnt, "Anagram check: tally each letter of s as +1, then spend them on t as −1. If every count ends at 0, they're anagrams."));
+      for (var i = 0; i < s.length; i++) { cnt[s[i]] = (cnt[s[i]] || 0) + 1; frames.push(fr(i, -1, Object.assign({}, cnt), `Count up s: '${s[i]}' → ${cnt[s[i]]}.`)); }
+      for (var j = 0; j < t.length; j++) { cnt[t[j]] = (cnt[t[j]] || 0) - 1; var bad = cnt[t[j]] < 0; frames.push(fr(-1, j, Object.assign({}, cnt), bad ? `'${t[j]}' goes negative — t has a letter s doesn't → <b>not anagrams</b>.` : `Spend on t: '${t[j]}' → ${cnt[t[j]]}.`, bad)); if (bad) return frames; }
+      frames.push(fr(-1, -1, cnt, "Every count is back to 0 → <b>they're anagrams</b>."));
+      return frames;
+    }
+
+    if (mode === "group-anagrams") {
+      var words = cfg.words, H2 = 220;
+      function key(w) { return w.split("").sort().join(""); }
+      var groups = {}, order = [];
+      function frame(cur, cap) {
+        var inner = "";
+        var rw = chars(" ".repeat(words.length), 30, { cw: 60, gap: 12 });
+        words.forEach(function (w, i) { var st = i === cur ? { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" } : i < cur ? { op: 0.5 } : {}; inner += rect(rw.x(i), rw.y, rw.cw, 30, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: st.sw || 1.3, r: 6, op: st.op != null ? st.op : 1 }); inner += `<text x="${rw.cx(i)}" y="${rw.y + 20}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 12px var(--font-mono)">${w}</text>`; });
+        var gy = 90;
+        order.forEach(function (k, gi) {
+          inner += `<text x="30" y="${gy + gi * 40 + 20}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">${k}</text>`;
+          groups[k].forEach(function (w, wi) { inner += rect(120 + wi * 70, gy + gi * 40, 58, 28, { fill: "var(--c-success-bg)", stroke: "var(--c-success)", sw: 1.3, r: 6 }); inner += `<text x="${120 + wi * 70 + 29}" y="${gy + gi * 40 + 19}" text-anchor="middle" fill="var(--c-success)" style="font:700 12px var(--font-mono)">${w}</text>`; });
+        });
+        return { svg: `<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="group anagrams">${inner}</svg>`, caption: cap };
+      }
+      frames.push(frame(-1, "Group anagrams by a <b>canonical key</b>: sort each word's letters. Words that share the sorted key go in the same bucket."));
+      words.forEach(function (w, i) { var k = key(w); if (!groups[k]) { groups[k] = []; order.push(k); } groups[k].push(w); frames.push(frame(i, `"${w}" → sorted key "<b>${k}</b>" → ${groups[k].length > 1 ? "joins existing group" : "starts a new group"}.`)); });
+      frames.push(frame(-1, `Done — ${order.length} groups, each a set of anagrams.`));
+      return frames;
+    }
+
+    if (mode === "longest-consecutive") {
+      var nums = cfg.data, H3 = 160, sset = {}; nums.forEach(function (v) { sset[v] = true; });
+      var row = chars(" ".repeat(nums.length), 56, { cw: 46, gap: 8 });
+      function frame(streak, best, cap, panel) {
+        var inner = "";
+        nums.forEach(function (v, i) { var inStreak = streak && streak.indexOf(v) >= 0; var st = inStreak ? { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" } : {}; inner += rect(row.x(i), row.y, row.cw, 40, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: st.sw || 1.3, r: 6 }); inner += `<text x="${row.cx(i)}" y="${row.y + 26}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 14px var(--font-sans)">${v}</text>`; });
+        inner += `<text x="${W / 2}" y="${H3 - 10}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`;
+        return { svg: `<svg viewBox="0 0 ${W} ${H3}" role="img" aria-label="longest consecutive">${inner}</svg>`, caption: cap };
+      }
+      frames.push(frame(null, 0, "Put all numbers in a hash set for O(1) lookups. Only start counting from a <b>sequence start</b> — a value whose predecessor is absent — so each run is walked once.", "longest = 0"));
+      var best = 0;
+      nums.forEach(function (v) {
+        if (!sset[v - 1]) { var len = 1, cur = v, streak = [v]; while (sset[cur + 1]) { cur++; len++; streak.push(cur); } best = Math.max(best, len); frames.push(frame(streak.slice(), best, `${v} is a start (no ${v - 1}). Walk up: ${streak.join("→")} → run length <b>${len}</b>. longest = ${best}.`, `longest = ${best}`)); }
+      });
+      frames.push(frame(null, best, `Longest consecutive run = <b>${best}</b>, found in O(n).`, `longest = ${best}`));
+      return frames;
+    }
+
+    if (mode === "common-prefix") {
+      var words2 = cfg.words, H4 = 60 + words2.length * 40, rowH = 36;
+      var maxLen = Math.max.apply(null, words2.map(function (w) { return w.length; }));
+      var colW = Math.min(34, (W - 80) / maxLen), sx = 50;
+      function frame(col, ok, cap) {
+        var inner = "";
+        words2.forEach(function (w, wi) {
+          for (var c = 0; c < w.length; c++) { var st = c < col ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" } : c === col ? { fill: ok ? "var(--brand-soft)" : "var(--c-warning-bg)", stroke: ok ? "var(--accent)" : "var(--c-warning)", lab: ok ? "var(--accent)" : "var(--c-warning)" } : {}; inner += rect(sx + c * colW, 30 + wi * 40, colW - 3, rowH, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: 1.2, r: 4 }); inner += `<text x="${sx + c * colW + (colW - 3) / 2}" y="${30 + wi * 40 + rowH / 2 + 5}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 13px var(--font-mono)">${w[c]}</text>`; }
+        });
+        return { svg: `<svg viewBox="0 0 ${W} ${H4}" role="img" aria-label="common prefix">${inner}</svg>`, caption: cap };
+      }
+      frames.push(frame(0, true, "Vertical scanning: compare the same column across every word. The common prefix grows until one column disagrees or a word ends."));
+      var col = 0;
+      while (true) { var ch = words2[0][col], same = col < words2[0].length; for (var wi = 1; wi < words2.length && same; wi++) { if (col >= words2[wi].length || words2[wi][col] !== ch) same = false; } if (!same) { frames.push(frame(col, false, `Column ${col} disagrees (or a word ended) → stop. Common prefix is the first ${col} chars.`)); break; } frames.push(frame(col, true, `Column ${col}: every word has '${ch}' → extend the prefix.`)); col++; if (col > maxLen) break; }
+      frames.push(frame(col, true, `Longest common prefix = "<b>${words2[0].slice(0, col)}</b>".`));
+      return frames;
+    }
+
+    if (mode === "roman") {
+      var s2 = cfg.s, VAL = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 }, H5 = 150;
+      var row2 = chars(s2, 50, { cw: 40, gap: 8 });
+      function frame(i, total, sub, cap) {
+        var inner = "";
+        for (var k = 0; k < s2.length; k++) { var st = k === i ? { fill: sub ? "var(--c-warning-bg)" : "var(--brand-soft)", stroke: sub ? "var(--c-warning)" : "var(--accent)", sw: 2.2, lab: sub ? "var(--c-warning)" : "var(--accent)" } : k < i ? { op: 0.5 } : {}; inner += box(row2, k, s2[k], st, 40); inner += `<text x="${row2.cx(k)}" y="${row2.y - 8}" text-anchor="middle" fill="var(--text-faint)" style="font:500 10px var(--font-mono)">${VAL[s2[k]]}</text>`; }
+        inner += `<text x="${W / 2}" y="${H5 - 12}" text-anchor="middle" fill="var(--c-success)" style="font:700 14px var(--font-sans)">total = ${total}</text>`;
+        return { svg: `<svg viewBox="0 0 ${W} ${H5}" role="img" aria-label="roman to integer">${inner}</svg>`, caption: cap };
+      }
+      frames.push(frame(-1, 0, false, "Scan left to right. Add each numeral — but if a smaller value sits before a larger one (like IV), <b>subtract</b> it instead."));
+      var total = 0;
+      for (var i = 0; i < s2.length; i++) { var cur = VAL[s2[i]], next = i + 1 < s2.length ? VAL[s2[i + 1]] : 0; if (cur < next) { total -= cur; frames.push(frame(i, total, true, `${s2[i]}(${cur}) &lt; ${s2[i + 1]}(${next}) → <b>subtract</b>: total = ${total}.`)); } else { total += cur; frames.push(frame(i, total, false, `${s2[i]}(${cur}) → add: total = ${total}.`)); } }
+      frames.push(frame(-1, total, false, `Final value = <b>${total}</b>.`));
+      return frames;
+    }
+
+    // substring search (find first occurrence)
+    var text = cfg.text, pat = cfg.pattern, H6 = 170;
+    var rT = chars(text, 44, { cw: 40, gap: 6 });
+    function frameS(shift, j, matchLen, found, cap) {
+      var inner = `<text x="20" y="${rT.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">text</text>`;
+      for (var i = 0; i < text.length; i++) { var inWin = i >= shift && i < shift + pat.length; var isCmp = i === shift + j; var matched = found >= 0 && i >= found && i < found + pat.length; var st = matched ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", sw: 2.2, lab: "var(--c-success)" } : isCmp ? { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" } : inWin ? { fill: "var(--c-info-bg)", stroke: "var(--accent)" } : {}; inner += box(rT, i, text[i], st, 34); }
+      var rP = chars(pat, 104, { cw: 40, gap: 6, sx: rT.x(shift) });
+      for (var k = 0; k < pat.length; k++) { var st2 = (found >= 0) ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" } : k === j ? { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" } : k < j ? { fill: "var(--c-info-bg)", stroke: "var(--accent)" } : {}; inner += box(rP, k, pat[k], st2, 34); }
+      inner += `<text x="20" y="${rP.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">pat</text>`;
+      return { svg: `<svg viewBox="0 0 ${W} ${H6}" role="img" aria-label="substring search">${inner}</svg>`, caption: cap };
+    }
+    frames.push(frameS(0, -1, 0, -1, `Find "<b>${pat}</b>" in "${text}". Slide the pattern across the text; at each shift, compare characters until a mismatch or a full match.`));
+    for (var shift = 0; shift + pat.length <= text.length; shift++) {
+      var j = 0;
+      for (; j < pat.length; j++) { if (text[shift + j] !== pat[j]) { frames.push(frameS(shift, j, j, -1, `Shift ${shift}: '${text[shift + j]}' ≠ '${pat[j]}' at offset ${j} → mismatch, slide right.`)); break; } }
+      if (j === pat.length) { frames.push(frameS(shift, j - 1, j, shift, `Shift ${shift}: all ${pat.length} characters match → <b>found at index ${shift}</b>.`)); return frames; }
+    }
+    frames.push(frameS(0, -1, 0, -1, `No shift matched → return -1.`));
+    return frames;
+  }
+
+  /* ============================================================
+     RENDERER — array rewrite in place (sort-colors, move-zeroes,
+     squares, remove-dups, merge-sorted, remove-element, disappeared)
+     ============================================================ */
+  function arrayRewrite(cfg) {
+    var mode = cfg.mode, W = 600, H = 165;
+    function cells(arr) { var n = arr.length, cw = Math.min(48, (W - 40 - 6 * (n - 1)) / n), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2, y = 54, h = 44; return { n: n, cw: cw, y: y, h: h, x: function (i) { return sx + i * (cw + gap); }, cx: function (i) { return sx + i * (cw + gap) + cw / 2; } }; }
+    function draw(arr, styleFn, ptrs, cap, panel) {
+      var g = cells(arr), s = "";
+      for (var i = 0; i < arr.length; i++) { var st = styleFn(i) || {}; s += rect(g.x(i), g.y, g.cw, g.h, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: st.sw || 1.3, r: 6, op: st.op != null ? st.op : 1 }); s += `<text x="${g.cx(i)}" y="${g.y + g.h / 2 + 5}" text-anchor="middle" fill="${st.lab || "var(--text)"}" opacity="${st.op != null ? st.op : 1}" style="font:700 15px var(--font-sans)">${arr[i]}</text>`; s += `<text x="${g.cx(i)}" y="${g.y + g.h + 14}" text-anchor="middle" fill="var(--text-faint)" style="font:500 10px var(--font-mono)">${i}</text>`; }
+      (ptrs || []).forEach(function (p) { if (p.i >= 0 && p.i < arr.length) s += `<text x="${g.cx(p.i)}" y="${g.y - 9}" text-anchor="middle" fill="${p.c || "var(--accent)"}" style="font:700 11px var(--font-sans)">${p.t}</text>`; });
+      if (panel) s += `<text x="${W / 2}" y="${H - 8}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`;
+      return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="array">${s}</svg>`, caption: cap };
+    }
+    var frames = [];
+
+    if (mode === "sort-colors") {
+      var a = cfg.data.slice(), low = 0, mid = 0, high = a.length - 1;
+      function colorOf(v) { return v === 0 ? { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)" } : v === 2 ? { fill: "var(--c-info-bg)", stroke: "var(--accent)", lab: "var(--accent)" } : { fill: "var(--surface-2)", stroke: "var(--border)" }; }
+      function st(i) { return colorOf(a[i]); }
+      function ptrs() { return [{ i: low, t: "low", c: "var(--c-warning)" }, { i: mid, t: "mid", c: "var(--accent)" }, { i: high, t: "high", c: "var(--accent)" }]; }
+      frames.push(draw(a.slice(), st, ptrs(), "Dutch national flag: three pointers sweep once. 0s go to the front (low), 2s to the back (high), 1s stay in the middle.", "low=0 mid=0 high=" + high));
+      var guard = 0;
+      while (mid <= high && guard++ < 40) {
+        if (a[mid] === 0) { var t = a[low]; a[low] = a[mid]; a[mid] = t; frames.push(draw(a.slice(), st, ptrs(), `a[mid]=0 → swap into the low region; advance low and mid.`, "low=" + low + " mid=" + mid + " high=" + high)); low++; mid++; }
+        else if (a[mid] === 1) { frames.push(draw(a.slice(), st, ptrs(), `a[mid]=1 → already in place; just advance mid.`, "low=" + low + " mid=" + mid + " high=" + high)); mid++; }
+        else { var t2 = a[high]; a[high] = a[mid]; a[mid] = t2; frames.push(draw(a.slice(), st, ptrs(), `a[mid]=2 → swap to the high region; shrink high (don't advance mid — recheck the swapped-in value).`, "low=" + low + " mid=" + mid + " high=" + high)); high--; }
+      }
+      frames.push(draw(a.slice(), st, [], `Sorted in one pass: ${a.join(", ")}.`, "done"));
+      return frames;
+    }
+
+    if (mode === "move-zeroes") {
+      var a2 = cfg.data.slice(), w = 0;
+      function st2(i) { if (a2[i] === 0) return { fill: "var(--surface-2)", stroke: "var(--border-soft)", op: 0.6 }; return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; }
+      frames.push(draw(a2.slice(), st2, [{ i: w, t: "write" }], "Keep a <b>write</b> pointer for the next non-zero slot. Scan with a read pointer; every non-zero value is swapped forward, pushing zeroes to the end.", "write=0"));
+      for (var r = 0; r < a2.length; r++) { if (a2[r] !== 0) { var t = a2[w]; a2[w] = a2[r]; a2[r] = t; frames.push(draw(a2.slice(), st2, [{ i: w, t: "write" }, { i: r, t: "read", c: "var(--accent)" }], `Non-zero ${a2[w]} at read ${r} → place at write ${w}, advance write.`, "write=" + (w + 1))); w++; } else { frames.push(draw(a2.slice(), st2, [{ i: w, t: "write" }, { i: r, t: "read", c: "var(--accent)" }], `Zero at read ${r} → skip, leave write where it is.`, "write=" + w)); } }
+      frames.push(draw(a2.slice(), st2, [], `All zeroes pushed to the back, order of others preserved: ${a2.join(", ")}.`, "done"));
+      return frames;
+    }
+
+    if (mode === "remove-duplicates") {
+      var a3 = cfg.data.slice(), w3 = 1;
+      function st3(i) { if (i < w3) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; return { op: 0.5 }; }
+      frames.push(draw(a3.slice(), st3, [{ i: 1, t: "write" }], "Sorted array — a <b>write</b> pointer keeps the unique prefix. Scan with read; copy a value forward only when it differs from the last kept one.", "k=1"));
+      for (var r3 = 1; r3 < a3.length; r3++) { if (a3[r3] !== a3[w3 - 1]) { a3[w3] = a3[r3]; frames.push(draw(a3.slice(), st3, [{ i: w3, t: "write" }, { i: r3, t: "read", c: "var(--accent)" }], `${a3[r3]} ≠ ${a3[w3 - 1]} (last kept) → write at ${w3}, advance.`, "k=" + (w3 + 1))); w3++; } else { frames.push(draw(a3.slice(), st3, [{ i: w3, t: "write" }, { i: r3, t: "read", c: "var(--accent)" }], `${a3[r3]} == ${a3[w3 - 1]} → duplicate, skip.`, "k=" + w3)); } }
+      frames.push(draw(a3.slice(), st3, [], `First <b>${w3}</b> elements are the unique values.`, "k=" + w3));
+      return frames;
+    }
+
+    if (mode === "remove-element") {
+      var a4 = cfg.data.slice(), val = cfg.val, w4 = 0;
+      function st4(i) { if (i < w4) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; if (a4[i] === val) return { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)" }; return { op: 0.55 }; }
+      frames.push(draw(a4.slice(), st4, [{ i: 0, t: "write" }], `Remove all ${val}s in place. A <b>write</b> pointer collects the keepers; skip any value equal to ${val}.`, "k=0"));
+      for (var r4 = 0; r4 < a4.length; r4++) { if (a4[r4] !== val) { a4[w4] = a4[r4]; frames.push(draw(a4.slice(), st4, [{ i: w4, t: "write" }, { i: r4, t: "read", c: "var(--accent)" }], `${a4[r4]} ≠ ${val} → keep it at ${w4}.`, "k=" + (w4 + 1))); w4++; } else { frames.push(draw(a4.slice(), st4, [{ i: w4, t: "write" }, { i: r4, t: "read", c: "var(--accent)" }], `${a4[r4]} == ${val} → drop it.`, "k=" + w4)); } }
+      frames.push(draw(a4.slice(), st4, [], `First <b>${w4}</b> elements have every ${val} removed.`, "k=" + w4));
+      return frames;
+    }
+
+    if (mode === "disappeared") {
+      var a5 = cfg.data.slice();
+      frames.push(draw(a5.slice(), function () { return {}; }, [], "Trick: use the array itself as a hash. For each value v, flip the sign at index |v|−1 to mark 'v is present'.", "marking…"));
+      for (var i5 = 0; i5 < a5.length; i5++) { var idx = Math.abs(a5[i5]) - 1; if (a5[idx] > 0) a5[idx] = -a5[idx]; frames.push((function (cur, ix) { return draw(a5.slice(), function (k) { if (k === ix) return { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" }; if (a5[k] < 0) return { fill: "var(--c-info-bg)", stroke: "var(--accent)" }; return {}; }, [{ i: cur, t: "read", c: "var(--text-muted)" }], `Value ${Math.abs(a5[cur])} → mark index ${ix} negative (present).`, "marking…"); })(i5, idx)); }
+      var missing = [];
+      for (var k5 = 0; k5 < a5.length; k5++) if (a5[k5] > 0) missing.push(k5 + 1);
+      frames.push(draw(a5.slice(), function (k) { return a5[k] > 0 ? { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)" } : {}; }, [], `Indices still <b>positive</b> were never marked → their numbers are missing: <b>[${missing.join(", ")}]</b>.`, "missing = [" + missing.join(", ") + "]"));
+      return frames;
+    }
+
+    // squares  &  merge — two-row layouts (sorted output built from the back)
+    if (mode === "squares") {
+      var a6 = cfg.data, n6 = a6.length, out = new Array(n6).fill(null), l = 0, r = n6 - 1, pos = n6 - 1, H6 = 200;
+      function row(arr, y, sel, lab) { var n = arr.length, cw = Math.min(46, (W - 60) / n), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2; var s = `<text x="20" y="${y + 28}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">${lab}</text>`; for (var i = 0; i < n; i++) { var st = sel && sel[i] ? sel[i] : (arr[i] == null ? { op: 0.4 } : {}); s += rect(sx + i * (cw + gap), y, cw, 40, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: st.sw || 1.3, r: 6 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 26}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 14px var(--font-sans)">${arr[i] == null ? "·" : arr[i]}</text>`; } return s; }
+      function frame(cap, panel) {
+        var selIn = {}; selIn[l] = { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" }; selIn[r] = { fill: "var(--c-info-bg)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" };
+        var selOut = {}; if (pos >= 0) selOut[pos] = { fill: "var(--c-success-bg)", stroke: "var(--c-success)", sw: 2.2, lab: "var(--c-success)" };
+        var inner = row(a6, 36, selIn, "in") + row(out, 110, selOut, "out");
+        inner += `<text x="${W / 2}" y="${H6 - 8}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`;
+        return { svg: `<svg viewBox="0 0 ${W} ${H6}" role="img" aria-label="squares of sorted">${inner}</svg>`, caption: cap };
+      }
+      frames.push(frame("The biggest square is always at one <b>end</b> (most negative or most positive). Compare ends, write the larger square to the back of the output, move inward.", "fill from the back"));
+      var guard6 = 0;
+      while (l <= r && guard6++ < 40) { var ls = a6[l] * a6[l], rs = a6[r] * a6[r]; if (ls > rs) { out[pos] = ls; frames.push(frame(`(${a6[l]})² = ${ls} &gt; (${a6[r]})² = ${rs} → write ${ls} at out[${pos}], move L right.`, "out[" + pos + "] = " + ls)); l++; } else { out[pos] = rs; frames.push(frame(`(${a6[r]})² = ${rs} ≥ (${a6[l]})² = ${ls} → write ${rs} at out[${pos}], move R left.`, "out[" + pos + "] = " + rs)); r--; } pos--; }
+      frames.push(frame(`Output is sorted ascending: ${out.join(", ")}.`, "done"));
+      return frames;
+    }
+
+    // merge-sorted-array (nums1 has m valid + n blanks; fill from the back)
+    var m = cfg.m, nums2 = cfg.nums2, nn = nums2.length, H7 = 200;
+    var nums1 = cfg.nums1.slice(0, m).concat(new Array(nn).fill(null));
+    var i1 = m - 1, j2 = nn - 1, k = m + nn - 1;
+    function rowM(arr, y, sel, lab) { var n = arr.length, cw = Math.min(46, (W - 60) / n), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2; var s = `<text x="20" y="${y + 28}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">${lab}</text>`; for (var i = 0; i < n; i++) { var st = sel && sel[i] ? sel[i] : (arr[i] == null ? { op: 0.35 } : {}); s += rect(sx + i * (cw + gap), y, cw, 40, { fill: st.fill || "var(--surface-2)", stroke: st.stroke || "var(--border)", sw: st.sw || 1.3, r: 6 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 26}" text-anchor="middle" fill="${st.lab || "var(--text)"}" style="font:700 14px var(--font-sans)">${arr[i] == null ? "·" : arr[i]}</text>`; } return s; }
+    function frameM(cap, panel) {
+      var s1 = {}; if (i1 >= 0) s1[i1] = { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" }; if (k >= 0) s1[k] = Object.assign(s1[k] || {}, { stroke: "var(--c-success)", sw: 2.4 });
+      var s2 = {}; if (j2 >= 0) s2[j2] = { fill: "var(--c-info-bg)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" };
+      var inner = rowM(nums1, 36, s1, "n1") + rowM(nums2, 110, s2, "n2");
+      inner += `<text x="${W / 2}" y="${H7 - 8}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`;
+      return { svg: `<svg viewBox="0 0 ${W} ${H7}" role="img" aria-label="merge sorted array">${inner}</svg>`, caption: cap };
+    }
+    frames.push(frameM("Merge nums2 into nums1's trailing space. Filling from the <b>back</b> (largest first) avoids overwriting unmerged values.", "k = " + k));
+    var guard7 = 0;
+    while (j2 >= 0 && guard7++ < 40) {
+      if (i1 >= 0 && nums1[i1] > nums2[j2]) { nums1[k] = nums1[i1]; frames.push(frameM(`nums1[${i1}]=${nums1[i1]} &gt; nums2[${j2}]=${nums2[j2]} → place ${nums1[i1]} at ${k}.`, "k = " + (k - 1))); i1--; }
+      else { nums1[k] = nums2[j2]; frames.push(frameM(`nums2[${j2}]=${nums2[j2]} is the larger (or nums1 exhausted) → place it at ${k}.`, "k = " + (k - 1))); j2--; }
+      k--;
+    }
+    frames.push(frameM(`Merged in place: ${nums1.join(", ")}.`, "done"));
+    return frames;
+  }
+
+  /* ============================================================
+     RENDERER — bit manipulation (1-bits, counting-bits, reverse, add)
+     ============================================================ */
+  function bitsViz(cfg) {
+    var mode = cfg.mode, W = 600, bits = cfg.bits || 8;
+    function toBits(v, n) { var a = []; for (var i = n - 1; i >= 0; i--) a.push((v >> i) & 1); return a; }
+    function bitRow(arr, y, sx, hi, color) { var cw = 30, gap = 4, s = ""; for (var i = 0; i < arr.length; i++) { var on = arr[i] === 1, isHi = hi && hi.indexOf(i) >= 0; s += rect(sx + i * (cw + gap), y, cw, 30, { fill: isHi ? "var(--brand-soft)" : on ? "var(--c-info-bg)" : "var(--surface-2)", stroke: isHi ? "var(--accent)" : on ? "var(--accent)" : "var(--border)", sw: isHi ? 2.2 : 1.2, r: 4 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 20}" text-anchor="middle" fill="${on ? (color || "var(--accent)") : "var(--text-faint)"}" style="font:700 13px var(--font-mono)">${arr[i]}</text>`; } return s; }
+    var frames = [];
+
+    if (mode === "ones") {
+      var n = cfg.n, H = 150, sx = (W - bits * 34) / 2;
+      function frame(v, count, cap) { var inner = bitRow(toBits(v, bits), 50, sx, null); inner += `<text x="${W / 2}" y="30" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-mono)">n = ${v} (${(v >>> 0).toString(2)})</text>`; inner += `<text x="${W / 2}" y="${H - 14}" text-anchor="middle" fill="var(--c-success)" style="font:700 13px var(--font-sans)">set bits = ${count}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="count bits">${inner}</svg>`, caption: cap }; }
+      var count = 0;
+      frames.push(frame(n, 0, `Count set bits with the <b>n &amp; (n−1)</b> trick: that operation clears the lowest set bit, so it loops exactly once per 1-bit.`));
+      var v = n;
+      while (v !== 0) { var v2 = v & (v - 1); count++; frames.push(frame(v2, count, `n &amp; (n−1): clears the lowest 1-bit → ${v} becomes ${v2}. Count = ${count}.`)); v = v2; }
+      frames.push(frame(0, count, `n is 0 → done. Total set bits = <b>${count}</b>.`));
+      return frames;
+    }
+
+    if (mode === "counting-bits") {
+      var N = cfg.n, H2 = 70 + (N + 1) * 30, rowH = 26;
+      function frame(upto, cur, cap) {
+        var inner = "";
+        for (var i = 0; i <= N; i++) {
+          var y = 40 + i * 30, dp = i <= upto;
+          inner += `<text x="40" y="${y + 18}" text-anchor="end" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">${i}</text>`;
+          inner += bitRow(toBits(i, 4), y, 60, i === cur ? [0, 1, 2, 3] : null);
+          if (dp) { inner += rect(230, y, 50, rowH, { fill: i === cur ? "var(--brand-soft)" : "var(--c-success-bg)", stroke: i === cur ? "var(--accent)" : "var(--c-success)", sw: i === cur ? 2.2 : 1.2, r: 5 }); inner += `<text x="255" y="${y + 18}" text-anchor="middle" fill="${i === cur ? "var(--accent)" : "var(--c-success)"}" style="font:700 13px var(--font-sans)">${countOnes(i)}</text>`; }
+          if (i === cur && i > 0) inner += `<text x="300" y="${y + 18}" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">= bits[${i >> 1}] + ${i & 1}</text>`;
+        }
+        return { svg: `<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="counting bits dp">${inner}</svg>`, caption: cap };
+      }
+      function countOnes(x) { var c = 0; while (x) { c += x & 1; x >>= 1; } return c; }
+      frames.push(frame(0, -1, "Count bits for every number 0..n in one pass with DP: <b>bits[i] = bits[i &gt;&gt; 1] + (i &amp; 1)</b> — drop the last bit (a known sub-answer) and add it back."));
+      for (var i = 1; i <= N; i++) frames.push(frame(i, i, `bits[${i}] = bits[${i >> 1}] (${countOnes(i >> 1)}) + last bit ${i & 1} = <b>${countOnes(i)}</b>.`));
+      frames.push(frame(N, -1, `Filled all counts 0..${N} in O(n).`));
+      return frames;
+    }
+
+    if (mode === "reverse-bits") {
+      var n3 = cfg.n, H3 = 170, sx3 = (W - bits * 34) / 2;
+      var inb = toBits(n3, bits), outb = inb.slice().reverse();
+      function frame(k, cap) {
+        var partialOut = outb.map(function (b, i) { return i < k ? b : "·"; });
+        var inner = `<text x="20" y="58" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">in</text>` + bitRow(inb, 44, sx3, [bits - 1 - (k - 1 >= 0 ? k - 1 : -1)].filter(function (x) { return x >= 0; }));
+        var s2 = `<text x="20" y="118" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">out</text>`;
+        var cw = 30, gap = 4; for (var i = 0; i < partialOut.length; i++) { var done = partialOut[i] !== "·"; s2 += rect(sx3 + i * (cw + gap), 104, cw, 30, { fill: i === k - 1 ? "var(--brand-soft)" : done ? "var(--c-success-bg)" : "var(--surface-2)", stroke: i === k - 1 ? "var(--accent)" : done ? "var(--c-success)" : "var(--border)", sw: i === k - 1 ? 2.2 : 1.2, r: 4 }); s2 += `<text x="${sx3 + i * (cw + gap) + cw / 2}" y="124" text-anchor="middle" fill="${done ? "var(--c-success)" : "var(--text-faint)"}" style="font:700 13px var(--font-mono)">${partialOut[i]}</text>`; }
+        return { svg: `<svg viewBox="0 0 ${W} ${H3}" role="img" aria-label="reverse bits">${inner + s2}</svg>`, caption: cap };
+      }
+      frames.push(frame(0, `Reverse the bit order: pull bits off the input's <b>least-significant</b> end and push them onto the output's most-significant end.`));
+      for (var k = 1; k <= bits; k++) frames.push(frame(k, `Take input bit ${bits - k} (=${inb[bits - k]}) → it lands at output position ${k - 1}.`));
+      frames.push(frame(bits, `Reversed: ${inb.join("")} → <b>${outb.join("")}</b>.`));
+      return frames;
+    }
+
+    // sum-of-two-integers (add without +)
+    var x = cfg.a, y = cfg.b, H4 = 200, sx4 = (W - bits * 34) / 2;
+    function frame4(a, b, cap) {
+      var inner = `<text x="20" y="44" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">a</text>` + bitRow(toBits(a, bits), 30, sx4, null);
+      inner += `<text x="20" y="84" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">b(carry)</text>` + bitRow(toBits(b, bits), 70, sx4, null);
+      inner += `<text x="${W / 2}" y="${H4 - 14}" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-mono)">a = ${a}, carry = ${b}</text>`;
+      return { svg: `<svg viewBox="0 0 ${W} ${H4}" role="img" aria-label="add without plus">${inner}</svg>`, caption: cap };
+    }
+    frames.push(frame4(x, y, `Add without <code>+</code>: <b>a ^ b</b> is the sum ignoring carries, and <b>(a &amp; b) &lt;&lt; 1</b> is the carry. Repeat until the carry is 0.`));
+    var guard = 0;
+    while (y !== 0 && guard++ < 34) { var sum = x ^ y, carry = (x & y) << 1; x = sum; y = carry; frames.push(frame4(x, y, `sum = a ^ b = ${x}; carry = (a &amp; b) &lt;&lt; 1 = ${y}. ${y === 0 ? "Carry is 0 — done." : "Feed the carry back in."}`)); }
+    frames.push(frame4(x, 0, `No carry left → the sum is <b>${x}</b>.`));
+    return frames;
+  }
+
+  /* ============================================================
+     RENDERER — knapsack-style 2-D DP (subset-sum, coin-change ways)
+     ============================================================ */
+  function knapsack(cfg) {
+    var mode = cfg.mode, W = 600, items, cap;
+    if (mode === "subset-sum") { items = cfg.data; cap = items.reduce(function (a, b) { return a + b; }, 0) / 2; }
+    else { items = cfg.coins; cap = cfg.amount; }
+    var capInt = Math.floor(cap), rows = items.length + 1, cols = capInt + 1;
+    var cw = Math.min(40, (W - 90) / cols), ch = 28, sx = 70, sy = 46, H = sy + rows * (ch + 4) + 16;
+    function xy(r, c) { return [sx + c * (cw + 4), sy + r * (ch + 4)]; }
+    function draw(dp, cur, contrib, cap2) {
+      var s = "";
+      for (var c = 0; c < cols; c++) { var p = xy(0, c); s += `<text x="${p[0] + cw / 2}" y="${sy - 12}" text-anchor="middle" fill="var(--text-faint)" style="font:700 11px var(--font-mono)">${c}</text>`; }
+      for (var r = 1; r < rows; r++) { var p2 = xy(r, 0); s += `<text x="${sx - 16}" y="${p2[1] + ch / 2 + 4}" text-anchor="middle" fill="var(--text-faint)" style="font:700 11px var(--font-mono)">${items[r - 1]}</text>`; }
+      for (var rr = 0; rr < rows; rr++) for (var cc = 0; cc < cols; cc++) {
+        var pp = xy(rr, cc), v = dp[rr][cc];
+        var isCur = cur && cur[0] === rr && cur[1] === cc;
+        var isCon = contrib && contrib.some(function (p) { return p[0] === rr && p[1] === cc; });
+        var fill = isCur ? "var(--brand-soft)" : isCon ? "var(--c-info-bg)" : v != null ? "var(--c-success-bg)" : "var(--surface-2)";
+        var stroke = isCur ? "var(--accent)" : isCon ? "var(--accent)" : v != null ? "var(--c-success)" : "var(--border)";
+        s += rect(pp[0], pp[1], cw, ch, { fill: fill, stroke: stroke, sw: isCur ? 2.4 : 1.1, r: 4 });
+        s += `<text x="${pp[0] + cw / 2}" y="${pp[1] + ch / 2 + 4}" text-anchor="middle" fill="var(--text)" style="font:600 11px var(--font-sans)">${v == null ? "" : (mode === "subset-sum" ? (v ? "T" : "F") : v)}</text>`;
+      }
+      return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="dp table">${s}</svg>`, caption: cap2 };
+    }
+    var dp = Array.from({ length: rows }, function () { return new Array(cols).fill(null); }), frames = [];
+    if (mode === "subset-sum") {
+      var total = items.reduce(function (a, b) { return a + b; }, 0);
+      if (total % 2 !== 0) { for (var c0 = 0; c0 < cols; c0++) dp[0][c0] = c0 === 0; frames.push(draw(dp, null, null, `Total ${total} is odd → it can't split into two equal halves. <b>false</b>.`)); return frames; }
+      for (var r0 = 0; r0 < rows; r0++) dp[r0][0] = true; for (var c1 = 1; c1 < cols; c1++) dp[0][c1] = false;
+      frames.push(draw(dp, null, null, `Can a subset sum to <b>${capInt}</b> (half of ${total})? dp[i][c] = can the first i numbers reach sum c. Column 0 is always T (the empty subset).`));
+      for (var i = 1; i < rows; i++) { var it = items[i - 1]; for (var cc2 = 1; cc2 < cols; cc2++) { if (it > cc2) { dp[i][cc2] = dp[i - 1][cc2]; frames.push(draw(dp, [i, cc2], [[i - 1, cc2]], `${it} &gt; ${cc2} → can't use it; copy from above: ${dp[i][cc2] ? "T" : "F"}.`)); } else { dp[i][cc2] = dp[i - 1][cc2] || dp[i - 1][cc2 - it]; frames.push(draw(dp, [i, cc2], [[i - 1, cc2], [i - 1, cc2 - it]], `Skip (above ${dp[i - 1][cc2] ? "T" : "F"}) OR take ${it} (dp[${i - 1}][${cc2 - it}] = ${dp[i - 1][cc2 - it] ? "T" : "F"}) → <b>${dp[i][cc2] ? "T" : "F"}</b>.`)); } } }
+      frames.push(draw(dp, [rows - 1, cols - 1], null, dp[rows - 1][cols - 1] ? `Bottom-right is T → the set splits into two equal halves. <b>true</b>.` : `Bottom-right is F → no equal split. <b>false</b>.`));
+      return frames;
+    }
+    for (var r2 = 0; r2 < rows; r2++) dp[r2][0] = 1; for (var c2 = 1; c2 < cols; c2++) dp[0][c2] = 0;
+    frames.push(draw(dp, null, null, `Count the ways to make each amount. dp[i][a] = ways using the first i coin types. Amount 0 has exactly 1 way (use nothing).`));
+    for (var i2 = 1; i2 < rows; i2++) { var coin = items[i2 - 1]; for (var a = 1; a < cols; a++) { var without = dp[i2 - 1][a], wth = a >= coin ? dp[i2][a - coin] : 0; dp[i2][a] = without + wth; var con = [[i2 - 1, a]]; if (a >= coin) con.push([i2, a - coin]); frames.push(draw(dp, [i2, a], con, `Coin ${coin}, amount ${a}: ways without it (${without}) + ways reusing it (dp[${i2}][${a - coin >= 0 ? a - coin : "—"}] = ${wth}) = <b>${dp[i2][a]}</b>.`)); } }
+    frames.push(draw(dp, [rows - 1, cols - 1], null, `Total ways to make ${capInt} = <b>${dp[rows - 1][cols - 1]}</b>.`));
+    return frames;
+  }
+
   /* ---------- renderer registry ---------- */
   var RENDERERS = {
     "intervals-arrows": intervalsArrows,
@@ -1823,7 +2455,13 @@
     "heap": heapViz,
     "graph": graphViz,
     "prefix-product": prefixProduct,
-    "trapping": trapping
+    "trapping": trapping,
+    "bsearch": bsearch,
+    "matrix": matrixViz,
+    "string-ops": stringOps,
+    "array-rewrite": arrayRewrite,
+    "bits": bitsViz,
+    "knapsack": knapsack
   };
 
   /* ---------- problem configs (keyed by data-viz) ---------- */
@@ -1988,7 +2626,62 @@
 
     /* ----- prefix products + trapping ----- */
     "product-of-array-except-self": { title: "Watch left then right products combine", type: "prefix-product", data: [1, 2, 3, 4] },
-    "trapping-rain-water": { title: "Watch the bounded water fill", type: "trapping", data: [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1] }
+    "trapping-rain-water": { title: "Watch the bounded water fill", type: "trapping", data: [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1] },
+
+    /* ===== batch I ===== */
+    /* ----- binary search variants ----- */
+    "search-rotated-sorted-array": { title: "Watch the sorted half guide the search", type: "bsearch", mode: "rotated", data: [4, 5, 6, 7, 0, 1, 2], target: 0 },
+    "find-minimum-rotated-sorted-array": { title: "Watch mid vs. the right end find the dip", type: "bsearch", mode: "find-min", data: [4, 5, 6, 7, 0, 1, 2] },
+    "search-insert-position": { title: "Watch lo land on the insert point", type: "bsearch", mode: "search-insert", data: [1, 3, 5, 6], target: 2 },
+    "find-peak-element": { title: "Watch the search walk uphill", type: "bsearch", mode: "find-peak", data: [1, 2, 1, 3, 5, 6, 4] },
+    "search-2d-matrix": { title: "Watch the matrix as one sorted list", type: "bsearch", mode: "search-2d", grid: [[1, 3, 5, 7], [10, 11, 16, 20], [23, 30, 34, 60]], target: 16 },
+    "koko-eating-bananas": { title: "Watch binary search on the speed", type: "bsearch", mode: "koko", piles: [3, 6, 7, 11], h: 8 },
+    "find-first-and-last-position": { title: "Watch two biased searches find the edges", type: "bsearch", mode: "first-last", data: [5, 7, 7, 8, 8, 10], target: 8 },
+    "sqrtx": { title: "Watch the answer space halve", type: "bsearch", mode: "sqrtx", x: 8 },
+
+    /* ----- matrix ----- */
+    "spiral-matrix": { title: "Watch the spiral peel inward", type: "matrix", mode: "spiral", data: [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]] },
+    "rotate-image": { title: "Watch transpose then row-reverse", type: "matrix", mode: "rotate", data: [[1, 2, 3], [4, 5, 6], [7, 8, 9]] },
+    "set-matrix-zeroes": { title: "Watch zero rows and columns spread", type: "matrix", mode: "set-zeroes", data: [[1, 1, 1], [1, 0, 1], [1, 1, 1]] },
+
+    /* ----- string operations ----- */
+    "valid-anagram": { title: "Watch counts cancel to zero", type: "string-ops", mode: "valid-anagram", s: "anagram", t: "nagaram" },
+    "group-anagrams": { title: "Watch sorted keys form groups", type: "string-ops", mode: "group-anagrams", words: ["eat", "tea", "tan", "ate", "nat", "bat"] },
+    "longest-consecutive-sequence": { title: "Watch runs grow from their starts", type: "string-ops", mode: "longest-consecutive", data: [100, 4, 200, 1, 3, 2] },
+    "longest-common-prefix": { title: "Watch the vertical column scan", type: "string-ops", mode: "common-prefix", words: ["flower", "flow", "flight"] },
+    "roman-to-integer": { title: "Watch subtract-before-larger in action", type: "string-ops", mode: "roman", s: "MCMXCIV" },
+    "find-index-of-first-occurrence": { title: "Watch the pattern slide and match", type: "string-ops", mode: "substring", text: "hello", pattern: "ll" },
+
+    /* ----- array rewrite in place ----- */
+    "sort-colors": { title: "Watch the Dutch-flag three-way split", type: "array-rewrite", mode: "sort-colors", data: [2, 0, 2, 1, 1, 0] },
+    "move-zeroes": { title: "Watch non-zeros slide forward", type: "array-rewrite", mode: "move-zeroes", data: [0, 1, 0, 3, 12] },
+    "squares-of-a-sorted-array": { title: "Watch the back fill with bigger squares", type: "array-rewrite", mode: "squares", data: [-4, -1, 0, 3, 10] },
+    "remove-duplicates-from-sorted-array": { title: "Watch the write pointer keep uniques", type: "array-rewrite", mode: "remove-duplicates", data: [0, 0, 1, 1, 1, 2, 2, 3] },
+    "merge-sorted-array": { title: "Watch the merge fill from the back", type: "array-rewrite", mode: "merge", nums1: [1, 2, 3], nums2: [2, 5, 6], m: 3 },
+    "remove-element": { title: "Watch the keepers compact forward", type: "array-rewrite", mode: "remove-element", data: [3, 2, 2, 3], val: 3 },
+    "find-all-numbers-disappeared-in-an-array": { title: "Watch the array mark itself", type: "array-rewrite", mode: "disappeared", data: [4, 3, 2, 7, 8, 2, 3, 1] },
+
+    /* ----- bit manipulation ----- */
+    "number-of-1-bits": { title: "Watch n & (n−1) clear bits", type: "bits", mode: "ones", n: 11 },
+    "counting-bits": { title: "Watch the DP reuse n>>1", type: "bits", mode: "counting-bits", n: 8 },
+    "reverse-bits": { title: "Watch bits flow end to end", type: "bits", mode: "reverse-bits", n: 43, bits: 8 },
+    "sum-of-two-integers": { title: "Watch XOR and carry add numbers", type: "bits", mode: "add", a: 3, b: 5, bits: 6 },
+
+    /* ----- knapsack-style DP ----- */
+    "partition-equal-subset-sum": { title: "Watch the subset-sum table fill", type: "knapsack", mode: "subset-sum", data: [1, 5, 11, 5] },
+    "coin-change-ii": { title: "Watch ways accumulate per coin", type: "knapsack", mode: "coin-ways", coins: [1, 2, 5], amount: 5 },
+
+    /* ----- extended existing renderers ----- */
+    "3sum": { title: "Watch fix-i then two-pointer", type: "two-pointer", mode: "3sum", data: [-1, 0, 1, 2, -1, -4] },
+    "longest-increasing-subsequence": { title: "Watch each dp extend the best run", type: "dp-linear", mode: "lis", data: [10, 9, 2, 5, 3, 7, 101, 18] },
+    "minimum-size-subarray-sum": { title: "Watch the window shrink to minimum", type: "sliding-window", mode: "min-subarray-sum", data: [2, 3, 1, 2, 4, 3], target: 7 },
+    "longest-repeating-character-replacement": { title: "Watch replacements stretch the window", type: "sliding-window", mode: "longest-repeat", data: "AABABBA", k: 1 },
+    "max-consecutive-ones-iii": { title: "Watch flipped zeros extend the run", type: "sliding-window", mode: "max-ones", data: [1, 1, 1, 0, 0, 1, 1, 1, 0, 1], k: 2 },
+    "contains-duplicate-ii": { title: "Watch the k-window catch a repeat", type: "array-scan", mode: "contains-duplicate-ii", data: [1, 2, 3, 1], k: 3 },
+    "majority-element-ii": { title: "Watch two candidates survive voting", type: "array-scan", mode: "majority-2", data: [1, 1, 1, 3, 3, 2, 2, 2] },
+    "flatten-binary-tree-to-linked-list": { title: "Watch preorder become the list", type: "tree", mode: "flatten", data: [1, 2, 5, 3, 4, null, 6] },
+    "lowest-common-ancestor-binary-tree": { title: "Watch both sides meet at the LCA", type: "tree", mode: "lca-general", data: [3, 5, 1, 6, 2, 0, 8, null, null, 7, 4], p: 5, q: 1 },
+    "path-sum-ii": { title: "Watch every winning path light up", type: "tree", mode: "path-sum-ii", data: [5, 4, 8, 11, null, 13, 9, 7, 2], target: 22 }
   };
 
   /* ---------- engine ---------- */

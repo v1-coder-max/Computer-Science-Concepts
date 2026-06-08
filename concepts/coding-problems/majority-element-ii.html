@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Keep <strong>two candidates</strong> and two counters. For each value: if it matches a candidate, bump that counter; else if a counter is 0, adopt the value as that candidate (count 1); else decrement both counters. This survives the two majority elements. Because the candidates are only guaranteed when a &gt;n/3 element exists, do a <strong>second pass to verify</strong> each candidate actually exceeds n/3.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two-candidate voting + verification">
-              <text class="dgm-sub" x="20" y="24">track 2 candidates, 2 counts</text>
-              <text class="dgm-sub" x="20" y="52">match → count++ · zero → adopt · else both--</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">second pass verifies each > n/3</text>
-            </svg>
-            <figcaption>Figure 1 — At most two elements can exceed n/3, so two voting slots suffice.</figcaption>
-          </figure>
+          <div class="viz" data-viz="majority-element-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -163,5 +156,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Negatives square to large values too, so the biggest square is at one of the <strong>two ends</strong>. Use pointers <code>left</code> and <code>right</code>; compare <code>nums[left]²</code> with <code>nums[right]²</code>, place the larger at the back of the result, and move that pointer inward. Filling the result from the end keeps it sorted with no extra sort.</p><p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two pointers fill the result from the back">
-              <text class="dgm-sub" x="20" y="24">compare nums[left]² vs nums[right]²</text>
-              <text class="dgm-sub" x="20" y="52">place the larger at the back, move that pointer</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[-4,-1,0,3,10] → [0,1,9,16,100]</text>
-            </svg>
-            <figcaption>Figure 1 — The biggest square is always at one end, so a back-to-front fill stays sorted.</figcaption>
-          </figure>
+          <div class="viz" data-viz="squares-of-a-sorted-array"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -159,5 +152,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

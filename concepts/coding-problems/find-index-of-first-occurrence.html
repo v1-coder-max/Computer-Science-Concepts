@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p><strong>KMP</strong> avoids re-comparing. Precompute the needle’s <strong>failure function</strong> (longest proper prefix that is also a suffix for each position). On a mismatch, instead of restarting, jump the needle pointer to the last matched prefix length — so the haystack pointer never moves backward. That yields <strong>O(n + m)</strong> total. The build of the failure table is itself O(m).</p><p><strong>Time O(n + m), Space O(m).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="KMP reuses matched prefix on mismatch">
-              <text class="dgm-sub" x="20" y="24">brute: restart needle on every mismatch (O(nm))</text>
-              <text class="dgm-sub" x="20" y="52">KMP: jump needle to failure[j], keep haystack ptr</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">no backtracking → O(n + m)</text>
-            </svg>
-            <figcaption>Figure 1 — The failure function lets the pattern slide forward without rescanning the text.</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-index-of-first-occurrence"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -167,5 +160,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Compare <code>nums[mid]</code> with <code>nums[mid + 1]</code>. If <code>nums[mid] &lt; nums[mid + 1]</code>, you’re on an <strong>upward slope</strong>, so a peak lies to the right — move <code>lo = mid + 1</code>. Otherwise a peak lies at <code>mid</code> or to its left — move <code>hi = mid</code>. Because the boundaries are effectively −∞, walking uphill must eventually crest, so the search converges on a peak.</p><p><strong>Time O(log n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Walk toward the higher neighbor">
-              <text class="dgm-sub" x="20" y="24">nums[mid] < nums[mid+1] → peak is right</text>
-              <text class="dgm-sub" x="20" y="52">else peak is mid or left</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">uphill always leads to a crest</text>
-            </svg>
-            <figcaption>Figure 1 — Moving toward the larger neighbor guarantees reaching a peak.</figcaption>
-          </figure>
+          <div class="viz" data-viz="find-peak-element"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -157,5 +150,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -92,18 +92,7 @@
           </p>
           <p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Counting only from sequence starts">
-              <text class="dgm-sub" x="20" y="22">set = {100,4,200,1,3,2}</text>
-              <rect class="dgm-box-accent" x="20" y="36" width="60" height="28" rx="5"/><text class="dgm-sub" x="50" y="55" text-anchor="middle">1 ✓start</text>
-              <rect class="dgm-box" x="90" y="36" width="50" height="28" rx="5"/><text class="dgm-sub" x="115" y="55" text-anchor="middle">2</text>
-              <rect class="dgm-box" x="150" y="36" width="50" height="28" rx="5"/><text class="dgm-sub" x="175" y="55" text-anchor="middle">3</text>
-              <rect class="dgm-box" x="210" y="36" width="50" height="28" rx="5"/><text class="dgm-sub" x="235" y="55" text-anchor="middle">4</text>
-              <text class="dgm-sub" x="290" y="55">4 is not a start (3 present) → skip</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">walk 1→2→3→4: length 4</text>
-            </svg>
-            <figcaption>Figure 1 — Only numbers with no predecessor seed a walk, so each run is counted exactly once.</figcaption>
-          </figure>
+          <div class="viz" data-viz="longest-consecutive-sequence"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -180,5 +169,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

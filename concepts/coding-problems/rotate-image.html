@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p><strong>Transpose</strong> the matrix (swap <code>matrix[r][c]</code> with <code>matrix[c][r]</code> for <code>c &gt; r</code>), turning rows into columns. Then <strong>reverse each row</strong>. Together that’s a 90° clockwise rotation, all with in-place swaps. (Counter-clockwise: transpose then reverse each column instead.)</p><p><strong>Time O(n²), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Transpose then reverse rows">
-              <text class="dgm-sub" x="20" y="24">transpose: swap (r,c) with (c,r)</text>
-              <text class="dgm-sub" x="20" y="52">reverse each row</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">= 90° clockwise rotation, in place</text>
-            </svg>
-            <figcaption>Figure 1 — Transpose flips across the diagonal; reversing rows completes the clockwise turn.</figcaption>
-          </figure>
+          <div class="viz" data-viz="rotate-image"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -156,5 +149,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

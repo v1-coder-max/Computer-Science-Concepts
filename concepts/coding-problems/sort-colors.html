@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Maintain <code>low</code> (next 0 position), <code>high</code> (next 2 position), and a scanning <code>mid</code>. If <code>nums[mid] == 0</code>, swap with <code>low</code> and advance both; if <code>== 2</code>, swap with <code>high</code> and decrement <code>high</code> (don’t advance <code>mid</code> — the swapped-in value is unexamined); if <code>== 1</code>, just advance <code>mid</code>. Stop when <code>mid &gt; high</code>.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Three-way Dutch flag partition">
-              <text class="dgm-sub" x="20" y="24">0 → swap to low, low++ mid++</text>
-              <text class="dgm-sub" x="20" y="52">2 → swap to high, high-- (re-check mid)</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">1 → mid++; done when mid > high</text>
-            </svg>
-            <figcaption>Figure 1 — Three regions grow inward; the scanned value routes to its color.</figcaption>
-          </figure>
+          <div class="viz" data-viz="sort-colors"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -156,5 +149,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

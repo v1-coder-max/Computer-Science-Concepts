@@ -94,17 +94,7 @@
           </p>
           <p><strong>Time O(n²) DP / O(n log n) tails; Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 110" role="img" aria-label="Tails array growing via binary search">
-              <text class="dgm-sub" x="20" y="22">tails = smallest tail per LIS length</text>
-              <rect class="dgm-box-accent" x="20" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="50" y="59" text-anchor="middle">2</text>
-              <rect class="dgm-box-accent" x="84" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="114" y="59" text-anchor="middle">3</text>
-              <rect class="dgm-box-accent" x="148" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="178" y="59" text-anchor="middle">7</text>
-              <rect class="dgm-box-accent" x="212" y="40" width="60" height="28" rx="5"/><text class="dgm-sub" x="242" y="59" text-anchor="middle">18</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">length of tails = 4 = LIS length</text>
-            </svg>
-            <figcaption>Figure 1 — Each value replaces the first tail ≥ it (or extends); the array length is the LIS length.</figcaption>
-          </figure>
+          <div class="viz" data-viz="longest-increasing-subsequence"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -186,5 +176,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

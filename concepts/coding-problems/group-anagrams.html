@@ -87,16 +87,7 @@
           </ul>
           <p><strong>Time O(n · k log k)</strong> (sorted key) or <strong>O(n · k)</strong> (count key); <strong>Space O(n · k)</strong>.</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Grouping by canonical key">
-              <text class="dgm-sub" x="20" y="22">eat, tea, ate → sort → "aet" (same key)</text>
-              <rect class="dgm-box-accent" x="20" y="36" width="150" height="30" rx="6"/><text class="dgm-sub" x="95" y="56" text-anchor="middle">"aet" → [eat,tea,ate]</text>
-              <rect class="dgm-box" x="190" y="36" width="150" height="30" rx="6"/><text class="dgm-sub" x="265" y="56" text-anchor="middle">"ant" → [tan,nat]</text>
-              <rect class="dgm-box" x="360" y="36" width="130" height="30" rx="6"/><text class="dgm-sub" x="425" y="56" text-anchor="middle">"abt" → [bat]</text>
-              <text class="dgm-sub" x="20" y="100">dictionary keyed by canonical form → buckets are the groups</text>
-            </svg>
-            <figcaption>Figure 1 — Each word’s canonical key selects its bucket; the buckets are the answer.</figcaption>
-          </figure>
+          <div class="viz" data-viz="group-anagrams"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -179,5 +170,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

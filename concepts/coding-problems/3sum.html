@@ -89,24 +89,7 @@
           </p>
           <p><strong>Time O(n²)</strong> (one fixed element × the linear two-pointer scan), <strong>Space O(1)</strong> beyond the output (ignoring the sort).</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="3Sum sorted with fixed element and two pointers">
-              <defs>
-                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-                  <path d="M0,0 L8,3 L0,6 Z" class="dgm-arrow" />
-                </marker>
-              </defs>
-              <text class="dgm-sub" x="20" y="22">sorted: [-4, -1, -1, 0, 1, 2]</text>
-              <rect class="dgm-box-accent" x="20" y="36" width="60" height="34" rx="5"/><text class="dgm-sub" x="50" y="58" text-anchor="middle">-4 (i)</text>
-              <rect class="dgm-box" x="84" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="112" y="58" text-anchor="middle">-1 L</text>
-              <rect class="dgm-box" x="144" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="172" y="58" text-anchor="middle">-1</text>
-              <rect class="dgm-box" x="204" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="232" y="58" text-anchor="middle">0</text>
-              <rect class="dgm-box" x="264" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="292" y="58" text-anchor="middle">1</text>
-              <rect class="dgm-box" x="324" y="36" width="56" height="34" rx="5"/><text class="dgm-sub" x="352" y="58" text-anchor="middle">2 R</text>
-              <text class="dgm-sub" x="20" y="100">fix i, move L/R: sum&lt;0 → L++, sum&gt;0 → R--, sum==0 → record + skip dups</text>
-            </svg>
-            <figcaption>Figure 1 — Sorting lets the inner search use two pointers instead of a hash set.</figcaption>
-          </figure>
+          <div class="viz" data-viz="3sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -198,5 +181,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>
