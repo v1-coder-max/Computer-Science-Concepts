@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Sort balloons by <strong>end coordinate</strong>. Shoot the first arrow at the first balloon’s end; it bursts every balloon whose <code>start ≤ that end</code>. Skip all such covered balloons. When you reach a balloon that <strong>starts after</strong> the current arrow position, you need a <strong>new arrow</strong> at that balloon’s end. Repeat. This is the activity-selection greedy: committing to the earliest end maximizes overlap coverage.</p><p><strong>Time O(n log n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Shoot at earliest end, cover overlaps">
-              <text class="dgm-sub" x="20" y="24">sort by END coordinate</text>
-              <text class="dgm-sub" x="20" y="52">arrow at end; covers balloons with start ≤ end</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">next start > arrow → new arrow</text>
-            </svg>
-            <figcaption>Figure 1 — Aiming at the earliest end bursts the most balloons before a new arrow is needed.</figcaption>
-          </figure>
+          <div class="viz" data-viz="minimum-arrows-to-burst-balloons"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -161,5 +154,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

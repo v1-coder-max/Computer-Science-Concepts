@@ -91,19 +91,7 @@
           </p>
           <p><strong>Time O(log n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Halving the search window">
-              <text class="dgm-sub" x="20" y="22">target = 9 in [-1, 0, 3, 5, 9, 12]</text>
-              <rect class="dgm-box" x="20" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="60" y="54" text-anchor="middle">-1</text>
-              <rect class="dgm-box" x="105" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="145" y="54" text-anchor="middle">0</text>
-              <rect class="dgm-box-accent" x="190" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="230" y="54" text-anchor="middle">3 = mid</text>
-              <rect class="dgm-box" x="275" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="315" y="54" text-anchor="middle">5</text>
-              <rect class="dgm-box" x="360" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="400" y="54" text-anchor="middle">9</text>
-              <rect class="dgm-box" x="445" y="34" width="80" height="30" rx="5"/><text class="dgm-sub" x="485" y="54" text-anchor="middle">12</text>
-              <text class="dgm-sub" x="20" y="92" fill="var(--c-success)" style="font:600 12px var(--font-sans)">3 &lt; 9 → discard left half, search [5, 9, 12]; next mid = 9 → found</text>
-            </svg>
-            <figcaption>Figure 1 — Each step compares the midpoint and discards the half that cannot contain the target.</figcaption>
-          </figure>
+          <div class="viz" data-viz="binary-search"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -182,5 +170,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

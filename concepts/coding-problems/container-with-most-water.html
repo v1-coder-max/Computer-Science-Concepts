@@ -92,18 +92,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two pointers closing in on the widest container">
-              <line class="dgm-line" x1="40" y1="100" x2="560" y2="100"/>
-              <rect class="dgm-box-accent" x="70" y="40" width="14" height="60"/><text class="dgm-sub" x="77" y="32" text-anchor="middle">L</text>
-              <rect class="dgm-box" x="160" y="60" width="14" height="40"/>
-              <rect class="dgm-box" x="260" y="70" width="14" height="30"/>
-              <rect class="dgm-box" x="360" y="55" width="14" height="45"/>
-              <rect class="dgm-box-accent" x="500" y="48" width="14" height="52"/><text class="dgm-sub" x="507" y="32" text-anchor="middle">R</text>
-              <text class="dgm-sub" x="300" y="116" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">area = min(L,R) × width; move the shorter wall inward</text>
-            </svg>
-            <figcaption>Figure 1 — Width only decreases, so progress requires a taller limiting wall; advance the shorter side.</figcaption>
-          </figure>
+          <div class="viz" data-viz="container-with-most-water"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -179,5 +168,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>
