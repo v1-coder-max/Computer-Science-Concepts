@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Populating Next Right Pointers in Each Node — DevLens</title>
+  <meta name="description" content="Connect each node of a perfect binary tree to its right neighbor using already-established next pointers on the level above to traverse without a queue — O(n) time, O(1) space — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="populating-next-right-pointers" data-title="Populating Next Right Pointers in Each Node">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Populating Next Right Pointers in Each Node</h1>
+          <p class="lede">Wire each node’s <code>next</code> to its right neighbor on the same level. Using the level above’s <strong>already-linked next pointers</strong>, do it with O(1) space.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#bfs</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#linked-level</span>
+            <span class="tag">#o1-space</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a <strong>perfect</strong> binary tree, set each node’s <code>next</code> pointer to the node immediately to its right on the same level (or null for the rightmost). The tree already has <code>left</code>, <code>right</code>, and <code>next</code> fields.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,2,3,4,5,6,7]</code> → each node points right; rightmost on each level → null.</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>A level-order BFS with a queue connects each level in O(n) time but O(width) = O(n) space. The next pointers let you traverse each level like a linked list, removing the queue.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Process level by level using the current level’s <code>next</code> chain as a linked list to reach all nodes (no queue). For each node on the current level, link its children: <code>node.left.next = node.right</code>, and <code>node.right.next = node.next?.left</code> (the next node’s left child). A <code>leftmost</code> pointer descends to the start of each level. Because the tree is perfect, every node has two children until the leaves.</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Use the level’s next chain, link children">
+              <text class="dgm-sub" x="20" y="24">node.left.next = node.right</text>
+              <text class="dgm-sub" x="20" y="52">node.right.next = node.next?.left</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">traverse level via next; descend leftmost</text>
+            </svg>
+            <figcaption>Figure 1 — The parent level’s next pointers thread the children without a queue.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public Node Connect(Node root)
+{
+    Node leftmost = root;
+    while (leftmost != null &amp;&amp; leftmost.left != null)
+    {
+        Node node = leftmost;
+        while (node != null)
+        {
+            node.left.next = node.right;                       // siblings
+            if (node.next != null) node.right.next = node.next.left;  // cross-parent
+            node = node.next;                                  // walk the level
+        }
+        leftmost = leftmost.left;                              // drop a level
+    }
+    return root;
+}
+// class Node { public int val; public Node left, right, next; }</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each node visited once.</li>
+              <li><strong>Space:</strong> O(1) — uses the next pointers, no queue.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Reuse the <strong>parent level’s next chain</strong> to avoid a queue.</li>
+              <li>Link <code>left.next = right</code> and <code>right.next = next.left</code>.</li>
+              <li>Works in O(1) space because the tree is perfect.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/level-order-traversal.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Level Order Traversal</span></a>
+            <a class="related-card" href="../coding-problems/binary-tree-right-side-view.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Right Side View</span></a>
+            <a class="related-card" href="../coding-problems/binary-tree-zigzag-level-order-traversal.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Zigzag Level Order Traversal</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The O(1)-space trick — using the next pointers you’ve already set to traverse the next level — is the whole point. For a non-perfect tree (version II), you track the previous node and a dummy per level.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

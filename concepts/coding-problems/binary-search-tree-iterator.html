@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Binary Search Tree Iterator — DevLens</title>
+  <meta name="description" content="Implement a BST iterator with next and hasNext in amortized O(1) and O(h) space using a stack that holds the path of leftmost nodes, simulating an in-order traversal lazily — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="binary-search-tree-iterator" data-title="Binary Search Tree Iterator">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Binary Search Tree Iterator</h1>
+          <p class="lede">Iterate a BST in sorted order with <code>Next</code>/<code>HasNext</code>, using only O(h) space. A <strong>stack of leftmost nodes</strong> runs the in-order traversal lazily.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#bst</span>
+            <span class="tag">#design</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#in-order</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Implement <code>BSTIterator</code> over a BST: <code>Next()</code> returns the next smallest value, <code>HasNext()</code> reports if more remain. Aim for average O(1) per call and O(h) memory.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>BST [7,3,15,null,null,9,20]; next→3,7,9; hasNext→true; next→15,20</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Flatten the whole tree into a sorted list up front via in-order traversal — O(n) space and O(n) preprocessing. A lazy stack-based iterator uses only O(h) space and produces values on demand.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Keep a stack holding the current path of <strong>leftmost</strong> nodes. Initialize by pushing the root and all its left descendants. <code>Next</code>: pop the top (the smallest unvisited), and if it has a right child, push that child and all of <em>its</em> leftmost descendants. <code>HasNext</code> is just “stack not empty.” Each node is pushed and popped once, so <code>Next</code> is amortized O(1), and the stack never exceeds the tree height.</p><p><strong>Next amortized O(1), Space O(h).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Stack of leftmost nodes drives in-order">
+              <text class="dgm-sub" x="20" y="24">init: push root and all left descendants</text>
+              <text class="dgm-sub" x="20" y="52">next: pop; push right child + its lefts</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">amortized O(1) per next, O(h) space</text>
+            </svg>
+            <figcaption>Figure 1 — The stack always holds the path to the next-smallest value.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class BSTIterator
+{
+    private readonly Stack&lt;TreeNode&gt; _stack = new();
+
+    public BSTIterator(TreeNode root) =&gt; PushLeft(root);
+
+    public int Next()
+    {
+        var node = _stack.Pop();
+        PushLeft(node.right);          // expand the right subtree's left spine
+        return node.val;
+    }
+
+    public bool HasNext() =&gt; _stack.Count &gt; 0;
+
+    private void PushLeft(TreeNode node)
+    {
+        while (node != null) { _stack.Push(node); node = node.left; }
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(1) amortized per <code>Next</code> (O(n) total over n calls).</li>
+              <li><strong>Space:</strong> O(h) — the stack depth.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Lazily simulate <strong>in-order with an explicit stack</strong>.</li>
+              <li>Push the left spine on init and after visiting a right child.</li>
+              <li>O(h) space beats flattening the whole tree to O(n).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/kth-smallest-element-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Smallest Element in a BST</span></a>
+            <a class="related-card" href="../coding-problems/validate-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Validate BST</span></a>
+            <a class="related-card" href="../coding-problems/level-order-traversal.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Level Order Traversal</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>It’s the iterative in-order traversal pulled apart into a class. The amortized-O(1) argument (each node pushed/popped once) and the O(h) space bound are what the interviewer wants to hear.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

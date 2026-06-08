@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find K Closest Elements — DevLens</title>
+  <meta name="description" content="Find the k elements closest to x in a sorted array by binary searching for the best window start, comparing the gap at both window ends to slide the range — O(log(n-k) + k) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="find-k-closest-elements" data-title="Find K Closest Elements">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Find K Closest Elements</h1>
+          <p class="lede">The <code>k</code> elements nearest to <code>x</code>, returned sorted. Binary search for the best <strong>window start</strong> by comparing the gaps at the window’s two ends.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#binary-search</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#window</span>
+            <span class="tag">#sorted</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a sorted array <code>arr</code>, an integer <code>k</code>, and a value <code>x</code>, return the <code>k</code> closest elements to <code>x</code> (sorted ascending; ties prefer the smaller element).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>arr=[1,2,3,4,5], k=4, x=3</code> → <code>[1,2,3,4]</code> &nbsp;·&nbsp; <code>x=-1</code> → <code>[1,2,3,4]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Sort all elements by distance to <code>x</code> and take k — O(n log n), discarding the sorted order. Two pointers from the closest element is O(n). Binary search on the window start is O(log(n−k) + k).</p>
+
+          <h2>Optimized approach</h2>
+          <p>The answer is a contiguous window of length <code>k</code>. Binary search the window’s <strong>start index</strong> in <code>[0, n−k]</code>: at <code>mid</code>, compare <code>x − arr[mid]</code> (left gap) with <code>arr[mid+k] − x</code> (right gap). If the left gap is larger, the window should slide right (<code>lo = mid + 1</code>); otherwise <code>hi = mid</code>. Convergence gives the optimal start; return that length-<code>k</code> slice.</p><p><strong>Time O(log(n−k) + k), Space O(k).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search the window start">
+              <text class="dgm-sub" x="20" y="24">compare x − arr[mid] vs arr[mid+k] − x</text>
+              <text class="dgm-sub" x="20" y="52">left gap bigger → slide right (lo = mid+1)</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">best start → return k-length slice</text>
+            </svg>
+            <figcaption>Figure 1 — Comparing the two boundary gaps tells you which way the optimal window lies.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;int&gt; FindClosestElements(int[] arr, int k, int x)
+{
+    int lo = 0, hi = arr.Length - k;
+    while (lo &lt; hi)
+    {
+        int mid = lo + (hi - lo) / 2;
+        if (x - arr[mid] &gt; arr[mid + k] - x) lo = mid + 1;   // window too far left
+        else hi = mid;
+    }
+    return arr.Skip(lo).Take(k).ToList();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(log(n−k) + k).</li>
+              <li><strong>Space:</strong> O(k) for the output.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The result is a <strong>contiguous window</strong>; binary search its start.</li>
+              <li>Compare the <strong>two boundary gaps</strong> to decide the slide direction.</li>
+              <li>Two pointers expanding from the closest element is the O(n) alternative.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+            <a class="related-card" href="../coding-problems/k-closest-points-to-origin.html"><span class="rc-cat">Coding</span><span class="rc-title">K Closest Points to Origin</span></a>
+            <a class="related-card" href="../coding-problems/search-insert-position.html"><span class="rc-cat">Coding</span><span class="rc-title">Search Insert Position</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Binary-searching the window start (not the element) is the elegant O(log) approach — explain the two-gap comparison. The two-pointer O(n) version is a fine fallback to mention.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

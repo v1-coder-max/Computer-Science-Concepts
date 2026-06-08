@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shortest Path in Binary Matrix — DevLens</title>
+  <meta name="description" content="Find the shortest clear 8-directional path from the top-left to bottom-right of a binary grid using BFS that counts cells along the way — O(n^2) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="shortest-path-in-binary-matrix" data-title="Shortest Path in Binary Matrix">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Shortest Path in Binary Matrix</h1>
+          <p class="lede">Shortest clear path corner to corner, moving in <strong>8 directions</strong> through 0-cells. Unit steps ⇒ <strong>BFS</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#bfs</span>
+            <span class="tag">#grid</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#shortest-path</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an <code>n × n</code> binary grid, return the length (in cells) of the shortest clear path from top-left to bottom-right moving 8-directionally through cells with value 0, or <code>-1</code> if none exists.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[[0,0,0],[1,1,0],[1,1,0]]</code> → <code>4</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>DFS over all paths is exponential and doesn’t guarantee shortest. With unit-cost moves, BFS finds the shortest path and visits each cell once.</p>
+
+          <h2>Optimized approach</h2>
+          <p>If the start or end cell is blocked, return −1. <strong>BFS</strong> from <code>(0,0)</code>, exploring all <strong>8 neighbors</strong>, counting path length by level. Mark cells visited (or set them to 1) as you enqueue them so each is processed once. The first time you reach the bottom-right, its level is the answer.</p><p><strong>Time O(n²), Space O(n²).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="8-directional BFS, count cells">
+              <text class="dgm-sub" x="20" y="24">start/end blocked → -1</text>
+              <text class="dgm-sub" x="20" y="52">BFS with 8 neighbors, mark visited</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">first reach of bottom-right = path length</text>
+            </svg>
+            <figcaption>Figure 1 — Eight-way unit moves make BFS the shortest-path tool.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int ShortestPathBinaryMatrix(int[][] grid)
+{
+    int n = grid.Length;
+    if (grid[0][0] == 1 || grid[n - 1][n - 1] == 1) return -1;
+
+    var q = new Queue&lt;(int r, int c)&gt;();
+    q.Enqueue((0, 0)); grid[0][0] = 1;        // mark visited
+    int path = 1;
+    int[][] dirs = { new[]{0,1}, new[]{1,0}, new[]{0,-1}, new[]{-1,0},
+                     new[]{1,1}, new[]{1,-1}, new[]{-1,1}, new[]{-1,-1} };
+
+    while (q.Count &gt; 0)
+    {
+        for (int i = q.Count; i &gt; 0; i--)
+        {
+            var (r, c) = q.Dequeue();
+            if (r == n - 1 &amp;&amp; c == n - 1) return path;
+            foreach (var d in dirs)
+            {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr &gt;= 0 &amp;&amp; nc &gt;= 0 &amp;&amp; nr &lt; n &amp;&amp; nc &lt; n &amp;&amp; grid[nr][nc] == 0)
+                { grid[nr][nc] = 1; q.Enqueue((nr, nc)); }
+            }
+        }
+        path++;
+    }
+    return -1;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n²) — each cell visited once.</li>
+              <li><strong>Space:</strong> O(n²) for the queue.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Unit-cost grid path → <strong>BFS</strong> (count levels = path length).</li>
+              <li><strong>8 directions</strong>, not 4 — include the diagonals.</li>
+              <li>Mark cells visited on enqueue to avoid re-processing.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/rotting-oranges.html"><span class="rc-cat">Coding</span><span class="rc-title">Rotting Oranges</span></a>
+            <a class="related-card" href="../coding-problems/walls-and-gates.html"><span class="rc-cat">Coding</span><span class="rc-title">Walls and Gates</span></a>
+            <a class="related-card" href="../coding-problems/number-of-islands.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Islands</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Standard grid BFS — the only twists are the 8 directions and counting cells (not edges). For weighted grids you’d switch to Dijkstra or 0-1 BFS; here unit cost keeps it plain BFS.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

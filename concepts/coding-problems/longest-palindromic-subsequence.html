@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Longest Palindromic Subsequence — DevLens</title>
+  <meta name="description" content="Find the longest palindromic subsequence of a string with an interval DP where matching ends add 2 to the inner result and mismatches take the better of dropping either end — O(n^2) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="longest-palindromic-subsequence" data-title="Longest Palindromic Subsequence">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Longest Palindromic Subsequence</h1>
+          <p class="lede">Longest subsequence that reads the same both ways. An <strong>interval DP</strong>: matching ends add 2 to the inner interval; mismatches drop one end.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#2d-dp</span>
+            <span class="tag">#strings</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#interval-dp</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a string <code>s</code>, return the length of its longest palindromic subsequence (characters in order, not necessarily contiguous).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>"bbbab"</code> → <code>4</code> ("bbbb") &nbsp;·&nbsp; <code>"cbbd"</code> → <code>2</code> ("bb")</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Equivalent to the LCS of <code>s</code> and its reverse, but the direct interval DP is cleaner. Brute-force checking all subsequences is exponential.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Let <code>dp[i][j]</code> = longest palindromic subsequence within <code>s[i..j]</code>. If <code>s[i] == s[j]</code>, they extend the best inner palindrome: <code>dp[i][j] = 2 + dp[i+1][j−1]</code> (or 1 if <code>i == j</code>). If they differ, drop one end: <code>dp[i][j] = max(dp[i+1][j], dp[i][j−1])</code>. Single characters are length-1 palindromes. Fill by increasing interval length; the answer is <code>dp[0][n−1]</code>.</p><p><strong>Time O(n²), Space O(n²).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Interval DP over substrings">
+              <text class="dgm-sub" x="20" y="24">s[i]==s[j] → 2 + dp[i+1][j-1]</text>
+              <text class="dgm-sub" x="20" y="52">else max(dp[i+1][j], dp[i][j-1])</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">"bbbab" → 4</text>
+            </svg>
+            <figcaption>Figure 1 — Matching ends grow the palindrome; mismatches discard the less useful end.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int LongestPalindromeSubseq(string s)
+{
+    int n = s.Length;
+    var dp = new int[n, n];
+    for (int i = n - 1; i &gt;= 0; i--)
+    {
+        dp[i, i] = 1;                              // single char
+        for (int j = i + 1; j &lt; n; j++)
+            dp[i, j] = s[i] == s[j]
+                ? dp[i + 1, j - 1] + 2
+                : Math.Max(dp[i + 1, j], dp[i, j - 1]);
+    }
+    return dp[0, n - 1];
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n²).</li>
+              <li><strong>Space:</strong> O(n²) (reducible to O(n)).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Interval DP</strong>: solve substrings by increasing length.</li>
+              <li>Matching ends add 2 to the inner interval; else drop one end.</li>
+              <li>It equals LCS of <code>s</code> and reverse(<code>s</code>).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/longest-palindromic-substring.html"><span class="rc-cat">Coding</span><span class="rc-title">Longest Palindromic Substring</span></a>
+            <a class="related-card" href="../coding-problems/longest-common-subsequence.html"><span class="rc-cat">Coding</span><span class="rc-title">Longest Common Subsequence</span></a>
+            <a class="related-card" href="../coding-problems/palindromic-substrings.html"><span class="rc-cat">Coding</span><span class="rc-title">Palindromic Substrings</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Distinguish subsequence (this, interval DP) from substring (expand-around-center). Mention the LCS-with-reverse equivalence — it shows you connect the two DP families.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

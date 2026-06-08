@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sort List — DevLens</title>
+  <meta name="description" content="Sort a linked list in O(n log n) and O(1) auxiliary space using bottom-up merge sort: repeatedly merge runs of increasing size, splitting and stitching with pointer surgery — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="sort-list" data-title="Sort List">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Sort List</h1>
+          <p class="lede">Sort a linked list in <strong>O(n log n)</strong>. Merge sort fits lists perfectly — split by the middle, sort halves, merge — and a bottom-up version uses O(1) extra space.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#linked-list</span>
+            <span class="tag">#sorting</span>
+            <span class="tag">#merge-sort</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#divide-and-conquer</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given the head of a linked list, sort it in ascending order and return the new head. Aim for O(n log n) time.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>4→2→1→3</code> → <code>1→2→3→4</code> &nbsp;·&nbsp; <code>-1→5→3→4→0</code> → <code>-1→0→3→4→5</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Copy values to an array, sort, and rewrite — O(n log n) time but O(n) extra space. Merge sort on the list itself avoids random access (which lists lack) and can run in O(1) auxiliary space bottom-up.</p>
+
+          <h2>Optimized approach</h2>
+          <p><strong>Top-down merge sort</strong>: find the middle with slow/fast pointers, split into two halves, recursively sort each, and <strong>merge</strong> the two sorted lists (the Merge Two Sorted Lists routine). That’s O(n log n) time and O(log n) recursion stack. The <strong>bottom-up</strong> variant merges runs of size 1, 2, 4, … iteratively for O(1) auxiliary space. Linked lists are ideal for merge sort because merging only relinks pointers.</p><p><strong>Time O(n log n), Space O(log n) top-down (O(1) bottom-up).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Merge sort: split, sort, merge">
+              <text class="dgm-sub" x="20" y="24">slow/fast → middle, split into halves</text>
+              <text class="dgm-sub" x="20" y="52">recursively sort, then merge two sorted lists</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">O(n log n); lists merge by relinking</text>
+            </svg>
+            <figcaption>Figure 1 — Merge sort suits lists since merging is pure pointer relinking.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public ListNode SortList(ListNode head)
+{
+    if (head == null || head.next == null) return head;
+
+    // split at the middle
+    ListNode slow = head, fast = head.next;
+    while (fast != null &amp;&amp; fast.next != null) { slow = slow.next; fast = fast.next.next; }
+    ListNode mid = slow.next; slow.next = null;
+
+    ListNode left = SortList(head), right = SortList(mid);
+    return Merge(left, right);
+
+    ListNode Merge(ListNode a, ListNode b)
+    {
+        var dummy = new ListNode(); var tail = dummy;
+        while (a != null &amp;&amp; b != null)
+        {
+            if (a.val &lt;= b.val) { tail.next = a; a = a.next; }
+            else                { tail.next = b; b = b.next; }
+            tail = tail.next;
+        }
+        tail.next = a ?? b;
+        return dummy.next;
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n log n).</li>
+              <li><strong>Space:</strong> O(log n) recursion (O(1) with bottom-up merging).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Merge sort</strong> is the natural O(n log n) list sort.</li>
+              <li>Split at the middle (slow/fast), sort halves, merge.</li>
+              <li>Bottom-up merging of doubling runs gives O(1) auxiliary space.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-two-sorted-lists.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge Two Sorted Lists</span></a>
+            <a class="related-card" href="../coding-problems/merge-k-sorted-lists.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge K Sorted Lists</span></a>
+            <a class="related-card" href="../coding-problems/reorder-list.html"><span class="rc-cat">Coding</span><span class="rc-title">Reorder List</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Explain why merge sort (not quicksort) suits linked lists — sequential access and O(1) merging. Mention the bottom-up O(1)-space version if they push on the recursion stack.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

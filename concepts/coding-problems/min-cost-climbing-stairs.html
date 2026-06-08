@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Min Cost Climbing Stairs — DevLens</title>
+  <meta name="description" content="Find the minimum cost to reach the top of a staircase where each step has a cost and you may climb one or two steps, with a rolling DP that takes the cheaper of the two prior steps — O(n), O(1) — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="min-cost-climbing-stairs" data-title="Min Cost Climbing Stairs">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Min Cost Climbing Stairs</h1>
+          <p class="lede">Each stair costs something; climb 1 or 2 steps. Minimum cost to the top: each step’s cost plus the <strong>cheaper of the two steps below</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#easy</span>
+            <span class="tag">#rolling</span>
+            <span class="tag">#stairs</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given <code>cost</code> where <code>cost[i]</code> is the price of step <code>i</code>, you may start at index 0 or 1 and climb 1 or 2 steps at a time. Return the minimum cost to reach the top (past the last step).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[10,15,20]</code> → <code>15</code> &nbsp;·&nbsp; <code>[1,100,1,1,1,100,1,1,100,1]</code> → <code>6</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Recursively try both step sizes from each position — exponential with overlap. The subproblems collapse into a simple linear DP.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Let <code>dp[i]</code> = minimum cost to <em>reach</em> step <code>i</code>. You arrive from step <code>i−1</code> or <code>i−2</code>, paying that step’s cost: <code>dp[i] = min(dp[i−1] + cost[i−1], dp[i−2] + cost[i−2])</code>. The top is index <code>n</code>. Since only the last two values matter, track two rolling variables for O(1) space.</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Reach a step from one or two below">
+              <text class="dgm-sub" x="20" y="24">dp[i] = min(dp[i-1]+cost[i-1], dp[i-2]+cost[i-2])</text>
+              <text class="dgm-sub" x="20" y="52">top = index n; start free at 0 or 1</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[1,100,1,1,1,100,1,1,100,1] → 6</text>
+            </svg>
+            <figcaption>Figure 1 — Each step takes the cheaper of its two possible predecessors.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MinCostClimbingStairs(int[] cost)
+{
+    int prev2 = 0, prev1 = 0;          // cost to reach steps 0 and 1 (free start)
+    for (int i = 2; i &lt;= cost.Length; i++)
+    {
+        int cur = Math.Min(prev1 + cost[i - 1], prev2 + cost[i - 2]);
+        prev2 = prev1;
+        prev1 = cur;
+    }
+    return prev1;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one pass.</li>
+              <li><strong>Space:</strong> O(1) — two rolling values.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Reach a step from <strong>one or two below</strong>, paying that step’s cost.</li>
+              <li>The top is index <code>n</code>, not <code>n−1</code>.</li>
+              <li>Collapse to two rolling variables — it’s Climbing Stairs with costs.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/climbing-stairs.html"><span class="rc-cat">Coding</span><span class="rc-title">Climbing Stairs</span></a>
+            <a class="related-card" href="../coding-problems/house-robber.html"><span class="rc-cat">Coding</span><span class="rc-title">House Robber</span></a>
+            <a class="related-card" href="../coding-problems/coin-change.html"><span class="rc-cat">Coding</span><span class="rc-title">Coin Change</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>It’s Climbing Stairs with weights. The only gotcha is that the “top” is one past the last step and the start is free — get those boundaries right.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimum Depth of Binary Tree — DevLens</title>
+  <meta name="description" content="Find the depth of the shallowest leaf in a binary tree, taking care that a node with one child is not a leaf, using recursion or a BFS that returns at the first leaf — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="minimum-depth-of-binary-tree" data-title="Minimum Depth of Binary Tree">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Minimum Depth of Binary Tree</h1>
+          <p class="lede">Depth to the <strong>nearest leaf</strong>. The catch: a node with only one child isn’t a leaf, so you can’t just take <code>min</code> of the two sides blindly.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#bfs</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#easy</span>
+            <span class="tag">#depth</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a binary tree, return its minimum depth: the number of nodes on the shortest path from the root down to the nearest leaf (a leaf has no children).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[3,9,20,null,null,15,7]</code> → <code>2</code> &nbsp;·&nbsp; <code>[2,null,3,null,4]</code> → <code>4</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>A naive <code>1 + min(left, right)</code> is wrong: for a node with one missing child, the missing side reports depth 0, giving a too-small answer. You must special-case single-child nodes.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Recurse, but handle the single-child case: if a node has only a left or only a right child, the minimum depth must go down the <strong>existing</strong> side, so return <code>1 + that side</code>. Only when both children exist do you take <code>1 + min(left, right)</code>. Even better, a <strong>BFS</strong> returns the depth at the <strong>first leaf</strong> it reaches — naturally the shallowest — and can stop early.</p><p><strong>Time O(n), Space O(h) or O(width).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="One-child nodes aren’t leaves">
+              <text class="dgm-sub" x="20" y="24">one child missing → go down the present side</text>
+              <text class="dgm-sub" x="20" y="52">both children → 1 + min(left, right)</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">BFS stops at the first leaf reached</text>
+            </svg>
+            <figcaption>Figure 1 — The missing-child special case prevents an incorrectly small minimum.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MinDepth(TreeNode root)
+{
+    if (root == null) return 0;
+    if (root.left == null) return 1 + MinDepth(root.right);   // only right
+    if (root.right == null) return 1 + MinDepth(root.left);   // only left
+    return 1 + Math.Min(MinDepth(root.left), MinDepth(root.right));
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) recursion (BFS can stop early).</li>
+              <li><strong>Space:</strong> O(h) recursion / O(width) BFS.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A node with <strong>one child is not a leaf</strong> — recurse down the present side.</li>
+              <li>Take <code>min</code> only when both children exist.</li>
+              <li>BFS returns at the first leaf — the shallowest — and stops early.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/max-depth-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Depth of Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/level-order-traversal.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Level Order Traversal</span></a>
+            <a class="related-card" href="../coding-problems/path-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Path Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The whole trap is the single-child case — the naive <code>min</code> fails there. Mention the BFS solution as the one that can return early, which matters for very unbalanced trees.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

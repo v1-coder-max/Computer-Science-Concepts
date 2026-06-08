@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>House Robber III — DevLens</title>
+  <meta name="description" content="Maximize loot on a binary tree where adjacent (parent-child) nodes cannot both be robbed using a post-order DFS that returns a pair: best with and without robbing the current node — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="house-robber-iii" data-title="House Robber III">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>House Robber III</h1>
+          <p class="lede">Rob houses arranged in a <strong>tree</strong>, no parent and child both robbed. A post-order DFS returns a <strong>pair</strong> per node: best if robbed, best if skipped.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#tree-dp</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Houses form a binary tree; you can’t rob two directly-connected (parent-child) houses. Return the maximum amount you can rob.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[3,2,3,null,3,null,1]</code> → <code>7</code> (3 + 3 + 1) &nbsp;·&nbsp; <code>[3,4,5,1,3,null,1]</code> → <code>9</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>A recursion returning a single “best from this node” value recomputes grandchildren repeatedly — exponential. Returning two values (rob / skip) per node memoizes the choice in one post-order pass.</p>
+
+          <h2>Optimized approach</h2>
+          <p>For each node, compute a pair <code>(rob, skip)</code>. If you <strong>rob</strong> this node, you must skip both children: <code>rob = node.val + left.skip + right.skip</code>. If you <strong>skip</strong> it, each child takes its own best: <code>skip = max(left.rob, left.skip) + max(right.rob, right.skip)</code>. Return the pair up; the answer at the root is <code>max(rob, skip)</code>. One post-order traversal, no repeated work.</p><p><strong>Time O(n), Space O(h).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Return (rob, skip) pair per node">
+              <text class="dgm-sub" x="20" y="24">rob = val + left.skip + right.skip</text>
+              <text class="dgm-sub" x="20" y="52">skip = max(left) + max(right)</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">answer = max(root.rob, root.skip)</text>
+            </svg>
+            <figcaption>Figure 1 — Carrying both choices up the tree avoids recomputing grandchildren.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int Rob(TreeNode root)
+{
+    var (rob, skip) = Dfs(root);
+    return Math.Max(rob, skip);
+
+    (int rob, int skip) Dfs(TreeNode node)
+    {
+        if (node == null) return (0, 0);
+        var l = Dfs(node.left);
+        var r = Dfs(node.right);
+        int rob  = node.val + l.skip + r.skip;                 // rob this node
+        int skip = Math.Max(l.rob, l.skip) + Math.Max(r.rob, r.skip);
+        return (rob, skip);
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — single post-order pass.</li>
+              <li><strong>Space:</strong> O(h) recursion depth.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Tree DP</strong>: return a <code>(rob, skip)</code> pair per node.</li>
+              <li>Robbing a node forces skipping both children.</li>
+              <li>Returning two states avoids the exponential single-value recursion.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/house-robber.html"><span class="rc-cat">Coding</span><span class="rc-title">House Robber</span></a>
+            <a class="related-card" href="../coding-problems/house-robber-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">House Robber II</span></a>
+            <a class="related-card" href="../coding-problems/binary-tree-maximum-path-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Maximum Path Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The leap from linear House Robber is “return two values per node.” Explain why a single value forces recomputing grandchildren. It’s the canonical intro to tree DP.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

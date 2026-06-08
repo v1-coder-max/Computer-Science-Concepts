@@ -2091,5 +2091,285 @@
     "tags": ["greedy", "arrays", "hard", "two-pass", "ratings", "interview"],
     "description": "Distribute the minimum candies so higher-rated children get more than each neighbor with two greedy passes — left to right, then right to left — taking the max requirement per child — O(n) — with a C# solution.",
     "url": "concepts/coding-problems/candy.html"
+  },
+  {
+    "title": "Insert Delete GetRandom O(1)",
+    "category": "coding-problems",
+    "tags": ["design", "hash-map", "arrays", "medium", "o1", "interview"],
+    "description": "Design a set with insert, remove, and getRandom all in O(1) by pairing a dynamic array for random indexing with a hash map from value to index, swapping the removed element with the last — C#.",
+    "url": "concepts/coding-problems/insert-delete-getrandom-o1.html"
+  },
+  {
+    "title": "Binary Search Tree Iterator",
+    "category": "coding-problems",
+    "tags": ["trees", "bst", "design", "medium", "in-order", "interview"],
+    "description": "Implement a BST iterator with next and hasNext in amortized O(1) and O(h) space using a stack that holds the path of leftmost nodes, simulating an in-order traversal lazily — with a C# solution.",
+    "url": "concepts/coding-problems/binary-search-tree-iterator.html"
+  },
+  {
+    "title": "Range Sum Query - Immutable",
+    "category": "coding-problems",
+    "tags": ["arrays", "prefix-sum", "design", "easy", "preprocessing", "interview"],
+    "description": "Answer many range-sum queries on a fixed array in O(1) by precomputing a prefix-sum array, so a range sum is the difference of two prefixes — O(n) build, O(1) per query — with a C# solution.",
+    "url": "concepts/coding-problems/range-sum-query-immutable.html"
+  },
+  {
+    "title": "First Missing Positive",
+    "category": "coding-problems",
+    "tags": ["arrays", "hashing", "hard", "in-place", "cyclic-sort", "interview"],
+    "description": "Find the smallest missing positive integer in O(n) time and O(1) space by using the array itself as a hash: place each value v at index v-1 via swaps, then scan for the first misplaced slot — with a C# solution.",
+    "url": "concepts/coding-problems/first-missing-positive.html"
+  },
+  {
+    "title": "Find All Numbers Disappeared in an Array",
+    "category": "coding-problems",
+    "tags": ["arrays", "hashing", "easy", "in-place", "marking", "interview"],
+    "description": "Find all numbers in 1..n missing from an array in O(n) time and O(1) extra space by marking each seen value’s index negative, then collecting the still-positive positions — with a C# solution.",
+    "url": "concepts/coding-problems/find-all-numbers-disappeared-in-an-array.html"
+  },
+  {
+    "title": "Contains Duplicate II",
+    "category": "coding-problems",
+    "tags": ["arrays", "hashing", "sliding-window", "easy", "set", "interview"],
+    "description": "Decide if an array has equal values within k indices of each other using a sliding window of seen values in a hash set bounded to size k — O(n) time, O(k) space — with a C# solution.",
+    "url": "concepts/coding-problems/contains-duplicate-ii.html"
+  },
+  {
+    "title": "Majority Element II",
+    "category": "coding-problems",
+    "tags": ["arrays", "boyer-moore", "medium", "voting", "o1", "interview"],
+    "description": "Find all elements appearing more than n/3 times in O(n) time and O(1) space with the Boyer-Moore voting algorithm generalized to two candidates and a verification pass — with a C# solution.",
+    "url": "concepts/coding-problems/majority-element-ii.html"
+  },
+  {
+    "title": "Find Pivot Index",
+    "category": "coding-problems",
+    "tags": ["arrays", "prefix-sum", "easy", "balance", "one-pass", "interview"],
+    "description": "Find the index where the sum of elements to its left equals the sum to its right using the total sum and a running left sum in one pass — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/find-pivot-index.html"
+  },
+  {
+    "title": "3Sum Closest",
+    "category": "coding-problems",
+    "tags": ["two-pointers", "arrays", "medium", "sorting", "closest", "interview"],
+    "description": "Find the triplet sum closest to a target by sorting then fixing one element and two-pointering the rest, tracking the closest sum and moving pointers toward the target — O(n^2) — with a C# solution.",
+    "url": "concepts/coding-problems/3sum-closest.html"
+  },
+  {
+    "title": "Squares of a Sorted Array",
+    "category": "coding-problems",
+    "tags": ["two-pointers", "arrays", "easy", "sorted", "merge", "interview"],
+    "description": "Return the squares of a sorted array in sorted order in O(n) using two pointers from both ends, since the largest squares come from the most negative or most positive values — with a C# solution.",
+    "url": "concepts/coding-problems/squares-of-a-sorted-array.html"
+  },
+  {
+    "title": "Max Consecutive Ones III",
+    "category": "coding-problems",
+    "tags": ["sliding-window", "arrays", "medium", "two-pointers", "binary", "interview"],
+    "description": "Find the longest run of 1s after flipping at most k zeros using a sliding window that is valid while it contains at most k zeros, expanding and shrinking on the zero count — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/max-consecutive-ones-iii.html"
+  },
+  {
+    "title": "Fruit Into Baskets",
+    "category": "coding-problems",
+    "tags": ["sliding-window", "arrays", "medium", "two-distinct", "hashing", "interview"],
+    "description": "Find the longest subarray containing at most two distinct values using a sliding window with a count map, shrinking whenever a third type appears — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/fruit-into-baskets.html"
+  },
+  {
+    "title": "Asteroid Collision",
+    "category": "coding-problems",
+    "tags": ["stack", "simulation", "medium", "arrays", "collision", "interview"],
+    "description": "Simulate asteroids moving left or right and resolve collisions with a stack: a right-mover waits, a left-mover collides with stacked right-movers, exploding the smaller (or both if equal) — O(n) — C#.",
+    "url": "concepts/coding-problems/asteroid-collision.html"
+  },
+  {
+    "title": "Simplify Path",
+    "category": "coding-problems",
+    "tags": ["stack", "strings", "medium", "parsing", "path", "interview"],
+    "description": "Simplify a Unix-style absolute path by splitting on slashes and using a stack: ignore empty and dot segments, pop on double-dot, push real directory names, then join — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/simplify-path.html"
+  },
+  {
+    "title": "Remove K Digits",
+    "category": "coding-problems",
+    "tags": ["stack", "greedy", "monotonic-stack", "medium", "strings", "interview"],
+    "description": "Form the smallest number after removing k digits using a monotonic increasing stack: pop larger preceding digits while budget remains, then trim leftovers and strip leading zeros — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/remove-k-digits.html"
+  },
+  {
+    "title": "Basic Calculator II",
+    "category": "coding-problems",
+    "tags": ["stack", "strings", "medium", "parsing", "precedence", "interview"],
+    "description": "Evaluate an expression with +, -, *, / and no parentheses using a stack: push numbers, apply * and / immediately against the stack top, defer + and - by sign, then sum — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/basic-calculator-ii.html"
+  },
+  {
+    "title": "Sqrt(x)",
+    "category": "coding-problems",
+    "tags": ["binary-search", "math", "easy", "integer", "overflow", "interview"],
+    "description": "Compute the integer square root of x by binary searching for the largest m whose square is at most x, using long to avoid overflow — O(log x) — with a C# solution and a note on Newton’s method.",
+    "url": "concepts/coding-problems/sqrtx.html"
+  },
+  {
+    "title": "Single Element in a Sorted Array",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "medium", "parity", "sorted", "interview"],
+    "description": "Find the single non-duplicated element in a sorted array where every other appears twice in O(log n) by binary searching on pair parity: the single element shifts the even-index pairing — with a C# solution.",
+    "url": "concepts/coding-problems/single-element-in-a-sorted-array.html"
+  },
+  {
+    "title": "Capacity To Ship Packages Within D Days",
+    "category": "coding-problems",
+    "tags": ["binary-search", "search-the-answer", "greedy", "medium", "feasibility", "interview"],
+    "description": "Find the least ship capacity to ship all packages in order within D days by binary searching the capacity range and greedily simulating days for each candidate — O(n log(sum)) — with a C# solution.",
+    "url": "concepts/coding-problems/capacity-to-ship-packages-within-d-days.html"
+  },
+  {
+    "title": "Find K Closest Elements",
+    "category": "coding-problems",
+    "tags": ["binary-search", "arrays", "medium", "window", "sorted", "interview"],
+    "description": "Find the k elements closest to x in a sorted array by binary searching for the best window start, comparing the gap at both window ends to slide the range — O(log(n-k) + k) — with a C# solution.",
+    "url": "concepts/coding-problems/find-k-closest-elements.html"
+  },
+  {
+    "title": "Sort List",
+    "category": "coding-problems",
+    "tags": ["linked-list", "sorting", "merge-sort", "medium", "divide-and-conquer", "interview"],
+    "description": "Sort a linked list in O(n log n) and O(1) auxiliary space using bottom-up merge sort: repeatedly merge runs of increasing size, splitting and stitching with pointer surgery — with a C# solution.",
+    "url": "concepts/coding-problems/sort-list.html"
+  },
+  {
+    "title": "Rotate List",
+    "category": "coding-problems",
+    "tags": ["linked-list", "pointers", "medium", "rotation", "ring", "interview"],
+    "description": "Rotate a linked list right by k places by connecting the tail to the head to form a ring, then breaking it at the new tail located length minus k mod length from the start — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/rotate-list.html"
+  },
+  {
+    "title": "Odd Even Linked List",
+    "category": "coding-problems",
+    "tags": ["linked-list", "pointers", "medium", "in-place", "partition", "interview"],
+    "description": "Group nodes at odd positions before even positions in a linked list, preserving relative order, by weaving two sublists with pointer surgery and joining them — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/odd-even-linked-list.html"
+  },
+  {
+    "title": "Remove Duplicates from Sorted List",
+    "category": "coding-problems",
+    "tags": ["linked-list", "two-pointers", "easy", "in-place", "sorted", "interview"],
+    "description": "Remove duplicate values from a sorted linked list in one pass by skipping over each node equal to the current one, relinking past the run — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/remove-duplicates-from-sorted-list.html"
+  },
+  {
+    "title": "Convert Sorted Array to BST",
+    "category": "coding-problems",
+    "tags": ["trees", "bst", "recursion", "easy", "divide-and-conquer", "interview"],
+    "description": "Build a height-balanced BST from a sorted array by recursively choosing the middle element as the root so both subtrees stay balanced — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/convert-sorted-array-to-bst.html"
+  },
+  {
+    "title": "Minimum Depth of Binary Tree",
+    "category": "coding-problems",
+    "tags": ["trees", "bfs", "recursion", "easy", "depth", "interview"],
+    "description": "Find the depth of the shallowest leaf in a binary tree, taking care that a node with one child is not a leaf, using recursion or a BFS that returns at the first leaf — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/minimum-depth-of-binary-tree.html"
+  },
+  {
+    "title": "Path Sum II",
+    "category": "coding-problems",
+    "tags": ["trees", "backtracking", "dfs", "medium", "root-to-leaf", "interview"],
+    "description": "Return all root-to-leaf paths summing to a target by DFS backtracking that carries the remaining sum and the current path, recording a copy at each qualifying leaf — O(n) plus output — with a C# solution.",
+    "url": "concepts/coding-problems/path-sum-ii.html"
+  },
+  {
+    "title": "Populating Next Right Pointers in Each Node",
+    "category": "coding-problems",
+    "tags": ["trees", "bfs", "medium", "linked-level", "o1-space", "interview"],
+    "description": "Connect each node of a perfect binary tree to its right neighbor using already-established next pointers on the level above to traverse without a queue — O(n) time, O(1) space — with a C# solution.",
+    "url": "concepts/coding-problems/populating-next-right-pointers.html"
+  },
+  {
+    "title": "House Robber III",
+    "category": "coding-problems",
+    "tags": ["trees", "dynamic-programming", "dfs", "medium", "tree-dp", "interview"],
+    "description": "Maximize loot on a binary tree where adjacent (parent-child) nodes cannot both be robbed using a post-order DFS that returns a pair: best with and without robbing the current node — O(n) — with a C# solution.",
+    "url": "concepts/coding-problems/house-robber-iii.html"
+  },
+  {
+    "title": "Delete Node in a BST",
+    "category": "coding-problems",
+    "tags": ["trees", "bst", "recursion", "medium", "successor", "interview"],
+    "description": "Delete a node from a BST while keeping it valid by searching down to the node, then handling 0/1 child by splicing or 2 children by replacing with the in-order successor — O(h) — with a C# solution.",
+    "url": "concepts/coding-problems/delete-node-in-a-bst.html"
+  },
+  {
+    "title": "Flood Fill",
+    "category": "coding-problems",
+    "tags": ["graphs", "dfs", "grid", "easy", "flood-fill", "interview"],
+    "description": "Recolor a connected region of same-colored pixels starting from a source using DFS or BFS, guarding against an infinite loop when the new color equals the original — O(m·n) — with a C# solution.",
+    "url": "concepts/coding-problems/flood-fill.html"
+  },
+  {
+    "title": "Accounts Merge",
+    "category": "coding-problems",
+    "tags": ["graphs", "union-find", "hashing", "medium", "dsu", "interview"],
+    "description": "Merge accounts that share any email using union-find over emails: union all emails within each account, then group emails by root and prepend each owner name — near-linear — with a C# solution.",
+    "url": "concepts/coding-problems/accounts-merge.html"
+  },
+  {
+    "title": "Evaluate Division",
+    "category": "coding-problems",
+    "tags": ["graphs", "dfs", "weighted", "medium", "ratios", "interview"],
+    "description": "Answer division queries from given a/b ratios by modeling variables as a weighted graph and finding a path whose edge-weight product gives the answer with DFS, or union-find with ratios — O(Q·V) — C#.",
+    "url": "concepts/coding-problems/evaluate-division.html"
+  },
+  {
+    "title": "Open the Lock",
+    "category": "coding-problems",
+    "tags": ["graphs", "bfs", "shortest-path", "medium", "state-space", "interview"],
+    "description": "Find the fewest moves to reach a target on a 4-wheel lock avoiding deadends using BFS over the state space, where each state has 8 neighbors (each wheel +/-1) — shortest path on an unweighted graph — C#.",
+    "url": "concepts/coding-problems/open-the-lock.html"
+  },
+  {
+    "title": "Shortest Path in Binary Matrix",
+    "category": "coding-problems",
+    "tags": ["graphs", "bfs", "grid", "medium", "shortest-path", "interview"],
+    "description": "Find the shortest clear 8-directional path from the top-left to bottom-right of a binary grid using BFS that counts cells along the way — O(n^2) — with a C# solution.",
+    "url": "concepts/coding-problems/shortest-path-in-binary-matrix.html"
+  },
+  {
+    "title": "Min Cost Climbing Stairs",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "arrays", "easy", "rolling", "stairs", "interview"],
+    "description": "Find the minimum cost to reach the top of a staircase where each step has a cost and you may climb one or two steps, with a rolling DP that takes the cheaper of the two prior steps — O(n), O(1) — C#.",
+    "url": "concepts/coding-problems/min-cost-climbing-stairs.html"
+  },
+  {
+    "title": "Triangle",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "arrays", "medium", "bottom-up", "paths", "interview"],
+    "description": "Find the minimum path sum from top to bottom of a triangle moving to adjacent numbers using a bottom-up DP that collapses each row into the row below — O(n^2) time, O(n) space — with a C# solution.",
+    "url": "concepts/coding-problems/triangle.html"
+  },
+  {
+    "title": "Longest Palindromic Subsequence",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "2d-dp", "strings", "medium", "interval-dp", "interview"],
+    "description": "Find the longest palindromic subsequence of a string with an interval DP where matching ends add 2 to the inner result and mismatches take the better of dropping either end — O(n^2) — with a C# solution.",
+    "url": "concepts/coding-problems/longest-palindromic-subsequence.html"
+  },
+  {
+    "title": "Unique Binary Search Trees",
+    "category": "coding-problems",
+    "tags": ["dynamic-programming", "math", "medium", "catalan", "counting", "interview"],
+    "description": "Count the structurally unique BSTs with n nodes using the Catalan-number DP: each value as root multiplies the counts of its left and right subtree sizes, summed over all roots — O(n^2) — with a C# solution.",
+    "url": "concepts/coding-problems/unique-binary-search-trees.html"
+  },
+  {
+    "title": "Minimum Number of Arrows to Burst Balloons",
+    "category": "coding-problems",
+    "tags": ["greedy", "intervals", "sorting", "medium", "activity-selection", "interview"],
+    "description": "Find the fewest arrows to burst all balloons (intervals) by sorting on end coordinate and greedily shooting at each interval’s end, covering all overlapping balloons before needing a new arrow — O(n log n) — C#.",
+    "url": "concepts/coding-problems/minimum-arrows-to-burst-balloons.html"
   }
 ]

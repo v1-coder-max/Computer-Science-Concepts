@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asteroid Collision — DevLens</title>
+  <meta name="description" content="Simulate asteroids moving left or right and resolve collisions with a stack: a right-mover waits, a left-mover collides with stacked right-movers, exploding the smaller (or both if equal) — O(n) — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="asteroid-collision" data-title="Asteroid Collision">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Asteroid Collision</h1>
+          <p class="lede">Asteroids fly left or right; collisions destroy the smaller. A <strong>stack</strong> of surviving asteroids resolves each impact as it happens.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#stack</span>
+            <span class="tag">#simulation</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#collision</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Each value in <code>asteroids</code> is an asteroid: sign = direction (positive = right, negative = left), magnitude = size. Right and left movers collide; the smaller explodes (both if equal sizes). Return the survivors.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[5,10,-5]</code> → <code>[5,10]</code> &nbsp;·&nbsp; <code>[8,-8]</code> → <code>[]</code> &nbsp;·&nbsp; <code>[10,2,-5]</code> → <code>[10]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Repeatedly scan the array applying collisions until stable — O(n²) in the worst case. A single stack pass resolves all collisions in O(n).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Process asteroids left to right with a <strong>stack</strong> of survivors. A <strong>right-moving</strong> asteroid is just pushed. A <strong>left-moving</strong> one (negative) collides with right-movers on top of the stack: while the top is a positive asteroid smaller than the incoming one, pop it (it explodes); if the top equals it, pop and stop (both gone); if the top is larger, the incoming one explodes. If no right-mover blocks it, push it. The stack ends as the surviving asteroids in order.</p><p><strong>Time O(n), Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Stack resolves each collision">
+              <text class="dgm-sub" x="20" y="24">right-mover → push</text>
+              <text class="dgm-sub" x="20" y="52">left-mover → pop smaller right-movers</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[5,10,-5] → [5,10]</text>
+            </svg>
+            <figcaption>Figure 1 — A left-mover eats stacked right-movers until blocked or destroyed.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[] AsteroidCollision(int[] asteroids)
+{
+    var stack = new Stack&lt;int&gt;();
+    foreach (int a in asteroids)
+    {
+        bool alive = true;
+        while (alive &amp;&amp; a &lt; 0 &amp;&amp; stack.Count &gt; 0 &amp;&amp; stack.Peek() &gt; 0)
+        {
+            int top = stack.Peek();
+            if (top &lt; -a) stack.Pop();           // top explodes, keep checking
+            else if (top == -a) { stack.Pop(); alive = false; }  // both explode
+            else alive = false;                  // incoming explodes
+        }
+        if (alive) stack.Push(a);
+    }
+    var arr = stack.ToArray();
+    Array.Reverse(arr);
+    return arr;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each asteroid pushed/popped once.</li>
+              <li><strong>Space:</strong> O(n) for the stack.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Collisions resolve against the <strong>top of a stack</strong> of survivors.</li>
+              <li>Only a left-mover meeting a right-mover collides (signs).</li>
+              <li>Three outcomes per impact: incoming wins, both die, or incoming dies.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/daily-temperatures.html"><span class="rc-cat">Coding</span><span class="rc-title">Daily Temperatures</span></a>
+            <a class="related-card" href="../coding-problems/next-greater-element-ii.html"><span class="rc-cat">Coding</span><span class="rc-title">Next Greater Element II</span></a>
+            <a class="related-card" href="../coding-problems/car-fleet.html"><span class="rc-cat">Coding</span><span class="rc-title">Car Fleet</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The stack models “what could still be hit from the left.” Enumerate the three collision outcomes carefully — that case analysis is where bugs creep in.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

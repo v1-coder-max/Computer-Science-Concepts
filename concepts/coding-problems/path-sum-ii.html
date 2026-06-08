@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Path Sum II — DevLens</title>
+  <meta name="description" content="Return all root-to-leaf paths summing to a target by DFS backtracking that carries the remaining sum and the current path, recording a copy at each qualifying leaf — O(n) plus output — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="path-sum-ii" data-title="Path Sum II">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Path Sum II</h1>
+          <p class="lede">List <em>all</em> root-to-leaf paths summing to a target. DFS while carrying the <strong>current path</strong> and remaining sum, recording a copy at each matching leaf.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#backtracking</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#root-to-leaf</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a binary tree and a <code>targetSum</code>, return all root-to-leaf paths whose node values sum to <code>targetSum</code>.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>root=[5,4,8,11,null,13,4,7,2,null,null,5,1], targetSum=22</code> → <code>[[5,4,11,2],[5,8,4,5]]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Enumerating all paths and filtering by sum is the same traversal but with redundant path copies. Backtracking shares one path buffer and only copies on a hit.</p>
+
+          <h2>Optimized approach</h2>
+          <p>DFS with a running <code>path</code> list and the remaining target. At each node, append its value and subtract from the target. At a <strong>leaf</strong>, if the remaining target equals 0, record a <strong>copy</strong> of the path. Recurse into children, then <strong>backtrack</strong> by removing the node from the path so siblings reuse the buffer. This is Path Sum extended to collect the actual paths.</p><p><strong>Time O(n) traversal (plus O(paths·length) to build output), Space O(h).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Backtrack a shared path buffer">
+              <text class="dgm-sub" x="20" y="24">append node, subtract from target</text>
+              <text class="dgm-sub" x="20" y="52">leaf & remaining == 0 → record a copy</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">remove node on the way back up</text>
+            </svg>
+            <figcaption>Figure 1 — One path buffer is grown and shrunk; copies are taken only at qualifying leaves.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;int&gt;&gt; PathSum(TreeNode root, int targetSum)
+{
+    var result = new List&lt;IList&lt;int&gt;&gt;();
+    var path = new List&lt;int&gt;();
+    Dfs(root, targetSum);
+    return result;
+
+    void Dfs(TreeNode node, int remaining)
+    {
+        if (node == null) return;
+        path.Add(node.val);
+        remaining -= node.val;
+        if (node.left == null &amp;&amp; node.right == null &amp;&amp; remaining == 0)
+            result.Add(new List&lt;int&gt;(path));        // copy at a matching leaf
+        Dfs(node.left, remaining);
+        Dfs(node.right, remaining);
+        path.RemoveAt(path.Count - 1);              // backtrack
+    }
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) to traverse (plus output size).</li>
+              <li><strong>Space:</strong> O(h) recursion + path buffer.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>DFS + <strong>backtracking</strong> over a shared path buffer.</li>
+              <li>Copy the path <strong>only at a qualifying leaf</strong>.</li>
+              <li>It’s Path Sum that returns the paths, not just a boolean.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/path-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Path Sum</span></a>
+            <a class="related-card" href="../coding-problems/binary-tree-maximum-path-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Maximum Path Sum</span></a>
+            <a class="related-card" href="../coding-problems/subsets.html"><span class="rc-cat">Coding</span><span class="rc-title">Subsets</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The key efficiency point: share one path buffer and copy only on a hit, removing the node on the way back up. It’s the bridge between tree DFS and backtracking.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

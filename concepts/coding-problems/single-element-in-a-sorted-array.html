@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Single Element in a Sorted Array — DevLens</title>
+  <meta name="description" content="Find the single non-duplicated element in a sorted array where every other appears twice in O(log n) by binary searching on pair parity: the single element shifts the even-index pairing — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="single-element-in-a-sorted-array" data-title="Single Element in a Sorted Array">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Single Element in a Sorted Array</h1>
+          <p class="lede">Every element appears twice except one — find it in <strong>O(log n)</strong>. Binary search on <strong>pair parity</strong>: the single element breaks the even-index pairing.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#binary-search</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#parity</span>
+            <span class="tag">#sorted</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a sorted array where every element appears exactly twice except one that appears once, return the single element in O(log n) time and O(1) space.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,1,2,3,3,4,4,8,8]</code> → <code>2</code> &nbsp;·&nbsp; <code>[3,3,7,7,10,11,11]</code> → <code>10</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>XOR all elements (O(n)) or scan pairs (O(n)) both find it but ignore the sorted order. Sortedness enables O(log n) via index parity.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Before the single element, pairs start at <strong>even</strong> indices (<code>(0,1), (2,3), …</code>); after it, the pairing shifts to odd starts. Binary search on <strong>even midpoints</strong>: force <code>mid</code> to be even; if <code>nums[mid] == nums[mid+1]</code>, the single element is to the <strong>right</strong> (pairing still intact), so <code>lo = mid + 2</code>; otherwise it’s at <code>mid</code> or to the <strong>left</strong>, so <code>hi = mid</code>. Convergence lands on the single element.</p><p><strong>Time O(log n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Binary search on pair parity">
+              <text class="dgm-sub" x="20" y="24">before single: pairs at even indices</text>
+              <text class="dgm-sub" x="20" y="52">mid even & nums[mid]==nums[mid+1] → go right</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">else single is at mid or left</text>
+            </svg>
+            <figcaption>Figure 1 — The single element disturbs the even-index pairing, which binary search detects.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int SingleNonDuplicate(int[] nums)
+{
+    int lo = 0, hi = nums.Length - 1;
+    while (lo &lt; hi)
+    {
+        int mid = lo + (hi - lo) / 2;
+        if (mid % 2 == 1) mid--;                  // align to even index
+        if (nums[mid] == nums[mid + 1]) lo = mid + 2;   // pairing intact → right
+        else hi = mid;                            // broken here or left
+    }
+    return nums[lo];
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(log n).</li>
+              <li><strong>Space:</strong> O(1).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>The single element shifts <strong>pair parity</strong> — binary search on it.</li>
+              <li>Align <code>mid</code> to an even index before comparing.</li>
+              <li>XOR is the O(n) fallback that ignores sortedness.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/binary-search.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Search</span></a>
+            <a class="related-card" href="../coding-problems/single-number.html"><span class="rc-cat">Coding</span><span class="rc-title">Single Number</span></a>
+            <a class="related-card" href="../coding-problems/find-peak-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Find Peak Element</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The parity insight is the whole problem — explain why pairs start even before the single element and odd after. Aligning <code>mid</code> to even keeps the comparison valid.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

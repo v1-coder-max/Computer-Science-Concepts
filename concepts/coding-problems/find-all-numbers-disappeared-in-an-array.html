@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find All Numbers Disappeared in an Array — DevLens</title>
+  <meta name="description" content="Find all numbers in 1..n missing from an array in O(n) time and O(1) extra space by marking each seen value’s index negative, then collecting the still-positive positions — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="find-all-numbers-disappeared-in-an-array" data-title="Find All Numbers Disappeared in an Array">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Find All Numbers Disappeared in an Array</h1>
+          <p class="lede">Which numbers from <code>1..n</code> are missing? Mark presence by <strong>negating the value at each seen number’s index</strong>, then the still-positive slots reveal the gaps.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#arrays</span>
+            <span class="tag">#hashing</span>
+            <span class="tag">#easy</span>
+            <span class="tag">#in-place</span>
+            <span class="tag">#marking</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an array <code>nums</code> of <code>n</code> integers where each is in <code>[1, n]</code>, return all integers in <code>[1, n]</code> that do not appear. Aim for O(n) time and O(1) extra space.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[4,3,2,7,8,2,3,1]</code> → <code>[5,6]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>A boolean array or <code>HashSet</code> of seen values then a scan is O(n) time but O(n) space. We can instead record presence in place by flipping signs.</p>
+
+          <h2>Optimized approach</h2>
+          <p>For each value <code>v</code>, treat index <code>|v| − 1</code> as its bucket and <strong>negate</strong> the number there (if not already negative) to mark <code>v</code> as seen. Use the absolute value when reading, since earlier marks may have flipped signs. After the pass, any index still holding a <strong>positive</strong> value was never marked — so <code>index + 1</code> is missing. Restore signs afterward if the input must stay intact.</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Negate the bucket of each seen value">
+              <text class="dgm-sub" x="20" y="24">for v: nums[|v|-1] = -|nums[|v|-1]|</text>
+              <text class="dgm-sub" x="20" y="52">positive slot i → i+1 never appeared</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">[4,3,2,7,8,2,3,1] → [5, 6]</text>
+            </svg>
+            <figcaption>Figure 1 — Sign flips encode presence; the survivors that stayed positive are the missing numbers.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;int&gt; FindDisappearedNumbers(int[] nums)
+{
+    foreach (int v in nums)
+    {
+        int idx = Math.Abs(v) - 1;
+        if (nums[idx] &gt; 0) nums[idx] = -nums[idx];   // mark v as seen
+    }
+
+    var result = new List&lt;int&gt;();
+    for (int i = 0; i &lt; nums.Length; i++)
+        if (nums[i] &gt; 0) result.Add(i + 1);          // never marked → missing
+    return result;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — two passes.</li>
+              <li><strong>Space:</strong> O(1) — sign marking in place (output excluded).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Encode “seen” by <strong>negating the value at the number’s index</strong>.</li>
+              <li>Always read with <code>Math.Abs</code> since marks flip signs.</li>
+              <li>Same index-as-hash idea as First Missing Positive and Find the Duplicate.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/first-missing-positive.html"><span class="rc-cat">Coding</span><span class="rc-title">First Missing Positive</span></a>
+            <a class="related-card" href="../coding-problems/find-the-duplicate-number.html"><span class="rc-cat">Coding</span><span class="rc-title">Find the Duplicate Number</span></a>
+            <a class="related-card" href="../coding-problems/missing-number.html"><span class="rc-cat">Coding</span><span class="rc-title">Missing Number</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The sign-marking trick gives O(1) space — the whole point of the question. Emphasize reading with absolute value. It’s the gentle cousin of First Missing Positive.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

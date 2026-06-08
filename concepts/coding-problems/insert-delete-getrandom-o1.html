@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insert Delete GetRandom O(1) — DevLens</title>
+  <meta name="description" content="Design a set with insert, remove, and getRandom all in O(1) by pairing a dynamic array for random indexing with a hash map from value to index, swapping the removed element with the last — C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="insert-delete-getrandom-o1" data-title="Insert Delete GetRandom O(1)">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Insert Delete GetRandom O(1)</h1>
+          <p class="lede">Insert, remove, and pick a random element — all O(1). The combo: an <strong>array</strong> for random access plus a <strong>value→index map</strong>, with a swap-with-last delete.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#design</span>
+            <span class="tag">#hash-map</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#o1</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Design a structure supporting <code>Insert(val)</code>, <code>Remove(val)</code>, and <code>GetRandom()</code> (uniform over current elements), each in average O(1).</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>insert(1); insert(2); getRandom()→1 or 2; remove(1); getRandom()→2</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>A hash set gives O(1) insert/remove but no O(1) uniform random pick (you’d iterate). A plain array gives O(1) random pick but O(n) remove (shifting). You need both properties at once.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Keep a dynamic <strong>list</strong> of values (for O(1) random indexing) and a <strong>map from value → its index</strong> in the list. <strong>Insert</strong>: append to the list, record its index. <strong>Remove</strong>: look up the index, <strong>swap that element with the last</strong>, update the moved element’s index in the map, then pop the last (O(1), no shifting). <strong>GetRandom</strong>: index the list with a random position.</p><p><strong>Time O(1) average per op, Space O(n).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Array + value→index map, swap-with-last delete">
+              <text class="dgm-sub" x="20" y="24">list = values · map = value → index</text>
+              <text class="dgm-sub" x="20" y="52">remove: swap target with last, pop, fix index</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">getRandom = list[rand()]</text>
+            </svg>
+            <figcaption>Figure 1 — Swapping the removed value with the last keeps deletion O(1) and the array compact.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public class RandomizedSet
+{
+    private readonly List&lt;int&gt; _vals = new();
+    private readonly Dictionary&lt;int, int&gt; _idx = new();   // value → index
+    private readonly Random _rng = new();
+
+    public bool Insert(int val)
+    {
+        if (_idx.ContainsKey(val)) return false;
+        _idx[val] = _vals.Count;
+        _vals.Add(val);
+        return true;
+    }
+
+    public bool Remove(int val)
+    {
+        if (!_idx.TryGetValue(val, out int i)) return false;
+        int last = _vals[^1];
+        _vals[i] = last; _idx[last] = i;     // move last into the gap
+        _vals.RemoveAt(_vals.Count - 1);
+        _idx.Remove(val);
+        return true;
+    }
+
+    public int GetRandom() =&gt; _vals[_rng.Next(_vals.Count)];
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(1) average for all three operations.</li>
+              <li><strong>Space:</strong> O(n) — the list and index map.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Pair an <strong>array</strong> (random access) with a <strong>value→index map</strong>.</li>
+              <li>Delete via <strong>swap-with-last + pop</strong> to avoid O(n) shifting.</li>
+              <li>Update the moved element’s index in the map after the swap.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/lru-cache.html"><span class="rc-cat">Coding</span><span class="rc-title">LRU Cache</span></a>
+            <a class="related-card" href="../coding-problems/two-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Two Sum</span></a>
+            <a class="related-card" href="../coding-problems/contains-duplicate.html"><span class="rc-cat">Coding</span><span class="rc-title">Contains Duplicate</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The swap-with-last delete is the key insight that makes removal O(1). State why neither a set nor an array alone suffices, then combine them. A frequent design screener.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

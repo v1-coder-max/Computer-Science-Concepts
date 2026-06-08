@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Majority Element II — DevLens</title>
+  <meta name="description" content="Find all elements appearing more than n/3 times in O(n) time and O(1) space with the Boyer-Moore voting algorithm generalized to two candidates and a verification pass — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="majority-element-ii" data-title="Majority Element II">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Majority Element II</h1>
+          <p class="lede">All values appearing more than <code>n/3</code> times — and there are at most two. <strong>Boyer-Moore voting with two candidates</strong> finds them in O(1) space.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#arrays</span>
+            <span class="tag">#boyer-moore</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#voting</span>
+            <span class="tag">#o1</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given an array <code>nums</code>, return all elements that appear more than <code>⌊n/3⌋</code> times. There can be at most two such elements.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[3,2,3]</code> → <code>[3]</code> &nbsp;·&nbsp; <code>[1,1,1,3,3,2,2,2]</code> → <code>[1,2]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>A hash map of counts is O(n) time but O(n) space. Since more-than-n/3 elements number at most two, the voting algorithm generalizes to track two candidates in O(1) space.</p>
+
+          <h2>Optimized approach</h2>
+          <p>Keep <strong>two candidates</strong> and two counters. For each value: if it matches a candidate, bump that counter; else if a counter is 0, adopt the value as that candidate (count 1); else decrement both counters. This survives the two majority elements. Because the candidates are only guaranteed when a &gt;n/3 element exists, do a <strong>second pass to verify</strong> each candidate actually exceeds n/3.</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Two-candidate voting + verification">
+              <text class="dgm-sub" x="20" y="24">track 2 candidates, 2 counts</text>
+              <text class="dgm-sub" x="20" y="52">match → count++ · zero → adopt · else both--</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">second pass verifies each > n/3</text>
+            </svg>
+            <figcaption>Figure 1 — At most two elements can exceed n/3, so two voting slots suffice.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;int&gt; MajorityElement(int[] nums)
+{
+    int c1 = 0, c2 = 1, n1 = 0, n2 = 0;        // two candidates, two counts
+    foreach (int v in nums)
+    {
+        if (v == c1) n1++;
+        else if (v == c2) n2++;
+        else if (n1 == 0) { c1 = v; n1 = 1; }
+        else if (n2 == 0) { c2 = v; n2 = 1; }
+        else { n1--; n2--; }
+    }
+
+    var result = new List&lt;int&gt;();
+    foreach (int c in new[] { c1, c2 })
+        if (nums.Count(x =&gt; x == c) &gt; nums.Length / 3) result.Add(c);
+    return result.Distinct().ToList();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — two passes.</li>
+              <li><strong>Space:</strong> O(1) — two candidates and counters.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>At most <strong>two</strong> elements can exceed n/3 → two voting slots.</li>
+              <li>A <strong>verification pass</strong> is required (candidates aren’t guaranteed).</li>
+              <li>Generalizes the single-candidate Boyer-Moore to k candidates for &gt;n/k.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/majority-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Majority Element</span></a>
+            <a class="related-card" href="../coding-problems/top-k-frequent-elements.html"><span class="rc-cat">Coding</span><span class="rc-title">Top K Frequent Elements</span></a>
+            <a class="related-card" href="../coding-problems/contains-duplicate.html"><span class="rc-cat">Coding</span><span class="rc-title">Contains Duplicate</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>The leap from Majority Element is “at most two candidates, so track two,” plus the mandatory verification pass. Explaining why exactly two slots suffice is the depth they probe.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

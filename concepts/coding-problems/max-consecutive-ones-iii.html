@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Max Consecutive Ones III — DevLens</title>
+  <meta name="description" content="Find the longest run of 1s after flipping at most k zeros using a sliding window that is valid while it contains at most k zeros, expanding and shrinking on the zero count — O(n) — with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="max-consecutive-ones-iii" data-title="Max Consecutive Ones III">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Max Consecutive Ones III</h1>
+          <p class="lede">Longest run of 1s if you may flip up to <code>k</code> zeros. A <strong>sliding window valid while it holds ≤ k zeros</strong>.</p>
+
+          <div class="concept-meta">
+            <span class="tag">#sliding-window</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#medium</span>
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#binary</span>
+            <span class="tag">#interview</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>Given a binary array <code>nums</code> and an integer <code>k</code>, return the maximum number of consecutive 1s if you can flip at most <code>k</code> zeros.</p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums=[1,1,1,0,0,0,1,1,1,1,0], k=2</code> → <code>6</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>Try every subarray and check it has ≤ k zeros — O(n²). A sliding window tracks the zero count incrementally for O(n).</p>
+
+          <h2>Optimized approach</h2>
+          <p>Expand <code>right</code>, counting zeros in the window. While the window holds <strong>more than k zeros</strong>, shrink from <code>left</code>, decrementing the zero count as zeros leave. The window always represents a flippable run; track its maximum length. No actual flipping needed — just the zero budget.</p><p><strong>Time O(n), Space O(1).</strong></p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 600 120" role="img" aria-label="Window valid while zeros ≤ k">
+              <text class="dgm-sub" x="20" y="24">expand right, count zeros</text>
+              <text class="dgm-sub" x="20" y="52">zeros > k → shrink left</text>
+              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">track the longest valid window</text>
+            </svg>
+            <figcaption>Figure 1 — Bounding the window’s zero count to k models the flips without performing them.</figcaption>
+          </figure>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int LongestOnes(int[] nums, int k)
+{
+    int left = 0, zeros = 0, best = 0;
+    for (int right = 0; right &lt; nums.Length; right++)
+    {
+        if (nums[right] == 0) zeros++;
+        while (zeros &gt; k)                  // too many zeros → shrink
+        {
+            if (nums[left] == 0) zeros--;
+            left++;
+        }
+        best = Math.Max(best, right - left + 1);
+    }
+    return best;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each index enters/leaves once.</li>
+              <li><strong>Space:</strong> O(1).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Model “flip ≤ k” as a window with <strong>at most k zeros</strong>.</li>
+              <li>Shrink only when the zero budget is exceeded.</li>
+              <li>Same shape as Longest Repeating Character Replacement.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/longest-repeating-character-replacement.html"><span class="rc-cat">Coding</span><span class="rc-title">Longest Repeating Character Replacement</span></a>
+            <a class="related-card" href="../coding-problems/minimum-size-subarray-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Minimum Size Subarray Sum</span></a>
+            <a class="related-card" href="../coding-problems/fruit-into-baskets.html"><span class="rc-cat">Coding</span><span class="rc-title">Fruit Into Baskets</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>Reframe “flip k zeros” as “window with ≤ k zeros” — that’s the unlock. You never actually flip; the zero count is the constraint. Classic sliding-window.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
