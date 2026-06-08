@@ -85,19 +85,7 @@
           </p>
           <p><strong>Time O(n)</strong> (each pointer moves forward only), <strong>Space O(min(n, alphabet))</strong>.</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Sliding window over a string">
-              <text class="dgm-sub" x="20" y="22">"a b c a b c b b"</text>
-              <rect class="dgm-box" x="20" y="36" width="40" height="34" rx="5"/><text class="dgm-sub" x="40" y="58" text-anchor="middle">a</text>
-              <rect class="dgm-box-accent" x="64" y="36" width="40" height="34" rx="5"/><text class="dgm-sub" x="84" y="58" text-anchor="middle">b</text>
-              <rect class="dgm-box-accent" x="108" y="36" width="40" height="34" rx="5"/><text class="dgm-sub" x="128" y="58" text-anchor="middle">c</text>
-              <rect class="dgm-box-accent" x="152" y="36" width="40" height="34" rx="5"/><text class="dgm-sub" x="172" y="58" text-anchor="middle">a</text>
-              <rect class="dgm-box" x="196" y="36" width="40" height="34" rx="5"/><text class="dgm-sub" x="216" y="58" text-anchor="middle">b</text>
-              <text class="dgm-sub" x="20" y="98">at second 'a': it's in the window → move left past its old index; window = "bca"</text>
-              <text class="dgm-sub" x="20" y="118" fill="var(--c-success)" style="font:600 12px var(--font-sans)">max window length = 3</text>
-            </svg>
-            <figcaption>Figure 1 — Expand right; on a repeat, jump left past the previous occurrence.</figcaption>
-          </figure>
+          <div class="viz" data-viz="longest-substring-without-repeating"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -179,5 +167,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

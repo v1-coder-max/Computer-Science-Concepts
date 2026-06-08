@@ -88,16 +88,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong> (It’s also a sliding window: <code>minPrice</code> is the window’s left, today is the right.)</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Tracking min price and best profit">
-              <text class="dgm-sub" x="20" y="22">prices = [7, 1, 5, 3, 6, 4]</text>
-              <text class="dgm-sub" x="20" y="48">minSoFar: 7 → 1 → 1 → 1 → 1 → 1</text>
-              <text class="dgm-sub" x="20" y="72">profit if sell today: 0, 0, 4, 2, 5, 3</text>
-              <rect class="dgm-box-accent" x="20" y="84" width="200" height="30" rx="6"/>
-              <text x="120" y="104" text-anchor="middle" fill="var(--c-success)" style="font:600 13px var(--font-sans)">max profit = 5</text>
-            </svg>
-            <figcaption>Figure 1 — Best profit on day <code>i</code> = price[i] − cheapest price before it.</figcaption>
-          </figure>
+          <div class="viz" data-viz="best-time-to-buy-sell-stock"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -174,5 +165,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

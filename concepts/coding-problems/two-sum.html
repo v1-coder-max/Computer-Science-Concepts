@@ -93,19 +93,7 @@
           </p>
           <p><strong>Time O(n), Space O(n)</strong> — we trade memory (the map) for speed.</p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 150" role="img" aria-label="Two Sum hash map one-pass trace">
-              <text class="dgm-sub" x="20" y="22">nums = [2, 7, 11, 15], target = 9</text>
-              <rect class="dgm-box" x="20" y="34" width="50" height="34" rx="5"/><text class="dgm-sub" x="45" y="56" text-anchor="middle">2</text>
-              <rect class="dgm-box-accent" x="74" y="34" width="50" height="34" rx="5"/><text class="dgm-sub" x="99" y="56" text-anchor="middle">7</text>
-              <rect class="dgm-box" x="128" y="34" width="50" height="34" rx="5"/><text class="dgm-sub" x="153" y="56" text-anchor="middle">11</text>
-              <rect class="dgm-box" x="182" y="34" width="50" height="34" rx="5"/><text class="dgm-sub" x="207" y="56" text-anchor="middle">15</text>
-
-              <text class="dgm-sub" x="20" y="98">seen map: { 2 → 0 }</text>
-              <text class="dgm-sub" x="20" y="120" fill="var(--c-success)" style="font:600 12px var(--font-sans)">at 7: complement 9−7=2 is in map → answer [0, 1] ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Store each value’s index; at 7, its complement (2) is already seen.</figcaption>
-          </figure>
+          <div class="viz" data-viz="two-sum"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -182,5 +170,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

@@ -92,18 +92,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 140" role="img" aria-label="Three-pointer reversal of a linked list">
-              <text class="dgm-sub" x="20" y="22">before: prev=null  curr→1 → 2 → 3</text>
-              <rect class="dgm-box" x="20" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="55" y="54" text-anchor="middle">1</text>
-              <rect class="dgm-box" x="120" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="155" y="54" text-anchor="middle">2</text>
-              <rect class="dgm-box" x="220" y="34" width="70" height="30" rx="5"/><text class="dgm-sub" x="255" y="54" text-anchor="middle">3</text>
-              <text class="dgm-sub" x="20" y="92">step: save next, flip curr.next = prev, advance both</text>
-              <rect class="dgm-box-accent" x="20" y="104" width="280" height="26" rx="6"/>
-              <text x="160" y="122" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-sans)">end: prev = 3 → 2 → 1 → null = new head</text>
-            </svg>
-            <figcaption>Figure 1 — Each iteration redirects one arrow backward; <code>prev</code> trails as the growing reversed list.</figcaption>
-          </figure>
+          <div class="viz" data-viz="reverse-linked-list"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -192,5 +181,6 @@ public ListNode ReverseRec(ListNode head)
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

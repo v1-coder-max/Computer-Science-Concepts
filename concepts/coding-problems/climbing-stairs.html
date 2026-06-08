@@ -92,18 +92,7 @@
           </p>
           <p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Fibonacci build-up of stair counts">
-              <text class="dgm-sub" x="20" y="22">ways(n) = ways(n-1) + ways(n-2)</text>
-              <rect class="dgm-box" x="20" y="40" width="70" height="30" rx="5"/><text class="dgm-sub" x="55" y="60" text-anchor="middle">1: 1</text>
-              <rect class="dgm-box" x="100" y="40" width="70" height="30" rx="5"/><text class="dgm-sub" x="135" y="60" text-anchor="middle">2: 2</text>
-              <rect class="dgm-box-accent" x="180" y="40" width="70" height="30" rx="5"/><text class="dgm-sub" x="215" y="60" text-anchor="middle">3: 3</text>
-              <rect class="dgm-box-accent" x="260" y="40" width="70" height="30" rx="5"/><text class="dgm-sub" x="295" y="60" text-anchor="middle">4: 5</text>
-              <rect class="dgm-box-accent" x="340" y="40" width="70" height="30" rx="5"/><text class="dgm-sub" x="375" y="60" text-anchor="middle">5: 8</text>
-              <text class="dgm-sub" x="20" y="98" fill="var(--c-success)" style="font:600 12px var(--font-sans)">each cell = sum of the previous two</text>
-            </svg>
-            <figcaption>Figure 1 — The stair counts are the Fibonacci sequence; only the last two values are ever needed.</figcaption>
-          </figure>
+          <div class="viz" data-viz="climbing-stairs"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -180,5 +169,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

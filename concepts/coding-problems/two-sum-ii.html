@@ -78,14 +78,7 @@
           <h2>Optimized approach</h2>
           <p>Place <code>left</code> at the start and <code>right</code> at the end. If <code>numbers[left] + numbers[right]</code> equals the target, return both indices. If the sum is <strong>too large</strong>, decrement <code>right</code> (the only way to shrink it); if <strong>too small</strong>, increment <code>left</code>. The pointers converge and you never miss the pair.</p><p><strong>Time O(n), Space O(1).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 120" role="img" aria-label="Two pointers converge on the target sum">
-              <text class="dgm-sub" x="20" y="24">sum > target → right-- · sum < target → left++</text>
-              <text class="dgm-sub" x="20" y="52">[2, 7, 11, 15], target 9</text>
-              <text class="dgm-sub" x="20" y="84" fill="var(--c-success)" style="font:600 13px var(--font-sans)">2 + 7 = 9 → indices [1, 2]</text>
-            </svg>
-            <figcaption>Figure 1 — Sortedness means each comparison rules out one element from a definite side.</figcaption>
-          </figure>
+          <div class="viz" data-viz="two-sum-ii"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -158,5 +151,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>

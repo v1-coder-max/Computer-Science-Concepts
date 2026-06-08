@@ -86,16 +86,7 @@
           </p>
           <p><strong>Time O(n), Space O(n).</strong></p>
 
-          <figure class="figure">
-            <svg viewBox="0 0 600 130" role="img" aria-label="Stack matching brackets">
-              <text class="dgm-sub" x="20" y="22">"{ [ ] }"</text>
-              <text class="dgm-sub" x="20" y="48">push '{', push '[' → stack: [ {, [ ]</text>
-              <text class="dgm-sub" x="20" y="74">']' closes '[' (top matches) → pop · '}' closes '{' → pop</text>
-              <rect class="dgm-box-accent" x="20" y="88" width="240" height="30" rx="6"/>
-              <text x="140" y="108" text-anchor="middle" fill="var(--c-success)" style="font:600 13px var(--font-sans)">stack empty at end → valid ✓</text>
-            </svg>
-            <figcaption>Figure 1 — Each closer must match the stack’s top; an empty stack at the end means valid.</figcaption>
-          </figure>
+          <div class="viz" data-viz="valid-parentheses"></div>
 
           <h2>C# solution</h2>
           <div class="code-block">
@@ -179,5 +170,6 @@
   <script src="../../assets/js/theme.js"></script>
   <script src="../../assets/js/nav.js"></script>
   <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
 </body>
 </html>
