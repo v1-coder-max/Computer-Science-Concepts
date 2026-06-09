@@ -469,6 +469,28 @@
       frames.push(frame(-1, null, "Each customer pays $5/$10/$20 for a $5 item. Give change greedily, spending $10 bills before $5s (the $5 is the most flexible).", "$5:0 $10:0"));
       for (var i = 0; i < a.length && ok; i++) { var b = a[i]; if (b === 5) { five++; frames.push(frame(i, null, "Pays $5 — no change needed.", `$5:${five} $10:${ten}`)); } else if (b === 10) { if (five > 0) { five--; ten++; frames.push(frame(i, null, "Pays $10 → give back one $5.", `$5:${five} $10:${ten}`)); } else { ok = false; frames.push(frame(i, mark(i, "var(--c-warning-bg)", "var(--c-warning)"), "Need a $5 to change $10 but none left → <b>false</b>.", "stuck")); } } else { if (ten > 0 && five > 0) { ten--; five--; frames.push(frame(i, null, "Pays $20 → give $10 + $5.", `$5:${five} $10:${ten}`)); } else if (five >= 3) { five -= 3; frames.push(frame(i, null, "Pays $20 → give three $5s.", `$5:${five} $10:${ten}`)); } else { ok = false; frames.push(frame(i, mark(i, "var(--c-warning-bg)", "var(--c-warning)"), "Can't make $15 change → <b>false</b>.", "stuck")); } } }
       if (ok) frames.push(frame(-1, null, "Served everyone → <b>true</b>.", "done"));
+    } else if (mode === "third-max") {
+      var m1 = -Infinity, m2 = -Infinity, m3 = -Infinity;
+      function fv(v) { return v === -Infinity ? "−" : v; }
+      frames.push(frame(-1, null, "Track the top three <b>distinct</b> maxima in one pass; a new value cascades down through m1, m2, m3.", "m1=− m2=− m3=−"));
+      for (var i = 0; i < a.length; i++) { var x = a[i]; if (x === m1 || x === m2 || x === m3) { frames.push(frame(i, null, `${x} is already in the top three → skip.`, `m1=${fv(m1)} m2=${fv(m2)} m3=${fv(m3)}`)); continue; } if (x > m1) { m3 = m2; m2 = m1; m1 = x; } else if (x > m2) { m3 = m2; m2 = x; } else if (x > m3) { m3 = x; } frames.push(frame(i, null, `See ${x} → update the top three.`, `m1=${fv(m1)} m2=${fv(m2)} m3=${fv(m3)}`)); }
+      frames.push(frame(-1, null, m3 !== -Infinity ? `Third distinct maximum = <b>${m3}</b>.` : `Fewer than 3 distinct values → return the max <b>${m1}</b>.`, `answer = ${m3 !== -Infinity ? m3 : m1}`));
+    } else if (mode === "max-three") {
+      var a1 = -Infinity, a2 = -Infinity, a3 = -Infinity, b1 = Infinity, b2 = Infinity;
+      frames.push(frame(-1, null, "Max product of three numbers is either the three largest, or the two smallest (negatives) times the largest. Track top-3 and bottom-2 in one pass.", "—"));
+      for (var i = 0; i < a.length; i++) { var x = a[i]; if (x > a1) { a3 = a2; a2 = a1; a1 = x; } else if (x > a2) { a3 = a2; a2 = x; } else if (x > a3) { a3 = x; } if (x < b1) { b2 = b1; b1 = x; } else if (x < b2) { b2 = x; } frames.push(frame(i, null, `${x}: top3 = [${a1}, ${a2}, ${a3}], min2 = [${b1}, ${b2}].`, `tracking extremes`)); }
+      var ans3 = Math.max(a1 * a2 * a3, a1 * b1 * b2);
+      frames.push(frame(-1, null, `max(${a1}·${a2}·${a3}, ${a1}·${b1}·${b2}) = <b>${ans3}</b>.`, `answer = ${ans3}`));
+    } else if (mode === "degree") {
+      var first = {}, count = {}, degree = 0, bestD = 0;
+      frames.push(frame(-1, null, "The array's degree is the maximum frequency of any value. Find the shortest subarray with that same degree using each value's first index, count, and span.", "degree 0"));
+      for (var i = 0; i < a.length; i++) { var x = a[i]; if (first[x] === undefined) first[x] = i; count[x] = (count[x] || 0) + 1; var span = i - first[x] + 1; if (count[x] > degree) { degree = count[x]; bestD = span; } else if (count[x] === degree) { bestD = Math.min(bestD, span); } frames.push(frame(i, null, `${x}: count ${count[x]}, span ${span}. degree ${degree}, best ${bestD}.`, `degree=${degree} best=${bestD}`)); }
+      frames.push(frame(-1, null, `Shortest subarray with degree ${degree} has length <b>${bestD}</b>.`, `answer = ${bestD}`));
+    } else if (mode === "running-sum") {
+      var run = 0, outR = [];
+      frames.push(frame(-1, null, "Running sum: each output equals the total of all elements up to and including this index — one accumulator does it.", "sum = 0"));
+      for (var i = 0; i < a.length; i++) { run += a[i]; outR.push(run); frames.push(frame(i, null, `+ ${a[i]} → running sum = <b>${run}</b>.`, `output = [${outR.join(", ")}]`)); }
+      frames.push(frame(-1, null, `Running sums: [${outR.join(", ")}].`, "done"));
     }
     function mark(i, fill, stroke) { var m = {}; m[i] = { fill: fill, stroke: stroke, sw: 2.2, lab: stroke }; return m; }
     function panelMap(o) { var e = Object.keys(o).map(function (k) { return k + "→" + o[k]; }); return "seen = { " + e.join(", ") + " }"; }
@@ -481,7 +503,7 @@
      ============================================================ */
   function twoPointer(cfg) {
     var a = cfg.data, mode = cfg.mode, W = 600, H = 150;
-    var grid = valueCells(a, { W: W, y: 44, h: 44 });
+    var grid = a ? valueCells(a, { W: W, y: 44, h: 44 }) : null;
     function frame(left, right, style, caption, panel) {
       var inner = grid.draw(function (i) {
         if (style && style[i]) return style[i];
@@ -493,7 +515,7 @@
       if (panel) inner += `<text x="${W / 2}" y="${H - 8}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`;
       return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="two pointers">${inner}</svg>`, caption: caption };
     }
-    var frames = [], left = 0, right = a.length - 1;
+    var frames = [], left = 0, right = a ? a.length - 1 : 0;
     if (mode === "palindrome") {
       frames.push(frame(left, right, null, "Compare characters from both ends moving inward. If every pair matches, it's a palindrome."));
       while (left < right) {
@@ -603,6 +625,27 @@
         }
       }
       frames.push(f4(-1, -1, -1, -1, null, `Found <b>${quads.length}</b> quadruplet(s): ${quads.map(function (q) { return "[" + q.join(",") + "]"; }).join("  ")}.`, `quads: ${quads.length}`));
+    } else if (mode === "boats") {
+      var arrB = a.slice().sort(function (x, y) { return x - y; }); grid = valueCells(arrB, { W: W, y: 44, h: 44 }); var limit = cfg.limit, lb = 0, rb = arrB.length - 1, boats = 0;
+      function fb(l, r, cap, panel) { var inner = grid.draw(function (i) { if (i === l || i === r) return hl("var(--accent)"); if (l >= 0 && (i < l || i > r)) return { op: 0.32 }; return {}; }, true); inner += ptrMark(grid, l, "L", "var(--accent)", true); inner += ptrMark(grid, r, "R", "var(--accent)", true); if (panel) inner += `<text x="${W / 2}" y="${H - 8}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">${panel}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="boats">${inner}</svg>`, caption: cap }; }
+      frames.push(fb(lb, rb, `Each boat carries at most 2 people within weight ${limit}. Sort, then pair the <b>lightest</b> with the <b>heaviest</b>: if they fit together both board, else the heaviest goes alone.`, "boats = 0"));
+      while (lb <= rb) { if (arrB[lb] + arrB[rb] <= limit) { boats++; frames.push(fb(lb, rb, `${arrB[lb]} + ${arrB[rb]} ≤ ${limit} → they share a boat (boats ${boats}).`, "boats = " + boats)); lb++; rb--; } else { boats++; frames.push(fb(lb, rb, `Even with the lightest, ${arrB[rb]} can't pair → it takes its own boat (boats ${boats}).`, "boats = " + boats)); rb--; } }
+      frames.push(fb(-1, -1, `Minimum boats = <b>${boats}</b>.`, "boats = " + boats));
+    } else if (mode === "assign-cookies") {
+      var g = cfg.g.slice().sort(function (x, y) { return x - y; }), sz = cfg.s.slice().sort(function (x, y) { return x - y; }), Hc = 200;
+      function rowC(arr, y, cur, label, doneSet) { var n = arr.length, cw = Math.min(46, (W - 70) / Math.max(n, 1)), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2, str = `<text x="20" y="${y + 24}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">${label}</text>`; for (var i = 0; i < n; i++) { var st = i === cur ? { f: "var(--brand-soft)", s: "var(--accent)", l: "var(--accent)" } : doneSet && doneSet.has(i) ? { f: "var(--c-success-bg)", s: "var(--c-success)", l: "var(--c-success)" } : { f: "var(--surface-2)", s: "var(--border)", l: "var(--text)" }; str += rect(sx + i * (cw + gap), y, cw, 36, { fill: st.f, stroke: st.s, sw: i === cur ? 2.2 : 1.3, r: 6 }); str += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 23}" text-anchor="middle" fill="${st.l}" style="font:700 14px var(--font-sans)">${arr[i]}</text>`; } return str; }
+      var gi = 0, si = 0, content = 0, gDone = new Set(), sDone = new Set();
+      function frameC(cap) { return { svg: `<svg viewBox="0 0 ${W} ${Hc}" role="img" aria-label="assign cookies">${rowC(g, 36, gi < g.length ? gi : -1, "greed", gDone)}${rowC(sz, 110, si < sz.length ? si : -1, "cookies", sDone)}<text x="${W / 2}" y="${Hc - 10}" text-anchor="middle" fill="var(--c-success)" style="font:600 12px var(--font-mono)">content children = ${content}</text></svg>`, caption: cap }; }
+      frames.push(frameC("Sort children by greed and cookies by size. Satisfy the least-greedy child with the smallest adequate cookie; this greedy pairing maximises the number of content children."));
+      while (gi < g.length && si < sz.length) { if (sz[si] >= g[gi]) { content++; gDone.add(gi); sDone.add(si); frames.push(frameC(`Cookie ${sz[si]} ≥ greed ${g[gi]} → satisfy this child. Content = ${content}.`)); gi++; si++; } else { frames.push(frameC(`Cookie ${sz[si]} &lt; greed ${g[gi]} → too small, try a bigger cookie.`)); si++; } }
+      frames.push(frameC(`Maximum content children = <b>${content}</b>.`));
+    } else if (mode === "backspace") {
+      var s = cfg.s, t = cfg.t, Hk = 200;
+      function build(str) { var st = []; str.split("").forEach(function (c) { if (c === "#") st.pop(); else st.push(c); }); return st.join(""); }
+      function rowK(str, y, label, built) { var n = str.length, cw = Math.min(40, (W - 90) / Math.max(n, 1)), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2, s2 = `<text x="20" y="${y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">${label}</text>`; for (var i = 0; i < n; i++) { var b = str[i] === "#"; s2 += rect(sx + i * (cw + gap), y, cw, 32, { fill: b ? "var(--c-warning-bg)" : "var(--surface-2)", stroke: b ? "var(--c-warning)" : "var(--border)", sw: 1.3, r: 5 }); s2 += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 21}" text-anchor="middle" fill="${b ? "var(--c-warning)" : "var(--text)"}" style="font:700 13px var(--font-mono)">${str[i]}</text>`; } s2 += `<text x="${W - 16}" y="${y + 21}" text-anchor="end" fill="var(--c-success)" style="font:600 12px var(--font-mono)">→ "${built}"</text>`; return s2; }
+      var bs = build(s), bt = build(t);
+      frames.push({ svg: `<svg viewBox="0 0 ${W} ${Hk}" role="img" aria-label="backspace compare">${rowK(s, 40, "s", "")}${rowK(t, 110, "t", "")}</svg>`, caption: "'#' is a backspace. Compare the two strings after applying backspaces — a stack (or a reverse two-pointer scan) builds each final string." });
+      frames.push({ svg: `<svg viewBox="0 0 ${W} ${Hk}" role="img" aria-label="backspace compare">${rowK(s, 40, "s", bs)}${rowK(t, 110, "t", bt)}<text x="${W / 2}" y="${Hk - 10}" text-anchor="middle" fill="${bs === bt ? "var(--c-success)" : "var(--c-warning)"}" style="font:700 13px var(--font-sans)">"${bs}" ${bs === bt ? "==" : "!="} "${bt}" → ${bs === bt}</text></svg>`, caption: `After backspaces: "${bs}" vs "${bt}" → <b>${bs === bt}</b>.` });
     }
     function hl(c) { return { fill: c === "var(--c-success)" ? "var(--c-success-bg)" : c === "var(--c-warning)" ? "var(--c-warning-bg)" : "var(--brand-soft)", stroke: c, sw: 2.2, lab: c }; }
     return frames;
@@ -667,6 +710,11 @@
         frames.push(frame(left, r4, `Include index ${r4} (${vals[r4]}). Window has ${zeros} zero(s) ≤ ${kz} → length ${r4 - left + 1}, best <b>${best}</b>.`, `zeros = ${zeros} · best = ${best}`));
       }
       frames.push(frame(left, vals.length - 1, `Longest window of 1s with ≤ ${kz} flips = <b>${best}</b>.`, `best = ${best}`));
+    } else if (mode === "fixed-avg") {
+      var k = cfg.k, sum = 0, bestSum = -Infinity, bestL = 0;
+      frames.push(frame(0, -1, `Maximum average of a fixed-size window of <b>${k}</b>. Slide the window by adding the new element and dropping the one that fell off — O(1) per step.`, "best avg = —"));
+      for (var i = 0; i < vals.length; i++) { sum += vals[i]; if (i >= k) sum -= vals[i - k]; if (i >= k - 1) { if (sum > bestSum) { bestSum = sum; bestL = i - k + 1; } frames.push(frame(i - k + 1, i, `Window [${vals.slice(i - k + 1, i + 1).join(", ")}] sum ${sum}, avg ${(sum / k).toFixed(2)}.`, `best avg = ${(bestSum / k).toFixed(2)}`)); } }
+      frames.push(frame(bestL, bestL + k - 1, `Maximum average = <b>${(bestSum / k).toFixed(2)}</b>.`, `best avg = ${(bestSum / k).toFixed(2)}`));
     } else if (mode === "anagrams") {
       var p = cfg.p, need = {}, win = {}, pl = p.length, found = [];
       for (var pc = 0; pc < p.length; pc++) need[p[pc]] = (need[p[pc]] || 0) + 1;
@@ -1019,6 +1067,37 @@
       push("In-order traversal of a BST yields sorted values, so the minimum absolute difference is always between <b>adjacent</b> in-order neighbours.");
       (function ino(n) { if (!n) return; ino(n.left); active = n; var note = ""; if (prev !== null) { var d = Math.abs(n.val - prev); if (d < bestD) { bestD = d; note = ` |${n.val}−${prev}| = ${d} — new minimum!`; } else note = ` |${n.val}−${prev}| = ${d}.`; } push(`Visit <b>${n.val}</b> (in-order).${note}`); visited.push(n); active = null; prev = n.val; ino(n.right); })(root);
       active = null; push(`Minimum absolute difference = <b>${bestD}</b>.`);
+    } else if (mode === "left-leaves") {
+      var sumL = 0;
+      push("Sum of <b>left leaves</b> — leaves that are their parent's left child. DFS, carrying whether each node arrived as a left child.");
+      (function dfs(n, isLeft) { if (!n) return; active = n; var leaf = !n.left && !n.right; if (leaf && isLeft) { sumL += n.val; special[n.val] = "visited"; push(`<b>${n.val}</b> is a left leaf → add it (sum ${sumL}).`); } else { push(`At ${n.val}${leaf ? " (a leaf, but not a left child)" : ""}.`); visited.push(n); } active = null; dfs(n.left, true); dfs(n.right, false); })(root, false);
+      active = null; push(`Sum of left leaves = <b>${sumL}</b>.`);
+    } else if (mode === "bottom-left") {
+      push("Bottom-left value: the leftmost node on the deepest level. BFS level by level; the first node of the last level is the answer.");
+      var lv = bfsLevels();
+      for (var i = 0; i < lv.length; i++) { lv[i].forEach(function (n) { special[n.val] = "active"; }); push(`Level ${i}: leftmost is ${lv[i][0].val}.${i === lv.length - 1 ? " Deepest level → this is the answer." : ""}`); lv[i].forEach(function (n) { special[n.val] = null; if (i < lv.length - 1) visited.push(n); }); }
+      var ans = lv[lv.length - 1][0].val; special[ans] = "visited"; push(`Bottom-left value = <b>${ans}</b>.`);
+    } else if (mode === "deepest-sum") {
+      push("Sum of the deepest leaves = the sum of the last BFS level.");
+      var lv = bfsLevels();
+      for (var i = 0; i < lv.length; i++) { lv[i].forEach(function (n) { special[n.val] = "active"; }); push(`Level ${i}: [${lv[i].map(function (n) { return n.val; }).join(", ")}].`); lv[i].forEach(function (n) { special[n.val] = null; if (i < lv.length - 1) visited.push(n); }); }
+      var last = lv[lv.length - 1], sd = last.reduce(function (a, n) { return a + n.val; }, 0); last.forEach(function (n) { special[n.val] = "visited"; }); push(`Deepest level [${last.map(function (n) { return n.val; }).join(", ")}] → sum <b>${sd}</b>.`);
+    } else if (mode === "row-max") {
+      push("Largest value in each row. BFS level by level; take each level's maximum.");
+      var lv = bfsLevels(), maxes = [];
+      for (var i = 0; i < lv.length; i++) { var mx = Math.max.apply(null, lv[i].map(function (n) { return n.val; })); maxes.push(mx); lv[i].forEach(function (n) { if (n.val === mx) special[n.val] = "active"; }); push(`Level ${i}: max is <b>${mx}</b>.`); lv[i].forEach(function (n) { special[n.val] = null; visited.push(n); }); }
+      push(`Row maxima: [${maxes.join(", ")}].`);
+    } else if (mode === "bst-search") {
+      var target4 = cfg.target;
+      push(`Search a BST for <b>${target4}</b>: at each node, go left if the target is smaller, right if larger — O(h).`);
+      var nn = root;
+      while (nn) { active = nn; if (nn.val === target4) { special[nn.val] = "visited"; push(`${nn.val} == ${target4} → <b>found</b> the subtree.`); break; } if (target4 < nn.val) { push(`${target4} &lt; ${nn.val} → go left.`); visited.push(nn); active = null; nn = nn.left; } else { push(`${target4} &gt; ${nn.val} → go right.`); visited.push(nn); active = null; nn = nn.right; } }
+      if (!nn) { active = null; push(`Reached a null child → ${target4} isn't in the tree.`); }
+    } else if (mode === "tilt") {
+      var totalTilt = 0;
+      push("Tree tilt: each node's tilt is |sum(left subtree) − sum(right subtree)|; the answer sums all tilts. Post-order returns subtree sums.");
+      (function dfs(n) { if (!n) return 0; var l = dfs(n.left), r = dfs(n.right); active = n; var tl = Math.abs(l - r); totalTilt += tl; push(`At <b>${n.val}</b>: leftSum ${l}, rightSum ${r} → tilt ${tl}. Running total ${totalTilt}.`); visited.push(n); active = null; return l + r + n.val; })(root);
+      active = null; push(`Total tilt = <b>${totalTilt}</b>.`);
     }
     return frames;
   }
@@ -1145,6 +1224,14 @@
       frames.push(draw(function (rr, cc) { return land2(g[rr][cc]) ? { fill: "var(--surface-hover)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" } : { t: "~", lab: "var(--text-faint)", fs: 11 }; }, "Island perimeter: each land cell has 4 edges, minus 1 for every land neighbour (a shared edge isn't on the boundary)."));
       for (var r2 = 0; r2 < R; r2++) for (var c2 = 0; c2 < C; c2++) { if (!land2(g[r2][c2])) continue; var nb = 0; dirs.forEach(function (d) { var nr = r2 + d[0], nc = c2 + d[1]; if (nr >= 0 && nc >= 0 && nr < R && nc < C && land2(g[nr][nc])) nb++; }); perim += 4 - nb; processed.push(r2 + "," + c2); (function (cr, cc, add, nbn) { frames.push(draw(function (rr, c3) { if (rr === cr && c3 === cc) return { fill: "var(--brand-soft)", stroke: "var(--accent)", t: "+" + add, lab: "var(--accent)", sw: 2.4, fs: 13 }; if (processed.indexOf(rr + "," + c3) >= 0) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", t: "1", lab: "var(--c-success)" }; return land2(g[rr][c3]) ? { fill: "var(--surface-hover)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" } : { t: "~", lab: "var(--text-faint)", fs: 11 }; }, `Cell (${cr},${cc}) has ${nbn} land neighbour(s) → 4 − ${nbn} = ${add} edges. Perimeter so far: ${perim}.`)); })(r2, c2, 4 - nb, nb); }
       frames.push(draw(function (rr, cc) { return land2(g[rr][cc]) ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", t: "1", lab: "var(--c-success)" } : { t: "~", lab: "var(--text-faint)", fs: 11 }; }, `Total perimeter = <b>${perim}</b>.`));
+    } else if (mode === "enclaves") {
+      function flood(r, c) { var st = [[r, c]]; while (st.length) { var p = st.pop(); if (p[0] < 0 || p[1] < 0 || p[0] >= R || p[1] >= C || g[p[0]][p[1]] !== 1) continue; g[p[0]][p[1]] = 2; dirs.forEach(function (d) { st.push([p[0] + d[0], p[1] + d[1]]); }); } }
+      frames.push(draw(function (rr, cc) { return g[rr][cc] === 1 ? { fill: "var(--surface-hover)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" } : { t: "0", lab: "var(--text-faint)", fs: 11 }; }, "Count land cells (1s) that can't walk off the grid. First flood every land cell connected to the border — those can escape."));
+      for (var r = 0; r < R; r++) { if (g[r][0] === 1) flood(r, 0); if (g[r][C - 1] === 1) flood(r, C - 1); }
+      for (var c = 0; c < C; c++) { if (g[0][c] === 1) flood(0, c); if (g[R - 1][c] === 1) flood(R - 1, c); }
+      frames.push(draw(function (rr, cc) { if (g[rr][cc] === 2) return { fill: "var(--c-info-bg)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" }; if (g[rr][cc] === 1) return { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", t: "1", lab: "var(--c-warning)" }; return { t: "0", lab: "var(--text-faint)", fs: 11 }; }, "Border-connected land (blue) can escape. The remaining 1s (orange) are trapped enclaves."));
+      var cnt = 0; for (var r2 = 0; r2 < R; r2++) for (var c2 = 0; c2 < C; c2++) if (g[r2][c2] === 1) cnt++;
+      frames.push(draw(function (rr, cc) { return g[rr][cc] === 1 ? { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", t: "1", lab: "var(--c-warning)" } : { t: "0", lab: "var(--text-faint)", fs: 11 }; }, `Enclave cells = <b>${cnt}</b>.`));
     }
     return frames;
   }
@@ -1371,6 +1458,11 @@
       frames.push(draw(dp, 1, null, `Break ${N} into ≥ 2 positive integers to maximise their product. dp[i] = best product for i = max over a first part j of max(j·(i−j), j·dp[i−j]).`));
       for (var i = 2; i <= N; i++) { var bp = 0; for (var j = 1; j < i; j++) bp = Math.max(bp, j * (i - j), j * dp[i - j]); dp[i] = bp; frames.push(draw(dp.slice(), i, null, `dp[${i}] = best split product = <b>${dp[i]}</b>.`)); }
       frames.push(draw(dp.slice(), -1, null, `Maximum product for ${N} = <b>${dp[N]}</b>.`));
+    } else if (mode === "arithmetic-slices") {
+      frames.push(draw(dp, -1, null, "Count arithmetic subarrays (≥ 3 elements, constant difference). dp[i] = number ending at i = dp[i−1] + 1 when the difference continues, else 0. The answer is the sum of all dp."));
+      var total = 0; dp[0] = 0; if (n > 1) dp[1] = 0;
+      for (var i = 2; i < n; i++) { var same = a[i] - a[i - 1] === a[i - 1] - a[i - 2]; dp[i] = same ? dp[i - 1] + 1 : 0; total += dp[i]; frames.push(draw(dp.slice(), i, [i - 1], `${a[i - 2]},${a[i - 1]},${a[i]}: ${same ? "same difference → dp = " + dp[i] : "difference breaks → dp = 0"}. Total ${total}.`)); }
+      frames.push(draw(dp.slice(), -1, null, `Total arithmetic slices = <b>${total}</b> (sum of all dp values).`));
     }
     return frames;
   }
@@ -1679,7 +1771,7 @@
       return frames;
     }
 
-    if (mode === "odd-even" || mode === "rotate" || mode === "dedup" || mode === "reverse-k" || mode === "sort") {
+    if (mode === "odd-even" || mode === "rotate" || mode === "dedup" || mode === "reverse-k" || mode === "sort" || mode === "remove-val" || mode === "partition" || mode === "delete-middle") {
       var H6 = 150;
       function frR(arr, hi, dim, cap) {
         var L = lay(arr, 60), inner = "";
@@ -1688,6 +1780,29 @@
         return svg(H6, inner, cap);
       }
       var v = cfg.data;
+      if (mode === "remove-val") {
+        var val = cfg.val, kept = v.filter(function (x) { return x !== val; });
+        frames.push(frR(v.slice(), [], null, `Remove every node equal to <b>${val}</b>. A dummy head before the list makes deleting the first node identical to deleting any other.`));
+        v.forEach(function (x, i) { if (x === val) frames.push(frR(v.slice(), [i], null, `Node ${x} == ${val} → unlink it.`)); });
+        frames.push(frR(kept.slice(), [], null, `Result: [${kept.join(", ")}].`));
+        return frames;
+      }
+      if (mode === "partition") {
+        var x = cfg.x, less = v.filter(function (n) { return n < x; }), ge = v.filter(function (n) { return n >= x; });
+        frames.push(frR(v.slice(), [], null, `Partition around <b>${x}</b>: every node &lt; ${x} comes before every node ≥ ${x}, preserving original order. Build a 'less' list and a 'greater-or-equal' list, then splice.`));
+        frames.push(frR(v.slice(), v.map(function (n, i) { return n < x ? i : -1; }).filter(function (i) { return i >= 0; }), v.map(function (n, i) { return n >= x ? i : -1; }).filter(function (i) { return i >= 0; }), `&lt; ${x}: [${less.join(", ")}]   ·   ≥ ${x}: [${ge.join(", ")}].`));
+        var res = less.concat(ge);
+        frames.push(frR(res.slice(), [], null, `Concatenate the two lists → [${res.join(", ")}].`));
+        return frames;
+      }
+      if (mode === "delete-middle") {
+        var mid = Math.floor(v.length / 2);
+        frames.push(frR(v.slice(), [], null, "Delete the middle node. Fast/slow pointers find it: when fast reaches the end, slow sits at the middle."));
+        frames.push(frR(v.slice(), [mid], null, `Middle is index ${mid} (value ${v[mid]}) — relink the node before it past the middle.`));
+        var resM = v.slice(0, mid).concat(v.slice(mid + 1));
+        frames.push(frR(resM.slice(), [], null, `Result: [${resM.join(", ")}].`));
+        return frames;
+      }
       if (mode === "odd-even") {
         frames.push(frR(v.slice(), [], null, "Group nodes at <b>odd</b> positions, then <b>even</b> positions — rewiring pointers, not copying values. Two pointers leap in steps of 2."));
         var odd = [], even = [];
@@ -2358,6 +2473,15 @@
       return frames;
     }
 
+    if (mode === "all-paths-dag") {
+      var adj = cfg.adj, paths = [];
+      function snapP(pathNodes, active, cap) { var inner = ""; for (var u = 0; u < n; u++) adj[u].forEach(function (v) { var onPath = pathNodes.indexOf(u) >= 0 && pathNodes.indexOf(v) === pathNodes.indexOf(u) + 1; inner += dirEdge(u, v, onPath ? "var(--accent)" : "var(--border)", onPath ? 2.4 : 1.6); }); for (var i = 0; i < n; i++) { var st = {}; if (pathNodes.indexOf(i) >= 0) { st.fill = "var(--c-info-bg)"; st.stroke = "var(--accent)"; st.lab = "var(--accent)"; } if (i === active) { st.fill = "var(--brand-soft)"; st.sw = 2.6; } inner += nodeC(i, st); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      frames.push(snapP([], 0, { t: `Enumerate every path from node 0 to node ${n - 1} in this DAG with DFS — extend the current path, record it at the target, then backtrack.`, p: "paths: 0" }));
+      (function dfs(u, path) { path = path.concat(u); if (u === n - 1) { paths.push(path.join("→")); frames.push(snapP(path, u, { t: `Reached ${n - 1} → record path <b>${path.join("→")}</b>. Total: ${paths.length}.`, p: "paths: " + paths.length })); return; } frames.push(snapP(path, u, { t: `At ${u}, path ${path.join("→")} — explore neighbours ${adj[u].length ? adj[u].join(", ") : "(none)"}.`, p: "paths: " + paths.length })); adj[u].forEach(function (v) { dfs(v, path); }); })(0, []);
+      frames.push(snapP([], -1, { t: `All paths: ${paths.map(function (p) { return "[" + p.replace(/→/g, ",") + "]"; }).join("  ")}.`, p: "paths: " + paths.length }));
+      return frames;
+    }
+
     if (mode === "keys-rooms") {
       var adjK = Array.from({ length: n }, function () { return []; }); cfg.edges.forEach(function (e) { adjK[e[0]].push(e[1]); });
       var visited = new Array(n).fill(false);
@@ -2825,6 +2949,24 @@
       return frames;
     }
 
+    if (mode === "last-word") {
+      var s = cfg.s, Hlw = 150, r = chars(s.replace(/ /g, "␣"), 60, { cw: 32 });
+      var i = s.length - 1; while (i >= 0 && s[i] === " ") i--; var end = i; while (i >= 0 && s[i] !== " ") i--; var start = i + 1, len = Math.max(end - start + 1, 0);
+      function frameL(lo, hi, cap) { var inner = ""; for (var k = 0; k < s.length; k++) { var inW = lo >= 0 && k >= lo && k <= hi; inner += box(r, k, s[k] === " " ? "␣" : s[k], inW ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)", sw: 2 } : {}, 40); } return { svg: `<svg viewBox="0 0 ${W} ${Hlw}" role="img" aria-label="last word length">${inner}</svg>`, caption: cap }; }
+      frames.push(frameL(-1, -1, `Length of the last word in "${s}". Scan from the <b>right</b>: skip trailing spaces, then count letters until the next space.`));
+      frames.push(frameL(start, end, `Last word is "${s.slice(start, end + 1)}" → length <b>${len}</b>.`));
+      return frames;
+    }
+
+    if (mode === "detect-capital") {
+      var s = cfg.s, Hdc = 160, r = chars(s, 60, { cw: 36 });
+      var allUp = s === s.toUpperCase(), allLow = s === s.toLowerCase(), titleCase = s[0] === s[0].toUpperCase() && s.slice(1) === s.slice(1).toLowerCase(), ok = allUp || allLow || titleCase;
+      function frameD(line2, capt) { var inner = ""; for (var k = 0; k < s.length; k++) { var up = s[k] === s[k].toUpperCase() && s[k] !== s[k].toLowerCase(); inner += box(r, k, s[k], { fill: up ? "var(--c-info-bg)" : "var(--surface-2)", stroke: up ? "var(--accent)" : "var(--border)", lab: up ? "var(--accent)" : "var(--text)" }, 40); } return { svg: `<svg viewBox="0 0 ${W} ${Hdc}" role="img" aria-label="detect capital">${inner}<text x="${W / 2}" y="${Hdc - 14}" text-anchor="middle" fill="${ok ? "var(--c-success)" : "var(--c-warning)"}" style="font:700 13px var(--font-sans)">${line2}</text></svg>`, caption: capt }; }
+      frames.push(frameD(`ALL-UP: ${allUp} · all-low: ${allLow} · Title: ${titleCase}`, "Capital use is correct if the word is all uppercase, all lowercase, or only its first letter capitalised. (Uppercase letters highlighted.)"));
+      frames.push(frameD(ok ? "valid ✓" : "invalid ✗", ok ? "Matches one of the three valid patterns → <b>true</b>." : "Matches none of the valid patterns → <b>false</b>."));
+      return frames;
+    }
+
     if (mode === "partition-labels") {
       var s3 = cfg.s, H6 = 160, last = {};
       for (var i = 0; i < s3.length; i++) last[s3[i]] = i;
@@ -3076,6 +3218,33 @@
       return frames;
     }
 
+    if (mode === "reverse-vowels") {
+      var arr = cfg.data.slice(), l = 0, r = arr.length - 1, vowels = "aeiouAEIOU";
+      function isV(c) { return vowels.indexOf(c) >= 0; }
+      function stv(i) { return isV(arr[i]) ? { fill: "var(--c-info-bg)", stroke: "var(--accent)", lab: "var(--accent)" } : {}; }
+      frames.push(draw(arr.slice(), stv, [{ i: l, t: "L" }, { i: r, t: "R" }], "Reverse only the vowels, leaving consonants fixed. Two pointers move inward; swap when both land on vowels, otherwise skip past consonants.", "L=" + l + " R=" + r));
+      while (l < r) { if (!isV(arr[l])) { frames.push(draw(arr.slice(), stv, [{ i: l, t: "L" }, { i: r, t: "R" }], `'${arr[l]}' is a consonant → move L.`, "L=" + l)); l++; } else if (!isV(arr[r])) { frames.push(draw(arr.slice(), stv, [{ i: l, t: "L" }, { i: r, t: "R" }], `'${arr[r]}' is a consonant → move R.`, "R=" + r)); r--; } else { var t = arr[l]; arr[l] = arr[r]; arr[r] = t; (function (ll, rr) { frames.push(draw(arr.slice(), function (i) { return (i === ll || i === rr) ? { fill: "var(--brand-soft)", stroke: "var(--accent)", lab: "var(--accent)", sw: 2.2 } : stv(i); }, [{ i: ll, t: "L" }, { i: rr, t: "R" }], `Both vowels → swap '${arr[rr]}' and '${arr[ll]}'.`, "swap")); })(l, r); l++; r--; } }
+      frames.push(draw(arr.slice(), stv, [], `Vowels reversed: "${arr.join("")}".`, "done"));
+      return frames;
+    }
+
+    if (mode === "find-dups") {
+      var arr = cfg.data.slice(), dups = [];
+      frames.push(draw(arr.slice(), function () { return {}; }, [], "Values are 1..n, each appearing once or twice. Use the array as a hash: flip the sign at index |v|−1; finding it already negative means v is a duplicate.", "duplicates: []"));
+      for (var i = 0; i < arr.length; i++) { var idx = Math.abs(arr[i]) - 1; if (arr[idx] < 0) { dups.push(idx + 1); frames.push((function (cur, ix) { return draw(arr.slice(), function (k) { if (k === ix) return { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)", sw: 2.2 }; if (arr[k] < 0) return { fill: "var(--c-info-bg)", stroke: "var(--accent)" }; return {}; }, [{ i: cur, t: "i", c: "var(--text-muted)" }], `Index ${ix} is already negative → <b>${ix + 1}</b> is a duplicate.`, "duplicates: [" + dups.join(", ") + "]"); })(i, idx)); } else { arr[idx] = -arr[idx]; frames.push((function (cur, ix) { return draw(arr.slice(), function (k) { if (k === cur) return { fill: "var(--brand-soft)", stroke: "var(--accent)", lab: "var(--accent)", sw: 2.2 }; if (arr[k] < 0) return { fill: "var(--c-info-bg)", stroke: "var(--accent)" }; return {}; }, [{ i: cur, t: "i" }], `Mark index ${ix} (value ${Math.abs(arr[cur])}) as seen.`, "duplicates: [" + dups.join(", ") + "]"); })(i, idx)); } }
+      frames.push(draw(arr.slice(), function () { return {}; }, [], `Duplicates: <b>[${dups.join(", ")}]</b>.`, "done"));
+      return frames;
+    }
+
+    if (mode === "set-mismatch") {
+      var arr = cfg.data.slice(), dup = -1;
+      frames.push(draw(arr.slice(), function () { return {}; }, [], "One value is duplicated and one is missing. Mark index |v|−1 negative; an already-negative index reveals the duplicate, and the single index left positive reveals the missing value.", "—"));
+      for (var i = 0; i < arr.length; i++) { var idx = Math.abs(arr[i]) - 1; if (arr[idx] < 0) { dup = idx + 1; frames.push((function (ix) { return draw(arr.slice(), function (k) { return k === ix ? { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)", sw: 2.2 } : (arr[k] < 0 ? { fill: "var(--c-info-bg)", stroke: "var(--accent)" } : {}); }, [], `Index ${ix} already negative → <b>${ix + 1}</b> is the duplicate.`, "dup = " + (ix + 1)); })(idx)); } else { arr[idx] = -arr[idx]; frames.push((function (cur, ix) { return draw(arr.slice(), function (k) { return k === cur ? { fill: "var(--brand-soft)", stroke: "var(--accent)", lab: "var(--accent)", sw: 2.2 } : (arr[k] < 0 ? { fill: "var(--c-info-bg)", stroke: "var(--accent)" } : {}); }, [{ i: cur, t: "i" }], `Mark index ${ix} seen.`, ""); })(i, idx)); } }
+      var missing = -1; for (var k = 0; k < arr.length; k++) if (arr[k] > 0) { missing = k + 1; break; }
+      frames.push(draw(arr.slice(), function (k) { return (arr[k] > 0) ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)", sw: 2.2 } : {}; }, [], `The still-positive index is ${missing - 1} → missing = <b>${missing}</b>; duplicate = <b>${dup}</b>.`, "[dup, missing] = [" + dup + ", " + missing + "]"));
+      return frames;
+    }
+
     if (mode === "candy") {
       var rat = cfg.data, n = rat.length, candy = new Array(n).fill(1), H8 = 190;
       function rowC(arr, y, hi, label) { var cw = Math.min(48, (W - 60) / n), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2, s = `<text x="20" y="${y + 24}" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">${label}</text>`; for (var i = 0; i < n; i++) { var h = i === hi; s += rect(sx + i * (cw + gap), y, cw, 36, { fill: h ? "var(--brand-soft)" : "var(--surface-2)", stroke: h ? "var(--accent)" : "var(--border)", sw: h ? 2.2 : 1.2, r: 5 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 23}" text-anchor="middle" fill="${h ? "var(--accent)" : "var(--text)"}" style="font:700 14px var(--font-sans)">${arr[i]}</text>`; } return s; }
@@ -3199,6 +3368,24 @@
       function frameP(val, line2, capt) { var inner = bitRow(toBits(val, bits), 60, sxp, null); inner += `<text x="${W / 2}" y="34" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-mono)">n = ${pn} = ${(pn >>> 0).toString(2)}</text>`; inner += `<text x="${W / 2}" y="${Hpt - 14}" text-anchor="middle" fill="${isPow ? "var(--c-success)" : "var(--c-warning)"}" style="font:700 13px var(--font-sans)">${line2}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${Hpt}" role="img" aria-label="power of two">${inner}</svg>`, caption: capt }; }
       frames.push(frameP(pn, "set bits: " + pn.toString(2).split("").filter(function (c) { return c === "1"; }).length, `A power of two has exactly <b>one</b> set bit. Test it with the trick <b>n &amp; (n−1) == 0</b> — that operation clears the lowest set bit.`));
       frames.push(frameP(pn & (pn - 1), isPow ? "power of two ✓" : "not a power of two", `n &amp; (n−1) = ${pn} &amp; ${pn - 1} = ${pn & (pn - 1)}. ${isPow ? "It's 0 (and n &gt; 0) → <b>power of two</b>." : "Non-zero (or n ≤ 0) → <b>not a power of two</b>."}`));
+      return frames;
+    }
+
+    if (mode === "single-ii") {
+      var nums = cfg.data, Hs = 175, sxs = (W - bits * 34) / 2, c = new Array(bits).fill(0);
+      nums.forEach(function (x) { for (var b = 0; b < bits; b++) if ((x >> (bits - 1 - b)) & 1) c[b]++; });
+      var ansBits = c.map(function (x) { return x % 3; }), ans = parseInt(ansBits.join(""), 2);
+      function rowS(vals, y, hi) { var cw = 30, gap = 4, s = ""; for (var i = 0; i < bits; i++) { var h = hi && hi(i); s += rect(sxs + i * (cw + gap), y, cw, 28, { fill: h ? "var(--c-info-bg)" : "var(--surface-2)", stroke: h ? "var(--accent)" : "var(--border)", sw: h ? 2 : 1.2, r: 4 }); s += `<text x="${sxs + i * (cw + gap) + cw / 2}" y="${y + 19}" text-anchor="middle" fill="${h ? "var(--accent)" : "var(--text)"}" style="font:700 12px var(--font-mono)">${vals[i]}</text>`; } return s; }
+      frames.push({ svg: `<svg viewBox="0 0 ${W} ${Hs}" role="img" aria-label="single number ii"><text x="${W / 2}" y="34" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">set-bit counts across [${nums.join(", ")}]</text>${rowS(c, 50, null)}</svg>`, caption: "Every number appears three times except one. Sum the set bits at each position across all numbers — bits of the unique number leave a remainder when divided by 3." });
+      frames.push({ svg: `<svg viewBox="0 0 ${W} ${Hs}" role="img" aria-label="single number ii"><text x="${W / 2}" y="34" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">each count mod 3</text>${rowS(ansBits, 50, function (i) { return ansBits[i] === 1; })}</svg>`, caption: `Take each bit count <b>mod 3</b>: the surviving bits spell the answer in binary = <b>${ans}</b>.` });
+      return frames;
+    }
+
+    if (mode === "hamming") {
+      var x = cfg.a, y = cfg.b, Hh = 200, sxh = (W - bits * 34) / 2, xr = x ^ y, dist = 0; for (var t = xr; t; t >>= 1) dist += t & 1;
+      function rowH(v, y0, label, diff) { var cw = 30, gap = 4, bv = toBits(v, bits), s = `<text x="20" y="${y0 + 19}" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">${label}</text>`; for (var i = 0; i < bits; i++) { var on = bv[i] === 1, d = diff && bv[i] === 1; s += rect(sxh + i * (cw + gap), y0, cw, 28, { fill: d ? "var(--c-warning-bg)" : on ? "var(--c-info-bg)" : "var(--surface-2)", stroke: d ? "var(--c-warning)" : on ? "var(--accent)" : "var(--border)", sw: d ? 2 : 1.2, r: 4 }); s += `<text x="${sxh + i * (cw + gap) + cw / 2}" y="${y0 + 19}" text-anchor="middle" fill="${d ? "var(--c-warning)" : on ? "var(--accent)" : "var(--text-faint)"}" style="font:700 12px var(--font-mono)">${bv[i]}</text>`; } return s; }
+      frames.push({ svg: `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="hamming distance">${rowH(x, 40, "x=" + x, false)}${rowH(y, 80, "y=" + y, false)}</svg>`, caption: "Hamming distance = the number of bit positions where x and y differ. Get it from <b>x ^ y</b>, where each 1 marks a differing position." });
+      frames.push({ svg: `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="hamming distance">${rowH(x, 40, "x=" + x, false)}${rowH(y, 80, "y=" + y, false)}${rowH(xr, 140, "x^y", true)}<text x="${W / 2}" y="${Hh - 10}" text-anchor="middle" fill="var(--c-success)" style="font:700 13px var(--font-sans)">distance = ${dist}</text></svg>`, caption: `x ^ y has <b>${dist}</b> set bit(s) → Hamming distance = <b>${dist}</b>.` });
       return frames;
     }
 
@@ -3371,6 +3558,32 @@
       return frames;
     }
 
+    if (mode === "baseball") {
+      var ops = cfg.tokens, stack = [];
+      frames.push(fr(inputRow(ops, -1) + stackCol(stack), "Baseball score stack: a number pushes; 'C' cancels the last; 'D' doubles the last; '+' pushes the sum of the last two. The answer is the sum of the stack."));
+      for (var i = 0; i < ops.length; i++) { var t = ops[i]; if (t === "C") { stack.pop(); frames.push(fr(inputRow(ops, i) + stackCol(stack.map(String)), "'C' → cancel the last score.")); } else if (t === "D") { stack.push(stack[stack.length - 1] * 2); frames.push(fr(inputRow(ops, i) + stackCol(stack.map(String), null, [stack.length - 1]), `'D' → double the last → ${stack[stack.length - 1]}.`)); } else if (t === "+") { stack.push(stack[stack.length - 1] + stack[stack.length - 2]); frames.push(fr(inputRow(ops, i) + stackCol(stack.map(String), null, [stack.length - 1]), `'+' → push the sum of the last two → ${stack[stack.length - 1]}.`)); } else { stack.push(+t); frames.push(fr(inputRow(ops, i) + stackCol(stack.map(String), null, [stack.length - 1]), `Push ${t}.`)); } }
+      frames.push(fr(inputRow(ops, -1) + stackCol(stack.map(String)), `Sum of the stack = <b>${stack.reduce(function (a, b) { return a + b; }, 0)}</b>.`));
+      return frames;
+    }
+
+    if (mode === "adjacent-dup") {
+      var s = cfg.s, stack = [];
+      frames.push(fr(inputRow(s.split(""), -1) + stackCol(stack), "Remove adjacent duplicate pairs with a stack: if the next character equals the top, pop (they cancel); otherwise push it."));
+      for (var i = 0; i < s.length; i++) { var c = s[i]; if (stack.length && stack[stack.length - 1] === c) { stack.pop(); frames.push(fr(inputRow(s.split(""), i) + stackCol(stack), `'${c}' matches the top → pop the pair.`)); } else { stack.push(c); frames.push(fr(inputRow(s.split(""), i) + stackCol(stack, null, [stack.length - 1]), `'${c}' ≠ top → push.`)); } }
+      frames.push(fr(inputRow(s.split(""), -1) + stackCol(stack), `Result: "<b>${stack.join("")}</b>".`));
+      return frames;
+    }
+
+    if (mode === "min-remove-parens") {
+      var s = cfg.s, stack = [], remove = new Set();
+      frames.push(fr(inputRow(s.split(""), -1) + stackCol([]), "Make the parentheses valid with the fewest removals. Stack the indices of unmatched '('; an unmatched ')' is marked for removal at once, and any '(' left on the stack is removed at the end."));
+      for (var i = 0; i < s.length; i++) { var c = s[i]; if (c === "(") { stack.push(i); frames.push(fr(inputRow(s.split(""), i) + stackCol(stack.map(String), null, [stack.length - 1]), `'(' at ${i} → push its index (awaiting a match).`)); } else if (c === ")") { if (stack.length) { stack.pop(); frames.push(fr(inputRow(s.split(""), i) + stackCol(stack.map(String)), `')' matches the '(' on top → pop; they're balanced.`)); } else { remove.add(i); frames.push(fr(inputRow(s.split(""), i) + stackCol(stack.map(String)), `')' at ${i} has no '(' to match → <b>mark for removal</b>.`)); } } }
+      stack.forEach(function (i) { remove.add(i); });
+      var res = s.split("").filter(function (_, i) { return !remove.has(i); }).join("");
+      frames.push(fr(inputRow(s.split(""), -1) + stackCol([]), `Remove the unmatched parentheses (indices ${[...remove].sort(function (a, b) { return a - b; }).join(", ")}) → "<b>${res}</b>".`));
+      return frames;
+    }
+
     if (mode === "car-fleet") {
       var target = cfg.target, pos = cfg.positions, sp = cfg.speeds;
       var cars = pos.map(function (p, i) { return { p: p, t: Math.round((target - p) / sp[i] * 10) / 10 }; }).sort(function (a, b) { return b.p - a.p; });
@@ -3477,6 +3690,35 @@
       for (var p = 2; p * p < n; p++) { if (isComp[p]) continue; for (var mu = p * p; mu < n; mu += p) isComp[mu] = true; frames.push(drawS(p, `${p} is prime → cross out ${p}², ${p}²+${p}, … (its multiples).`, "sieving from " + p)); }
       for (var v = 2; v < n; v++) if (!isComp[v]) primes.push(v);
       frames.push(drawS(-1, `Primes below ${n}: ${primes.join(", ")} → count = <b>${primes.length}</b>.`, "count = " + primes.length));
+      return frames;
+    }
+
+    if (mode === "fizzbuzz") {
+      var n = cfg.n, cols = 5, cw = Math.min(106, (W - 40) / cols), ch = 40, rows = Math.ceil(n / cols), sy = 20, Hf = sy + rows * (ch + 6) + 14, sx = (W - (cols * (cw + 6) - 6)) / 2;
+      function label(i) { if (i % 15 === 0) return "FizzBuzz"; if (i % 3 === 0) return "Fizz"; if (i % 5 === 0) return "Buzz"; return "" + i; }
+      function drawFB(upto, cur, cap) { var s = ""; for (var i = 1; i <= n; i++) { var r = Math.floor((i - 1) / cols), c = (i - 1) % cols, x = sx + c * (cw + 6), y = sy + r * (ch + 6), shown = i <= upto, f3 = i % 3 === 0, f5 = i % 5 === 0; var fill = !shown ? "var(--surface-2)" : i % 15 === 0 ? "var(--brand-soft)" : f3 ? "var(--c-info-bg)" : f5 ? "var(--c-success-bg)" : "var(--surface-2)"; var stk = i === cur ? "var(--accent)" : !shown ? "var(--border)" : (i % 15 === 0 || f3) ? "var(--accent)" : f5 ? "var(--c-success)" : "var(--border)"; s += rect(x, y, cw, ch, { fill: fill, stroke: stk, sw: i === cur ? 2.4 : 1.2, r: 6 }); s += `<text x="${x + cw / 2}" y="${y + ch / 2 + 5}" text-anchor="middle" fill="var(--text)" style="font:700 ${i % 15 === 0 ? 11 : 13}px var(--font-sans)">${shown ? label(i) : ""}</text>`; } return { svg: `<svg viewBox="0 0 ${W} ${Hf}" role="img" aria-label="fizzbuzz">${s}</svg>`, caption: cap }; }
+      frames.push(drawFB(0, -1, "FizzBuzz: replace multiples of 3 with Fizz, of 5 with Buzz, of both with FizzBuzz. Test divisibility by 15 (i.e. 3 and 5) first."));
+      for (var i = 1; i <= n; i++) { var why = i % 15 === 0 ? "divisible by 3 and 5 → FizzBuzz" : i % 3 === 0 ? "divisible by 3 → Fizz" : i % 5 === 0 ? "divisible by 5 → Buzz" : "neither → the number itself"; frames.push(drawFB(i, i, `${i}: ${why}.`)); }
+      return frames;
+    }
+
+    if (mode === "digital-root") {
+      var n = cfg.n, Hd = 170; function sumDig(x) { var s = 0; ("" + x).split("").forEach(function (d) { s += +d; }); return s; }
+      var hist = [n], cur = n; while (cur >= 10) { cur = sumDig(cur); hist.push(cur); }
+      function chain(upto, cap) { var s = "", x0 = 60; for (var i = 0; i <= upto; i++) { var last = i === upto; s += rect(x0, 70, 60, 36, { fill: hist[i] < 10 ? "var(--c-success-bg)" : last ? "var(--brand-soft)" : "var(--surface-2)", stroke: (hist[i] < 10 && i === hist.length - 1) ? "var(--c-success)" : last ? "var(--accent)" : "var(--border)", sw: last ? 2.2 : 1.2, r: 7 }); s += `<text x="${x0 + 30}" y="${92}" text-anchor="middle" fill="var(--text)" style="font:700 15px var(--font-mono)">${hist[i]}</text>`; if (i < upto) s += `<text x="${x0 + 76}" y="${92}" text-anchor="middle" fill="var(--text-faint)" style="font:700 14px var(--font-sans)">→</text>`; x0 += 92; } return { svg: `<svg viewBox="0 0 ${W} ${Hd}" role="img" aria-label="digital root">${s}</svg>`, caption: cap }; }
+      frames.push(chain(0, `Add the digits repeatedly until a single digit remains — the digital root. Start at ${n}.`));
+      for (var i = 1; i < hist.length; i++) frames.push(chain(i, `Sum the digits of ${hist[i - 1]} → <b>${hist[i]}</b>.${hist[i] < 10 ? " Single digit — done." : ""}`));
+      frames.push(chain(hist.length - 1, `Digital root = <b>${hist[hist.length - 1]}</b>. (It also equals 1 + (n − 1) mod 9, an O(1) shortcut.)`));
+      return frames;
+    }
+
+    if (mode === "ugly") {
+      var n0 = cfg.n, Hu = 160, cur = n0;
+      function frameU(val, cap, ok) { return { svg: `<svg viewBox="0 0 ${W} ${Hu}" role="img" aria-label="ugly number"><text x="${W / 2}" y="80" text-anchor="middle" fill="${ok === true ? "var(--c-success)" : ok === false ? "var(--c-warning)" : "var(--text)"}" style="font:700 26px var(--font-mono)">${val}</text><text x="${W / 2}" y="${Hu - 16}" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">divide out 2, 3, 5</text></svg>`, caption: cap }; }
+      if (n0 <= 0) { frames.push(frameU(n0, `${n0} ≤ 0 → not an ugly number.`, false)); return frames; }
+      frames.push(frameU(cur, "An ugly number's only prime factors are 2, 3, and 5. Keep dividing the number by those; if it reduces to 1, it's ugly."));
+      [2, 3, 5].forEach(function (p) { while (cur % p === 0) { cur /= p; frames.push(frameU(cur, `÷ ${p} → ${cur}.`)); } });
+      frames.push(frameU(cur, cur === 1 ? `Reduced to 1 → <b>ugly number</b>.` : `Stuck at ${cur} (it has another prime factor) → <b>not ugly</b>.`, cur === 1));
       return frames;
     }
 
@@ -3687,6 +3929,30 @@
       var q = [root];
       while (q.length) { var n = q.shift(); st.set(n, "active"); out.push("" + n.val); var note = ""; if (n.left) q.push(n.left); else out.push("#"); if (n.right) q.push(n.right); else out.push("#"); frames.push(frame(root, so, ov(), `Visit <b>${n.val}</b> → append "${n.val}"${(!n.left || !n.right) ? " plus '#' for its missing child" + (!n.left && !n.right ? "ren" : "") : ""}.`, 56)); st.set(n, "visited"); }
       frames.push(frame(root, so, ov(), `Serialized string complete. Deserialize replays it level-by-level to rebuild the identical tree.`, 56));
+      return frames;
+    }
+
+    if (mode === "bst-insert") {
+      var root = treeFromHeap(cfg.data), key = cfg.key, st = new Map();
+      function so(n) { return st.get(n) || "default"; }
+      frames.push(frame(root, so, null, `Insert <b>${key}</b> into the BST: walk down in BST order to the correct empty slot, then hang the value there as a new leaf.`));
+      var cur = root, par = null;
+      while (cur) { st.set(cur, "visited"); par = cur; frames.push(frame(root, so, null, `${key} ${key < cur.val ? "&lt;" : "&gt;"} ${cur.val} → go ${key < cur.val ? "left" : "right"}.`)); cur = key < cur.val ? cur.left : cur.right; }
+      var node = { val: key, left: null, right: null };
+      if (key < par.val) par.left = node; else par.right = node;
+      st.set(node, "active");
+      frames.push(frame(root, so, null, `Empty ${key < par.val ? "left" : "right"} slot under ${par.val} → insert <b>${key}</b> as a new leaf.`));
+      return frames;
+    }
+
+    if (mode === "trim-bst") {
+      var root = treeFromHeap(cfg.data), low = cfg.low, high = cfg.high, st = new Map();
+      function so(n) { return st.get(n) || "default"; }
+      frames.push(frame(root, so, null, `Trim the BST to the range [<b>${low}, ${high}</b>]. A node below low takes its whole left subtree with it (recurse right only); above high, the reverse.`));
+      function trim(n) { if (!n) return null; if (n.val < low) { st.set(n, "warn"); frames.push(frame(root, so, null, `${n.val} &lt; ${low} → drop it and its left subtree; keep trimming the right.`)); return trim(n.right); } if (n.val > high) { st.set(n, "warn"); frames.push(frame(root, so, null, `${n.val} &gt; ${high} → drop it and its right subtree; keep trimming the left.`)); return trim(n.left); } st.set(n, "visited"); n.left = trim(n.left); n.right = trim(n.right); return n; }
+      var newRoot = trim(root);
+      if (!newRoot) { frames.push({ svg: `<svg viewBox="0 0 ${W} 80" role="img" aria-label="empty"><text x="${W / 2}" y="44" text-anchor="middle" fill="var(--text-faint)" style="font:600 13px var(--font-sans)">empty</text></svg>`, caption: "Nothing falls in range → empty tree." }); return frames; }
+      frames.push(frame(newRoot, function () { return "visited"; }, null, `Trimmed tree keeps only values in [${low}, ${high}].`));
       return frames;
     }
 
@@ -4256,7 +4522,68 @@
     /* ----- math / bit ----- */
     "excel-sheet-column-number": { title: "Watch base-26 accumulate", type: "math-steps", mode: "excel", s: "ZY" },
     "count-primes": { title: "Watch the sieve cross out composites", type: "math-steps", mode: "sieve", n: 30 },
-    "power-of-two": { title: "Watch n & (n−1) test the single bit", type: "bits", mode: "power-of-two", n: 16, bits: 8 }
+    "power-of-two": { title: "Watch n & (n−1) test the single bit", type: "bits", mode: "power-of-two", n: 16, bits: 8 },
+
+    /* ===== batch M ===== */
+    /* ----- trees ----- */
+    "sum-of-left-leaves": { title: "Watch left leaves add up", type: "tree", mode: "left-leaves", data: [3, 9, 20, null, null, 15, 7] },
+    "find-bottom-left-tree-value": { title: "Watch BFS reach the deepest-left node", type: "tree", mode: "bottom-left", data: [1, 2, 3, 4, null, 5, 6, null, null, 7] },
+    "deepest-leaves-sum": { title: "Watch the last level sum", type: "tree", mode: "deepest-sum", data: [1, 2, 3, 4, 5, null, 6, 7, null, null, null, null, 8] },
+    "find-largest-value-in-each-tree-row": { title: "Watch each row's max light up", type: "tree", mode: "row-max", data: [1, 3, 2, 5, 3, null, 9] },
+    "search-in-a-bst": { title: "Watch the BST walk to the target", type: "tree", mode: "bst-search", data: [4, 2, 7, 1, 3], target: 2 },
+    "binary-tree-tilt": { title: "Watch tilts accumulate post-order", type: "tree", mode: "tilt", data: [4, 2, 9, 3, 5, null, 7] },
+    "insert-into-a-bst": { title: "Watch the new leaf find its slot", type: "tree-ops", mode: "bst-insert", data: [4, 2, 7, 1, 3], key: 5 },
+    "trim-a-binary-search-tree": { title: "Watch out-of-range nodes drop", type: "tree-ops", mode: "trim-bst", data: [3, 0, 4, null, 2, null, null, 1], low: 1, high: 3 },
+
+    /* ----- arrays / hashing ----- */
+    "third-maximum-number": { title: "Watch the top three cascade", type: "array-scan", mode: "third-max", data: [2, 2, 3, 1] },
+    "maximum-product-of-three-numbers": { title: "Watch top-3 and bottom-2 track", type: "array-scan", mode: "max-three", data: [-4, -3, -2, 1, 60] },
+    "degree-of-an-array": { title: "Watch first index, count and span", type: "array-scan", mode: "degree", data: [1, 2, 2, 3, 1] },
+    "running-sum-of-1d-array": { title: "Watch the prefix sum build", type: "array-scan", mode: "running-sum", data: [1, 2, 3, 4] },
+    "reverse-vowels-of-a-string": { title: "Watch only vowels swap", type: "array-rewrite", mode: "reverse-vowels", data: "leetcode".split("") },
+    "find-all-duplicates-in-an-array": { title: "Watch the array mark itself", type: "array-rewrite", mode: "find-dups", data: [4, 3, 2, 7, 8, 2, 3, 1] },
+    "set-mismatch": { title: "Watch the duplicate and the gap appear", type: "array-rewrite", mode: "set-mismatch", data: [1, 2, 2, 4] },
+
+    /* ----- linked list ----- */
+    "remove-linked-list-elements": { title: "Watch matching nodes unlink", type: "linked-list", mode: "remove-val", data: [1, 2, 6, 3, 4, 5, 6], val: 6 },
+    "partition-list": { title: "Watch the split-and-splice partition", type: "linked-list", mode: "partition", data: [1, 4, 3, 2, 5, 2], x: 3 },
+    "delete-the-middle-node-of-a-linked-list": { title: "Watch fast/slow find the middle", type: "linked-list", mode: "delete-middle", data: [1, 3, 4, 7, 1, 2, 6] },
+    "add-two-numbers-ii": { title: "Watch digits add (reversed first)", type: "linked-list", mode: "add", a: [3, 4, 2, 7], b: [4, 6, 5] },
+
+    /* ----- bit manipulation ----- */
+    "single-number-ii": { title: "Watch bit counts mod 3", type: "bits", mode: "single-ii", data: [2, 2, 3, 2], bits: 8 },
+    "hamming-distance": { title: "Watch x ^ y reveal differing bits", type: "bits", mode: "hamming", a: 1, b: 4, bits: 8 },
+
+    /* ----- math ----- */
+    "fizz-buzz": { title: "Watch Fizz, Buzz and FizzBuzz fill in", type: "math-steps", mode: "fizzbuzz", n: 15 },
+    "add-digits": { title: "Watch the digit sums chain to one", type: "math-steps", mode: "digital-root", n: 38 },
+    "ugly-number": { title: "Watch 2, 3, 5 divide out", type: "math-steps", mode: "ugly", n: 6 },
+
+    /* ----- stack ----- */
+    "baseball-game": { title: "Watch the score stack update", type: "stack-ops", mode: "baseball", tokens: ["5", "2", "C", "D", "+"] },
+    "remove-all-adjacent-duplicates-in-string": { title: "Watch pairs cancel on the stack", type: "stack-ops", mode: "adjacent-dup", s: "abbaca" },
+    "minimum-remove-to-make-valid-parentheses": { title: "Watch unmatched parens get marked", type: "stack-ops", mode: "min-remove-parens", s: "a)b(c)d" },
+
+    /* ----- two pointers / greedy ----- */
+    "backspace-string-compare": { title: "Watch backspaces resolve", type: "two-pointer", mode: "backspace", s: "ab#c", t: "ad#c" },
+    "assign-cookies": { title: "Watch the greedy cookie matching", type: "two-pointer", mode: "assign-cookies", g: [1, 2, 3], s: [1, 1] },
+    "boats-to-save-people": { title: "Watch lightest pair with heaviest", type: "two-pointer", mode: "boats", data: [3, 2, 2, 1], limit: 3 },
+    "maximum-average-subarray-i": { title: "Watch the fixed window slide", type: "sliding-window", mode: "fixed-avg", data: [1, 12, -5, -6, 50, 3], k: 4 },
+
+    /* ----- grid / graph ----- */
+    "number-of-enclaves": { title: "Watch border land escape, enclaves stay", type: "grid", mode: "enclaves", data: [[0, 0, 0, 0], [1, 0, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]] },
+    "all-paths-from-source-to-target": { title: "Watch DFS enumerate every path", type: "graph", mode: "all-paths-dag", n: 4, adj: [[1, 2], [3], [3], []] },
+
+    /* ----- strings ----- */
+    "length-of-last-word": { title: "Watch the right-to-left scan", type: "string-ops", mode: "last-word", s: "Hello World" },
+    "detect-capital": { title: "Watch the three valid patterns", type: "string-ops", mode: "detect-capital", s: "Google" },
+
+    /* ----- DP / config reuses ----- */
+    "arithmetic-slices": { title: "Watch runs of equal difference count", type: "dp-linear", mode: "arithmetic-slices", data: [1, 2, 3, 4] },
+    "next-greater-element-i": { title: "Watch the monotonic stack resolve", type: "mono-stack", mode: "next-greater", data: [1, 3, 4, 2] },
+    "peak-index-in-a-mountain-array": { title: "Watch binary search climb the peak", type: "bsearch", mode: "find-peak", data: [0, 2, 4, 6, 5, 3, 1] },
+    "maximum-length-of-pair-chain": { title: "Watch greedy keep earliest-ending", type: "intervals-merge", mode: "non-overlapping", data: [[1, 2], [7, 8], [4, 5]] },
+    "01-matrix": { title: "Watch distances spread from every 0", type: "grid", mode: "walls-and-gates", data: [[0, 0, 0], [0, 2147483647, 0], [2147483647, 2147483647, 2147483647]] }
   };
 
   /* ---------- engine ---------- */

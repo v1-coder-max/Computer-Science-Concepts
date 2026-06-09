@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maximum Average Subarray I — DevLens</title>
+  <meta name="description" content="Find the maximum average of any fixed-size window with a sliding sum updated in O(1) per step — O(n), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="maximum-average-subarray-i" data-title="Maximum Average Subarray I">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Maximum Average Subarray I</h1>
+          <p class="lede">
+            A fixed-length window slides by adding the new element and dropping the one that left, so each step is O(1).
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#sliding-window</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an array and an integer <code>k</code>, find the contiguous subarray of length <code>k</code> with the maximum average.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,12,-5,-6,50,3], k = 4</code> → <code>12.75</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Summing every length-<code>k</code> window from scratch is O(n·k). Reusing the previous sum makes each slide O(1).
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Compute the first window's sum, then slide: <code>sum += nums[i] − nums[i−k]</code>. Track the maximum sum and divide by <code>k</code> at the end (compare sums to avoid floating point until then).
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong></p>
+
+          <div class="viz" data-viz="maximum-average-subarray-i"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public double FindMaxAverage(int[] nums, int k)
+{
+    int sum = 0;
+    for (int i = 0; i &lt; k; i++) sum += nums[i];
+    int best = sum;
+    for (int i = k; i &lt; nums.Length; i++)
+    {
+        sum += nums[i] - nums[i - k];   // slide the window
+        best = Math.Max(best, sum);
+    }
+    return best / (double)k;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each element added and removed once.</li>
+              <li><strong>Space:</strong> O(1) — a couple of sums.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A fixed-size window updates in O(1) by add-new, drop-old.</li>
+              <li>Compare sums (integers) and divide once at the end to avoid float error.</li>
+              <li>This is the simplest member of the sliding-window family.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/minimum-size-subarray-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Minimum Size Subarray Sum</span></a>
+            <a class="related-card" href="../coding-problems/max-consecutive-ones.html"><span class="rc-cat">Coding</span><span class="rc-title">Max Consecutive Ones</span></a>
+            <a class="related-card" href="../coding-problems/sliding-window-maximum.html"><span class="rc-cat">Coding</span><span class="rc-title">Sliding Window Maximum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Keep the running sum as an integer and divide only at the end — comparing averages directly invites floating-point bugs. The O(1) slide is the core technique.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

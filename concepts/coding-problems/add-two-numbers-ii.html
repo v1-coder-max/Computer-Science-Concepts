@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Two Numbers II — DevLens</title>
+  <meta name="description" content="Add two numbers stored most-significant-digit first in linked lists, using stacks (or reversal) to add from the least significant end — O(n), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="add-two-numbers-ii" data-title="Add Two Numbers II">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Add Two Numbers II</h1>
+          <p class="lede">
+            The digits arrive most-significant first, but addition needs the least-significant end. Stacks (or reversing) give you that order without modifying the inputs.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#linked-list</span>
+            <span class="tag">#stack</span>
+            <span class="tag">#math</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Two non-negative integers are stored as linked lists with the most significant digit first. Add them and return the sum as a linked list, again most-significant first.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>7243 + 564</code> → <code>[7,8,0,7]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Reversing both lists, adding, and reversing the result works but mutates inputs. Pushing digits onto stacks reads them in reverse without changing the lists.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Push every digit of each list onto a <strong>stack</strong>. Pop from both, add with a carry, and <strong>prepend</strong> each result digit to the output (building it most-significant-first). Continue while either stack has digits or a carry remains.
+          </p>
+          <p><strong>Time O(n), Space O(n).</strong></p>
+
+          <div class="viz" data-viz="add-two-numbers-ii"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public ListNode AddTwoNumbers(ListNode l1, ListNode l2)
+{
+    var s1 = new Stack&lt;int&gt;();
+    var s2 = new Stack&lt;int&gt;();
+    for (; l1 != null; l1 = l1.next) s1.Push(l1.val);
+    for (; l2 != null; l2 = l2.next) s2.Push(l2.val);
+    ListNode head = null;
+    int carry = 0;
+    while (s1.Count &gt; 0 || s2.Count &gt; 0 || carry &gt; 0)
+    {
+        int sum = carry;
+        if (s1.Count &gt; 0) sum += s1.Pop();
+        if (s2.Count &gt; 0) sum += s2.Pop();
+        head = new ListNode(sum % 10, head);   // prepend
+        carry = sum / 10;
+    }
+    return head;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one pass to load, one to add.</li>
+              <li><strong>Space:</strong> O(n) — two stacks.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Stacks read digits least-significant-first without reversing the lists.</li>
+              <li>Prepend result digits to build the answer most-significant-first.</li>
+              <li>Keep going while either stack is non-empty or a carry is pending.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/add-two-numbers.html"><span class="rc-cat">Coding</span><span class="rc-title">Add Two Numbers</span></a>
+            <a class="related-card" href="../coding-problems/add-strings.html"><span class="rc-cat">Coding</span><span class="rc-title">Add Strings</span></a>
+            <a class="related-card" href="../coding-problems/reverse-linked-list.html"><span class="rc-cat">Coding</span><span class="rc-title">Reverse Linked List</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Using stacks to avoid reversing the input lists is the elegant move. Prepending to the result (rather than appending) keeps the most-significant-first order for free.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

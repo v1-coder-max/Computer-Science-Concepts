@@ -5240,5 +5240,491 @@
     ],
     "description": "Check if a number is a power of two with the bit trick n & (n−1) == 0 — O(1), in C#.",
     "url": "concepts/coding-problems/power-of-two.html"
+  },
+  {
+    "title": "Sum of Left Leaves",
+    "category": "coding-problems",
+    "tags": [
+      "trees",
+      "dfs",
+      "recursion",
+      "easy",
+      "interview"
+    ],
+    "description": "Sum the values of all left leaves in a binary tree with a DFS that carries whether each node is a left child — O(n), in C#.",
+    "url": "concepts/coding-problems/sum-of-left-leaves.html"
+  },
+  {
+    "title": "Find Bottom Left Tree Value",
+    "category": "coding-problems",
+    "tags": [
+      "trees",
+      "bfs",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the leftmost value on the deepest level of a binary tree with a level-order BFS — O(n), in C#.",
+    "url": "concepts/coding-problems/find-bottom-left-tree-value.html"
+  },
+  {
+    "title": "Deepest Leaves Sum",
+    "category": "coding-problems",
+    "tags": [
+      "trees",
+      "bfs",
+      "medium",
+      "interview"
+    ],
+    "description": "Sum the values of the deepest leaves of a binary tree by summing the last BFS level — O(n), in C#.",
+    "url": "concepts/coding-problems/deepest-leaves-sum.html"
+  },
+  {
+    "title": "Find Largest Value in Each Tree Row",
+    "category": "coding-problems",
+    "tags": [
+      "trees",
+      "bfs",
+      "medium",
+      "interview"
+    ],
+    "description": "Return the maximum value on each level of a binary tree with a level-order BFS — O(n), in C#.",
+    "url": "concepts/coding-problems/find-largest-value-in-each-tree-row.html"
+  },
+  {
+    "title": "Search in a Binary Search Tree",
+    "category": "coding-problems",
+    "tags": [
+      "trees",
+      "bst",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the subtree rooted at a target value in a BST by walking down using the ordering — O(h), in C#.",
+    "url": "concepts/coding-problems/search-in-a-bst.html"
+  },
+  {
+    "title": "Binary Tree Tilt",
+    "category": "coding-problems",
+    "tags": [
+      "trees",
+      "dfs",
+      "post-order",
+      "easy",
+      "interview"
+    ],
+    "description": "Sum every node's tilt (|left subtree sum − right subtree sum|) with a single post-order pass — O(n), in C#.",
+    "url": "concepts/coding-problems/binary-tree-tilt.html"
+  },
+  {
+    "title": "Insert into a Binary Search Tree",
+    "category": "coding-problems",
+    "tags": [
+      "trees",
+      "bst",
+      "medium",
+      "interview"
+    ],
+    "description": "Insert a value into a BST by walking to the correct empty slot and hanging a new leaf there — O(h), in C#.",
+    "url": "concepts/coding-problems/insert-into-a-bst.html"
+  },
+  {
+    "title": "Trim a Binary Search Tree",
+    "category": "coding-problems",
+    "tags": [
+      "trees",
+      "bst",
+      "recursion",
+      "medium",
+      "interview"
+    ],
+    "description": "Trim a BST so all values fall in [low, high], using the ordering to drop whole subtrees — O(n), in C#.",
+    "url": "concepts/coding-problems/trim-a-binary-search-tree.html"
+  },
+  {
+    "title": "Third Maximum Number",
+    "category": "coding-problems",
+    "tags": [
+      "arrays",
+      "hash-set",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the third distinct maximum in one pass by maintaining the top three distinct values — O(n), O(1), in C#.",
+    "url": "concepts/coding-problems/third-maximum-number.html"
+  },
+  {
+    "title": "Maximum Product of Three Numbers",
+    "category": "coding-problems",
+    "tags": [
+      "arrays",
+      "math",
+      "greedy",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the maximum product of any three numbers by tracking the top three and bottom two in one pass — O(n), in C#.",
+    "url": "concepts/coding-problems/maximum-product-of-three-numbers.html"
+  },
+  {
+    "title": "Degree of an Array",
+    "category": "coding-problems",
+    "tags": [
+      "arrays",
+      "hash-map",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the shortest subarray whose degree matches the array's, tracking each value's first index, count, and span — O(n), in C#.",
+    "url": "concepts/coding-problems/degree-of-an-array.html"
+  },
+  {
+    "title": "Running Sum of 1d Array",
+    "category": "coding-problems",
+    "tags": [
+      "arrays",
+      "prefix-sum",
+      "easy",
+      "interview"
+    ],
+    "description": "Build the running (prefix) sum of an array in place with one pass — O(n), O(1) extra, in C#.",
+    "url": "concepts/coding-problems/running-sum-of-1d-array.html"
+  },
+  {
+    "title": "Reverse Vowels of a String",
+    "category": "coding-problems",
+    "tags": [
+      "two-pointers",
+      "strings",
+      "easy",
+      "interview"
+    ],
+    "description": "Reverse only the vowels of a string in place with two pointers that skip consonants — O(n), in C#.",
+    "url": "concepts/coding-problems/reverse-vowels-of-a-string.html"
+  },
+  {
+    "title": "Find All Duplicates in an Array",
+    "category": "coding-problems",
+    "tags": [
+      "arrays",
+      "in-place",
+      "medium",
+      "interview"
+    ],
+    "description": "Find every value appearing twice in a 1..n array using the array itself as a hash via sign flipping — O(n), O(1), in C#.",
+    "url": "concepts/coding-problems/find-all-duplicates-in-an-array.html"
+  },
+  {
+    "title": "Set Mismatch",
+    "category": "coding-problems",
+    "tags": [
+      "arrays",
+      "in-place",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the duplicated and missing numbers in a corrupted 1..n set using in-place sign marking — O(n), O(1), in C#.",
+    "url": "concepts/coding-problems/set-mismatch.html"
+  },
+  {
+    "title": "Remove Linked List Elements",
+    "category": "coding-problems",
+    "tags": [
+      "linked-list",
+      "easy",
+      "interview"
+    ],
+    "description": "Delete all nodes with a target value from a linked list using a dummy head for uniform deletion — O(n), in C#.",
+    "url": "concepts/coding-problems/remove-linked-list-elements.html"
+  },
+  {
+    "title": "Partition List",
+    "category": "coding-problems",
+    "tags": [
+      "linked-list",
+      "two-pointers",
+      "medium",
+      "interview"
+    ],
+    "description": "Partition a linked list around a value so smaller nodes precede the rest, preserving order, by building two lists — O(n), in C#.",
+    "url": "concepts/coding-problems/partition-list.html"
+  },
+  {
+    "title": "Delete the Middle Node of a Linked List",
+    "category": "coding-problems",
+    "tags": [
+      "linked-list",
+      "two-pointers",
+      "medium",
+      "interview"
+    ],
+    "description": "Delete the middle node of a linked list using fast/slow pointers to find it in one pass — O(n), in C#.",
+    "url": "concepts/coding-problems/delete-the-middle-node-of-a-linked-list.html"
+  },
+  {
+    "title": "Add Two Numbers II",
+    "category": "coding-problems",
+    "tags": [
+      "linked-list",
+      "stack",
+      "math",
+      "medium",
+      "interview"
+    ],
+    "description": "Add two numbers stored most-significant-digit first in linked lists, using stacks (or reversal) to add from the least significant end — O(n), in C#.",
+    "url": "concepts/coding-problems/add-two-numbers-ii.html"
+  },
+  {
+    "title": "Single Number II",
+    "category": "coding-problems",
+    "tags": [
+      "bit-manipulation",
+      "arrays",
+      "medium",
+      "interview"
+    ],
+    "description": "Find the element appearing once when every other appears three times, by counting bits modulo 3 — O(n), O(1), in C#.",
+    "url": "concepts/coding-problems/single-number-ii.html"
+  },
+  {
+    "title": "Hamming Distance",
+    "category": "coding-problems",
+    "tags": [
+      "bit-manipulation",
+      "easy",
+      "interview"
+    ],
+    "description": "Count the positions where two integers differ in binary by popcounting their XOR — O(1), in C#.",
+    "url": "concepts/coding-problems/hamming-distance.html"
+  },
+  {
+    "title": "Fizz Buzz",
+    "category": "coding-problems",
+    "tags": [
+      "math",
+      "simulation",
+      "easy",
+      "interview"
+    ],
+    "description": "Produce the classic FizzBuzz sequence by testing divisibility by 15, 3, then 5 — O(n), in C#.",
+    "url": "concepts/coding-problems/fizz-buzz.html"
+  },
+  {
+    "title": "Add Digits",
+    "category": "coding-problems",
+    "tags": [
+      "math",
+      "easy",
+      "interview"
+    ],
+    "description": "Repeatedly sum a number's digits until one digit remains — the digital root — with a simple loop or an O(1) formula, in C#.",
+    "url": "concepts/coding-problems/add-digits.html"
+  },
+  {
+    "title": "Ugly Number",
+    "category": "coding-problems",
+    "tags": [
+      "math",
+      "easy",
+      "interview"
+    ],
+    "description": "Decide if a number's only prime factors are 2, 3, and 5 by dividing them out — O(log n), in C#.",
+    "url": "concepts/coding-problems/ugly-number.html"
+  },
+  {
+    "title": "Baseball Game",
+    "category": "coding-problems",
+    "tags": [
+      "stack",
+      "simulation",
+      "easy",
+      "interview"
+    ],
+    "description": "Compute a baseball score by simulating operations on a stack: push, cancel, double, and sum — O(n), in C#.",
+    "url": "concepts/coding-problems/baseball-game.html"
+  },
+  {
+    "title": "Remove All Adjacent Duplicates In String",
+    "category": "coding-problems",
+    "tags": [
+      "stack",
+      "strings",
+      "easy",
+      "interview"
+    ],
+    "description": "Repeatedly remove adjacent equal-character pairs using a stack, in a single pass — O(n), in C#.",
+    "url": "concepts/coding-problems/remove-all-adjacent-duplicates-in-string.html"
+  },
+  {
+    "title": "Minimum Remove to Make Valid Parentheses",
+    "category": "coding-problems",
+    "tags": [
+      "stack",
+      "strings",
+      "medium",
+      "interview"
+    ],
+    "description": "Remove the fewest parentheses to make a string valid by stacking unmatched '(' indices and marking stray ')' — O(n), in C#.",
+    "url": "concepts/coding-problems/minimum-remove-to-make-valid-parentheses.html"
+  },
+  {
+    "title": "Backspace String Compare",
+    "category": "coding-problems",
+    "tags": [
+      "two-pointers",
+      "stack",
+      "strings",
+      "easy",
+      "interview"
+    ],
+    "description": "Compare two strings after applying '#' backspaces, via a stack or an O(1)-space reverse two-pointer scan — O(n), in C#.",
+    "url": "concepts/coding-problems/backspace-string-compare.html"
+  },
+  {
+    "title": "Assign Cookies",
+    "category": "coding-problems",
+    "tags": [
+      "greedy",
+      "two-pointers",
+      "sorting",
+      "easy",
+      "interview"
+    ],
+    "description": "Maximize content children by greedily matching the smallest adequate cookie to the least greedy child — O(n log n), in C#.",
+    "url": "concepts/coding-problems/assign-cookies.html"
+  },
+  {
+    "title": "Boats to Save People",
+    "category": "coding-problems",
+    "tags": [
+      "greedy",
+      "two-pointers",
+      "sorting",
+      "medium",
+      "interview"
+    ],
+    "description": "Find the fewest boats (max 2 people, weight limit) by pairing the lightest with the heaviest after sorting — O(n log n), in C#.",
+    "url": "concepts/coding-problems/boats-to-save-people.html"
+  },
+  {
+    "title": "Maximum Average Subarray I",
+    "category": "coding-problems",
+    "tags": [
+      "sliding-window",
+      "arrays",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the maximum average of any fixed-size window with a sliding sum updated in O(1) per step — O(n), in C#.",
+    "url": "concepts/coding-problems/maximum-average-subarray-i.html"
+  },
+  {
+    "title": "Number of Enclaves",
+    "category": "coding-problems",
+    "tags": [
+      "graphs",
+      "dfs",
+      "matrix",
+      "medium",
+      "interview"
+    ],
+    "description": "Count land cells that can't reach the grid border by flooding border-connected land first — O(m·n), in C#.",
+    "url": "concepts/coding-problems/number-of-enclaves.html"
+  },
+  {
+    "title": "All Paths From Source to Target",
+    "category": "coding-problems",
+    "tags": [
+      "graphs",
+      "dfs",
+      "backtracking",
+      "medium",
+      "interview"
+    ],
+    "description": "List every path from node 0 to node n−1 in a DAG with DFS backtracking — O(2^n · n) worst case, in C#.",
+    "url": "concepts/coding-problems/all-paths-from-source-to-target.html"
+  },
+  {
+    "title": "Length of Last Word",
+    "category": "coding-problems",
+    "tags": [
+      "strings",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the length of the last word in a string by scanning from the right, skipping trailing spaces — O(n), O(1), in C#.",
+    "url": "concepts/coding-problems/length-of-last-word.html"
+  },
+  {
+    "title": "Detect Capital",
+    "category": "coding-problems",
+    "tags": [
+      "strings",
+      "easy",
+      "interview"
+    ],
+    "description": "Check whether a word's capitalization is valid: all caps, all lowercase, or only the first letter capitalized — O(n), in C#.",
+    "url": "concepts/coding-problems/detect-capital.html"
+  },
+  {
+    "title": "Arithmetic Slices",
+    "category": "coding-problems",
+    "tags": [
+      "dynamic-programming",
+      "arrays",
+      "medium",
+      "interview"
+    ],
+    "description": "Count arithmetic subarrays (length ≥ 3, constant difference) with a one-pass DP that extends runs — O(n), in C#.",
+    "url": "concepts/coding-problems/arithmetic-slices.html"
+  },
+  {
+    "title": "Next Greater Element I",
+    "category": "coding-problems",
+    "tags": [
+      "stack",
+      "monotonic-stack",
+      "hash-map",
+      "easy",
+      "interview"
+    ],
+    "description": "Find each query element's next greater element using a monotonic stack to precompute answers for the second array — O(n), in C#.",
+    "url": "concepts/coding-problems/next-greater-element-i.html"
+  },
+  {
+    "title": "Peak Index in a Mountain Array",
+    "category": "coding-problems",
+    "tags": [
+      "binary-search",
+      "easy",
+      "interview"
+    ],
+    "description": "Find the peak of a mountain array (strictly up then down) with binary search on the slope — O(log n), in C#.",
+    "url": "concepts/coding-problems/peak-index-in-a-mountain-array.html"
+  },
+  {
+    "title": "Maximum Length of Pair Chain",
+    "category": "coding-problems",
+    "tags": [
+      "greedy",
+      "intervals",
+      "sorting",
+      "medium",
+      "interview"
+    ],
+    "description": "Find the longest chain of pairs where each follows the last, by greedily keeping earliest-ending pairs — O(n log n), in C#.",
+    "url": "concepts/coding-problems/maximum-length-of-pair-chain.html"
+  },
+  {
+    "title": "01 Matrix",
+    "category": "coding-problems",
+    "tags": [
+      "graphs",
+      "bfs",
+      "matrix",
+      "medium",
+      "interview"
+    ],
+    "description": "Compute each cell's distance to the nearest 0 with a multi-source BFS seeded from all zeros — O(m·n), in C#.",
+    "url": "concepts/coding-problems/01-matrix.html"
   }
 ]
