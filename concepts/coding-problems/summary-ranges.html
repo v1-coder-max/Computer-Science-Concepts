@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summary Ranges — DevLens</title>
+  <meta name="description" content="Compress a sorted distinct array into its consecutive ranges with one linear scan — O(n), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="summary-ranges" data-title="Summary Ranges">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Summary Ranges</h1>
+          <p class="lede">
+            Sweep once, extending a run as long as values keep stepping by exactly one; close it off the moment the chain breaks.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#arrays</span>
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given a sorted array of distinct integers, return the smallest list of ranges that exactly covers it. A single number is written as <code>"a"</code>, a run as <code>"a->b"</code>.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[0,1,2,4,5,7]</code> → <code>["0->2","4->5","7"]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            There is no real brute force — the array is sorted, so a single linear sweep is already optimal. The work is purely in clean boundary handling.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Track the <strong>start</strong> of the current run. At each index, if the next value is not exactly one more (or you are at the end), close the run: emit a single value or an <code>a->b</code> range, then start fresh.
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong></p>
+
+          <div class="viz" data-viz="summary-ranges"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;string&gt; SummaryRanges(int[] nums)
+{
+    var res = new List&lt;string&gt;();
+    for (int i = 0; i &lt; nums.Length; i++)
+    {
+        int start = nums[i];
+        while (i + 1 &lt; nums.Length &amp;&amp; nums[i + 1] == nums[i] + 1) i++;
+        res.Add(start == nums[i] ? $"{start}" : $"{start}-&gt;{nums[i]}");
+    }
+    return res;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each element visited once.</li>
+              <li><strong>Space:</strong> O(1) — output not counted.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Remember the run's <strong>start</strong>; extend while values are consecutive.</li>
+              <li>Format a single value differently from a multi-element range.</li>
+              <li>Distinct + sorted means one clean sweep — no extra data structures.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-intervals.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge Intervals</span></a>
+            <a class="related-card" href="../coding-problems/missing-number.html"><span class="rc-cat">Coding</span><span class="rc-title">Missing Number</span></a>
+            <a class="related-card" href="../coding-problems/find-all-numbers-disappeared-in-an-array.html"><span class="rc-cat">Coding</span><span class="rc-title">Find All Numbers Disappeared in an Array</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              It is an easy problem that punishes sloppy boundaries. State the start-tracking invariant and handle the single-element format explicitly so off-by-ones don't creep in.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

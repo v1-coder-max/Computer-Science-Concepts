@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reverse Words in a String — DevLens</title>
+  <meta name="description" content="Reverse the order of words in a string, collapsing extra spaces, in O(n) — split-and-reverse or in-place pointer scan, with a C# solution." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="reverse-words-in-a-string" data-title="Reverse Words in a String">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Reverse Words in a String</h1>
+          <p class="lede">
+            Keep each word intact but flip their order, and tidy up any stray whitespace along the way.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#strings</span>
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#parsing</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given a string of words separated by spaces, return the words in <strong>reverse order</strong> with a single space between them and no leading or trailing spaces.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>"the sky is blue"</code> → <code>"blue is sky the"</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Reach for the language: <code>string.Split</code> on whitespace, drop empties, reverse the list, and join with a single space. Clean and O(n), though it allocates a word list.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            For O(1) extra space (mutating a char buffer), reverse the <strong>entire</strong> string, then reverse each individual word back. The double reversal lands every word in the right spot with its letters in order.
+          </p>
+          <p><strong>Time O(n), Space O(n).</strong></p>
+
+          <div class="viz" data-viz="reverse-words-in-a-string"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public string ReverseWords(string s)
+{
+    var words = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    Array.Reverse(words);
+    return string.Join(' ', words);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — one pass to split, one to join.</li>
+              <li><strong>Space:</strong> O(n) — the array of words.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Split → reverse → join</strong> is the readable answer; the double-reverse trick is the O(1)-space one.</li>
+              <li>Watch the edge cases: leading, trailing, and repeated spaces.</li>
+              <li><code>RemoveEmptyEntries</code> handles the messy whitespace for free.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/reverse-string.html"><span class="rc-cat">Coding</span><span class="rc-title">Reverse String</span></a>
+            <a class="related-card" href="../coding-problems/valid-palindrome.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Palindrome</span></a>
+            <a class="related-card" href="../coding-problems/string-to-integer-atoi.html"><span class="rc-cat">Coding</span><span class="rc-title">String to Integer (atoi)</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Ask whether you may use library splits or must mutate a buffer in place. If in-place, describe the reverse-all-then-reverse-each-word trick; it is the detail interviewers are listening for.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sum Root to Leaf Numbers — DevLens</title>
+  <meta name="description" content="Sum the numbers formed by each root-to-leaf path, building each value as cur×10 + node on the way down — O(n), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="sum-root-to-leaf-numbers" data-title="Sum Root to Leaf Numbers">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Sum Root to Leaf Numbers</h1>
+          <p class="lede">
+            Each path spells a number, digit by digit from the root. Carry the running value down and add it up at the leaves.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Each root-to-leaf path in a binary tree of digits (0–9) spells a number. Return the total sum of all such numbers.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p>Tree <code>[1,2,3]</code> → paths 12 and 13 → <code>25</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Collecting every path string and parsing it works but allocates strings needlessly. Carrying a running integer is cleaner and avoids parsing.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            DFS with a running value <code>cur</code>. At each node, update <code>cur = cur * 10 + node.val</code>. At a <strong>leaf</strong>, add <code>cur</code> to the total; otherwise recurse into both children.
+          </p>
+          <p><strong>Time O(n), Space O(h).</strong></p>
+
+          <div class="viz" data-viz="sum-root-to-leaf-numbers"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int SumNumbers(TreeNode root)
+{
+    int Dfs(TreeNode node, int cur)
+    {
+        if (node == null) return 0;
+        cur = cur * 10 + node.val;
+        if (node.left == null &amp;&amp; node.right == null) return cur;
+        return Dfs(node.left, cur) + Dfs(node.right, cur);
+    }
+    return Dfs(root, 0);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each node visited once.</li>
+              <li><strong>Space:</strong> O(h) — recursion stack = height.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Build the number with <strong>cur × 10 + node.val</strong> as you descend.</li>
+              <li>Add to the sum only at leaves; internal nodes just pass <code>cur</code> down.</li>
+              <li>Returning sums up the tree avoids any external accumulator.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/binary-tree-paths.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Paths</span></a>
+            <a class="related-card" href="../coding-problems/path-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Path Sum</span></a>
+            <a class="related-card" href="../coding-problems/binary-tree-maximum-path-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Binary Tree Maximum Path Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Carrying the running number is cleaner than concatenating strings — say so. The base case (leaf returns <code>cur</code>) and the multiply-by-ten step are the two things to get exactly right.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

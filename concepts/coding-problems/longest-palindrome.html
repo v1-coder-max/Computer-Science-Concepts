@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Longest Palindrome — DevLens</title>
+  <meta name="description" content="Build the longest palindrome from a multiset of letters: every pair contributes two, plus one odd character in the center — O(n), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="longest-palindrome" data-title="Longest Palindrome">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Longest Palindrome</h1>
+          <p class="lede">
+            You are not finding a palindrome inside the string — you are assembling the longest one from its letters. Pairs go on the outside, one leftover can sit in the middle.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#hash-map</span>
+            <span class="tag">#greedy</span>
+            <span class="tag">#counting</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given a string of letters, return the length of the longest palindrome you can build using those letters (case-sensitive).
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>"abccccdd"</code> → <code>7</code> (e.g. <code>"dccaccd"</code>)</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Generating permutations to test is hopeless. The structure of a palindrome — mirror-image halves with an optional center — makes this a pure counting problem.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Count each character. Every character contributes its number of <strong>pairs</strong> × 2 to the length. If any character has an odd count, you can place one single character in the <strong>center</strong>, adding one more.
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong></p>
+
+          <div class="viz" data-viz="longest-palindrome"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int LongestPalindrome(string s)
+{
+    var count = new Dictionary&lt;char, int&gt;();
+    foreach (char c in s) count[c] = count.GetValueOrDefault(c) + 1;
+    int length = 0; bool hasOdd = false;
+    foreach (int v in count.Values)
+    {
+        length += v / 2 * 2;        // contribute full pairs
+        if (v % 2 == 1) hasOdd = true;
+    }
+    return length + (hasOdd ? 1 : 0);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — count then sum.</li>
+              <li><strong>Space:</strong> O(1) — counts bounded by the alphabet.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A palindrome is <strong>pairs plus one optional center</strong> — count, don't search.</li>
+              <li>Add <code>count / 2 * 2</code> per character, not the raw count.</li>
+              <li>A single odd character anywhere lets you add exactly one to the total.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/valid-palindrome.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Palindrome</span></a>
+            <a class="related-card" href="../coding-problems/palindromic-substrings.html"><span class="rc-cat">Coding</span><span class="rc-title">Palindromic Substrings</span></a>
+            <a class="related-card" href="../coding-problems/valid-anagram.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Anagram</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The aha is that this is counting, not searching. Be precise that at most one odd-count character contributes a center — adding one for <em>every</em> odd count is the common mistake.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

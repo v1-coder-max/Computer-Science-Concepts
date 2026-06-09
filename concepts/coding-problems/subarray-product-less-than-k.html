@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subarray Product Less Than K — DevLens</title>
+  <meta name="description" content="Count contiguous subarrays whose product is strictly less than k with a sliding window — O(n) time, O(1) space, in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="subarray-product-less-than-k" data-title="Subarray Product Less Than K">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Subarray Product Less Than K</h1>
+          <p class="lede">
+            Every new right endpoint adds a batch of valid subarrays. A shrinking window keeps the running product under k so you can count them in one pass.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#sliding-window</span>
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#arrays</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an array of positive integers and an integer <code>k</code>, count the contiguous subarrays whose product is strictly less than <code>k</code>.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums = [10,5,2,6], k = 100</code> → <code>8</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Checking every subarray's product is O(n²). Because the values are positive, the product is monotonic as the window grows — perfect for a sliding window.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Expand the right edge, multiplying into the product. While the product is ≥ <code>k</code>, shrink from the left. Each right position then contributes <strong>(window length)</strong> new subarrays — all the ones ending at that index.
+          </p>
+          <p><strong>Time O(n), Space O(1).</strong></p>
+
+          <div class="viz" data-viz="subarray-product-less-than-k"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int NumSubarrayProductLessThanK(int[] nums, int k)
+{
+    if (k &lt;= 1) return 0;
+    int prod = 1, left = 0, count = 0;
+    for (int right = 0; right &lt; nums.Length; right++)
+    {
+        prod *= nums[right];
+        while (prod &gt;= k) prod /= nums[left++];
+        count += right - left + 1;   // subarrays ending at right
+    }
+    return count;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each pointer advances at most n times.</li>
+              <li><strong>Space:</strong> O(1) — a few counters.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Positive values make the product <strong>monotonic</strong> — the window trick applies.</li>
+              <li>A window of length L ending at <code>right</code> contributes exactly L subarrays.</li>
+              <li>Guard <code>k &lt;= 1</code>: no positive product can be below it.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/minimum-size-subarray-sum.html"><span class="rc-cat">Coding</span><span class="rc-title">Minimum Size Subarray Sum</span></a>
+            <a class="related-card" href="../coding-problems/subarray-sum-equals-k.html"><span class="rc-cat">Coding</span><span class="rc-title">Subarray Sum Equals K</span></a>
+            <a class="related-card" href="../coding-problems/fruit-into-baskets.html"><span class="rc-cat">Coding</span><span class="rc-title">Fruit Into Baskets</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The counting step — adding <code>right - left + 1</code> — is the crux; explain it as 'all subarrays ending here'. Also note why positivity is required for the window to work.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

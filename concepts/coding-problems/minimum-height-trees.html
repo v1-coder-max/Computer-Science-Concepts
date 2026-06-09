@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimum Height Trees — DevLens</title>
+  <meta name="description" content="Find the roots that minimize tree height by peeling leaves layer by layer until 1 or 2 centroids remain — O(V+E), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="minimum-height-trees" data-title="Minimum Height Trees">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Minimum Height Trees</h1>
+          <p class="lede">
+            The best roots are the tree's center. Reach it by repeatedly trimming all current leaves until only the innermost one or two nodes survive.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#topological-sort</span>
+            <span class="tag">#bfs</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an undirected tree with <code>n</code> nodes, return all root nodes that produce a tree of minimum height. There are always 1 or 2 such centroids.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p>Star-like tree on 6 nodes → roots <code>[3, 4]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            BFS from every node to compute heights is O(V²). Topologically peeling leaves finds the center(s) in O(V).
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Build the graph and degree counts. Repeatedly remove all current <strong>leaves</strong> (degree 1), decrementing their neighbors' degrees, which creates new leaves. The last 1 or 2 nodes remaining are the centroids.
+          </p>
+          <p><strong>Time O(V+E), Space O(V+E).</strong></p>
+
+          <div class="viz" data-viz="minimum-height-trees"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;int&gt; FindMinHeightTrees(int n, int[][] edges)
+{
+    if (n == 1) return new List&lt;int&gt; { 0 };
+    var adj = new List&lt;int&gt;[n];
+    var deg = new int[n];
+    for (int i = 0; i &lt; n; i++) adj[i] = new List&lt;int&gt;();
+    foreach (var e in edges)
+    {
+        adj[e[0]].Add(e[1]); adj[e[1]].Add(e[0]);
+        deg[e[0]]++; deg[e[1]]++;
+    }
+    var leaves = new Queue&lt;int&gt;();
+    for (int i = 0; i &lt; n; i++) if (deg[i] == 1) leaves.Enqueue(i);
+    int remaining = n;
+    while (remaining &gt; 2)
+    {
+        int size = leaves.Count;
+        remaining -= size;
+        for (int i = 0; i &lt; size; i++)
+        {
+            int leaf = leaves.Dequeue();
+            foreach (int nb in adj[leaf])
+                if (--deg[nb] == 1) leaves.Enqueue(nb);
+        }
+    }
+    return leaves.ToList();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(V+E) — each node and edge processed once.</li>
+              <li><strong>Space:</strong> O(V+E) — adjacency lists.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Minimum-height roots are the tree's <strong>centroid(s)</strong> — 1 or 2 of them.</li>
+              <li>Peel leaves layer by layer (a topological trim) to reach the center.</li>
+              <li>Stop when ≤ 2 nodes remain; those are the answer.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/course-schedule.html"><span class="rc-cat">Coding</span><span class="rc-title">Course Schedule</span></a>
+            <a class="related-card" href="../coding-problems/graph-valid-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Graph Valid Tree</span></a>
+            <a class="related-card" href="../coding-problems/number-of-connected-components.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Connected Components</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Frame it as 'find the tree's center by trimming leaves', the same shape as Kahn's topological sort. The 'stop at ≤ 2' rule captures why there can be two centroids.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

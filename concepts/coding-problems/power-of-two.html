@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Power of Two — DevLens</title>
+  <meta name="description" content="Check if a number is a power of two with the bit trick n & (n−1) == 0 — O(1), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="power-of-two" data-title="Power of Two">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Power of Two</h1>
+          <p class="lede">
+            A power of two has exactly one bit set. The trick n & (n−1) clears the lowest set bit, so for a true power of two it leaves zero.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#bit-manipulation</span>
+            <span class="tag">#math</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an integer <code>n</code>, return <code>true</code> if it is a power of two (1, 2, 4, 8, …).
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>16</code> → <code>true</code> (10000₂); <code>6</code> → <code>false</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Repeatedly dividing by 2 while even and checking you end at 1 is O(log n). The bit trick answers it in O(1).
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            A power of two in binary is a single 1 followed by zeros. The operation <code>n &amp; (n − 1)</code> clears the lowest set bit; if the result is 0 (and <code>n &gt; 0</code>), there was exactly one set bit — a power of two.
+          </p>
+          <p><strong>Time O(1), Space O(1).</strong></p>
+
+          <div class="viz" data-viz="power-of-two"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public bool IsPowerOfTwo(int n)
+{
+    return n &gt; 0 &amp;&amp; (n &amp; (n - 1)) == 0;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(1) — a single bitwise operation.</li>
+              <li><strong>Space:</strong> O(1) — constant.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A power of two has exactly <strong>one set bit</strong>.</li>
+              <li><code>n &amp; (n − 1)</code> clears the lowest set bit — zero means a single bit.</li>
+              <li>Guard <code>n &gt; 0</code>: zero and negatives are not powers of two.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/number-of-1-bits.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of 1 Bits</span></a>
+            <a class="related-card" href="../coding-problems/counting-bits.html"><span class="rc-cat">Coding</span><span class="rc-title">Counting Bits</span></a>
+            <a class="related-card" href="../coding-problems/missing-number.html"><span class="rc-cat">Coding</span><span class="rc-title">Missing Number</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The one-liner is impressive only if you explain <em>why</em> <code>n &amp; (n−1)</code> works and remember the <code>n &gt; 0</code> guard. The same trick underlies counting set bits (Brian Kernighan's algorithm).
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

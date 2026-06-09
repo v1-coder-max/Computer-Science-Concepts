@@ -450,6 +450,25 @@
       var thr = Math.floor(a.length / 3);
       var win2 = [c1, c2].filter(function (c, i) { return (i === 0 ? n1 : n2) > thr; });
       frames.push(frame(-1, null, `Verify counts in a 2nd pass: keep those &gt; ⌊n/3⌋ = ${thr}. Answer: <b>[${win2.join(", ")}]</b>.`, `c1=${n1} c2=${n2}`));
+    } else if (mode === "summary-ranges") {
+      var ranges = [], start = 0;
+      frames.push(frame(-1, null, "Group a sorted array into consecutive ranges. Walk once; whenever the next value isn't exactly +1, close the current run.", "ranges: []"));
+      for (var i = 0; i < a.length; i++) {
+        var end = (i === a.length - 1 || a[i + 1] !== a[i] + 1);
+        if (end) { var rng = a[start] === a[i] ? ("" + a[start]) : (a[start] + "→" + a[i]); ranges.push(rng); frames.push(frame(i, mark(i, "var(--c-success-bg)", "var(--c-success)"), `${a[start] === a[i] ? `Single value ${a[i]}` : `Run ${a[start]}…${a[i]}`} ends → emit <b>${rng}</b>.`, "ranges: [" + ranges.join(", ") + "]")); start = i + 1; }
+        else frames.push(frame(i, null, `${a[i]} → ${a[i + 1]} continues (+1).`, "ranges: [" + ranges.join(", ") + "]"));
+      }
+      frames.push(frame(-1, null, `Result: [${ranges.join(", ")}].`, "done"));
+    } else if (mode === "wiggle") {
+      var up = null, count = 1;
+      frames.push(frame(0, mark(0, "var(--brand-soft)", "var(--accent)"), "Longest wiggle subsequence: count every time the trend flips between rising and falling. Flat steps don't count.", "length = 1"));
+      for (var i = 1; i < a.length; i++) { var d = a[i] - a[i - 1]; if (d > 0 && up !== true) { up = true; count++; frames.push(frame(i, null, `${a[i - 1]} → ${a[i]} is a <b>rise</b> after a fall (or the first) → +1. Length ${count}.`, "length = " + count)); } else if (d < 0 && up !== false) { up = false; count++; frames.push(frame(i, null, `${a[i - 1]} → ${a[i]} is a <b>fall</b> after a rise → +1. Length ${count}.`, "length = " + count)); } else frames.push(frame(i, null, `${a[i - 1]} → ${a[i]} keeps the same trend (or is flat) → skip.`, "length = " + count)); }
+      frames.push(frame(-1, null, `Longest wiggle subsequence = <b>${count}</b>.`, "length = " + count));
+    } else if (mode === "lemonade") {
+      var five = 0, ten = 0, ok = true;
+      frames.push(frame(-1, null, "Each customer pays $5/$10/$20 for a $5 item. Give change greedily, spending $10 bills before $5s (the $5 is the most flexible).", "$5:0 $10:0"));
+      for (var i = 0; i < a.length && ok; i++) { var b = a[i]; if (b === 5) { five++; frames.push(frame(i, null, "Pays $5 — no change needed.", `$5:${five} $10:${ten}`)); } else if (b === 10) { if (five > 0) { five--; ten++; frames.push(frame(i, null, "Pays $10 → give back one $5.", `$5:${five} $10:${ten}`)); } else { ok = false; frames.push(frame(i, mark(i, "var(--c-warning-bg)", "var(--c-warning)"), "Need a $5 to change $10 but none left → <b>false</b>.", "stuck")); } } else { if (ten > 0 && five > 0) { ten--; five--; frames.push(frame(i, null, "Pays $20 → give $10 + $5.", `$5:${five} $10:${ten}`)); } else if (five >= 3) { five -= 3; frames.push(frame(i, null, "Pays $20 → give three $5s.", `$5:${five} $10:${ten}`)); } else { ok = false; frames.push(frame(i, mark(i, "var(--c-warning-bg)", "var(--c-warning)"), "Can't make $15 change → <b>false</b>.", "stuck")); } } }
+      if (ok) frames.push(frame(-1, null, "Served everyone → <b>true</b>.", "done"));
     }
     function mark(i, fill, stroke) { var m = {}; m[i] = { fill: fill, stroke: stroke, sw: 2.2, lab: stroke }; return m; }
     function panelMap(o) { var e = Object.keys(o).map(function (k) { return k + "→" + o[k]; }); return "seen = { " + e.join(", ") + " }"; }
@@ -488,6 +507,11 @@
         left++; right--;
       }
       frames.push(frame(left, right, null, "The pointers crossed with every pair matching → <b>it's a palindrome</b>."));
+    } else if (mode === "palindrome-ii") {
+      function isPal(lo, hi) { while (lo < hi) { if (a[lo] !== a[hi]) return false; lo++; hi--; } return true; }
+      frames.push(frame(left, right, null, "Almost-palindrome: deleting at most one character should leave a palindrome. Compare from both ends; on the first mismatch, test skipping the left OR the right character."));
+      while (left < right) { var st = {}; if (a[left] === a[right]) { st[left] = hl("var(--accent)"); st[right] = hl("var(--accent)"); frames.push(frame(left, right, st, `'${a[left]}' = '${a[right]}' ✓ — move inward.`)); left++; right--; } else { var sL = isPal(left + 1, right), sR = isPal(left, right - 1); st[left] = hl("var(--c-warning)"); st[right] = hl("var(--c-warning)"); frames.push(frame(left, right, st, `'${a[left]}' ≠ '${a[right]}' → spend the one deletion: ${sL ? "skip the left '" + a[left] + "' ✓" : sR ? "skip the right '" + a[right] + "' ✓" : "neither side works"} → <b>${(sL || sR) ? "true" : "false"}</b>.`)); return frames; } }
+      frames.push(frame(left, right, null, "Matched all the way without deleting anything → <b>true</b>."));
     } else if (mode === "two-sum-sorted") {
       var target = cfg.target;
       frames.push(frame(left, right, null, `Sorted array — find two values summing to <b>${target}</b>. Sum too big → move R left; too small → move L right.`, `target = ${target}`));
@@ -672,6 +696,16 @@
         }
       }
       frames.push(frame(bestLen === Infinity ? -1 : bestL, bestLen === Infinity ? -1 : bestL + bestLen - 1, bestLen === Infinity ? `No window contains all of "${t}".` : `Minimum window = <b>"${vals.slice(bestL, bestL + bestLen).join("")}"</b>.`, "done"));
+    } else if (mode === "product-window") {
+      var kp = cfg.target, prod = 1, count = 0;
+      frames.push(frame(0, -1, `Count contiguous subarrays with product &lt; <b>${kp}</b>. Expand right (×= value); while the product ≥ ${kp}, shrink left. Each step adds (window length) new subarrays.`, "product = 1 · count = 0"));
+      for (var pr = 0; pr < vals.length; pr++) { prod *= vals[pr]; while (prod >= kp && left <= pr) { prod /= vals[left]; left++; } count += pr - left + 1; frames.push(frame(left, pr, `× ${vals[pr]} → product ${prod}. Window length ${pr - left + 1} adds that many subarrays → total ${count}.`, `product = ${prod} · count = ${count}`)); }
+      frames.push(frame(left, vals.length - 1, `Subarrays with product &lt; ${kp}: <b>${count}</b>.`, `count = ${count}`));
+    } else if (mode === "k-distinct") {
+      var kd = cfg.k, cnt2 = {}, distinct2 = 0;
+      frames.push(frame(0, -1, `Longest substring with at most <b>${kd}</b> distinct characters. Grow right; if the distinct count exceeds ${kd}, shrink from the left.`, "distinct = 0 · best = 0"));
+      for (var kr = 0; kr < vals.length; kr++) { cnt2[vals[kr]] = (cnt2[vals[kr]] || 0) + 1; if (cnt2[vals[kr]] === 1) distinct2++; while (distinct2 > kd) { cnt2[vals[left]]--; if (cnt2[vals[left]] === 0) distinct2--; left++; } best = Math.max(best, kr - left + 1); frames.push(frame(left, kr, `Add '${vals[kr]}'. Window "${vals.slice(left, kr + 1).join("")}" has ${distinct2} distinct ≤ ${kd} → length ${kr - left + 1}, best ${best}.`, `distinct = ${distinct2} · best = ${best}`)); }
+      frames.push(frame(left, vals.length - 1, `Longest with ≤ ${kd} distinct = <b>${best}</b>.`, `best = ${best}`));
     } else { // fruit-into-baskets (≤ 2 distinct)
       var counts = {}, distinct = 0;
       frames.push(frame(0, -1, "Two baskets, each holding one fruit type → longest subarray with ≤ 2 distinct values. Grow right; if a third type appears, shrink left until two remain.", "distinct = 0 · best = 0"));
@@ -955,6 +989,36 @@
       push(`Find <b>all</b> root-to-leaf paths summing to <b>${target2}</b>. DFS while subtracting each value; a leaf that hits exactly 0 is a winning path.`);
       (function dfs(n, rem, path) { if (!n) return; active = n; rem -= n.val; var p2 = path.concat(n.val); var leaf = !n.left && !n.right; push(`At <b>${n.val}</b>, remaining ${rem}. Path: ${p2.join("→")}.${leaf ? (rem === 0 ? " Leaf with 0 left — match!" : " Leaf but ≠ 0.") : ""}`); if (leaf && rem === 0) { foundPaths.push(p2.slice()); p2.forEach(function (v) { special[v] = "visited"; }); push(`Recorded <b>[${p2.join(",")}]</b>. Found: ${foundPaths.length}.`); p2.forEach(function (v) { special[v] = null; }); } else { visited.push(n); } active = null; dfs(n.left, rem, p2); dfs(n.right, rem, p2); })(root, target2, []);
       active = null; push(foundPaths.length ? `Paths summing to ${target2}: ${foundPaths.map(function (p) { return "[" + p.join(",") + "]"; }).join("   ")}.` : `No path sums to ${target2}.`);
+    } else if (mode === "all-paths") {
+      var paths = [];
+      push("List every root-to-leaf path. DFS, extending the path at each node; at a leaf, record the whole path.");
+      (function dfs(n, path) { if (!n) return; active = n; var p2 = path.concat(n.val); if (!n.left && !n.right) { paths.push(p2.join("→")); special[n.val] = "visited"; push(`Leaf <b>${n.val}</b> → record "${p2.join("→")}". Total: ${paths.length}.`); special[n.val] = null; visited.push(n); active = null; return; } push(`At ${n.val}, path so far: ${p2.join("→")}.`); visited.push(n); active = null; dfs(n.left, p2); dfs(n.right, p2); })(root, []);
+      active = null; push(`All root-to-leaf paths: ${paths.map(function (p) { return '"' + p + '"'; }).join(", ")}.`);
+    } else if (mode === "root-to-leaf-sum") {
+      var total = 0;
+      push("Each root-to-leaf path spells a number (digits top to bottom). Carry a running value = cur×10 + node, and sum the values at the leaves.");
+      (function dfs(n, cur) { if (!n) return; active = n; var num = cur * 10 + n.val; if (!n.left && !n.right) { total += num; special[n.val] = "visited"; push(`Leaf <b>${n.val}</b> completes the number <b>${num}</b> → running total ${total}.`); special[n.val] = null; visited.push(n); active = null; return; } push(`At ${n.val}: number so far = ${num}.`); visited.push(n); active = null; dfs(n.left, num); dfs(n.right, num); })(root, 0);
+      active = null; push(`Sum of all root-to-leaf numbers = <b>${total}</b>.`);
+    } else if (mode === "path-sum-iii") {
+      var target3 = cfg.target, count = 0, prefix = { 0: 1 };
+      push(`Count downward paths summing to <b>${target3}</b> — they may start at any node. Carry a running prefix sum from the root; a qualifying path ends here whenever (prefix − target) was seen earlier.`);
+      (function dfs(n, run) { if (!n) return; active = n; run += n.val; var add = prefix[run - target3] || 0; count += add; push(`At <b>${n.val}</b>: prefix ${run}. Paths ending here = times we've seen ${run - target3} → ${add}. Total: ${count}.`); prefix[run] = (prefix[run] || 0) + 1; visited.push(n); active = null; dfs(n.left, run); dfs(n.right, run); prefix[run]--; })(root, 0);
+      active = null; push(`Number of paths summing to ${target3} = <b>${count}</b>.`);
+    } else if (mode === "range-sum-bst") {
+      var lo = cfg.low, hi = cfg.high, sum = 0;
+      push(`Sum the BST values in [<b>${lo}, ${hi}</b>]. Exploit BST order to prune: a node &lt; low has nothing useful on its left; a node &gt; high, nothing on its right.`);
+      (function dfs(n) { if (!n) return; active = n; var inR = n.val >= lo && n.val <= hi; if (inR) { sum += n.val; special[n.val] = "visited"; } push(`<b>${n.val}</b>: ${inR ? `in range → add it (sum ${sum})` : n.val < lo ? "&lt; low → only explore right" : "&gt; high → only explore left"}.`); if (!inR) visited.push(n); active = null; if (n.val > lo) dfs(n.left); if (n.val < hi) dfs(n.right); })(root);
+      active = null; push(`Range sum = <b>${sum}</b>.`);
+    } else if (mode === "level-average") {
+      push("Average value at each depth. BFS level by level; sum each row and divide by its size.");
+      var lv = bfsLevels(), avgs = [];
+      for (var i = 0; i < lv.length; i++) { var s = 0; lv[i].forEach(function (n) { s += n.val; special[n.val] = "active"; }); var avg = Math.round(s / lv[i].length * 100) / 100; avgs.push(avg); push(`Level ${i}: [${lv[i].map(function (n) { return n.val; }).join(", ")}] → ${s}/${lv[i].length} = <b>${avg}</b>.`); lv[i].forEach(function (n) { special[n.val] = null; visited.push(n); }); }
+      push(`Averages by level: [${avgs.join(", ")}].`);
+    } else if (mode === "min-diff-bst") {
+      var prev = null, bestD = Infinity;
+      push("In-order traversal of a BST yields sorted values, so the minimum absolute difference is always between <b>adjacent</b> in-order neighbours.");
+      (function ino(n) { if (!n) return; ino(n.left); active = n; var note = ""; if (prev !== null) { var d = Math.abs(n.val - prev); if (d < bestD) { bestD = d; note = ` |${n.val}−${prev}| = ${d} — new minimum!`; } else note = ` |${n.val}−${prev}| = ${d}.`; } push(`Visit <b>${n.val}</b> (in-order).${note}`); visited.push(n); active = null; prev = n.val; ino(n.right); })(root);
+      active = null; push(`Minimum absolute difference = <b>${bestD}</b>.`);
     }
     return frames;
   }
@@ -1065,6 +1129,22 @@
       function dfsW(r, c, k) { if (foundPath) return true; if (r < 0 || c < 0 || r >= R || c >= C || vis[r][c] || g[r][c] !== word[k]) return false; vis[r][c] = true; path.push([r, c]); if (k === word.length - 1) { foundPath = path.slice(); snapW(`Matched the last letter '${word[k]}' → <b>found "${word}"</b>!`); return true; } snapW(`'${g[r][c]}' = word[${k}] ✓ — extend the path.`); for (var di = 0; di < dirs.length; di++) { if (dfsW(r + dirs[di][0], c + dirs[di][1], k + 1)) return true; } vis[r][c] = false; path.pop(); return false; }
       for (var r = 0; r < R && !foundPath; r++) for (var c = 0; c < C && !foundPath; c++) if (g[r][c] === word[0]) dfsW(r, c, 0);
       if (!foundPath) frames.push(draw(function (rr, cc) { return { t: g[rr][cc], lab: "var(--text-faint)" }; }, `"${word}" is not in the grid.`));
+    } else if (mode === "staircase") {
+      var target = cfg.target, r = 0, c = C - 1, found = null;
+      function snapSt(cap) { frames.push(draw(function (rr, cc) { if (found && found[0] === rr && found[1] === cc) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", t: g[rr][cc], lab: "var(--c-success)", sw: 2.4 }; if (rr === r && cc === c) return { fill: "var(--brand-soft)", stroke: "var(--accent)", t: g[rr][cc], lab: "var(--accent)", sw: 2.4 }; return { t: g[rr][cc], lab: "var(--text-faint)" }; }, cap)); }
+      snapSt(`Search a row- and column-sorted matrix for <b>${target}</b>. Start at the <b>top-right</b>: it's the largest in its row and smallest in its column, so each comparison rules out an entire row or column.`);
+      while (r < R && c >= 0) { var v = g[r][c]; if (v === target) { found = [r, c]; snapSt(`g[${r}][${c}] = ${target} → <b>found</b>.`); break; } else if (v > target) { snapSt(`${v} &gt; ${target} → the rest of column ${c} is even bigger; move <b>left</b>.`); c--; } else { snapSt(`${v} &lt; ${target} → the rest of row ${r} is even smaller; move <b>down</b>.`); r++; } }
+      if (!found) snapSt(`Walked off the matrix → ${target} isn't present.`);
+    } else if (mode === "max-area") {
+      var vis = Array.from({ length: R }, function () { return new Array(C).fill(false); }), best = 0, bestComp = [], land = function (v) { return v === 1 || v === "1"; };
+      frames.push(draw(function (rr, cc) { return land(g[rr][cc]) ? { fill: "var(--surface-hover)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" } : { t: "0", lab: "var(--text-faint)", fs: 11 }; }, "Find the largest connected blob of 1s. Flood-fill each island, count its cells, and keep the biggest area."));
+      for (var r = 0; r < R; r++) for (var c = 0; c < C; c++) { if (land(g[r][c]) && !vis[r][c]) { var comp = [], stack = [[r, c]]; while (stack.length) { var pp = stack.pop(); if (pp[0] < 0 || pp[1] < 0 || pp[0] >= R || pp[1] >= C || vis[pp[0]][pp[1]] || !land(g[pp[0]][pp[1]])) continue; vis[pp[0]][pp[1]] = true; comp.push(pp); dirs.forEach(function (d) { stack.push([pp[0] + d[0], pp[1] + d[1]]); }); } if (comp.length > best) { best = comp.length; bestComp = comp; } (function (cmp, area, rr0, cc0) { frames.push(draw(function (rr, cc) { var inC = cmp.some(function (pp) { return pp[0] === rr && pp[1] === cc; }); if (inC) return { fill: "var(--c-info-bg)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" }; if (vis[rr][cc] && land(g[rr][cc])) return { fill: "var(--surface-2)", t: "1", lab: "var(--text-faint)" }; return land(g[rr][cc]) ? { fill: "var(--surface-hover)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" } : { t: "0", lab: "var(--text-faint)", fs: 11 }; }, `Island at (${rr0},${cc0}) has area ${area}. Max so far: ${best}.`)); })(comp.slice(), comp.length, r, c); } }
+      frames.push(draw(function (rr, cc) { var inB = bestComp.some(function (pp) { return pp[0] === rr && pp[1] === cc; }); if (inB) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", t: "1", lab: "var(--c-success)" }; return land(g[rr][cc]) ? { fill: "var(--surface-2)", t: "1", lab: "var(--text-faint)" } : { t: "0", lab: "var(--text-faint)", fs: 11 }; }, `Largest island area = <b>${best}</b>.`));
+    } else if (mode === "perimeter") {
+      var land2 = function (v) { return v === 1 || v === "1"; }, perim = 0, processed = [];
+      frames.push(draw(function (rr, cc) { return land2(g[rr][cc]) ? { fill: "var(--surface-hover)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" } : { t: "~", lab: "var(--text-faint)", fs: 11 }; }, "Island perimeter: each land cell has 4 edges, minus 1 for every land neighbour (a shared edge isn't on the boundary)."));
+      for (var r2 = 0; r2 < R; r2++) for (var c2 = 0; c2 < C; c2++) { if (!land2(g[r2][c2])) continue; var nb = 0; dirs.forEach(function (d) { var nr = r2 + d[0], nc = c2 + d[1]; if (nr >= 0 && nc >= 0 && nr < R && nc < C && land2(g[nr][nc])) nb++; }); perim += 4 - nb; processed.push(r2 + "," + c2); (function (cr, cc, add, nbn) { frames.push(draw(function (rr, c3) { if (rr === cr && c3 === cc) return { fill: "var(--brand-soft)", stroke: "var(--accent)", t: "+" + add, lab: "var(--accent)", sw: 2.4, fs: 13 }; if (processed.indexOf(rr + "," + c3) >= 0) return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", t: "1", lab: "var(--c-success)" }; return land2(g[rr][c3]) ? { fill: "var(--surface-hover)", stroke: "var(--accent)", t: "1", lab: "var(--accent)" } : { t: "~", lab: "var(--text-faint)", fs: 11 }; }, `Cell (${cr},${cc}) has ${nbn} land neighbour(s) → 4 − ${nbn} = ${add} edges. Perimeter so far: ${perim}.`)); })(r2, c2, 4 - nb, nb); }
+      frames.push(draw(function (rr, cc) { return land2(g[rr][cc]) ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", t: "1", lab: "var(--c-success)" } : { t: "~", lab: "var(--text-faint)", fs: 11 }; }, `Total perimeter = <b>${perim}</b>.`));
     }
     return frames;
   }
@@ -1080,6 +1160,8 @@
     else if (mode === "min-path-sum" || mode === "maximal-square" || mode === "unique-paths-obstacles") { rows = grid.length; cols = grid[0].length; }
     else if (mode === "triangle") { rows = grid.length; cols = grid.length; }
     else if (mode === "cooldown") { rows = cfg.prices.length; cols = 3; }
+    else if (mode === "falling-path" || mode === "count-squares") { rows = grid.length; cols = grid[0].length; }
+    else if (mode === "paint-house") { rows = cfg.costs.length; cols = 3; }
     else { rows = A.length + 1; cols = B.length + 1; }
     var cw = Math.min(46, (W - 80) / cols), ch = 32, sx = 60, sy = (A ? 60 : 40);
     var H = sy + rows * (ch + 4) + 16;
@@ -1138,6 +1220,20 @@
         dp[i][2] = Math.max(dp[i - 1][2], dp[i - 1][1]); frames.push(draw(dp, [i, 2], [[i - 1, 1], [i - 1, 2]], `rest = max(prev rest ${dp[i - 1][2]}, prev sold ${dp[i - 1][1]}) = <b>${dp[i][2]}</b>.`));
       }
       frames.push(draw(dp, [rows - 1, 1], null, `Best profit = max(sold, rest) on the last day = <b>${Math.max(dp[rows - 1][1], dp[rows - 1][2])}</b>.`));
+    } else if (mode === "falling-path") {
+      frames.push(draw(dp, null, null, "Minimum falling path top→bottom, each step to the cell directly below or diagonally adjacent. dp[r][c] = grid[r][c] + min of the (up to 3) cells above."));
+      for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) { if (r === 0) { dp[r][c] = grid[0][c]; frames.push(draw(dp, [0, c], null, `Top row: ${grid[0][c]}.`)); } else { var cand = [dp[r - 1][c]], con = [[r - 1, c]]; if (c > 0) { cand.push(dp[r - 1][c - 1]); con.push([r - 1, c - 1]); } if (c < cols - 1) { cand.push(dp[r - 1][c + 1]); con.push([r - 1, c + 1]); } var mn = Math.min.apply(null, cand); dp[r][c] = grid[r][c] + mn; frames.push(draw(dp, [r, c], con, `${grid[r][c]} + min(above) ${mn} = <b>${dp[r][c]}</b>.`)); } }
+      frames.push(draw(dp, null, null, `Minimum falling path = <b>${Math.min.apply(null, dp[rows - 1])}</b> (smallest value in the bottom row).`));
+    } else if (mode === "paint-house") {
+      var costs = cfg.costs, COL = ["R", "G", "B"];
+      frames.push(draw(dp, null, null, "Paint each house one of 3 colours, no two adjacent alike, at minimum cost. dp[i][colour] = cost + the cheaper of the previous house's other two colours."));
+      for (var i = 0; i < rows; i++) for (var j = 0; j < 3; j++) { if (i === 0) { dp[i][j] = costs[0][j]; frames.push(draw(dp, [0, j], null, `House 0, ${COL[j]}: ${costs[0][j]}.`)); } else { var av = dp[i - 1][(j + 1) % 3], bv = dp[i - 1][(j + 2) % 3]; dp[i][j] = costs[i][j] + Math.min(av, bv); frames.push(draw(dp, [i, j], [[i - 1, (j + 1) % 3], [i - 1, (j + 2) % 3]], `House ${i}, ${COL[j]}: ${costs[i][j]} + min(${av}, ${bv}) = <b>${dp[i][j]}</b>.`)); } }
+      frames.push(draw(dp, null, null, `Cheapest valid painting = <b>${Math.min.apply(null, dp[rows - 1])}</b>.`));
+    } else if (mode === "count-squares") {
+      var totalSq = 0;
+      frames.push(draw(dp, null, null, "Count all all-1 square submatrices. Each 1-cell's dp = the side of the largest square ending there = 1 + min(top, left, top-left); summing every dp counts every square."));
+      for (var r2 = 0; r2 < rows; r2++) for (var c2 = 0; c2 < cols; c2++) { if (grid[r2][c2] === 0) { dp[r2][c2] = 0; frames.push(draw(dp, [r2, c2], null, "0-cell → no squares.")); } else if (r2 === 0 || c2 === 0) { dp[r2][c2] = 1; totalSq += 1; frames.push(draw(dp, [r2, c2], null, `Edge 1 → 1 (a single 1×1). Total ${totalSq}.`)); } else { dp[r2][c2] = 1 + Math.min(dp[r2 - 1][c2], dp[r2][c2 - 1], dp[r2 - 1][c2 - 1]); totalSq += dp[r2][c2]; frames.push(draw(dp, [r2, c2], [[r2 - 1, c2], [r2, c2 - 1], [r2 - 1, c2 - 1]], `1 + min(${dp[r2 - 1][c2]}, ${dp[r2][c2 - 1]}, ${dp[r2 - 1][c2 - 1]}) = ${dp[r2][c2]} squares end here. Total ${totalSq}.`)); } }
+      frames.push(draw(dp, null, null, `Total square submatrices = <b>${totalSq}</b>.`));
     } else { // lcs / edit-distance
       var isEdit = mode === "edit-distance";
       for (var i = 0; i < rows; i++) dp[i][0] = isEdit ? i : 0;
@@ -1201,7 +1297,7 @@
   function dpLinear(cfg) {
     var mode = cfg.mode, a = cfg.data, W = 600, H = 150;
     var labels, n;
-    if (mode === "coin-change") { n = cfg.amount + 1; } else if (mode === "perfect-squares" || mode === "catalan") { n = cfg.n + 1; } else { n = a.length; }
+    if (mode === "coin-change") { n = cfg.amount + 1; } else if (mode === "perfect-squares" || mode === "catalan" || mode === "integer-break") { n = cfg.n + 1; } else { n = a.length; }
     var grid = valueCells(new Array(n).fill(0).map(function (_, i) { return i; }), { W: W, y: 70, h: 36, maxCw: 48 });
     function draw(dp, cur, contrib, caption) {
       var s = "";
@@ -1209,7 +1305,7 @@
         var x = grid.x(i), isCur = i === cur, isCon = contrib && contrib.indexOf(i) >= 0;
         s += rect(x, grid.y, grid.cw, grid.h, { fill: isCur ? "var(--brand-soft)" : isCon ? "var(--c-info-bg)" : dp[i] != null ? "var(--c-success-bg)" : "var(--surface-2)", stroke: isCur ? "var(--accent)" : isCon ? "var(--accent)" : dp[i] != null ? "var(--c-success)" : "var(--border)", sw: isCur ? 2.2 : 1.2, r: 6 });
         s += `<text x="${x + grid.cw / 2}" y="${grid.y + grid.h / 2 + 5}" text-anchor="middle" fill="var(--text)" style="font:700 14px var(--font-sans)">${dp[i] == null ? "?" : dp[i]}</text>`;
-        var idxLabel = (mode === "coin-change" || mode === "perfect-squares" || mode === "catalan");
+        var idxLabel = (mode === "coin-change" || mode === "perfect-squares" || mode === "catalan" || mode === "integer-break");
         var sub = idxLabel ? i : a[i];
         s += `<text x="${x + grid.cw / 2}" y="${grid.y - 10}" text-anchor="middle" fill="var(--text-faint)" style="font:500 10px var(--font-mono)">${sub}</text>`;
       }
@@ -1264,6 +1360,17 @@
       dp[0] = 1; frames.push(draw(dp.slice(), 0, null, `Count BST shapes with i nodes. Any value can be the root, splitting into left (j−1 nodes) and right (i−j) subtrees: dp[i] = Σ dp[left]·dp[right]. dp[0]=1.`));
       for (var v = 1; v < n; v++) { var sum = 0; for (var j = 1; j <= v; j++) sum += dp[j - 1] * dp[v - j]; dp[v] = sum; frames.push(draw(dp.slice(), v, null, `dp[${v}] = Σ over each root of dp[left]·dp[right] = <b>${sum}</b>.`)); }
       frames.push(draw(dp.slice(), -1, null, `Unique BSTs with ${cfg.n} nodes = <b>${dp[cfg.n]}</b> (the ${cfg.n}-th Catalan number).`));
+    } else if (mode === "delete-earn") {
+      var nums = cfg.data, maxV = Math.max.apply(null, nums), earn = new Array(maxV + 1).fill(0); nums.forEach(function (x) { earn[x] += x; });
+      n = maxV + 1; a = earn; grid = valueCells(new Array(n).fill(0).map(function (_, i) { return i; }), { W: W, y: 70, h: 36, maxCw: 48 }); dp = new Array(n).fill(null);
+      frames.push(draw(dp, -1, null, `Earning from [${nums.join(", ")}]: taking a value v earns v×count but deletes v−1 and v+1 — exactly House Robber on per-value earnings (shown below each cell).`));
+      for (var v = 0; v < n; v++) { var take = earn[v] + (v >= 2 ? dp[v - 2] : 0), skip = v >= 1 ? dp[v - 1] : 0; dp[v] = Math.max(take, skip); frames.push(draw(dp.slice(), v, [v - 1, v - 2].filter(function (x) { return x >= 0; }), `value ${v}: max(skip ${skip}, take ${earn[v]}+${v >= 2 ? dp[v - 2] : 0}) = <b>${dp[v]}</b>.`)); }
+      frames.push(draw(dp.slice(), -1, null, `Maximum points = <b>${dp[n - 1]}</b>.`));
+    } else if (mode === "integer-break") {
+      var N = cfg.n; dp = new Array(n).fill(null); dp[1] = 1;
+      frames.push(draw(dp, 1, null, `Break ${N} into ≥ 2 positive integers to maximise their product. dp[i] = best product for i = max over a first part j of max(j·(i−j), j·dp[i−j]).`));
+      for (var i = 2; i <= N; i++) { var bp = 0; for (var j = 1; j < i; j++) bp = Math.max(bp, j * (i - j), j * dp[i - j]); dp[i] = bp; frames.push(draw(dp.slice(), i, null, `dp[${i}] = best split product = <b>${dp[i]}</b>.`)); }
+      frames.push(draw(dp.slice(), -1, null, `Maximum product for ${N} = <b>${dp[N]}</b>.`));
     }
     return frames;
   }
@@ -2251,6 +2358,41 @@
       return frames;
     }
 
+    if (mode === "keys-rooms") {
+      var adjK = Array.from({ length: n }, function () { return []; }); cfg.edges.forEach(function (e) { adjK[e[0]].push(e[1]); });
+      var visited = new Array(n).fill(false);
+      function vlist() { return visited.map(function (x, i) { return x ? i : null; }).filter(function (x) { return x !== null; }).join(", "); }
+      function snapK(active, cap) { var inner = ""; cfg.edges.forEach(function (e) { inner += dirEdge(e[0], e[1], "var(--border)", 1.6); }); for (var i = 0; i < n; i++) { var st = {}; if (visited[i]) { st.stroke = "var(--c-success)"; st.lab = "var(--c-success)"; st.fill = "var(--c-success-bg)"; } if (i === active) { st.fill = "var(--brand-soft)"; st.sw = 2.6; st.stroke = "var(--accent)"; } inner += nodeC(i, st); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      var stack = [0]; visited[0] = true;
+      frames.push(snapK(0, { t: "Each room holds keys to other rooms (directed edges). Start in room 0 and DFS; if every room becomes reachable, you can open them all.", p: "visited: 0" }));
+      while (stack.length) { var u = stack.pop(); var newly = []; adjK[u].forEach(function (v) { if (!visited[v]) { visited[v] = true; stack.push(v); newly.push(v); } }); frames.push(snapK(u, { t: `Room <b>${u}</b> has keys to ${adjK[u].length ? adjK[u].join(", ") : "nothing"}${newly.length ? " — newly opened: " + newly.join(", ") : ""}.`, p: "visited: " + vlist() })); }
+      var all = visited.every(function (x) { return x; });
+      frames.push(snapK(-1, { t: all ? "Every room was reachable → <b>true</b>." : "Some room stayed locked → <b>false</b>.", p: all ? "all rooms visited" : "unreachable rooms remain" }));
+      return frames;
+    }
+
+    if (mode === "mht") {
+      var adjM = Array.from({ length: n }, function () { return []; }), deg = new Array(n).fill(0); cfg.edges.forEach(function (e) { adjM[e[0]].push(e[1]); adjM[e[1]].push(e[0]); deg[e[0]]++; deg[e[1]]++; });
+      var removed = new Array(n).fill(false), remaining = n;
+      function snapM(leaves, cap) { var inner = ""; cfg.edges.forEach(function (e) { inner += undirEdge(e[0], e[1], (removed[e[0]] || removed[e[1]]) ? "var(--border-soft)" : "var(--border)", 1.6); }); for (var i = 0; i < n; i++) { var st = {}; if (removed[i]) { st.fill = "var(--surface-2)"; st.stroke = "var(--border-soft)"; st.lab = "var(--text-faint)"; } else if (leaves && leaves.indexOf(i) >= 0) { st.fill = "var(--c-warning-bg)"; st.stroke = "var(--c-warning)"; st.lab = "var(--c-warning)"; } else { st.stroke = "var(--c-success)"; st.lab = "var(--c-success)"; } inner += nodeC(i, st); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      frames.push(snapM([], { t: "The roots giving minimum height are the tree's <b>centre(s)</b>. Repeatedly peel off all current leaves (degree ≤ 1); the last 1 or 2 nodes are the answer.", p: "remaining = " + n }));
+      var guardM = 0;
+      while (remaining > 2 && guardM++ < n) { var leaves = []; for (var i = 0; i < n; i++) if (!removed[i] && deg[i] <= 1) leaves.push(i); frames.push(snapM(leaves, { t: `Current leaves: ${leaves.join(", ")} — peel them off.`, p: "remaining = " + remaining })); leaves.forEach(function (l) { removed[l] = true; remaining--; adjM[l].forEach(function (v) { if (!removed[v]) deg[v]--; }); }); }
+      var centers = []; for (var i = 0; i < n; i++) if (!removed[i]) centers.push(i);
+      frames.push(snapM([], { t: `Minimum-height-tree root(s): <b>${centers.join(", ")}</b>.`, p: "centre(s) = " + centers.join(", ") }));
+      return frames;
+    }
+
+    if (mode === "town-judge") {
+      var indeg = new Array(n).fill(0), outdeg = new Array(n).fill(0); cfg.edges.forEach(function (e) { outdeg[e[0] - 1]++; indeg[e[1] - 1]++; });
+      var judge = -1; for (var i = 0; i < n; i++) if (indeg[i] === n - 1 && outdeg[i] === 0) judge = i;
+      function snapJ(active, cap) { var inner = ""; cfg.edges.forEach(function (e) { inner += dirEdge(e[0] - 1, e[1] - 1, "var(--border)", 1.6); }); for (var i = 0; i < n; i++) { var st = { txt: i + 1 }; if (i === judge) { st.fill = "var(--c-success-bg)"; st.stroke = "var(--c-success)"; st.lab = "var(--c-success)"; st.sw = 2.6; } if (i === active) { st.fill = "var(--brand-soft)"; st.sw = 2.4; st.stroke = "var(--accent)"; st.lab = "var(--accent)"; } inner += nodeC(i, st); } inner += panelLine(cap.p); return gout(inner, cap.t); }
+      frames.push(snapJ(-1, { t: "Everyone trusts the town judge (edge a→b = a trusts b), but the judge trusts no one. So the judge has <b>in-degree n−1</b> and <b>out-degree 0</b>.", p: "looking for in=" + (n - 1) + ", out=0" }));
+      for (var i = 0; i < n; i++) frames.push(snapJ(i, { t: `Person ${i + 1}: trusted by ${indeg[i]}, trusts ${outdeg[i]} → ${indeg[i] === n - 1 && outdeg[i] === 0 ? "matches the judge!" : "not the judge"}.`, p: "in=" + indeg[i] + " out=" + outdeg[i] }));
+      frames.push(snapJ(judge, { t: judge >= 0 ? `The town judge is person <b>${judge + 1}</b>.` : "No one fits both conditions → return -1.", p: judge >= 0 ? "judge = " + (judge + 1) : "no judge" }));
+      return frames;
+    }
+
     // union-find family: provinces, components, valid-tree, redundant
     var par = []; for (var i = 0; i < n; i++) par.push(i);
     function find(x) { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; }
@@ -2472,6 +2614,13 @@
       lo = 0; hi = n - 1;
       while (lo < hi && guard++ < 40) { var ms = lo + ((hi - lo) >> 1); if (ms % 2 === 1) ms--; if (a[ms] === a[ms + 1]) { frames.push(frame(lo, hi, ms, -1, null, `a[${ms}]==a[${ms + 1}] (${a[ms]}) → pairs intact here, single is to the <b>right</b>: lo=${ms + 2}.`)); lo = ms + 2; } else { frames.push(frame(lo, hi, ms, -1, null, `a[${ms}] (${a[ms]}) ≠ a[${ms + 1}] (${a[ms + 1]}) → the single is at mid or <b>left</b>: hi=${ms}.`)); hi = ms; } }
       frames.push(frame(lo, hi, -1, lo, null, `Converged → the single element is <b>${a[lo]}</b>.`));
+    } else if (mode === "first-bad") {
+      var bad = cfg.bad;
+      frames.push(frame(0, n - 1, -1, -1, null, "Versions are good up to a point, then all bad. Binary-search for the <b>first bad</b> version (the boundary) using as few checks as possible."));
+      lo = 0; hi = n - 1; var ans = -1;
+      while (lo <= hi && guard++ < 40) { var mb = lo + ((hi - lo) >> 1); if (a[mb] >= bad) { ans = mb; var ex = {}; for (var z = mb; z < n; z++) ex[z] = { fill: "var(--c-warning-bg)", stroke: "var(--c-warning)", lab: "var(--c-warning)" }; frames.push(frame(lo, hi, mb, -1, ex, `Version ${a[mb]} is <b>bad</b> → the first bad is here or to the <b>left</b>: hi=${mb - 1}.`)); hi = mb - 1; } else { frames.push(frame(lo, hi, mb, -1, null, `Version ${a[mb]} is good → the first bad is to the <b>right</b>: lo=${mb + 1}.`)); lo = mb + 1; } }
+      var fa = {}; if (ans >= 0) fa[ans] = { fill: "var(--c-success-bg)", stroke: "var(--c-success)", sw: 2.2, lab: "var(--c-success)" };
+      frames.push(frame(-1, -1, -1, -1, fa, `First bad version = <b>${a[ans]}</b>.`));
     }
     function range(l, r) { var m = {}; if (l >= 0 && r >= l) for (var i = l; i <= r; i++) m[i] = { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; return m; }
     return frames;
@@ -2739,6 +2888,67 @@
       return frames;
     }
 
+    if (mode === "reverse-words") {
+      var sw = cfg.s, words = sw.split(/\s+/).filter(Boolean), Hr = 160;
+      function frameRW(arr, hi, cap) { var n = arr.length, cw = Math.min(110, (W - 60) / n), gap = 10, total = cw * n + gap * (n - 1), sx = (W - total) / 2, s = ""; for (var i = 0; i < n; i++) { var h = hi && hi.indexOf(i) >= 0; s += rect(sx + i * (cw + gap), 60, cw, 40, { fill: h ? "var(--brand-soft)" : "var(--surface-2)", stroke: h ? "var(--accent)" : "var(--border)", sw: h ? 2.2 : 1.3, r: 7 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${85}" text-anchor="middle" fill="${h ? "var(--accent)" : "var(--text)"}" style="font:700 14px var(--font-sans)">${arr[i]}</text>`; } return { svg: `<svg viewBox="0 0 ${W} ${Hr}" role="img" aria-label="reverse words">${s}</svg>`, caption: cap }; }
+      frames.push(frameRW(words.slice(), [], `Reverse the word order of "${sw}". Trim extra spaces, split into words, then reverse the list (or two-pointer swap the ends).`));
+      var rev = words.slice().reverse();
+      frames.push(frameRW(rev, rev.map(function (_, i) { return i; }), `Reversed → "<b>${rev.join(" ")}</b>".`));
+      return frames;
+    }
+
+    if (mode === "isomorphic") {
+      var s = cfg.s, t = cfg.t, Hi = 190, rs = chars(s, 40), rt = chars(t, 98), map = {}, usedT = {};
+      function frameI(i, bad, cap) { var inner = `<text x="20" y="${rs.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">s</text>`; for (var k = 0; k < s.length; k++) inner += box(rs, k, s[k], k === i ? { fill: bad ? "var(--c-warning-bg)" : "var(--brand-soft)", stroke: bad ? "var(--c-warning)" : "var(--accent)", sw: 2.2, lab: bad ? "var(--c-warning)" : "var(--accent)" } : k < i ? { op: 0.5 } : {}); inner += `<text x="20" y="${rt.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">t</text>`; for (var j = 0; j < t.length; j++) inner += box(rt, j, t[j], j === i ? { fill: bad ? "var(--c-warning-bg)" : "var(--c-info-bg)", stroke: bad ? "var(--c-warning)" : "var(--accent)", sw: 2.2, lab: bad ? "var(--c-warning)" : "var(--accent)" } : j < i ? { op: 0.5 } : {}); inner += `<text x="${W / 2}" y="${Hi - 10}" text-anchor="middle" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">map: {${Object.keys(map).map(function (k) { return k + "→" + map[k]; }).join(", ")}}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${Hi}" role="img" aria-label="isomorphic">${inner}</svg>`, caption: cap }; }
+      if (s.length !== t.length) { frames.push(frameI(-1, true, "Different lengths → not isomorphic.")); return frames; }
+      frames.push(frameI(-1, false, `Are "${s}" and "${t}" isomorphic? Build a consistent 1-to-1 mapping s→t: each letter must always map to the same letter, and no two letters map to the same target.`));
+      for (var i = 0; i < s.length; i++) { var ca = s[i], cb = t[i]; if ((map[ca] !== undefined && map[ca] !== cb) || (map[ca] === undefined && usedT[cb])) { frames.push(frameI(i, true, `'${ca}' ${map[ca] !== undefined ? "already maps to '" + map[ca] + "', not '" + cb + "'" : "would clash — '" + cb + "' is already a target"} → <b>not isomorphic</b>.`)); return frames; } map[ca] = cb; usedT[cb] = true; frames.push(frameI(i, false, `Map '${ca}' → '${cb}'.`)); }
+      frames.push(frameI(-1, false, "A consistent bijection exists → <b>isomorphic</b>."));
+      return frames;
+    }
+
+    if (mode === "ransom") {
+      var note = cfg.note, Hn = 180, freq = {}; for (var ci = 0; ci < cfg.magazine.length; ci++) freq[cfg.magazine[ci]] = (freq[cfg.magazine[ci]] || 0) + 1;
+      var rn = chars(note, 96);
+      function frameN(i, bad, cap) { var inner = `<text x="${W / 2}" y="46" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">magazine: ${Object.keys(freq).map(function (k) { return k + ":" + freq[k]; }).join("  ")}</text>`; inner += `<text x="20" y="${rn.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">note</text>`; for (var k = 0; k < note.length; k++) inner += box(rn, k, note[k], k === i ? { fill: bad ? "var(--c-warning-bg)" : "var(--brand-soft)", stroke: bad ? "var(--c-warning)" : "var(--accent)", sw: 2.2, lab: bad ? "var(--c-warning)" : "var(--accent)" } : k < i ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" } : {}); return { svg: `<svg viewBox="0 0 ${W} ${Hn}" role="img" aria-label="ransom note">${inner}</svg>`, caption: cap }; }
+      frames.push(frameN(-1, false, `Can "${note}" be built from the magazine's letters (each used once)? Tally the magazine, then spend one letter per note character.`));
+      for (var i = 0; i < note.length; i++) { var c = note[i]; if (!freq[c]) { frames.push(frameN(i, true, `Need '${c}' but the magazine has none left → <b>false</b>.`)); return frames; } freq[c]--; frames.push(frameN(i, false, `Use a '${c}' (remaining ${freq[c]}).`)); }
+      frames.push(frameN(-1, false, "Every character is covered → <b>true</b>."));
+      return frames;
+    }
+
+    if (mode === "first-unique") {
+      var s = cfg.s, Hu = 160, freq = {}; for (var ci2 = 0; ci2 < s.length; ci2++) freq[s[ci2]] = (freq[s[ci2]] || 0) + 1;
+      var rs = chars(s, 64);
+      function frameU(i, found, cap) { var inner = ""; for (var k = 0; k < s.length; k++) { var st = k === found ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)", sw: 2.4 } : k === i ? { fill: "var(--brand-soft)", stroke: "var(--accent)", lab: "var(--accent)", sw: 2.2 } : k < i ? { op: 0.5 } : {}; inner += box(rs, k, s[k], st, 40); inner += `<text x="${rs.cx(k)}" y="${rs.y - 8}" text-anchor="middle" fill="var(--text-faint)" style="font:500 9px var(--font-mono)">${freq[s[k]]}</text>`; } return { svg: `<svg viewBox="0 0 ${W} ${Hu}" role="img" aria-label="first unique char">${inner}</svg>`, caption: cap }; }
+      frames.push(frameU(-1, -1, `Find the first non-repeating character of "${s}". Count every character (small number above each), then scan left→right for the first whose count is 1.`));
+      for (var i = 0; i < s.length; i++) { if (freq[s[i]] === 1) { frames.push(frameU(i, i, `'${s[i]}' has count 1 → first unique is index <b>${i}</b>.`)); return frames; } frames.push(frameU(i, -1, `'${s[i]}' appears ${freq[s[i]]}× → skip.`)); }
+      frames.push(frameU(-1, -1, "No unique character exists → return -1."));
+      return frames;
+    }
+
+    if (mode === "longest-palindrome-build") {
+      var s = cfg.s, Hp = 170, freq = {}; for (var ci3 = 0; ci3 < s.length; ci3++) freq[s[ci3]] = (freq[s[ci3]] || 0) + 1;
+      var keys = Object.keys(freq);
+      function frameP(idx, len, hasOdd, cap) { var cw = 72, gap = 10, sx = (W - (keys.length * (cw + gap) - gap)) / 2, s2 = ""; for (var i = 0; i < keys.length; i++) { var pairs = Math.floor(freq[keys[i]] / 2); s2 += rect(sx + i * (cw + gap), 50, cw, 44, { fill: i === idx ? "var(--brand-soft)" : "var(--surface-2)", stroke: i === idx ? "var(--accent)" : "var(--border)", sw: i === idx ? 2.2 : 1.3, r: 7 }); s2 += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${70}" text-anchor="middle" fill="var(--text)" style="font:700 14px var(--font-mono)">${keys[i]}:${freq[keys[i]]}</text>`; s2 += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${88}" text-anchor="middle" fill="var(--c-success)" style="font:600 10px var(--font-sans)">${pairs} pair${pairs !== 1 ? "s" : ""}</text>`; } s2 += `<text x="${W / 2}" y="${Hp - 10}" text-anchor="middle" fill="var(--c-success)" style="font:700 13px var(--font-sans)">length = ${len}${hasOdd ? " (+1 center)" : ""}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${Hp}" role="img" aria-label="longest palindrome">${s2}</svg>`, caption: cap }; }
+      frames.push(frameP(-1, 0, false, `Build the longest palindrome from the letters of "${s}". Each character contributes its number of <b>pairs</b> ×2; one leftover odd character can sit in the center.`));
+      var len = 0, hasOdd = false;
+      for (var i = 0; i < keys.length; i++) { var f = freq[keys[i]]; len += Math.floor(f / 2) * 2; if (f % 2 === 1) hasOdd = true; frames.push(frameP(i, len, hasOdd, `'${keys[i]}' (${f}) → contributes ${Math.floor(f / 2) * 2}.${f % 2 ? " Has a spare for the center." : ""}`)); }
+      if (hasOdd) len += 1;
+      frames.push(frameP(-1, len, hasOdd, `Longest palindrome length = <b>${len}</b>.`));
+      return frames;
+    }
+
+    if (mode === "subsequence") {
+      var s = cfg.s, t = cfg.t, Hs = 180, rs = chars(s, 40, { cw: 36 }), rt = chars(t, 100, { cw: 36 });
+      function frameSub(i, j, cap) { var inner = `<text x="20" y="${rs.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">s</text>`; for (var k = 0; k < s.length; k++) inner += box(rs, k, s[k], k < i ? { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" } : k === i ? { fill: "var(--brand-soft)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" } : {}, 34); inner += `<text x="20" y="${rt.y + 22}" fill="var(--text-faint)" style="font:600 11px var(--font-mono)">t</text>`; for (var m = 0; m < t.length; m++) inner += box(rt, m, t[m], m === j ? { fill: "var(--c-info-bg)", stroke: "var(--accent)", sw: 2.2, lab: "var(--accent)" } : m < j ? { op: 0.5 } : {}, 34); return { svg: `<svg viewBox="0 0 ${W} ${Hs}" role="img" aria-label="is subsequence">${inner}</svg>`, caption: cap }; }
+      frames.push(frameSub(0, 0, `Is "${s}" a subsequence of "${t}"? Two pointers: advance through t, and whenever t's character matches s's current one, advance s too.`));
+      var i = 0, j = 0;
+      while (i < s.length && j < t.length) { if (s[i] === t[j]) { frames.push(frameSub(i, j, `'${t[j]}' matches s[${i}]='${s[i]}' → advance both.`)); i++; j++; } else { frames.push(frameSub(i, j, `'${t[j]}' ≠ s[${i}]='${s[i]}' → advance only t.`)); j++; } }
+      frames.push(frameSub(i, Math.min(j, t.length - 1), i === s.length ? `Consumed all of "${s}" → <b>it is a subsequence</b>.` : `Ran out of t with "${s.slice(i)}" unmatched → <b>not a subsequence</b>.`));
+      return frames;
+    }
+
     // substring search (find first occurrence)
     var text = cfg.text, pat = cfg.pattern, H6 = 170;
     var rT = chars(text, 44, { cw: 40, gap: 6 });
@@ -2858,6 +3068,14 @@
       return frames;
     }
 
+    if (mode === "reverse-string") {
+      var arr = cfg.data.slice(), l = 0, r = arr.length - 1;
+      frames.push(draw(arr.slice(), function () { return {}; }, [{ i: l, t: "L" }, { i: r, t: "R" }], "Reverse a character array in place: swap the two ends, then step both pointers inward until they meet. O(1) space.", "L=0 R=" + r));
+      while (l < r) { var t = arr[l]; arr[l] = arr[r]; arr[r] = t; (function (ll, rr) { frames.push(draw(arr.slice(), function (i) { return (i === ll || i === rr) ? { fill: "var(--brand-soft)", stroke: "var(--accent)", lab: "var(--accent)", sw: 2.2 } : {}; }, [{ i: ll, t: "L" }, { i: rr, t: "R" }], `Swap positions ${ll} and ${rr}.`, "L=" + ll + " R=" + rr)); })(l, r); l++; r--; }
+      frames.push(draw(arr.slice(), function () { return { fill: "var(--c-success-bg)", stroke: "var(--c-success)", lab: "var(--c-success)" }; }, [], `Reversed: [${arr.join(", ")}].`, "done"));
+      return frames;
+    }
+
     if (mode === "candy") {
       var rat = cfg.data, n = rat.length, candy = new Array(n).fill(1), H8 = 190;
       function rowC(arr, y, hi, label) { var cw = Math.min(48, (W - 60) / n), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2, s = `<text x="20" y="${y + 24}" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">${label}</text>`; for (var i = 0; i < n; i++) { var h = i === hi; s += rect(sx + i * (cw + gap), y, cw, 36, { fill: h ? "var(--brand-soft)" : "var(--surface-2)", stroke: h ? "var(--accent)" : "var(--border)", sw: h ? 2.2 : 1.2, r: 5 }); s += `<text x="${sx + i * (cw + gap) + cw / 2}" y="${y + 23}" text-anchor="middle" fill="${h ? "var(--accent)" : "var(--text)"}" style="font:700 14px var(--font-sans)">${arr[i]}</text>`; } return s; }
@@ -2973,6 +3191,14 @@
       frames.push(frame(0, `Reverse the bit order: pull bits off the input's <b>least-significant</b> end and push them onto the output's most-significant end.`));
       for (var k = 1; k <= bits; k++) frames.push(frame(k, `Take input bit ${bits - k} (=${inb[bits - k]}) → it lands at output position ${k - 1}.`));
       frames.push(frame(bits, `Reversed: ${inb.join("")} → <b>${outb.join("")}</b>.`));
+      return frames;
+    }
+
+    if (mode === "power-of-two") {
+      var pn = cfg.n, Hpt = 160, sxp = (W - bits * 34) / 2, isPow = pn > 0 && (pn & (pn - 1)) === 0;
+      function frameP(val, line2, capt) { var inner = bitRow(toBits(val, bits), 60, sxp, null); inner += `<text x="${W / 2}" y="34" text-anchor="middle" fill="var(--text)" style="font:700 13px var(--font-mono)">n = ${pn} = ${(pn >>> 0).toString(2)}</text>`; inner += `<text x="${W / 2}" y="${Hpt - 14}" text-anchor="middle" fill="${isPow ? "var(--c-success)" : "var(--c-warning)"}" style="font:700 13px var(--font-sans)">${line2}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${Hpt}" role="img" aria-label="power of two">${inner}</svg>`, caption: capt }; }
+      frames.push(frameP(pn, "set bits: " + pn.toString(2).split("").filter(function (c) { return c === "1"; }).length, `A power of two has exactly <b>one</b> set bit. Test it with the trick <b>n &amp; (n−1) == 0</b> — that operation clears the lowest set bit.`));
+      frames.push(frameP(pn & (pn - 1), isPow ? "power of two ✓" : "not a power of two", `n &amp; (n−1) = ${pn} &amp; ${pn - 1} = ${pn & (pn - 1)}. ${isPow ? "It's 0 (and n &gt; 0) → <b>power of two</b>." : "Non-zero (or n ≤ 0) → <b>not a power of two</b>."}`));
       return frames;
     }
 
@@ -3220,6 +3446,37 @@
       frames.push(frameRS(null, null, "Precompute <b>prefix sums</b> (prefix[k] = sum of the first k values). Then any range sum is a single subtraction — each query answered in O(1)."));
       for (var k = 1; k <= n; k++) frames.push(frameRS([k], [k - 1], `prefix[${k}] = prefix[${k - 1}] + nums[${k - 1}] = ${prefix[k]}.`));
       frames.push(frameRS([qr + 1, ql], null, `sumRange(${ql}, ${qr}) = prefix[${qr + 1}] − prefix[${ql}] = ${prefix[qr + 1]} − ${prefix[ql]} = <b>${prefix[qr + 1] - prefix[ql]}</b>.`));
+      return frames;
+    }
+
+    if (mode === "add-strings") {
+      var sa = cfg.a, sb = cfg.b, base = cfg.base || 10, Ha = 175, i = sa.length - 1, j = sb.length - 1, carry = 0, res = [];
+      function rowA(arr, y, cur, label) { var n = arr.length, cw = Math.min(40, (W - 90) / Math.max(n, 1)), gap = 6, total = cw * n + gap * (n - 1), sx = (W - total) / 2, s = `<text x="20" y="${y + 21}" fill="var(--text-faint)" style="font:600 10px var(--font-mono)">${label}</text>`; for (var k = 0; k < n; k++) { var h = k === cur; s += rect(sx + k * (cw + gap), y, cw, 30, { fill: h ? "var(--brand-soft)" : "var(--surface-2)", stroke: h ? "var(--accent)" : "var(--border)", sw: h ? 2.2 : 1.2, r: 5 }); s += `<text x="${sx + k * (cw + gap) + cw / 2}" y="${y + 20}" text-anchor="middle" fill="${h ? "var(--accent)" : "var(--text)"}" style="font:700 13px var(--font-mono)">${arr[k]}</text>`; } return s; }
+      function frameA(cap, cy) { var inner = rowA(sa.split(""), 28, i, "a") + rowA(sb.split(""), 68, j, "b") + rowA(res.slice().reverse(), 118, res.length ? 0 : -1, "sum"); inner += `<text x="${W - 20}" y="20" text-anchor="end" fill="var(--text-muted)" style="font:600 12px var(--font-mono)">carry = ${cy}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${Ha}" role="img" aria-label="add strings">${inner}</svg>`, caption: cap }; }
+      frames.push(frameA(base === 2 ? `Add two binary strings digit by digit from the right, carrying whenever the column total reaches 2.` : `Add two number strings without converting to an int: sum digits right-to-left, carrying whenever the total reaches ${base}.`, 0));
+      var guardA = 0;
+      while ((i >= 0 || j >= 0 || carry) && guardA++ < 60) { var da = i >= 0 ? (+sa[i]) : 0, db = j >= 0 ? (+sb[j]) : 0, sum = da + db + carry; res.push(sum % base); carry = Math.floor(sum / base); frames.push(frameA(`${da} + ${db} + carry = ${sum} → write ${sum % base}, carry ${carry}.`, carry)); i--; j--; }
+      frames.push(frameA(`Result: "<b>${res.slice().reverse().join("")}</b>".`, 0));
+      return frames;
+    }
+
+    if (mode === "excel") {
+      var s = cfg.s, He = 160, result = 0;
+      function frameE(i, cap) { var cw = 50, gap = 8, sx = (W - (s.length * (cw + gap) - gap)) / 2, str = ""; for (var k = 0; k < s.length; k++) { var h = k === i; str += rect(sx + k * (cw + gap), 50, cw, 44, { fill: h ? "var(--brand-soft)" : k < i ? "var(--c-success-bg)" : "var(--surface-2)", stroke: h ? "var(--accent)" : k < i ? "var(--c-success)" : "var(--border)", sw: h ? 2.2 : 1.2, r: 6 }); str += `<text x="${sx + k * (cw + gap) + cw / 2}" y="${78}" text-anchor="middle" fill="${h ? "var(--accent)" : "var(--text)"}" style="font:700 18px var(--font-sans)">${s[k]}</text>`; str += `<text x="${sx + k * (cw + gap) + cw / 2}" y="${40}" text-anchor="middle" fill="var(--text-faint)" style="font:500 10px var(--font-mono)">${s.charCodeAt(k) - 64}</text>`; } str += `<text x="${W / 2}" y="${He - 12}" text-anchor="middle" fill="var(--c-success)" style="font:700 14px var(--font-sans)">result = ${result}</text>`; return { svg: `<svg viewBox="0 0 ${W} ${He}" role="img" aria-label="excel column">${str}</svg>`, caption: cap }; }
+      frames.push(frameE(-1, `Excel columns are base-26 with digits A=1 … Z=26 (no zero). Read left→right: result = result×26 + value(letter).`));
+      for (var k = 0; k < s.length; k++) { var v = s.charCodeAt(k) - 64; result = result * 26 + v; frames.push(frameE(k, `'${s[k]}' = ${v} → result = result×26 + ${v} = ${result}.`)); }
+      frames.push(frameE(-1, `Column number = <b>${result}</b>.`));
+      return frames;
+    }
+
+    if (mode === "sieve") {
+      var n = cfg.n, isComp = new Array(n).fill(false), cols = Math.min(10, n), cell = Math.min(44, (W - 40) / cols), rows = Math.ceil(n / cols), sy = 24, Hsv = sy + rows * (cell + 4) + 30, sx = (W - cols * (cell + 4)) / 2;
+      function drawS(active, cap, panel) { var s = ""; for (var v = 0; v < n; v++) { var r = Math.floor(v / cols), c = v % cols, x = sx + c * (cell + 4), y = sy + r * (cell + 4); var st; if (v < 2) st = { f: "var(--surface-2)", s: "var(--border-soft)", l: "var(--text-faint)" }; else if (isComp[v]) st = { f: "var(--surface-2)", s: "var(--border)", l: "var(--text-faint)" }; else st = { f: "var(--c-success-bg)", s: "var(--c-success)", l: "var(--c-success)" }; if (v === active) st = { f: "var(--brand-soft)", s: "var(--accent)", l: "var(--accent)" }; s += rect(x, y, cell, cell, { fill: st.f, stroke: st.s, sw: v === active ? 2.4 : 1.2, r: 5 }); s += `<text x="${x + cell / 2}" y="${y + cell / 2 + 5}" text-anchor="middle" fill="${st.l}" style="font:700 12px var(--font-mono)">${v}</text>`; } return { svg: `<svg viewBox="0 0 ${W} ${Hsv}" role="img" aria-label="sieve of eratosthenes">${s}<text x="${W / 2}" y="${Hsv - 10}" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-mono)">${panel}</text></svg>`, caption: cap }; }
+      var primes = [];
+      frames.push(drawS(-1, `Count primes below ${n} with the Sieve of Eratosthenes: each prime crosses out its own multiples; whatever survives is prime.`, "green = prime"));
+      for (var p = 2; p * p < n; p++) { if (isComp[p]) continue; for (var mu = p * p; mu < n; mu += p) isComp[mu] = true; frames.push(drawS(p, `${p} is prime → cross out ${p}², ${p}²+${p}, … (its multiples).`, "sieving from " + p)); }
+      for (var v = 2; v < n; v++) if (!isComp[v]) primes.push(v);
+      frames.push(drawS(-1, `Primes below ${n}: ${primes.join(", ")} → count = <b>${primes.length}</b>.`, "count = " + primes.length));
       return frames;
     }
 
@@ -3944,7 +4201,62 @@
     /* ----- design ----- */
     "lru-cache": { title: "Watch MRU↔LRU ordering and eviction", type: "design", mode: "lru", cap: 2, ops: [["put", 1, 1], ["put", 2, 2], ["get", 1], ["put", 3, 3], ["get", 2], ["put", 4, 4], ["get", 3]] },
     "insert-delete-getrandom-o1": { title: "Watch swap-remove keep O(1)", type: "design", mode: "randomized-set", ops: [["insert", 1], ["insert", 2], ["remove", 1], ["insert", 3], ["getRandom"]] },
-    "time-based-key-value-store": { title: "Watch binary search by timestamp", type: "design", mode: "timemap", sets: [["foo", "bar", 1], ["foo", "bar2", 4]], query: ["foo", 3] }
+    "time-based-key-value-store": { title: "Watch binary search by timestamp", type: "design", mode: "timemap", sets: [["foo", "bar", 1], ["foo", "bar2", 4]], query: ["foo", 3] },
+
+    /* ===== batch L ===== */
+    /* ----- strings / hashing ----- */
+    "reverse-string": { title: "Watch the ends swap inward", type: "array-rewrite", mode: "reverse-string", data: ["h", "e", "l", "l", "o"] },
+    "reverse-words-in-a-string": { title: "Watch the word order flip", type: "string-ops", mode: "reverse-words", s: "the sky is blue" },
+    "valid-palindrome-ii": { title: "Watch the one allowed deletion", type: "two-pointer", mode: "palindrome-ii", data: "abca".split("") },
+    "is-subsequence": { title: "Watch two pointers walk t", type: "string-ops", mode: "subsequence", s: "abc", t: "ahbgdc" },
+    "isomorphic-strings": { title: "Watch the 1-to-1 mapping build", type: "string-ops", mode: "isomorphic", s: "egg", t: "add" },
+    "ransom-note": { title: "Watch magazine letters get spent", type: "string-ops", mode: "ransom", note: "aa", magazine: "aab" },
+    "first-unique-character-in-a-string": { title: "Watch counts find the first unique", type: "string-ops", mode: "first-unique", s: "leetcode" },
+    "add-strings": { title: "Watch digit-by-digit carry", type: "math-steps", mode: "add-strings", a: "456", b: "77" },
+    "add-binary": { title: "Watch binary addition carry", type: "math-steps", mode: "add-strings", a: "1010", b: "1011", base: 2 },
+    "longest-palindrome": { title: "Watch pairs and a center add up", type: "string-ops", mode: "longest-palindrome-build", s: "abccccdd" },
+
+    /* ----- sliding window / arrays ----- */
+    "subarray-product-less-than-k": { title: "Watch the window count subarrays", type: "sliding-window", mode: "product-window", data: [10, 5, 2, 6], target: 100 },
+    "longest-substring-with-at-most-k-distinct-characters": { title: "Watch ≤ k distinct stretch the window", type: "sliding-window", mode: "k-distinct", data: "eceba", k: 2 },
+    "max-consecutive-ones": { title: "Watch the run of 1s grow", type: "sliding-window", mode: "max-ones", data: [1, 1, 0, 1, 1, 1], k: 0 },
+    "summary-ranges": { title: "Watch consecutive runs close", type: "array-scan", mode: "summary-ranges", data: [0, 1, 2, 4, 5, 7] },
+    "wiggle-subsequence": { title: "Watch every trend flip count", type: "array-scan", mode: "wiggle", data: [1, 7, 4, 9, 2, 5] },
+    "lemonade-change": { title: "Watch greedy change-making", type: "array-scan", mode: "lemonade", data: [5, 5, 5, 10, 20] },
+
+    /* ----- binary search ----- */
+    "first-bad-version": { title: "Watch the boundary search", type: "bsearch", mode: "first-bad", data: [1, 2, 3, 4, 5], bad: 4 },
+    "valid-perfect-square": { title: "Watch binary search on √x", type: "bsearch", mode: "sqrtx", x: 16 },
+    "guess-number-higher-or-lower": { title: "Watch the guess halve the range", type: "binary-search", data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], target: 6 },
+    "search-a-2d-matrix-ii": { title: "Watch the staircase search", type: "grid", mode: "staircase", data: [[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]], target: 5 },
+
+    /* ----- trees ----- */
+    "binary-tree-paths": { title: "Watch every root-to-leaf path", type: "tree", mode: "all-paths", data: [1, 2, 3, null, 5] },
+    "sum-root-to-leaf-numbers": { title: "Watch path numbers add up", type: "tree", mode: "root-to-leaf-sum", data: [4, 9, 0, 5, 1] },
+    "path-sum-iii": { title: "Watch prefix sums count paths", type: "tree", mode: "path-sum-iii", data: [10, 5, -3, 3, 2, null, 11, 3, -2, null, 1], target: 8 },
+    "range-sum-of-bst": { title: "Watch BST bounds prune branches", type: "tree", mode: "range-sum-bst", data: [10, 5, 15, 3, 7, null, 18], low: 7, high: 15 },
+    "average-of-levels-in-binary-tree": { title: "Watch each level's average", type: "tree", mode: "level-average", data: [3, 9, 20, null, null, 15, 7] },
+    "minimum-absolute-difference-in-bst": { title: "Watch in-order neighbours compare", type: "tree", mode: "min-diff-bst", data: [4, 2, 6, 1, 3] },
+
+    /* ----- grid / graph ----- */
+    "max-area-of-island": { title: "Watch each island's area", type: "grid", mode: "max-area", data: [[1, 1, 0, 0], [1, 0, 0, 1], [0, 0, 1, 1], [0, 0, 1, 0]] },
+    "island-perimeter": { title: "Watch edges count per cell", type: "grid", mode: "perimeter", data: [[0, 1, 0, 0], [1, 1, 1, 0], [0, 1, 0, 0], [1, 1, 0, 0]] },
+    "keys-and-rooms": { title: "Watch DFS unlock every room", type: "graph", mode: "keys-rooms", n: 4, edges: [[0, 1], [0, 2], [2, 3]] },
+    "minimum-height-trees": { title: "Watch leaves peel to the centre", type: "graph", mode: "mht", n: 6, edges: [[3, 0], [3, 1], [3, 2], [3, 4], [5, 4]] },
+    "find-the-town-judge": { title: "Watch in/out-degrees reveal the judge", type: "graph", mode: "town-judge", n: 3, edges: [[1, 3], [2, 3]] },
+    "find-if-path-exists-in-graph": { title: "Watch union-find connect components", type: "graph", mode: "components", n: 6, edges: [[0, 1], [1, 2], [2, 0], [3, 5]] },
+
+    /* ----- DP ----- */
+    "minimum-falling-path-sum": { title: "Watch each cell take the best above", type: "dp-grid", mode: "falling-path", grid: [[2, 1, 3], [6, 5, 4], [7, 8, 9]] },
+    "paint-house": { title: "Watch colours avoid the neighbour", type: "dp-grid", mode: "paint-house", costs: [[17, 2, 17], [16, 16, 5], [14, 3, 19]] },
+    "count-square-submatrices-with-all-ones": { title: "Watch every square get counted", type: "dp-grid", mode: "count-squares", grid: [[0, 1, 1, 1], [1, 1, 1, 1], [0, 1, 1, 1]] },
+    "delete-and-earn": { title: "Watch House Robber on earnings", type: "dp-linear", mode: "delete-earn", data: [2, 2, 3, 3, 3, 4] },
+    "integer-break": { title: "Watch the best split product fill", type: "dp-linear", mode: "integer-break", n: 10 },
+
+    /* ----- math / bit ----- */
+    "excel-sheet-column-number": { title: "Watch base-26 accumulate", type: "math-steps", mode: "excel", s: "ZY" },
+    "count-primes": { title: "Watch the sieve cross out composites", type: "math-steps", mode: "sieve", n: 30 },
+    "power-of-two": { title: "Watch n & (n−1) test the single bit", type: "bits", mode: "power-of-two", n: 16, bits: 8 }
   };
 
   /* ---------- engine ---------- */

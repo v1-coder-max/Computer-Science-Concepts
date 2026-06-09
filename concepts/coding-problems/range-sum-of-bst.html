@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Range Sum of BST — DevLens</title>
+  <meta name="description" content="Sum BST values within a range, pruning whole subtrees using the BST ordering — O(n) worst case, in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="range-sum-of-bst" data-title="Range Sum of BST">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Range Sum of BST</h1>
+          <p class="lede">
+            Use the BST property to skip entire branches: if a node is below the low bound, its left subtree is irrelevant; above the high bound, its right.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#bst</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given the root of a BST and bounds <code>low</code> and <code>high</code>, return the sum of all node values in the inclusive range <code>[low, high]</code>.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p>BST with <code>low = 7, high = 15</code> → <code>32</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Summing every node and filtering ignores the BST structure. Pruning with the ordering visits far fewer nodes in practice.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            DFS. If a node is in range, add it. Recurse <strong>left only</strong> when the node is greater than <code>low</code> (smaller values could qualify), and <strong>right only</strong> when it is less than <code>high</code> — pruning whole subtrees that can't contribute.
+          </p>
+          <p><strong>Time O(n), Space O(h).</strong></p>
+
+          <div class="viz" data-viz="range-sum-of-bst"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int RangeSumBST(TreeNode root, int low, int high)
+{
+    if (root == null) return 0;
+    int sum = 0;
+    if (root.val &gt;= low &amp;&amp; root.val &lt;= high) sum += root.val;
+    if (root.val &gt; low) sum += RangeSumBST(root.left, low, high);
+    if (root.val &lt; high) sum += RangeSumBST(root.right, low, high);
+    return sum;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — fewer with pruning; n worst case.</li>
+              <li><strong>Space:</strong> O(h) — recursion = height.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Use BST order to <strong>prune</strong>: skip left when below low, right when above high.</li>
+              <li>Only the pruning conditions distinguish this from a plain traversal.</li>
+              <li>Pruning often turns the practical cost well below O(n).</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/validate-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Validate Binary Search Tree</span></a>
+            <a class="related-card" href="../coding-problems/kth-smallest-element-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Smallest Element in a BST</span></a>
+            <a class="related-card" href="../coding-problems/minimum-absolute-difference-in-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Minimum Absolute Difference in BST</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The interesting part is the pruning, not the sum. Explain why <code>node.val &gt; low</code> gates the left recursion (and symmetrically for the right) — that is the BST insight being tested.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>
