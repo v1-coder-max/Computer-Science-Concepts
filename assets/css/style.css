@@ -354,6 +354,58 @@ img, svg {
   margin-left: 0;
 }
 
+/* ---- Nested pattern sub-groups (Coding Problems → Arrays, Stack, …) ---- */
+.nav-subgroup {
+  margin: 0 0 1px 28px;
+}
+.nav-subgroup-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, color 0.12s;
+}
+.nav-subgroup-toggle:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.nav-subgroup[open] .nav-subgroup-toggle {
+  color: var(--text);
+}
+.nav-subgroup-title {
+  flex: 1;
+}
+.nav-subgroup-toggle .chevron {
+  font-size: 0.62rem;
+  color: var(--text-faint);
+  transition: transform 0.18s var(--ease);
+}
+.nav-subgroup[open] .nav-subgroup-toggle .chevron {
+  transform: rotate(90deg);
+}
+.nav-subgroup-count {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  background: var(--surface-2);
+  padding: 0 6px;
+  border-radius: 999px;
+}
+.nav-subgroup .nav-list {
+  margin: 2px 0 6px 8px;
+  padding-left: 12px;
+}
+
 .nav-list {
   list-style: none;
   margin: 2px 0 8px;
