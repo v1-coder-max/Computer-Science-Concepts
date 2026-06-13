@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Number of Longest Increasing Subsequence — DevLens</title>
+  <meta name="description" content="Count how many longest increasing subsequences exist, tracking both length and count per index — O(n²), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="number-of-longest-increasing-subsequence" data-title="Number of Longest Increasing Subsequence">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Number of Longest Increasing Subsequence</h1>
+          <p class="lede">
+            Extend LIS while also tallying how many ways each best length is reached; a strictly longer extension resets the count, an equal one adds to it.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dynamic-programming</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given an integer array, return the number of longest strictly increasing subsequences.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1,3,5,4,7]</code> → <code>2</code> ([1,3,4,7] and [1,3,5,7])</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Enumerating all increasing subsequences is exponential. An O(n²) DP carries both length and count.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            For each <code>i</code>, keep <code>len[i]</code> (longest LIS ending at i) and <code>count[i]</code> (how many achieve it). For each earlier <code>j</code> with <code>nums[j] &lt; nums[i]</code>: if <code>len[j]+1 &gt; len[i]</code>, set <code>len[i]</code> and copy <code>count[j]</code>; if equal, <strong>add</strong> <code>count[j]</code>. Sum counts of indices with the global max length.
+          </p>
+          <p><strong>Time O(n²), Space O(n).</strong></p>
+
+          <div class="viz" data-viz="number-of-longest-increasing-subsequence"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int FindNumberOfLIS(int[] nums)
+{
+    int n = nums.Length;
+    var len = new int[n];
+    var count = new int[n];
+    Array.Fill(len, 1);
+    Array.Fill(count, 1);
+    int best = 1;
+    for (int i = 0; i &lt; n; i++)
+    {
+        for (int j = 0; j &lt; i; j++)
+        {
+            if (nums[j] &lt; nums[i])
+            {
+                if (len[j] + 1 &gt; len[i]) { len[i] = len[j] + 1; count[i] = count[j]; }
+                else if (len[j] + 1 == len[i]) count[i] += count[j];
+            }
+        }
+        best = Math.Max(best, len[i]);
+    }
+    int total = 0;
+    for (int i = 0; i &lt; n; i++) if (len[i] == best) total += count[i];
+    return total;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n²) — all pairs (i, j).</li>
+              <li><strong>Space:</strong> O(n) — length and count arrays.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Carry both <strong>length</strong> and <strong>count</strong> per index.</li>
+              <li>A longer extension resets count; an equal one adds to it.</li>
+              <li>Sum the counts of all indices achieving the global max length.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/longest-increasing-subsequence.html"><span class="rc-cat">Coding</span><span class="rc-title">Longest Increasing Subsequence</span></a>
+            <a class="related-card" href="../coding-problems/wiggle-subsequence.html"><span class="rc-cat">Coding</span><span class="rc-title">Wiggle Subsequence</span></a>
+            <a class="related-card" href="../coding-problems/maximum-length-of-pair-chain.html"><span class="rc-cat">Coding</span><span class="rc-title">Maximum Length of Pair Chain</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The reset-vs-accumulate rule for the count array is the crux: strictly longer overwrites, equal length adds. Summing counts at the max length gives the answer.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

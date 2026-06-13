@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Self Dividing Numbers — DevLens</title>
+  <meta name="description" content="List numbers in a range divisible by each of their digits (no zero digit), checking digits per number — O((hi−lo)·d), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="self-dividing-numbers" data-title="Self Dividing Numbers">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Self Dividing Numbers</h1>
+          <p class="lede">
+            For each number, test that it's divisible by every one of its digits and contains no zero — a simple digit loop.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#math</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            A self-dividing number is divisible by every digit it contains and has no zero digit. Return all self-dividing numbers in <code>[left, right]</code>.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>[1, 22]</code> → <code>[1,2,3,4,5,6,7,8,9,11,12,15,22]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            There's no cleverer structure — just test each number, which is what's expected.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            For each number in the range, extract its digits one by one. If any digit is <strong>0</strong> or does not divide the number, it's not self-dividing. Otherwise add it to the result.
+          </p>
+          <p><strong>Time O((hi−lo)·d), Space O(1).</strong></p>
+
+          <div class="viz" data-viz="self-dividing-numbers"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;int&gt; SelfDividingNumbers(int left, int right)
+{
+    var res = new List&lt;int&gt;();
+    for (int n = left; n &lt;= right; n++)
+    {
+        int x = n;
+        bool ok = true;
+        while (x &gt; 0)
+        {
+            int d = x % 10;
+            if (d == 0 || n % d != 0) { ok = false; break; }
+            x /= 10;
+        }
+        if (ok) res.Add(n);
+    }
+    return res;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O((hi−lo)·d) — d = digits per number.</li>
+              <li><strong>Space:</strong> O(1) — output aside.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Reject any number with a zero digit immediately.</li>
+              <li>Test divisibility against the original number, not the truncated one.</li>
+              <li>It's a straightforward per-number digit loop.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/perfect-number.html"><span class="rc-cat">Coding</span><span class="rc-title">Perfect Number</span></a>
+            <a class="related-card" href="../coding-problems/add-digits.html"><span class="rc-cat">Coding</span><span class="rc-title">Add Digits</span></a>
+            <a class="related-card" href="../coding-problems/fizz-buzz.html"><span class="rc-cat">Coding</span><span class="rc-title">Fizz Buzz</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The only trap is dividing by a zero digit (skip those numbers) and remembering to test divisibility against the full original value, not the shrinking copy.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

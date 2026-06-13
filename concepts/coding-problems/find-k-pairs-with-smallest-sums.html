@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find K Pairs with Smallest Sums — DevLens</title>
+  <meta name="description" content="Find the k pairs with smallest sums from two sorted arrays using a min-heap of frontier candidates — O(k log k), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="find-k-pairs-with-smallest-sums" data-title="Find K Pairs with Smallest Sums">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Find K Pairs with Smallest Sums</h1>
+          <p class="lede">
+            Seed a min-heap with each a[i] paired to b[0]; after popping the smallest, push that same a paired with the next b — only promising candidates ever enter the heap.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#heap</span>
+            <span class="tag">#two-pointers</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given two sorted arrays and an integer <code>k</code>, return the <code>k</code> pairs (one element from each) with the smallest sums.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>nums1=[1,7,11], nums2=[2,4,6], k=3</code> → <code>[[1,2],[1,4],[1,6]]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Generating all n·m pairs and sorting is O(n·m·log). A heap explores only the frontier for O(k log k).
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Push the initial pairs <code>(a[i], b[0])</code> into a <strong>min-heap</strong> keyed by sum (just the first min(n,k) of them). Repeatedly pop the smallest pair <code>(a[i], b[j])</code>, record it, and push <code>(a[i], b[j+1])</code> — the next candidate along that row. Stop after <code>k</code> pairs.
+          </p>
+          <p><strong>Time O(k log k), Space O(k).</strong></p>
+
+          <div class="viz" data-viz="find-k-pairs-with-smallest-sums"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public IList&lt;IList&lt;int&gt;&gt; KSmallestPairs(int[] nums1, int[] nums2, int k)
+{
+    var res = new List&lt;IList&lt;int&gt;&gt;();
+    if (nums1.Length == 0 || nums2.Length == 0) return res;
+    // min-heap of (sum, i, j)
+    var heap = new PriorityQueue&lt;(int i, int j), int&gt;();
+    for (int i = 0; i &lt; Math.Min(nums1.Length, k); i++)
+        heap.Enqueue((i, 0), nums1[i] + nums2[0]);
+    while (heap.Count &gt; 0 &amp;&amp; res.Count &lt; k)
+    {
+        var (i, j) = heap.Dequeue();
+        res.Add(new List&lt;int&gt; { nums1[i], nums2[j] });
+        if (j + 1 &lt; nums2.Length)
+            heap.Enqueue((i, j + 1), nums1[i] + nums2[j + 1]);
+    }
+    return res;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(k log k) — at most k heap operations.</li>
+              <li><strong>Space:</strong> O(k) — the heap.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Seed the heap with the row heads <code>(a[i], b[0])</code>.</li>
+              <li>Popping <code>(i, j)</code> pushes the next candidate <code>(i, j+1)</code>.</li>
+              <li>Only the frontier of candidates ever enters the heap.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/merge-k-sorted-lists.html"><span class="rc-cat">Coding</span><span class="rc-title">Merge K Sorted Lists</span></a>
+            <a class="related-card" href="../coding-problems/kth-largest-element.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Largest Element in an Array</span></a>
+            <a class="related-card" href="../coding-problems/k-closest-points-to-origin.html"><span class="rc-cat">Coding</span><span class="rc-title">K Closest Points to Origin</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              It's the merge-k-style heap frontier: each pop spawns exactly one new candidate. Seeding with the first column and advancing the second index keeps the heap small.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

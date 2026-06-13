@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Number of Operations to Make Network Connected — DevLens</title>
+  <meta name="description" content="Find the fewest cable moves to connect all computers using union-find: components − 1, if enough cables exist — O(E·α), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="number-of-operations-to-make-network-connected" data-title="Number of Operations to Make Network Connected">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Number of Operations to Make Network Connected</h1>
+          <p class="lede">
+            Spare cables (those between already-connected computers) can be moved to bridge gaps. If you have at least components − 1 spares, that many moves connect everything.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#graphs</span>
+            <span class="tag">#union-find</span>
+            <span class="tag">#medium</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given <code>n</code> computers and a list of cables, you may unplug any cable and reconnect it elsewhere. Return the minimum moves to connect all computers, or −1 if impossible.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>n = 6, connections = [[0,1],[0,2],[0,3],[1,2],[1,3]]</code> → <code>2</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Searching reconnection sequences is unnecessary; the answer is a simple function of the component count.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            You need at least <code>n − 1</code> cables; if there are fewer, return −1. Use <strong>union-find</strong> to count connected components <code>c</code>. Connecting <code>c</code> components needs <code>c − 1</code> moves, and any redundant cable (joining an already-connected pair) supplies a spare — there are always enough when <code>cables ≥ n − 1</code>.
+          </p>
+          <p><strong>Time O(E·α), Space O(n).</strong></p>
+
+          <div class="viz" data-viz="number-of-operations-to-make-network-connected"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int MakeConnected(int n, int[][] connections)
+{
+    if (connections.Length &lt; n - 1) return -1;   // not enough cables
+    var parent = new int[n];
+    for (int i = 0; i &lt; n; i++) parent[i] = i;
+    int Find(int x) { while (parent[x] != x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
+    int components = n;
+    foreach (var c in connections)
+    {
+        int ra = Find(c[0]), rb = Find(c[1]);
+        if (ra != rb) { parent[ra] = rb; components--; }
+    }
+    return components - 1;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(E·α) — near-constant union/find.</li>
+              <li><strong>Space:</strong> O(n) — the parent array.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>With <code>&lt; n − 1</code> cables it's impossible (−1).</li>
+              <li>Answer = <code>components − 1</code> (each move merges two groups).</li>
+              <li>Redundant cables are the spares you reuse — you always have enough.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/number-of-provinces.html"><span class="rc-cat">Coding</span><span class="rc-title">Number of Provinces</span></a>
+            <a class="related-card" href="../coding-problems/graph-valid-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Graph Valid Tree</span></a>
+            <a class="related-card" href="../coding-problems/redundant-connection.html"><span class="rc-cat">Coding</span><span class="rc-title">Redundant Connection</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Two facts close it: fewer than n−1 cables is hopeless, and otherwise the answer is components−1. Union-find counts components; the spare-cable argument explains why it's always achievable.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

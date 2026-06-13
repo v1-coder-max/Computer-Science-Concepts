@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Mode in Binary Search Tree — DevLens</title>
+  <meta name="description" content="Find the most frequent value(s) in a BST with duplicates using in-order traversal to count adjacent runs — O(n), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="find-mode-in-binary-search-tree" data-title="Find Mode in Binary Search Tree">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Find Mode in Binary Search Tree</h1>
+          <p class="lede">
+            In-order makes equal values adjacent, so counting runs of the same value reveals the mode without a hash map.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#bst</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given a BST that may contain duplicates, return all values that appear most frequently (the modes).
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p>BST <code>[1,null,2,2]</code> → <code>[2]</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            A hash map of counts works in O(n) space. In-order traversal exploits the sorted order for O(1) extra space (besides recursion).
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Traverse in order, tracking the <strong>previous value</strong> and the current run length. When the run beats the best, reset the mode list; when it ties, append. Equal values are guaranteed adjacent by the BST ordering.
+          </p>
+          <p><strong>Time O(n), Space O(h).</strong></p>
+
+          <div class="viz" data-viz="find-mode-in-binary-search-tree"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public int[] FindMode(TreeNode root)
+{
+    var modes = new List&lt;int&gt;();
+    int? prev = null;
+    int count = 0, best = 0;
+    void InOrder(TreeNode node)
+    {
+        if (node == null) return;
+        InOrder(node.left);
+        count = (prev == node.val) ? count + 1 : 1;
+        if (count &gt; best) { best = count; modes.Clear(); modes.Add(node.val); }
+        else if (count == best) modes.Add(node.val);
+        prev = node.val;
+        InOrder(node.right);
+    }
+    InOrder(root);
+    return modes.ToArray();
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — single in-order pass.</li>
+              <li><strong>Space:</strong> O(h) — recursion (modes aside).</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>In-order makes duplicate values <strong>adjacent</strong>, so count runs.</li>
+              <li>Reset the mode list on a new max, append on a tie.</li>
+              <li>No hash map needed — the BST ordering does the grouping.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/minimum-absolute-difference-in-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Minimum Absolute Difference in BST</span></a>
+            <a class="related-card" href="../coding-problems/kth-smallest-element-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Kth Smallest Element in a BST</span></a>
+            <a class="related-card" href="../coding-problems/validate-bst.html"><span class="rc-cat">Coding</span><span class="rc-title">Validate Binary Search Tree</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The point of the BST is that in-order groups equal values, so you avoid a hash map. Track previous value and run length, resetting or extending the mode set.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

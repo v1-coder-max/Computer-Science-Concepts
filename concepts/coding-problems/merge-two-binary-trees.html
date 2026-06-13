@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merge Two Binary Trees — DevLens</title>
+  <meta name="description" content="Merge two binary trees by overlaying them and summing overlapping nodes — O(n), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="merge-two-binary-trees" data-title="Merge Two Binary Trees">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Merge Two Binary Trees</h1>
+          <p class="lede">
+            Lay one tree over the other: where both have a node, add the values; where only one exists, keep it.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#trees</span>
+            <span class="tag">#dfs</span>
+            <span class="tag">#recursion</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Given two binary trees, merge them so overlapping nodes are summed and non-overlapping nodes are carried over. Return the merged tree.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p>Roots 1 and 2 overlap → 3; a node present in only one tree is kept as-is.</p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            There's no shortcut around visiting the union of nodes; a single simultaneous recursion does exactly that.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Recurse on both trees together. If one node is null, return the other. Otherwise create a node with the <strong>summed</strong> value and recurse on the left pair and the right pair. (You can also merge into the first tree in place.)
+          </p>
+          <p><strong>Time O(n), Space O(h).</strong></p>
+
+          <div class="viz" data-viz="merge-two-binary-trees"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public TreeNode MergeTrees(TreeNode t1, TreeNode t2)
+{
+    if (t1 == null) return t2;
+    if (t2 == null) return t1;
+    var node = new TreeNode(t1.val + t2.val);
+    node.left = MergeTrees(t1.left, t2.left);
+    node.right = MergeTrees(t1.right, t2.right);
+    return node;
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — n = nodes in the smaller overlap.</li>
+              <li><strong>Space:</strong> O(h) — recursion = height.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Recurse on both trees in lockstep, summing where they overlap.</li>
+              <li>A null on either side short-circuits to the other subtree.</li>
+              <li>Merging in place saves the new allocations if mutation is allowed.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/same-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Same Tree</span></a>
+            <a class="related-card" href="../coding-problems/invert-binary-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Invert Binary Tree</span></a>
+            <a class="related-card" href="../coding-problems/symmetric-tree.html"><span class="rc-cat">Coding</span><span class="rc-title">Symmetric Tree</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Simultaneous recursion with the null-returns-other base case is the pattern. Mention you can merge into one tree in place to avoid extra nodes.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>

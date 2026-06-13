@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Make The String Great — DevLens</title>
+  <meta name="description" content="Remove adjacent same-letter opposite-case pairs (like 'aA') with a stack — O(n), in C#." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="coding-problems" data-concept="make-the-string-great" data-title="Make The String Great">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Make The String Great</h1>
+          <p class="lede">
+            A stack cancels bad pairs as they form: if the incoming char is the same letter as the top but opposite case, they annihilate.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#stack</span>
+            <span class="tag">#strings</span>
+            <span class="tag">#easy</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The problem</h2>
+          <p>
+            Repeatedly remove adjacent characters that are the same letter in different cases (e.g. <code>'a'</code> and <code>'A'</code>) until none remain, then return the string.
+          </p>
+          <div class="callout">
+            <p class="callout-title">📥 Example</p>
+            <p><code>"leEeetcode"</code> → <code>"leetcode"</code></p>
+          </div>
+
+          <h2>Brute force</h2>
+          <p>
+            Rescanning after each removal is O(n²). A stack resolves all cancellations in one pass.
+          </p>
+
+          <h2>Optimized approach</h2>
+          <p>
+            Scan with a <strong>stack</strong>. If the top and current characters are the same letter but differ in case (their difference is 32, or they're equal under <code>ToLower</code> yet not identical), pop; otherwise push. The stack is the result.
+          </p>
+          <p><strong>Time O(n), Space O(n).</strong></p>
+
+          <div class="viz" data-viz="make-the-string-great"></div>
+
+          <h2>C# solution</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">public string MakeGood(string s)
+{
+    var stack = new Stack&lt;char&gt;();
+    foreach (char c in s)
+    {
+        if (stack.Count &gt; 0 &amp;&amp; stack.Peek() != c &amp;&amp;
+            char.ToLower(stack.Peek()) == char.ToLower(c))
+            stack.Pop();
+        else
+            stack.Push(c);
+    }
+    var arr = stack.ToArray();
+    Array.Reverse(arr);
+    return new string(arr);
+}</code></pre>
+          </div>
+
+          <h2>Complexity</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">⏱️ Complexity</p>
+            <ul>
+              <li><strong>Time:</strong> O(n) — each character pushed/popped once.</li>
+              <li><strong>Space:</strong> O(n) — the stack.</li>
+            </ul>
+          </div>
+
+          <h2>Pattern &amp; takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Same-letter, opposite-case ⇔ differ by 32, or equal under <code>ToLower</code> but not identical.</li>
+              <li>A stack cancels pairs in a single pass.</li>
+              <li>Reverse the stack to rebuild the string.</li>
+            </ul>
+          </div>
+
+          <h2>Related problems</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../coding-problems/remove-all-adjacent-duplicates-in-string.html"><span class="rc-cat">Coding</span><span class="rc-title">Remove All Adjacent Duplicates In String</span></a>
+            <a class="related-card" href="../coding-problems/valid-parentheses.html"><span class="rc-cat">Coding</span><span class="rc-title">Valid Parentheses</span></a>
+            <a class="related-card" href="../coding-problems/removing-stars-from-a-string.html"><span class="rc-cat">Coding</span><span class="rc-title">Removing Stars From a String</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The case-pair test (<code>ToLower</code> equal but characters differ) is the only subtlety; the stack-cancellation structure is identical to adjacent-duplicate removal.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+  <script src="../../assets/js/viz.js"></script>
+</body>
+</html>
