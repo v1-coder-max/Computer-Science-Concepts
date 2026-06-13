@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keeping Data Consistent Across Services — DevLens</title>
+  <meta name="description" content="How to keep data consistent across microservices without distributed transactions: the saga pattern with compensations, the transactional outbox, and embracing eventual consistency." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="data-consistency-across-services" data-title="Keeping Data Consistent Across Services">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Keeping Data Consistent Across Services</h1>
+          <p class="lede">
+            Once data is split across services with their own databases, you can't wrap a change in one transaction. You trade ACID for <strong>sagas</strong>, the <strong>outbox</strong>, and <strong>eventual consistency</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#distributed-systems</span>
+            <span class="tag">#saga</span>
+            <span class="tag">#outbox</span>
+            <span class="tag">#eventual-consistency</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“An order touches the Order, Payment, and Inventory services — each with its own database. How do you keep them consistent without a distributed transaction?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Explain why the obvious answer is wrong: a distributed transaction (two-phase commit) across services is slow, locks resources across the network, and a coordinator failure can leave everyone blocked. At scale it's avoided. Instead you accept <strong>eventual consistency</strong> and design for it.
+          </p>
+          <p>
+            <strong>Saga pattern.</strong> Model the business operation as a sequence of <em>local</em> transactions, each in one service, coordinated by events. If a later step fails, run <strong>compensating</strong> transactions to undo the earlier ones (refund the payment, release the inventory). The system is never globally locked — it converges to a consistent state.
+          </p>
+          <p>
+            <strong>Transactional outbox.</strong> The dangerous gap is 'commit my DB change <em>and</em> publish an event' — do them separately and a crash in between loses the event. The outbox writes the event into an <code>outbox</code> table <strong>in the same local transaction</strong> as the data change; a relay then publishes it. Now the event can't be lost (and consumers are idempotent to tolerate duplicates).
+          </p>
+          <p>
+            <strong>Idempotent, ordered consumers.</strong> Events are delivered at-least-once and possibly out of order, so each consumer must dedup (idempotency key) and handle reordering. This is what makes 'effectively once' processing real.
+          </p>
+          <p>
+            Set expectations: there's a window where Order says 'placed' but Inventory hasn't decremented yet. That's fine for most domains — design the UX around 'processing' states rather than pretending everything is instantly consistent.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              This is the backbone of event-driven microservices: an order service writes the order and an OrderPlaced event in one transaction (outbox), the payment and inventory services react, and a failed payment triggers a compensating cancel. Real systems lean on this rather than 2PC because it's resilient and scalable. The classic bug it prevents is the dual-write problem — saving to the database and publishing to the broker as two steps, then losing the event when the process dies in between.
+            </p>
+          </div>
+
+          <h2>Saga + outbox, not 2PC</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Local tx + event → next step · compensate on failure</text><rect class="dgm-box-accent" x="20" y="60" width="90" height="34" rx="8"/><text class="dgm-sub" x="65" y="81" text-anchor="middle">Order</text><text class="dgm-sub" x="65" y="116" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">+ outbox event</text><line x1="112" y1="77" x2="150" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="152" y="60" width="90" height="34" rx="8"/><text class="dgm-sub" x="197" y="81" text-anchor="middle">Payment</text><line x1="244" y1="77" x2="282" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="284" y="60" width="90" height="34" rx="8"/><text class="dgm-sub" x="329" y="81" text-anchor="middle">Inventory</text><line x1="376" y1="77" x2="414" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="416" y="60" width="90" height="34" rx="8"/><text class="dgm-sub" x="461" y="81" text-anchor="middle">Shipping</text><line x1="329" y1="100" x2="111" y2="100" stroke="var(--c-warning)" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)"/><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">fail → compensate backwards (refund, release stock)</text></svg>
+            <figcaption>Figure 1 — Each service commits locally and emits an event (via the outbox); a failure downstream triggers compensating transactions that walk the saga back.</figcaption>
+          </figure>
+
+          <h2>Write the event in the same transaction</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — the transactional outbox</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// One local transaction: the state change AND the event, atomically.
+await using var tx = await _db.BeginTransactionAsync();
+
+_db.Orders.Add(order);                                  // business data
+_db.Outbox.Add(new OutboxMessage("OrderPlaced", order.Id));  // event, same tx
+await _db.SaveChangesAsync();
+await tx.CommitAsync();           // both commit, or neither — no lost event
+
+// A separate relay polls the outbox and publishes to the broker;
+// consumers are idempotent because delivery is at-least-once.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Avoid distributed transactions (2PC) across services — use <strong>sagas</strong>: local transactions coordinated by events, with <strong>compensations</strong> to undo on failure.</li>
+              <li>Use the <strong>transactional outbox</strong> to write state + event atomically, so the dual-write problem can't lose events.</li>
+              <li>Embrace <strong>eventual consistency</strong>: consumers are idempotent and the UX models 'processing' states between steps.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/saga-pattern.html"><span class="rc-cat">Microservices</span><span class="rc-title">Saga Pattern</span></a>
+            <a class="related-card" href="../microservices/outbox-pattern.html"><span class="rc-cat">Microservices</span><span class="rc-title">Outbox Pattern</span></a>
+            <a class="related-card" href="../interview-scenarios/idempotency-in-distributed-systems.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Idempotency in Distributed Systems</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Reject 2PC early and reach for saga + outbox + eventual consistency. The detail that lands: the <strong>dual-write problem</strong> (DB + broker as two steps loses events) and how the outbox closes it by making them one transaction.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

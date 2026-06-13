@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scaling the Database Tier — DevLens</title>
+  <meta name="description" content="How to scale the hardest tier: caching and read replicas for read load, then partitioning/sharding for write and data volume, plus connection pooling and CQRS — and the trade-offs of each." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="scaling-the-database" data-title="Scaling the Database Tier">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Scaling the Database Tier</h1>
+          <p class="lede">
+            The database is almost always the scaling wall, because it holds state. You climb it in a deliberate order — <strong>cache, replicate, partition, shard</strong> — because each step adds complexity you only want when forced.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#database</span>
+            <span class="tag">#replication</span>
+            <span class="tag">#sharding</span>
+            <span class="tag">#caching</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Your single database can't keep up. Walk me through how you'd scale the data tier, in order.”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Set the order and the reason: each technique solves a <em>different</em> bottleneck and adds complexity, so you apply them only as needed. Tune before you scale — the right <strong>index</strong>, a fixed N+1 query, or a bounded <strong>connection pool</strong> often buys more headroom than any new server.
+          </p>
+          <p>
+            <strong>1. Cache.</strong> Most load is reads, and the cheapest read never reaches the database. A cache (Redis) in front absorbs the hot read path — frequently the single biggest relief, and the first thing to reach for.
+          </p>
+          <p>
+            <strong>2. Read replicas.</strong> Still read-bound? Add replicas and route reads to them, keeping writes on the primary. This scales reads near-linearly; the cost is <strong>replication lag</strong> — replicas are slightly stale, so route read-your-own-writes traffic to the primary.
+          </p>
+          <p>
+            <strong>3. Vertical scale / partition.</strong> A bigger box is the simplest write-side win until it hits a ceiling. Then <strong>partition</strong> within one database (split a huge table by range/time) to keep indexes and working sets small.
+          </p>
+          <p>
+            <strong>4. Shard.</strong> When one primary can't hold the write volume or dataset, split data across multiple databases by a <strong>shard key</strong>. This is the most powerful and most painful step: cross-shard queries and transactions get hard, and a bad key creates hot shards — so choose a high-cardinality, evenly-distributed key. CQRS (separate read/write models) is the natural companion once reads and writes diverge.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Almost every large system climbs this exact ladder: cache hot data in Redis, fan reads across replicas, and only shard when forced — because sharding is where joins, transactions, and ops complexity spike. Companies famously delay sharding as long as possible (bigger boxes, more caching, more replicas) precisely because of that cost. The recurring mistake is sharding too early (huge complexity for a problem caching would have solved) or choosing a low-cardinality shard key that just recreates a single hot database.
+            </p>
+          </div>
+
+          <h2>The database scaling ladder</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Apply in order — each step costs more complexity</text><rect class="dgm-box-accent" x="20" y="60" width="110" height="34" rx="8"/><text class="dgm-sub" x="75" y="81" text-anchor="middle">1. Cache</text><text class="dgm-sub" x="75" y="112" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">absorb reads</text><line x1="132" y1="77" x2="162" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="164" y="60" width="110" height="34" rx="8"/><text class="dgm-sub" x="219" y="81" text-anchor="middle">2. Replicas</text><text class="dgm-sub" x="219" y="112" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">scale reads</text><line x1="276" y1="77" x2="306" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="308" y="60" width="110" height="34" rx="8"/><text class="dgm-sub" x="363" y="81" text-anchor="middle">3. Partition</text><text class="dgm-sub" x="363" y="112" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">shrink tables</text><line x1="420" y1="77" x2="450" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="452" y="60" width="110" height="34" rx="8"/><text class="dgm-sub" x="507" y="81" text-anchor="middle">4. Shard</text><text class="dgm-sub" x="507" y="112" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">split writes</text><text class="dgm-sub" x="300" y="156" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Cheaper/simpler ⟶ more powerful/complex · tune indexes & pools first</text></svg>
+            <figcaption>Figure 1 — Climb left to right; each rung handles a bottleneck the previous can't, and sharding (right) is the costliest, so it comes last.</figcaption>
+          </figure>
+
+          <h2>Cache-aside + read/write split</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — relieve the DB before scaling it</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Step 1 — cache-aside: check Redis, fall back to the DB, then populate.
+public async Task&lt;Product&gt; GetProductAsync(int id)
+{
+    if (await _cache.GetAsync&lt;Product&gt;($"product:{id}") is { } hit) return hit;
+    var p = await _replica.Products.FindAsync(id);     // step 2: read replica
+    await _cache.SetAsync($"product:{id}", p, TimeSpan.FromMinutes(10));
+    return p;
+}
+
+// Writes go to the primary; cache is invalidated on change.
+public async Task UpdateAsync(Product p) {
+    await _primary.SaveChangesAsync();
+    await _cache.RemoveAsync($"product:{p.Id}");
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Tune first</strong> (indexes, N+1, connection pool) — it often beats adding hardware.</li>
+              <li>Climb in order: <strong>cache → read replicas → partition → shard</strong>; each rung targets a different bottleneck and adds complexity.</li>
+              <li><strong>Sharding</strong> is the powerful-but-painful last resort — cross-shard joins/transactions get hard, and the <strong>shard key</strong> must be high-cardinality and evenly distributed.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/sharding.html"><span class="rc-cat">Database</span><span class="rc-title">Partitioning & Sharding</span></a>
+            <a class="related-card" href="../database/replication.html"><span class="rc-cat">Database</span><span class="rc-title">Replication</span></a>
+            <a class="related-card" href="../interview-scenarios/read-heavy-vs-write-heavy.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Read-Heavy vs Write-Heavy Systems</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Give the ordered ladder — cache, replicas, partition, shard — and stress that you tune (indexes, pools) before scaling and shard <em>last</em>. The shard-key point (high cardinality, even distribution, or you get hot shards) is what separates a real answer from a buzzword list.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

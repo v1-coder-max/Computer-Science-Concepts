@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zero-Downtime Database Migration — DevLens</title>
+  <meta name="description" content="How to change a database schema or move data with no downtime: the expand–migrate–contract pattern, backward-compatible steps, dual writes, backfill, and a safe cutover with rollback." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="zero-downtime-database-migration" data-title="Zero-Downtime Database Migration">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Zero-Downtime Database Migration</h1>
+          <p class="lede">
+            You can't take a maintenance window, and a single 'big bang' migration risks an outage. The trick is to make every step <strong>backward-compatible</strong> so old and new code run side by side.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#migrations</span>
+            <span class="tag">#databases</span>
+            <span class="tag">#deployment</span>
+            <span class="tag">#backward-compatibility</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“You need to rename a column / change a schema / move to a new database — with zero downtime, while the app keeps running. How?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            State the constraint that drives everything: during a rolling deploy, <strong>old and new code run at the same time</strong> against the same database. So no single migration step may break the version that's still running. That rules out destructive, all-at-once changes.
+          </p>
+          <p>
+            <strong>Expand–migrate–contract.</strong> The standard recipe. <em>Expand:</em> add the new column/table/field <em>additively</em> — nothing reads it yet, old code is unaffected. <em>Migrate:</em> deploy code that writes to <strong>both</strong> old and new (dual write) and <strong>backfill</strong> existing rows in batches. <em>Contract:</em> once everything reads the new shape and the backfill is verified, switch reads over, then drop the old column in a later release.
+          </p>
+          <p>
+            <strong>Backfill safely.</strong> Copy historical data in small batches with pauses, so you don't lock tables or saturate I/O. Make the backfill idempotent and resumable — it will get interrupted.
+          </p>
+          <p>
+            <strong>Cut over behind a flag.</strong> Gate the read switch with a feature flag so you can flip to the new path — and instantly flip back — without a deploy. Verify the two sources agree (shadow reads / comparison) before trusting the new one.
+          </p>
+          <p>
+            For a whole-database move, the same shape applies: dual-write to old and new, backfill, run them in parallel comparing results, then cut reads over and decommission the old store. Every step is reversible until the final contract.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              This is how teams run schema changes on live systems without a maintenance page: tools like gh-ost and pt-online-schema-change build the new table and backfill in the background, and frameworks structure migrations as additive-then-cleanup. The cautionary tale is a single migration that renames a column in place — the old app instances still querying the old name start throwing errors the moment it runs. Expand/contract avoids that by never breaking the currently-deployed code.
+            </p>
+          </div>
+
+          <h2>Expand → migrate → contract</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Every step keeps old + new code working</text><rect class="dgm-box-accent" x="20" y="62" width="110" height="40" rx="8"/><text class="dgm-sub" x="75" y="86" text-anchor="middle">Expand</text><text class="dgm-sub" x="75" y="118" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">add new (additive)</text><line x1="132" y1="82" x2="168" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="170" y="62" width="130" height="40" rx="8"/><text class="dgm-sub" x="235" y="86" text-anchor="middle">Migrate</text><text class="dgm-sub" x="235" y="118" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">dual-write + backfill</text><line x1="302" y1="82" x2="338" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="340" y="62" width="130" height="40" rx="8"/><text class="dgm-sub" x="405" y="86" text-anchor="middle">Contract</text><text class="dgm-sub" x="405" y="118" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">switch reads, drop old</text><text class="dgm-sub" x="300" y="155" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Reversible until the final drop · cut over behind a feature flag</text></svg>
+            <figcaption>Figure 1 — Additive change first, then dual-write + backfill while both shapes coexist, then remove the old shape once the new one is trusted.</figcaption>
+          </figure>
+
+          <h2>A safe rename, in three releases</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">SQL — additive now, destructive much later</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-sql">-- Release 1 (Expand): add the new column, nothing reads it yet.
+ALTER TABLE users ADD COLUMN full_name text;
+
+-- Release 2 (Migrate): app writes BOTH columns; backfill in batches.
+UPDATE users SET full_name = name
+WHERE full_name IS NULL AND id BETWEEN :lo AND :hi;   -- repeat, small ranges
+
+-- Release 3 (Contract): all code now reads full_name → drop the old one.
+ALTER TABLE users DROP COLUMN name;
+-- Each release is independently deployable and the old app never breaks.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>During a rolling deploy old + new code share the DB, so <strong>every step must be backward-compatible</strong> — no big-bang destructive change.</li>
+              <li>Use <strong>expand → migrate → contract</strong>: add additively, dual-write + backfill in batches, then switch reads and drop the old shape later.</li>
+              <li>Gate the cutover behind a <strong>feature flag</strong> and verify with shadow reads; keep each step reversible until the final drop.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/replication.html"><span class="rc-cat">Database</span><span class="rc-title">Replication</span></a>
+            <a class="related-card" href="../database/normalization.html"><span class="rc-cat">Database</span><span class="rc-title">Normalization</span></a>
+            <a class="related-card" href="../interview-scenarios/data-consistency-across-services.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Data Consistency Across Services</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The phrase to say is 'expand/contract — every migration step is backward-compatible because old and new code run together.' Dual-write + batched backfill + a flagged read cutover is the concrete recipe; emphasize reversibility until the final drop.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

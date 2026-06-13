@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Surviving Traffic Spikes — DevLens</title>
+  <meta name="description" content="How to absorb sudden traffic spikes — flash sales, launches, viral events — with autoscaling, caching, queues to flatten load, rate limiting, and graceful load shedding." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="surviving-traffic-spikes" data-title="Surviving Traffic Spikes">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Surviving Traffic Spikes</h1>
+          <p class="lede">
+            A spike is a capacity-vs-demand mismatch that appears faster than you can add servers. You win by <strong>absorbing</strong>, <strong>flattening</strong>, and, if needed, <strong>shedding</strong> load.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#scaling</span>
+            <span class="tag">#autoscaling</span>
+            <span class="tag">#rate-limiting</span>
+            <span class="tag">#queues</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“A flash sale (or a viral post) will 50× your traffic in seconds. How do you keep the site up?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Acknowledge the core problem: autoscaling takes minutes (boot, warm up, join the pool) but a spike hits in seconds, so you cannot purely 'scale your way out' in real time. You combine four tactics.
+          </p>
+          <p>
+            <strong>Absorb with caching.</strong> The cheapest request is the one that never reaches your origin. Cache aggressively at the CDN and in Redis; for a flash sale, the product page is identical for everyone — serve it from cache so the database is untouched by the read storm.
+          </p>
+          <p>
+            <strong>Flatten with a queue.</strong> Convert synchronous spikes into a steady stream: accept the request, drop the work (order, signup) onto a <strong>queue</strong>, and process at the rate your backend can sustain. The user gets an instant 'we've got it' while workers drain the backlog.
+          </p>
+          <p>
+            <strong>Pre-scale and rate-limit.</strong> If the spike is known (a launch at noon), <strong>warm up</strong> capacity beforehand instead of reacting. Put <strong>rate limits</strong> in front to cap per-user load and blunt bots, and keep autoscaling on for the sustained tail.
+          </p>
+          <p>
+            <strong>Degrade gracefully.</strong> When you still exceed capacity, shed load deliberately: disable non-essential features, return cached/stale data, show a lightweight queue page. A fast 'try again' for some beats a total outage for all.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Ticketing sites and game launches live this every day: a waiting-room page (load shedding by design) holds users in a queue, the catalog is fully cached, and purchases are enqueued and processed steadily so the payment/database tier never sees the full spike. Retailers pre-warm capacity before a Black Friday drop rather than trusting reactive autoscaling, because cold-start latency during the surge is exactly when you can't afford it.
+            </p>
+          </div>
+
+          <h2>Flatten the spike with a queue</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Spiky demand in → steady work out</text><polyline points="40,120 70,120 90,55 110,120 150,120" fill="none" stroke="var(--c-warning)" stroke-width="2"/><text class="dgm-sub" x="95" y="145" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">50× spike</text><line x1="165" y1="95" x2="205" y2="95" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="208" y="78" width="90" height="34" rx="8"/><text class="dgm-sub" x="253" y="99" text-anchor="middle">queue</text><line x1="300" y1="95" x2="340" y2="95" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><polyline points="345,95 560,95" fill="none" stroke="var(--c-success)" stroke-width="2"/><rect class="dgm-box" x="345" y="120" width="100" height="26" rx="8"/><text class="dgm-sub" x="395" y="137" text-anchor="middle">workers</text><text class="dgm-sub" x="450" y="145" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">drain at a sustainable rate</text><text class="dgm-sub" x="300" y="168" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">+ CDN/Redis absorb reads · rate-limit caps abuse · autoscale the tail</text></svg>
+            <figcaption>Figure 1 — A queue turns a vertical spike into a flat, sustainable workstream; caching absorbs reads and rate limiting caps the worst offenders.</figcaption>
+          </figure>
+
+          <h2>Accept fast, process steadily</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — enqueue on the spike, drain in the background</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// On the hot path: validate, enqueue, return immediately (HTTP 202).
+app.MapPost("/checkout", async (Order o, IQueue q) =&gt;
+{
+    await q.PublishAsync(o);                  // milliseconds, no DB write yet
+    return Results.Accepted($"/orders/{o.Id}", new { o.Id, status = "queued" });
+});
+
+// A background worker drains at the rate the database can sustain:
+await foreach (var order in queue.ReadAllAsync(ct))
+    await ProcessWithRetryAsync(order);       // steady, backpressured throughput</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>You can't autoscale in seconds — combine <strong>caching</strong> (absorb), a <strong>queue</strong> (flatten), and <strong>pre-warming/rate limits</strong> (cap).</li>
+              <li>Turn synchronous spikes into asynchronous streams: accept fast (202), process at a sustainable rate.</li>
+              <li><strong>Degrade gracefully</strong> — stale data, disabled extras, a waiting room — because partial service beats a full outage.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/rate-limiting.html"><span class="rc-cat">System Design</span><span class="rc-title">Rate Limiting</span></a>
+            <a class="related-card" href="../system-design/message-queues.html"><span class="rc-cat">System Design</span><span class="rc-title">Message Queues</span></a>
+            <a class="related-card" href="../interview-scenarios/cache-stampede.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Cache Stampede & Thundering Herd</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Make the timing point explicitly: autoscaling is minutes, spikes are seconds, so caching + queue + pre-warm do the real work. Finishing with <strong>graceful degradation</strong> (a waiting room, stale reads) shows you'd rather control the failure than suffer it.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

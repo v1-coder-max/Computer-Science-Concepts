@@ -6335,5 +6335,215 @@
     ],
     "description": "List numbers in a range divisible by each of their digits (no zero digit), checking digits per number — O((hi−lo)·d), in C#.",
     "url": "concepts/coding-problems/self-dividing-numbers.html"
+  },
+  {
+    "title": "Scaling a Web Application",
+    "category": "interview-scenarios",
+    "tags": [
+      "scaling",
+      "architecture",
+      "load-balancing",
+      "caching",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to scale a web app from one server to millions of users: stateless app tier, load balancing, caching, read replicas, sharding, and async work — the standard 1→1M journey.",
+    "url": "concepts/interview-scenarios/scaling-a-web-application.html"
+  },
+  {
+    "title": "Handling Many Concurrent Users",
+    "category": "interview-scenarios",
+    "tags": [
+      "concurrency",
+      "async",
+      "throughput",
+      "backpressure",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to serve tens of thousands of concurrent users on one service: async I/O over thread-per-request, connection pooling, backpressure and load shedding, and horizontal scale-out.",
+    "url": "concepts/interview-scenarios/handling-concurrent-users.html"
+  },
+  {
+    "title": "Designing for High Availability",
+    "category": "interview-scenarios",
+    "tags": [
+      "availability",
+      "redundancy",
+      "failover",
+      "reliability",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to design a system with no single point of failure: redundancy across availability zones, automatic failover, health checks, and the availability math behind 'how many nines'.",
+    "url": "concepts/interview-scenarios/designing-for-high-availability.html"
+  },
+  {
+    "title": "Surviving Traffic Spikes",
+    "category": "interview-scenarios",
+    "tags": [
+      "scaling",
+      "autoscaling",
+      "rate-limiting",
+      "queues",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to absorb sudden traffic spikes — flash sales, launches, viral events — with autoscaling, caching, queues to flatten load, rate limiting, and graceful load shedding.",
+    "url": "concepts/interview-scenarios/surviving-traffic-spikes.html"
+  },
+  {
+    "title": "Reducing Latency for a Global Audience",
+    "category": "interview-scenarios",
+    "tags": [
+      "latency",
+      "cdn",
+      "edge",
+      "replication",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to cut latency for users worldwide: CDNs and edge caching, geo-routing to the nearest region, read replicas near users, and the consistency trade-offs of going multi-region.",
+    "url": "concepts/interview-scenarios/reducing-latency-globally.html"
+  },
+  {
+    "title": "Cache Stampede & Thundering Herd",
+    "category": "interview-scenarios",
+    "tags": [
+      "caching",
+      "concurrency",
+      "resilience",
+      "performance",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to stop a thundering herd when a hot cache key expires: request coalescing (single-flight), locks, staggered TTLs, and stale-while-revalidate so one miss doesn't crush the database.",
+    "url": "concepts/interview-scenarios/cache-stampede.html"
+  },
+  {
+    "title": "Designing So You Never Lose Data",
+    "category": "interview-scenarios",
+    "tags": [
+      "durability",
+      "replication",
+      "backups",
+      "reliability",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to design for durability: write-ahead logs and fsync, synchronous replication with quorum acks, backups and point-in-time recovery, and the durability-vs-latency trade-off.",
+    "url": "concepts/interview-scenarios/designing-for-durability.html"
+  },
+  {
+    "title": "Preventing Cascading Failures",
+    "category": "interview-scenarios",
+    "tags": [
+      "resilience",
+      "circuit-breaker",
+      "timeouts",
+      "bulkhead",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to stop one slow or failing dependency from taking down the whole system: timeouts, retries with backoff and jitter, circuit breakers, bulkheads, and graceful fallbacks.",
+    "url": "concepts/interview-scenarios/preventing-cascading-failures.html"
+  },
+  {
+    "title": "The Hot Key (Celebrity) Problem",
+    "category": "interview-scenarios",
+    "tags": [
+      "scaling",
+      "sharding",
+      "caching",
+      "fan-out",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to handle a hot key / celebrity problem where one shard or key gets disproportionate traffic: replicate hot data, add a local cache layer, split the key, and rethink fan-out.",
+    "url": "concepts/interview-scenarios/hot-key-problem.html"
+  },
+  {
+    "title": "Idempotency in Distributed Systems",
+    "category": "interview-scenarios",
+    "tags": [
+      "distributed-systems",
+      "idempotency",
+      "retries",
+      "consistency",
+      "interview",
+      "system-design"
+    ],
+    "description": "Why retries cause duplicates in distributed systems and how idempotency keys, dedup tables, and natural keys make operations safe to repeat exactly once.",
+    "url": "concepts/interview-scenarios/idempotency-in-distributed-systems.html"
+  },
+  {
+    "title": "Zero-Downtime Database Migration",
+    "category": "interview-scenarios",
+    "tags": [
+      "migrations",
+      "databases",
+      "deployment",
+      "backward-compatibility",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to change a database schema or move data with no downtime: the expand–migrate–contract pattern, backward-compatible steps, dual writes, backfill, and a safe cutover with rollback.",
+    "url": "concepts/interview-scenarios/zero-downtime-database-migration.html"
+  },
+  {
+    "title": "Read-Heavy vs Write-Heavy Systems",
+    "category": "interview-scenarios",
+    "tags": [
+      "scaling",
+      "caching",
+      "replication",
+      "architecture",
+      "interview",
+      "system-design"
+    ],
+    "description": "How read-heavy and write-heavy workloads pull architecture in opposite directions: caching and read replicas for reads; sharding, batching, LSM stores, and queues for writes.",
+    "url": "concepts/interview-scenarios/read-heavy-vs-write-heavy.html"
+  },
+  {
+    "title": "Keeping Data Consistent Across Services",
+    "category": "interview-scenarios",
+    "tags": [
+      "distributed-systems",
+      "saga",
+      "outbox",
+      "eventual-consistency",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to keep data consistent across microservices without distributed transactions: the saga pattern with compensations, the transactional outbox, and embracing eventual consistency.",
+    "url": "concepts/interview-scenarios/data-consistency-across-services.html"
+  },
+  {
+    "title": "Debugging a Production Latency Spike",
+    "category": "interview-scenarios",
+    "tags": [
+      "observability",
+      "debugging",
+      "performance",
+      "monitoring",
+      "interview",
+      "system-design"
+    ],
+    "description": "A structured way to debug a sudden production latency spike: check what changed, read the golden signals, follow metrics → traces → logs, and isolate the slow tier before fixing.",
+    "url": "concepts/interview-scenarios/debugging-a-latency-spike.html"
+  },
+  {
+    "title": "Scaling the Database Tier",
+    "category": "interview-scenarios",
+    "tags": [
+      "database",
+      "replication",
+      "sharding",
+      "caching",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to scale the hardest tier: caching and read replicas for read load, then partitioning/sharding for write and data volume, plus connection pooling and CQRS — and the trade-offs of each.",
+    "url": "concepts/interview-scenarios/scaling-the-database.html"
   }
 ]

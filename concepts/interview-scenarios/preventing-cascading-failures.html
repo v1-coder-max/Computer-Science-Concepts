@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preventing Cascading Failures — DevLens</title>
+  <meta name="description" content="How to stop one slow or failing dependency from taking down the whole system: timeouts, retries with backoff and jitter, circuit breakers, bulkheads, and graceful fallbacks." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="preventing-cascading-failures" data-title="Preventing Cascading Failures">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Preventing Cascading Failures</h1>
+          <p class="lede">
+            One slow dependency can take down everything: callers pile up waiting, exhaust their threads, and fail too — failure cascades. You stop it by <strong>failing fast</strong> and <strong>isolating</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#resilience</span>
+            <span class="tag">#circuit-breaker</span>
+            <span class="tag">#timeouts</span>
+            <span class="tag">#bulkhead</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“One downstream service gets slow. Soon your whole system is down, even features that don't use it. Why, and how do you prevent it?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Explain the cascade: service A calls slow service B. Without a timeout, A's threads block waiting on B; as requests arrive, A runs out of threads and stops serving <em>everything</em> — including endpoints that never touch B. The failure propagated through resource exhaustion.
+          </p>
+          <p>
+            <strong>Timeouts everywhere.</strong> Never wait indefinitely on a network call. A bounded timeout means a slow B costs you one timeout, not a hung thread forever. This is the most important and most often missing piece.
+          </p>
+          <p>
+            <strong>Circuit breaker.</strong> After B fails repeatedly, <strong>stop calling it</strong> for a cooldown — fail fast and return a fallback instead of hammering a sick service and tying up your own resources. The breaker periodically tests B and closes again when it recovers.
+          </p>
+          <p>
+            <strong>Bulkheads.</strong> Isolate resources so one dependency can't consume them all — a separate, bounded connection/thread pool per downstream. If B's pool is exhausted, calls to C and D are unaffected (like watertight compartments in a ship).
+          </p>
+          <p>
+            <strong>Retries done right + fallbacks.</strong> Retry only idempotent calls, with <strong>exponential backoff and jitter</strong> (naive retries amplify an overload into a retry storm). When all else fails, <strong>degrade gracefully</strong>: cached data, a default, or a partial response beats a cascading outage.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              This is the entire reason resilience libraries exist — Polly in .NET, Hystrix/Resilience4j in the JVM, and Envoy/service-mesh policies wrap every cross-service call with timeouts, retries, circuit breakers, and bulkheads. The textbook incident is a recommendation service slowing down and taking the whole storefront with it because the product page blocked on it; the fix is a short timeout plus a breaker so the page renders without recommendations instead of not at all.
+            </p>
+          </div>
+
+          <h2>Fail fast and isolate</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Timeout + circuit breaker + bulkhead per dependency</text><rect class="dgm-box-accent" x="30" y="62" width="80" height="34" rx="8"/><text class="dgm-sub" x="70" y="83" text-anchor="middle">Service A</text><line x1="112" y1="70" x2="168" y2="70" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="170" y="56" width="96" height="30" rx="8"/><text class="dgm-sub" x="218" y="75" text-anchor="middle">breaker: B</text><line x1="266" y1="71" x2="300" y2="71" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="302" y="56" width="90" height="30" rx="8"/><text class="dgm-sub" x="347" y="75" text-anchor="middle">Service B</text><text class="dgm-sub" x="347" y="104" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">slow / down</text><line x1="112" y1="88" x2="168" y2="110" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="170" y="98" width="96" height="28" rx="8"/><text class="dgm-sub" x="218" y="116" text-anchor="middle">pool: C/D</text><rect class="dgm-box" x="302" y="98" width="90" height="28" rx="8"/><text class="dgm-sub" x="347" y="116" text-anchor="middle">C, D ok</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">B trips the breaker → fast fallback; its bulkhead can't starve C/D</text></svg>
+            <figcaption>Figure 1 — A timeout bounds the wait, a breaker stops calls to a sick dependency, and a per-dependency bulkhead keeps its failure from starving the others.</figcaption>
+          </figure>
+
+          <h2>Wrap calls with a resilience pipeline</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — Polly: timeout, breaker, backoff</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">var pipeline = new ResiliencePipelineBuilder()
+    .AddTimeout(TimeSpan.FromSeconds(2))                 // never hang on B
+    .AddCircuitBreaker(new() {                           // stop calling a sick B
+        FailureRatio = 0.5, MinimumThroughput = 20,
+        BreakDuration = TimeSpan.FromSeconds(15) })
+    .AddRetry(new() {                                    // idempotent calls only
+        MaxRetryAttempts = 3, BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true })
+    .Build();
+
+// Fallback instead of cascading when B is open:
+var recs = breaker.IsOpen ? CachedRecommendations() : await pipeline.ExecuteAsync(CallB);</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Cascades spread through <strong>resource exhaustion</strong>: callers block on a slow dependency until they run out of threads.</li>
+              <li><strong>Timeouts</strong> (fail fast) + <strong>circuit breakers</strong> (stop calling the sick service) are the core defenses.</li>
+              <li><strong>Bulkheads</strong> isolate per-dependency resources; retries need <strong>backoff + jitter</strong>, and a <strong>fallback</strong> degrades gracefully.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/circuit-breaker.html"><span class="rc-cat">Microservices</span><span class="rc-title">Circuit Breaker</span></a>
+            <a class="related-card" href="../microservices/retry-bulkhead.html"><span class="rc-cat">Microservices</span><span class="rc-title">Retry & Bulkhead</span></a>
+            <a class="related-card" href="../interview-scenarios/handling-concurrent-users.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Handling Many Concurrent Users</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Trace the cascade through <strong>thread exhaustion</strong> first — that's the insight. Then list timeout → breaker → bulkhead → backoff+jitter → fallback. Warning you'd avoid: naive retries that turn an overload into a retry storm.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

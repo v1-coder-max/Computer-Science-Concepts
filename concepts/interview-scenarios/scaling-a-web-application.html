@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scaling a Web Application — DevLens</title>
+  <meta name="description" content="How to scale a web app from one server to millions of users: stateless app tier, load balancing, caching, read replicas, sharding, and async work — the standard 1→1M journey." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="scaling-a-web-application" data-title="Scaling a Web Application">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Scaling a Web Application</h1>
+          <p class="lede">
+            The classic open-ended question. There's a well-worn path from one box to millions of users — walk it tier by tier and explain <em>why</em> each step is forced.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#scaling</span>
+            <span class="tag">#architecture</span>
+            <span class="tag">#load-balancing</span>
+            <span class="tag">#caching</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“You have a web app on a single server. Traffic is growing fast. How do you scale it to handle millions of users?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Start by naming the journey, not a silver bullet: you scale <strong>incrementally</strong>, and each step is forced by a specific bottleneck. <strong>Step 1 — split the tiers.</strong> Move the database off the web server onto its own box so the two can be sized and scaled independently.
+          </p>
+          <p>
+            <strong>Step 2 — go stateless and scale out the app tier.</strong> Put a <strong>load balancer</strong> in front of several identical app servers. This only works if the app holds no local state, so push sessions and uploads to shared stores (Redis, object storage). Now you add or remove app instances freely.
+          </p>
+          <p>
+            <strong>Step 3 — add caching.</strong> Most traffic is reads. A cache (Redis/Memcached) in front of the database, plus a <strong>CDN</strong> for static assets, removes the majority of load before it ever reaches your data tier.
+          </p>
+          <p>
+            <strong>Step 4 — scale the data tier.</strong> Add <strong>read replicas</strong> for read-heavy load; introduce <strong>sharding</strong> when a single primary can't hold the write volume or dataset. <strong>Step 5 — make work asynchronous.</strong> Push slow tasks (emails, image processing, analytics) onto a <strong>message queue</strong> so requests return fast and spikes are absorbed.
+          </p>
+          <p>
+            Close with the meta-point: measure first. You don't sharding-and-queue a 10k-user app — you scale the tier that's actually the bottleneck, and the database is almost always the hardest one.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Practically every large product is some version of this stack: a CDN (CloudFront/Cloudflare) for static assets, a fleet of stateless app servers behind an L7 load balancer (ALB / nginx), Redis for sessions and hot data, a primary database with read replicas, and a queue (SQS/Kafka/RabbitMQ) for background work. Teams grow into it one bottleneck at a time — a startup runs everything on one box until response times climb, then peels off the database, then adds a cache, and so on.
+            </p>
+          </div>
+
+          <h2>The scaling stack</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Client → CDN → Load Balancer → App tier → Cache / DB</text><rect class="dgm-box-accent" x="20" y="50" width="70" height="40" rx="8"/><text class="dgm-sub" x="55" y="74" text-anchor="middle">CDN</text><line x1="92" y1="70" x2="122" y2="70" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="124" y="50" width="90" height="40" rx="8"/><text class="dgm-sub" x="169" y="74" text-anchor="middle">Load Bal.</text><line x1="216" y1="70" x2="246" y2="70" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="248" y="40" width="80" height="26" rx="8"/><text class="dgm-sub" x="288" y="57" text-anchor="middle">app 1</text><rect class="dgm-box" x="248" y="72" width="80" height="26" rx="8"/><text class="dgm-sub" x="288" y="89" text-anchor="middle">app 2</text><rect class="dgm-box" x="248" y="104" width="80" height="26" rx="8"/><text class="dgm-sub" x="288" y="121" text-anchor="middle">app 3</text><line x1="330" y1="70" x2="360" y2="56" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="330" y1="70" x2="360" y2="84" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="362" y="44" width="80" height="30" rx="8"/><text class="dgm-sub" x="402" y="63" text-anchor="middle">Redis</text><rect class="dgm-box" x="362" y="84" width="80" height="30" rx="8"/><text class="dgm-sub" x="402" y="103" text-anchor="middle">Primary</text><rect class="dgm-box" x="470" y="44" width="100" height="30" rx="8"/><text class="dgm-sub" x="520" y="63" text-anchor="middle">read replica</text><rect class="dgm-box" x="470" y="84" width="100" height="30" rx="8"/><text class="dgm-sub" x="520" y="103" text-anchor="middle">queue → workers</text><text class="dgm-sub" x="300" y="158" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Each tier scales independently; the database is the hardest to scale out</text></svg>
+            <figcaption>Figure 1 — Add tiers as bottlenecks appear: stateless app fleet, cache + CDN for reads, replicas/sharding + a queue for the data and slow work.</figcaption>
+          </figure>
+
+          <h2>Make the app tier stateless</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — the one change that unlocks horizontal scaling</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ Local state pins a user to one server — breaks load balancing.
+private static readonly Dictionary&lt;string, Cart&gt; _carts = new();
+
+// ✅ Shared state: any app instance can serve any request.
+builder.Services.AddStackExchangeRedisCache(o =&gt; o.Configuration = "redis:6379");
+builder.Services.AddDataProtection().PersistKeysToStackExchangeRedis(redis); // shared auth keys
+
+// Offload slow work instead of doing it in the request:
+await _queue.PublishAsync(new SendWelcomeEmail(userId));   // returns immediately
+// → add/remove app servers behind the load balancer at will.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Scale <strong>incrementally</strong>, each step forced by a real bottleneck: split tiers → stateless app fleet + LB → cache + CDN → replicas/sharding → async queue.</li>
+              <li>Horizontal scaling of the app tier <strong>requires statelessness</strong> — sessions, files, and caches live in shared stores.</li>
+              <li>The <strong>database</strong> is the hardest tier; caching and read replicas defer the pain, sharding eventually divides it.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/horizontal-vs-vertical-scaling.html"><span class="rc-cat">System Design</span><span class="rc-title">Horizontal vs Vertical Scaling</span></a>
+            <a class="related-card" href="../system-design/load-balancers.html"><span class="rc-cat">System Design</span><span class="rc-title">Load Balancers</span></a>
+            <a class="related-card" href="../interview-scenarios/scaling-the-database.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Scaling the Database Tier</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Lead with the <strong>journey</strong> and the bottleneck-driven reasoning, not a buzzword list. The two points that signal seniority: app servers must be <strong>stateless</strong>, and the <strong>database is the hard part</strong> — which opens the door to replicas, sharding, and caching.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Hot Key (Celebrity) Problem — DevLens</title>
+  <meta name="description" content="How to handle a hot key / celebrity problem where one shard or key gets disproportionate traffic: replicate hot data, add a local cache layer, split the key, and rethink fan-out." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="hot-key-problem" data-title="The Hot Key (Celebrity) Problem">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>The Hot Key (Celebrity) Problem</h1>
+          <p class="lede">
+            Sharding assumes load spreads evenly — but one celebrity user or one viral item can send all the traffic to a single shard. The fix is to <strong>spread the hot key's load</strong> even though sharding can't.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#scaling</span>
+            <span class="tag">#sharding</span>
+            <span class="tag">#caching</span>
+            <span class="tag">#fan-out</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“You shard by user ID, but one celebrity with 100M followers makes their shard melt while others idle. How do you handle the hot key?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Frame it: sharding distributes by key, so an unusually popular key concentrates load on one node — a <strong>hot partition</strong>. Adding more shards doesn't help, because the hot key still lives on exactly one. You need a different lever.
+          </p>
+          <p>
+            <strong>Replicate the hot data for reads.</strong> Most hot keys are read-heavy (everyone views the celebrity's profile). Keep many <strong>read replicas</strong> of that data and fan reads across them, or — most effective — cache it aggressively so reads never reach the shard at all.
+          </p>
+          <p>
+            <strong>Cache hot keys hard.</strong> A hot key is the ideal cache candidate: high hit rate, read-mostly. A local in-process cache on each app server plus Redis means the storm is absorbed before it touches the database. (Watch for stampedes when it expires — coalesce the rebuild.)
+          </p>
+          <p>
+            <strong>Split the key for writes.</strong> If the hotness is writes (a viral post's like counter), shard the <em>key itself</em>: keep N sub-counters across nodes and sum them on read. This turns one hot row into N warm ones.
+          </p>
+          <p>
+            <strong>Rethink fan-out.</strong> The celebrity case is exactly why Twitter/Instagram use a <strong>hybrid timeline</strong>: fan-out-on-write for normal users, but fan-out-on-read for celebrities (don't push to 100M inboxes; pull their posts at read time). Detect hot keys and treat them on a special path.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Twitter's timeline is the canonical example: pushing a celebrity's tweet to 100M follower timelines on every post is infeasible, so their posts are merged in at read time instead. Sharded counters (split a viral like-count across many keys and sum them) are standard at scale, and CDNs/edge caches exist precisely to absorb the read storm on a single hot object. The unifying idea: detect the hot key and give it its own strategy.
+            </p>
+          </div>
+
+          <h2>Spread the hot key</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Uneven load → replicate reads, split writes</text><rect class="dgm-box" x="30" y="56" width="90" height="30" rx="8"/><text class="dgm-sub" x="75" y="75" text-anchor="middle">shard A</text><rect class="dgm-box" x="30" y="92" width="90" height="30" rx="8"/><text class="dgm-sub" x="75" y="111" text-anchor="middle">shard B</text><rect class="dgm-box-accent" x="30" y="120" width="90" height="2" /><text class="dgm-sub" x="75" y="145" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">hot shard melts</text><line x1="125" y1="75" x2="165" y2="75" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="168" y="50" width="110" height="26" rx="8"/><text class="dgm-sub" x="223" y="67" text-anchor="middle">cache / replicas</text><rect class="dgm-box-accent" x="168" y="82" width="110" height="26" rx="8"/><text class="dgm-sub" x="223" y="99" text-anchor="middle">split counter ×N</text><text class="dgm-sub" x="223" y="128" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">reads absorbed · writes fanned out</text><line x1="282" y1="63" x2="320" y2="63" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="282" y1="95" x2="320" y2="95" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="322" y="50" width="100" height="26" rx="8"/><text class="dgm-sub" x="372" y="67" text-anchor="middle">many readers</text><rect class="dgm-box" x="322" y="82" width="100" height="26" rx="8"/><text class="dgm-sub" x="372" y="99" text-anchor="middle">sum on read</text><text class="dgm-sub" x="440" y="95" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">celebrity → fan-out-on-read</text></svg>
+            <figcaption>Figure 1 — Hot reads are served from caches/replicas; hot writes are split across N sub-keys; celebrity fan-out switches to pull-at-read.</figcaption>
+          </figure>
+
+          <h2>Split a hot counter across sub-keys</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — N warm counters instead of one hot row</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ One row for a viral post → every like contends on the same key.
+// ✅ Spread writes across N shards of the counter, sum on read.
+const int Shards = 20;
+
+Task IncrementLikes(long postId) {
+    int shard = Random.Shared.Next(Shards);
+    return redis.StringIncrementAsync($"likes:{postId}:{shard}");
+}
+
+async Task&lt;long&gt; GetLikes(long postId) {
+    var keys = Enumerable.Range(0, Shards).Select(i =&gt; (RedisKey)$"likes:{postId}:{i}");
+    var vals = await redis.StringGetAsync(keys.ToArray());
+    return vals.Sum(v =&gt; (long)v);            // N warm reads, none contended
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Sharding spreads keys, not <strong>load</strong> — one popular key concentrates on a single shard (hot partition), and more shards don't help.</li>
+              <li>Hot <strong>reads</strong>: replicate + cache aggressively (it's the ideal cache target); hot <strong>writes</strong>: split the key into N sub-counters and sum.</li>
+              <li>For social fan-out, treat celebrities specially — <strong>fan-out-on-read</strong> instead of pushing to millions of inboxes.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/consistent-hashing.html"><span class="rc-cat">System Design</span><span class="rc-title">Consistent Hashing</span></a>
+            <a class="related-card" href="../system-design/how-twitter-timeline.html"><span class="rc-cat">System Design</span><span class="rc-title">How Twitter's Timeline Works</span></a>
+            <a class="related-card" href="../interview-scenarios/cache-stampede.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Cache Stampede & Thundering Herd</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Make the distinction crisp: sharding balances keys, not load, so a hot key defeats it. Split the answer by read-hot (cache/replicate) vs write-hot (split the key), and cite the celebrity fan-out-on-read pattern for the social-graph version.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

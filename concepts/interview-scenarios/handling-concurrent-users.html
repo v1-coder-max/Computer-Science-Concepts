@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Handling Many Concurrent Users — DevLens</title>
+  <meta name="description" content="How to serve tens of thousands of concurrent users on one service: async I/O over thread-per-request, connection pooling, backpressure and load shedding, and horizontal scale-out." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="handling-concurrent-users" data-title="Handling Many Concurrent Users">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Handling Many Concurrent Users</h1>
+          <p class="lede">
+            “Concurrent users” is a question about <strong>where the bottleneck is</strong> — threads, connections, or CPU — and how you avoid blocking and falling over under load.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#concurrency</span>
+            <span class="tag">#async</span>
+            <span class="tag">#throughput</span>
+            <span class="tag">#backpressure</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Your service needs to handle 50,000 concurrent users. How do you make a single instance handle that, and what breaks first?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            First, separate <strong>concurrency</strong> (connections in flight) from <strong>throughput</strong> (requests finished per second). Most “concurrent users” are idle between clicks, so the real question is how many <em>in-flight requests</em> you can hold without exhausting a resource.
+          </p>
+          <p>
+            <strong>Use async, non-blocking I/O.</strong> A thread-per-request model caps you at a few thousand threads (each costs ~1 MB of stack and context-switch overhead). With async/await, a thread is released while waiting on the database or network, so a handful of threads service thousands of concurrent requests. This is the single biggest lever.
+          </p>
+          <p>
+            <strong>Pool your scarce downstream resources.</strong> The bottleneck usually moves to the database: 50k users do not mean 50k DB connections. Use a bounded <strong>connection pool</strong> (say 20–100) and let requests queue briefly for one — a database melts if you open a connection per request.
+          </p>
+          <p>
+            <strong>Add backpressure and load shedding.</strong> When demand exceeds capacity, a bounded queue plus fast rejection (HTTP 429/503) keeps the service alive and predictable instead of collapsing into timeouts. Shedding 5% of load beats failing 100%.
+          </p>
+          <p>
+            Then <strong>scale out</strong>: stateless instances behind a load balancer multiply the ceiling. For huge fan-out of long-lived connections (chat, live feeds), reach for WebSockets/SignalR with a backplane so connections spread across instances.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              ASP.NET Core, Node, and Go all default to async, event-loop or lightweight-thread models precisely so one box can hold tens of thousands of connections. The classic outage post-mortem is the opposite: a synchronous call or an unbounded connection pool exhausts threads or database connections during a spike, every request starts timing out, and retries amplify the overload. The fix is almost always 'make it async + bound the pool + shed load.'
+            </p>
+          </div>
+
+          <h2>Thread-per-request vs async</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Blocking: 1 thread waits per request</text><rect class="dgm-box" x="30" y="44" width="110" height="26" rx="8"/><text class="dgm-sub" x="85" y="61" text-anchor="middle">thread → DB wait</text><rect class="dgm-box" x="30" y="74" width="110" height="26" rx="8"/><text class="dgm-sub" x="85" y="91" text-anchor="middle">thread → DB wait</text><rect class="dgm-box" x="30" y="104" width="110" height="26" rx="8"/><text class="dgm-sub" x="85" y="121" text-anchor="middle">thread → DB wait</text><text class="dgm-sub" x="85" y="150" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">~thousands max · threads idle, blocked</text><text class="dgm-label" x="330" y="22">Async: few threads, many in flight</text><rect class="dgm-box-accent" x="340" y="54" width="90" height="26" rx="8"/><text class="dgm-sub" x="385" y="71" text-anchor="middle">thread pool</text><line x1="432" y1="67" x2="470" y2="55" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="432" y1="67" x2="470" y2="79" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="432" y1="67" x2="470" y2="103" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="472" y="44" width="110" height="22" rx="8"/><text class="dgm-sub" x="527" y="59" text-anchor="middle">await DB</text><rect class="dgm-box" x="472" y="70" width="110" height="22" rx="8"/><text class="dgm-sub" x="527" y="85" text-anchor="middle">await net</text><rect class="dgm-box" x="472" y="96" width="110" height="22" rx="8"/><text class="dgm-sub" x="527" y="111" text-anchor="middle">await DB</text><text class="dgm-sub" x="450" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">tens of thousands · thread freed while waiting</text></svg>
+            <figcaption>Figure 1 — Blocking I/O pins a thread per in-flight request; async releases the thread during the wait, so a few threads serve thousands of concurrent requests.</figcaption>
+          </figure>
+
+          <h2>Async end-to-end + a bounded pool</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — never block on I/O; cap downstream concurrency</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ✅ Async all the way down — the thread is returned to the pool during the await.
+app.MapGet("/orders/{id}", async (int id, OrderDb db) =&gt;
+    await db.Orders.FindAsync(id));           // no thread held while the DB works
+
+// ❌ .Result / .Wait() block a pool thread → thread starvation under load.
+
+// Bound concurrency to a slow dependency so 50k users != 50k DB connections:
+var gate = new SemaphoreSlim(50);             // at most 50 in flight downstream
+await gate.WaitAsync();
+try { return await CallPaymentProviderAsync(); }
+finally { gate.Release(); }                    // excess requests queue, then 429 if needed</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Separate <strong>concurrency</strong> from <strong>throughput</strong>; most concurrent users are idle, so the limit is in-flight requests, not total users.</li>
+              <li><strong>Async, non-blocking I/O</strong> is the biggest lever — it frees the thread during waits; never block (<code>.Result</code>/<code>.Wait()</code>) on the request path.</li>
+              <li>Bound scarce resources (<strong>connection pools</strong>) and add <strong>backpressure / load shedding</strong> so the service degrades gracefully instead of collapsing.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/async-await.html"><span class="rc-cat">.NET</span><span class="rc-title">Async / Await Internals</span></a>
+            <a class="related-card" href="../database/connection-pooling.html"><span class="rc-cat">Database</span><span class="rc-title">Connection Pooling</span></a>
+            <a class="related-card" href="../interview-scenarios/surviving-traffic-spikes.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Surviving Traffic Spikes</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The senior answer is 'async to free threads, bounded pools so I don't overwhelm the database, and backpressure so I shed load instead of dying.' Mention that retries during overload <strong>amplify</strong> the problem — a subtle point most miss.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

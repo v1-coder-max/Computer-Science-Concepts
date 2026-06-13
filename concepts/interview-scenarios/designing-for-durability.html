@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Designing So You Never Lose Data — DevLens</title>
+  <meta name="description" content="How to design for durability: write-ahead logs and fsync, synchronous replication with quorum acks, backups and point-in-time recovery, and the durability-vs-latency trade-off." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="designing-for-durability" data-title="Designing So You Never Lose Data">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Designing So You Never Lose Data</h1>
+          <p class="lede">
+            Durability means an acknowledged write <strong>survives anything</strong> — a crash, a disk, a whole data center. You buy it with redundancy and honest acknowledgments, and you pay for it in latency.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#durability</span>
+            <span class="tag">#replication</span>
+            <span class="tag">#backups</span>
+            <span class="tag">#reliability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“How do you design a system so that once a user's action is confirmed, that data is never lost — even if a server dies a second later?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Define the contract precisely: durability is about what an <strong>acknowledgment</strong> promises. The danger is acking before the data is safely persisted and replicated — then a crash loses 'confirmed' work. So make the ack honest.
+          </p>
+          <p>
+            <strong>Write-ahead log + fsync.</strong> Databases append the change to a durable log and <em>flush it to disk</em> before acknowledging. The WAL is the source of truth for crash recovery; an in-memory buffer that hasn't been fsynced is not durable.
+          </p>
+          <p>
+            <strong>Replicate before you ack.</strong> A single disk can fail. With <strong>synchronous replication</strong>, the primary waits for at least one (or a <strong>quorum</strong> of) replicas to persist the write before confirming. Now a single-node loss can't lose acknowledged data — the trade-off is added write latency.
+          </p>
+          <p>
+            <strong>Quorum math.</strong> With N replicas, requiring W acks on write and R on read with W + R > N guarantees a read sees the latest write. This is the dial distributed databases expose (e.g., Cassandra/Dynamo consistency levels).
+          </p>
+          <p>
+            <strong>Backups and point-in-time recovery</strong> guard against the failures replication can't: a bad deploy, an accidental <code>DELETE</code>, corruption that replicates. Keep periodic snapshots plus the log so you can restore to any moment — and test restores, because an untested backup isn't a backup.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              PostgreSQL acks a commit only after its WAL record is flushed; configure synchronous_commit with a standby and the primary waits for the replica too. Kafka does the same with acks=all and min.insync.replicas — a producer's write is acknowledged only once a quorum of brokers has it. The classic data-loss incident is the opposite: async replication plus a primary failure loses the last few seconds of 'committed' orders, which is why payment systems pay the latency for synchronous, quorum-acked writes.
+            </p>
+          </div>
+
+          <h2>Acknowledge only after it's safe</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Write → WAL+fsync → replicate (quorum) → ack</text><rect class="dgm-box" x="20" y="62" width="70" height="32" rx="8"/><text class="dgm-sub" x="55" y="82" text-anchor="middle">client</text><line x1="92" y1="78" x2="128" y2="78" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="130" y="50" width="90" height="32" rx="8"/><text class="dgm-sub" x="175" y="70" text-anchor="middle">Primary</text><text class="dgm-sub" x="175" y="100" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">WAL + fsync</text><line x1="222" y1="66" x2="300" y2="60" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="222" y1="78" x2="300" y2="96" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="302" y="46" width="90" height="28" rx="8"/><text class="dgm-sub" x="347" y="64" text-anchor="middle">replica 1</text><rect class="dgm-box" x="302" y="86" width="90" height="28" rx="8"/><text class="dgm-sub" x="347" y="104" text-anchor="middle">replica 2</text><line x1="394" y1="60" x2="430" y2="60" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="394" y1="100" x2="430" y2="100" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="432" y="60" width="100" height="40" rx="8"/><text class="dgm-sub" x="482" y="84" text-anchor="middle">quorum ✓</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">ack the client only now — survives a single-node loss (latency cost)</text></svg>
+            <figcaption>Figure 1 — The write is logged, flushed, and replicated to a quorum <em>before</em> the client is told 'done', so an acknowledged write can't vanish.</figcaption>
+          </figure>
+
+          <h2>Make the acknowledgment durable</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">config — wait for the log and the replicas</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-ini"># PostgreSQL: don't confirm a commit until WAL is flushed AND a standby has it
+synchronous_commit = on
+synchronous_standby_names = 'replica1'   # primary waits for the replica
+
+# Kafka producer: ack only when a quorum of in-sync replicas has the record
+acks = all
+min.insync.replicas = 2                   # tolerate losing 1 of 3 brokers
+# Trade-off: every write pays one network round trip for durability.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Durability is about honest <strong>acknowledgments</strong> — never confirm a write until it's persisted (<strong>WAL + fsync</strong>) and <strong>replicated</strong>.</li>
+              <li><strong>Synchronous/quorum replication</strong> (W + R > N) protects acknowledged data from single-node loss, at a latency cost.</li>
+              <li><strong>Backups + point-in-time recovery</strong> cover what replication can't (bad deploys, accidental deletes); test the restore.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/transactions-acid.html"><span class="rc-cat">Database</span><span class="rc-title">Transactions & ACID</span></a>
+            <a class="related-card" href="../database/replication.html"><span class="rc-cat">Database</span><span class="rc-title">Replication</span></a>
+            <a class="related-card" href="../interview-scenarios/designing-for-high-availability.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Designing for High Availability</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The key sentence is 'don't acknowledge until it's durable and replicated.' Mention the <strong>durability-vs-latency</strong> trade-off and quorum (W + R > N), and that backups guard against logical errors replication will happily copy.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

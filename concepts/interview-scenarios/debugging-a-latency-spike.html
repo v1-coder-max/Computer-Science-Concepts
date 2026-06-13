@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Debugging a Production Latency Spike — DevLens</title>
+  <meta name="description" content="A structured way to debug a sudden production latency spike: check what changed, read the golden signals, follow metrics → traces → logs, and isolate the slow tier before fixing." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="debugging-a-latency-spike" data-title="Debugging a Production Latency Spike">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Debugging a Production Latency Spike</h1>
+          <p class="lede">
+            A latency spike question tests <strong>method</strong>, not luck. You narrow systematically: what changed, which signals moved, and which tier owns the time — <em>before</em> you touch anything.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#observability</span>
+            <span class="tag">#debugging</span>
+            <span class="tag">#performance</span>
+            <span class="tag">#monitoring</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Production p99 latency just jumped from 100 ms to 3 seconds. Walk me through how you'd find and fix it.”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            First, <strong>scope and correlate</strong>. Is it all endpoints or one? All users or one region? When exactly did it start — and what changed at that moment? A deploy, a config flip, a traffic surge, or a feature flag is the suspect ~80% of the time, so the fastest fix is often to <strong>roll back the recent change</strong> and confirm.
+          </p>
+          <p>
+            <strong>Read the golden signals</strong> — latency, traffic, errors, saturation. Did traffic spike (load problem) or did traffic hold steady while latency rose (something got slower)? Is a resource saturated (CPU, memory, connection pool, disk)? This splits 'we're overloaded' from 'a dependency degraded.'
+          </p>
+          <p>
+            <strong>Follow the telemetry from coarse to fine: metrics → traces → logs.</strong> Dashboards say <em>which service/tier</em> is slow; a <strong>distributed trace</strong> of a slow request shows <em>which span</em> ate the time (the DB call? an external API? GC?); logs explain <em>why</em> at that span.
+          </p>
+          <p>
+            <strong>Isolate the tier.</strong> Common culprits: a missing index or lock contention making queries slow, an <strong>exhausted connection pool</strong> (requests queue for a connection), a slow downstream dependency with no timeout, GC pauses, or a cache that stopped absorbing reads (a stampede). The trace points you straight at it.
+          </p>
+          <p>
+            <strong>Mitigate, then fix.</strong> Stop the bleeding first — roll back, scale out, add a timeout/circuit breaker, or shed load — then do the durable fix (add the index, bound the pool, cache the hot path) and a blameless post-mortem so it doesn't recur.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Mature teams wire up the three pillars of observability — metrics (Prometheus/Grafana), traces (OpenTelemetry/Jaeger), and structured logs — exactly so this investigation is minutes, not hours. The single most common root cause in practice is 'a deploy 10 minutes ago,' which is why 'what changed?' and a fast rollback path are the first tools you reach for. Right behind it: an N+1 query or an exhausted connection pool surfacing only under production load.
+            </p>
+          </div>
+
+          <h2>Narrow it down: metrics → traces → logs</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Coarse to fine — find the tier, then the span, then the cause</text><rect class="dgm-box-accent" x="30" y="60" width="120" height="38" rx="8"/><text class="dgm-sub" x="90" y="83" text-anchor="middle">Metrics</text><text class="dgm-sub" x="90" y="116" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">which tier?</text><line x1="152" y1="79" x2="200" y2="79" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="202" y="60" width="120" height="38" rx="8"/><text class="dgm-sub" x="262" y="83" text-anchor="middle">Traces</text><text class="dgm-sub" x="262" y="116" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">which span?</text><line x1="324" y1="79" x2="372" y2="79" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="374" y="60" width="120" height="38" rx="8"/><text class="dgm-sub" x="434" y="83" text-anchor="middle">Logs</text><text class="dgm-sub" x="434" y="116" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">why?</text><text class="dgm-sub" x="300" y="156" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">First ask: what changed? (deploy/flag/traffic) → roll back to stop the bleeding</text></svg>
+            <figcaption>Figure 1 — Each layer narrows the search: metrics localize the tier, a trace localizes the span, logs explain the cause — after checking what just changed.</figcaption>
+          </figure>
+
+          <h2>Instrument so a trace can answer 'where'</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — spans make the slow tier obvious</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// OpenTelemetry: trace each hop so a slow request shows where the time went.
+builder.Services.AddOpenTelemetry().WithTracing(t =&gt; t
+    .AddAspNetCoreInstrumentation()      // inbound request span
+    .AddHttpClientInstrumentation()      // downstream HTTP spans
+    .AddEntityFrameworkCoreInstrumentation()  // DB query spans
+    .AddOtlpExporter());
+
+// Custom span around a suspect section:
+using var act = Activity.Current?.Source.StartActivity("rank-feed");
+act?.SetTag("user.id", userId);
+// A trace of one 3s request now points straight at the offending span.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Start with <strong>“what changed?”</strong> — a deploy/flag/traffic change is the usual cause; a fast rollback is the fastest mitigation.</li>
+              <li>Read the <strong>golden signals</strong> (latency, traffic, errors, saturation) to split overload from a degraded dependency.</li>
+              <li>Drill <strong>metrics → traces → logs</strong> to localize tier → span → cause; mitigate first (rollback/scale/timeout), then fix durably.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/distributed-tracing.html"><span class="rc-cat">Microservices</span><span class="rc-title">Distributed Tracing</span></a>
+            <a class="related-card" href="../microservices/centralized-logging.html"><span class="rc-cat">Microservices</span><span class="rc-title">Centralized Logging</span></a>
+            <a class="related-card" href="../interview-scenarios/preventing-cascading-failures.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Preventing Cascading Failures</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              They're grading <strong>method</strong>: scope it, check what changed, read the golden signals, then metrics → traces → logs to localize. Say 'mitigate before fixing' (roll back / add a timeout) — jumping to a code fix before stopping the bleeding is the trap.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

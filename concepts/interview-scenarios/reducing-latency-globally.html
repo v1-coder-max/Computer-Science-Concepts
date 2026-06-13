@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reducing Latency for a Global Audience — DevLens</title>
+  <meta name="description" content="How to cut latency for users worldwide: CDNs and edge caching, geo-routing to the nearest region, read replicas near users, and the consistency trade-offs of going multi-region." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="reducing-latency-globally" data-title="Reducing Latency for a Global Audience">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Reducing Latency for a Global Audience</h1>
+          <p class="lede">
+            Latency is dominated by the speed of light and round trips. You win by putting <strong>data and compute closer to users</strong> and by making <strong>fewer round trips</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#latency</span>
+            <span class="tag">#cdn</span>
+            <span class="tag">#edge</span>
+            <span class="tag">#replication</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Users in Asia complain the app is slow, but it's fast in the US where your servers are. How do you fix global latency?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Name the physics: a packet from Singapore to Virginia and back is ~250 ms <em>minimum</em>, before any processing. No amount of CPU fixes distance — you have to shorten it or avoid the trip.
+          </p>
+          <p>
+            <strong>Push static content to a CDN.</strong> Images, JS, CSS, video, and cacheable API responses should be served from an <strong>edge location</strong> near the user, not your origin. This alone fixes most 'the site feels slow abroad' complaints.
+          </p>
+          <p>
+            <strong>Route users to the nearest region.</strong> Use geo-DNS or anycast so an Asian user hits an Asia-Pacific deployment instead of crossing an ocean. Deploy the app tier in multiple regions; it's stateless, so this is the easy part.
+          </p>
+          <p>
+            <strong>Bring data closer with read replicas.</strong> Reads can be served from a regional replica at low latency. Writes are the hard part: either funnel them to a single primary region (accepting higher write latency for distant users) or go multi-primary and accept eventual consistency and conflict resolution.
+          </p>
+          <p>
+            <strong>Reduce round trips.</strong> Batch requests, use HTTP/2 multiplexing and keep-alive, compress, and prefer one chatty call over ten serial ones. Latency adds up per round trip, so collapsing N requests into one is often the biggest app-level win.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Netflix and every major site front their assets with a CDN that has points of presence worldwide, so the bytes travel the last mile, not the whole globe. Apps deploy the stateless tier to multiple regions with geo-routing, keep a single write region (or a globally-distributed database like Spanner/DynamoDB global tables) and serve reads locally. The recurring lesson: distant users are slow because of round trips and origin distance, and CDNs + regional replicas remove both.
+            </p>
+          </div>
+
+          <h2>Move data to the edge</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">User → nearest edge (cache) → regional replica → origin</text><rect class="dgm-box" x="20" y="60" width="70" height="34" rx="8"/><text class="dgm-sub" x="55" y="81" text-anchor="middle">User (Asia)</text><line x1="92" y1="77" x2="130" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="132" y="60" width="90" height="34" rx="8"/><text class="dgm-sub" x="177" y="81" text-anchor="middle">Edge / CDN</text><text class="dgm-sub" x="177" y="112" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">static + cached</text><line x1="224" y1="77" x2="262" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="264" y="60" width="100" height="34" rx="8"/><text class="dgm-sub" x="314" y="81" text-anchor="middle">AP replica</text><text class="dgm-sub" x="314" y="112" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">local reads</text><line x1="366" y1="77" x2="404" y2="77" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="406" y="60" width="110" height="34" rx="8"/><text class="dgm-sub" x="461" y="81" text-anchor="middle">US origin</text><text class="dgm-sub" x="461" y="112" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">writes (far)</text><text class="dgm-sub" x="300" y="158" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Most requests stop at the edge or the regional replica — few cross the ocean</text></svg>
+            <figcaption>Figure 1 — Each layer answers what it can locally; only writes and cache misses travel back to the origin region.</figcaption>
+          </figure>
+
+          <h2>Cache at the edge, set the right headers</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — make responses CDN-cacheable</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Let the CDN serve this for an hour and revalidate in the background:
+app.MapGet("/api/catalog", async (Catalog c) =&gt;
+{
+    var data = await c.GetAsync();
+    return Results.Json(data);
+}).WithMetadata(new ResponseCacheAttribute {
+    Duration = 3600, Location = ResponseCacheLocation.Any
+});
+// Cache-Control: public, max-age=3600, stale-while-revalidate=60
+// → edge nodes near users answer most requests; origin sees a trickle.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Latency is round trips and distance — fix it by moving <strong>data/compute closer</strong> (CDN, edge, regional replicas), not by adding CPU.</li>
+              <li>Static and cacheable content belongs on a <strong>CDN</strong>; geo-route users to the <strong>nearest region</strong> (the stateless app tier makes this easy).</li>
+              <li><strong>Writes</strong> are the hard part of going global — single write region (simpler) vs multi-primary (faster, but eventual consistency + conflicts).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/cdn.html"><span class="rc-cat">System Design</span><span class="rc-title">Content Delivery Networks</span></a>
+            <a class="related-card" href="../system-design/caching.html"><span class="rc-cat">System Design</span><span class="rc-title">Caching</span></a>
+            <a class="related-card" href="../database/replication.html"><span class="rc-cat">Database</span><span class="rc-title">Replication</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Open with the speed-of-light framing — it shows you understand <em>why</em> distance hurts. CDN + geo-routing + read replicas is the standard answer; the depth marker is naming the <strong>write-path</strong> trade-off (single region vs multi-primary consistency).
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

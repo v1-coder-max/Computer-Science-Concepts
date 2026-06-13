@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Read-Heavy vs Write-Heavy Systems — DevLens</title>
+  <meta name="description" content="How read-heavy and write-heavy workloads pull architecture in opposite directions: caching and read replicas for reads; sharding, batching, LSM stores, and queues for writes." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="read-heavy-vs-write-heavy" data-title="Read-Heavy vs Write-Heavy Systems">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Read-Heavy vs Write-Heavy Systems</h1>
+          <p class="lede">
+            The first question to ask about any system is the read/write ratio — because reads and writes are scaled with <strong>opposite</strong> tools, and optimizing the wrong one wastes effort.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#scaling</span>
+            <span class="tag">#caching</span>
+            <span class="tag">#replication</span>
+            <span class="tag">#architecture</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“How does your design change if the system is 99% reads versus 90% writes?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Establish the principle: <strong>reads fan out, writes funnel in</strong>. A read can be served from any copy of the data, so you scale reads by making more copies. A write must update the source of truth consistently, so copies make writes <em>harder</em>. They pull in opposite directions.
+          </p>
+          <p>
+            <strong>Read-heavy (e.g. a news site, a profile page).</strong> Cache aggressively (CDN + Redis) so most reads never touch the database; add <strong>read replicas</strong> and send reads to them. Denormalize and precompute so a read is a single lookup. The accepted cost is <strong>replication lag</strong> — replicas are slightly stale (eventual consistency).
+          </p>
+          <p>
+            <strong>Write-heavy (e.g. metrics ingestion, event logging, IoT).</strong> Caching and replicas don't help the write path. Instead: <strong>shard</strong> to spread writes across nodes, <strong>batch</strong> small writes into bigger ones, buffer through a <strong>queue</strong> to absorb bursts, and pick storage built for writes — <strong>LSM-tree</strong> stores (Cassandra, RocksDB) beat B-trees on write throughput.
+          </p>
+          <p>
+            <strong>The replica trade-off flips.</strong> Replicas help reads but each one adds write cost (every write propagates to all of them), so a write-heavy system keeps replicas lean and leans on partitioning instead.
+          </p>
+          <p>
+            Many systems are split-brained: read-heavy serving + write-heavy ingestion. That's exactly when <strong>CQRS</strong> earns its keep — separate the write model (optimized for ingest) from the read model (optimized for queries), connected by a stream.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A media site is ~99% reads: it's mostly CDN and cache hits with a small database behind read replicas, and nobody minds if a view count is a few seconds stale. A telemetry pipeline is the inverse: millions of writes per second land in Kafka, get batched, and are stored in a write-optimized column/LSM store — reads are comparatively rare aggregations. Picking the cache-and-replica playbook for a write-heavy ingest (or sharding a read-mostly app) is the classic mismatch.
+            </p>
+          </div>
+
+          <h2>Opposite playbooks</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Reads fan out · writes funnel in</text><rect class="dgm-box-accent" x="20" y="52" width="110" height="26" rx="8"/><text class="dgm-sub" x="75" y="69" text-anchor="middle">CDN + cache</text><rect class="dgm-box-accent" x="20" y="84" width="110" height="26" rx="8"/><text class="dgm-sub" x="75" y="101" text-anchor="middle">read replicas</text><text class="dgm-sub" x="75" y="132" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">READ-HEAVY</text><line x1="132" y1="65" x2="175" y2="65" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="132" y1="97" x2="175" y2="97" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="176" y="68" width="90" height="34" rx="8"/><text class="dgm-sub" x="221" y="89" text-anchor="middle">1 lookup</text><rect class="dgm-box-accent" x="340" y="52" width="110" height="26" rx="8"/><text class="dgm-sub" x="395" y="69" text-anchor="middle">shard + batch</text><rect class="dgm-box-accent" x="340" y="84" width="110" height="26" rx="8"/><text class="dgm-sub" x="395" y="101" text-anchor="middle">queue + LSM</text><text class="dgm-sub" x="395" y="132" text-anchor="middle" fill="var(--accent)" style="font:600 11px var(--font-sans)">WRITE-HEAVY</text><line x1="452" y1="65" x2="495" y2="65" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="452" y1="97" x2="495" y2="97" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="496" y="68" width="84" height="34" rx="8"/><text class="dgm-sub" x="538" y="89" text-anchor="middle">spread out</text><text class="dgm-sub" x="300" y="160" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Split serving from ingest → CQRS when a system is both</text></svg>
+            <figcaption>Figure 1 — Reads scale by adding copies (cache/replicas); writes scale by spreading and batching (shard/queue/LSM) — and replicas tax the write path.</figcaption>
+          </figure>
+
+          <h2>Route reads to replicas, writes to primary</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — split the two paths</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Read-heavy: send queries to a replica, accept slight staleness.
+public Task&lt;Article&gt; GetAsync(int id) =&gt;
+    _replica.Articles.AsNoTracking().FirstAsync(a =&gt; a.Id == id);   // cache in front
+
+// Writes always go to the primary (source of truth):
+public async Task PublishAsync(Article a) {
+    _primary.Articles.Add(a);
+    await _primary.SaveChangesAsync();
+}
+
+// Write-heavy ingest: buffer + batch instead of one-row-at-a-time.
+await _channel.Writer.WriteAsync(metric);          // queue
+// background: flush 5,000 metrics per bulk insert</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Reads and writes scale with <strong>opposite</strong> tools — ask the read/write ratio first.</li>
+              <li>Read-heavy → <strong>cache + read replicas + denormalize</strong> (accept replication lag); write-heavy → <strong>shard + batch + queue + LSM stores</strong>.</li>
+              <li>Replicas help reads but tax writes; when a system is both, split the models with <strong>CQRS</strong>.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../database/sharding.html"><span class="rc-cat">Database</span><span class="rc-title">Partitioning & Sharding</span></a>
+            <a class="related-card" href="../database/sql-vs-nosql.html"><span class="rc-cat">Database</span><span class="rc-title">SQL vs NoSQL</span></a>
+            <a class="related-card" href="../interview-scenarios/scaling-the-database.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Scaling the Database Tier</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Open by asking for the read/write ratio — it signals you know the playbooks diverge. Reads → cache/replicas; writes → shard/batch/queue/LSM; and reach for <strong>CQRS</strong> when the system is heavy in both directions.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cache Stampede & Thundering Herd — DevLens</title>
+  <meta name="description" content="How to stop a thundering herd when a hot cache key expires: request coalescing (single-flight), locks, staggered TTLs, and stale-while-revalidate so one miss doesn't crush the database." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="cache-stampede" data-title="Cache Stampede & Thundering Herd">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Cache Stampede & Thundering Herd</h1>
+          <p class="lede">
+            A cache stampede is when a popular key expires and thousands of requests all miss at once and hammer the database simultaneously. The fix is to make sure <strong>only one</strong> of them does the work.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#caching</span>
+            <span class="tag">#concurrency</span>
+            <span class="tag">#resilience</span>
+            <span class="tag">#performance</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“A hot cached item expires and suddenly the database gets hammered by thousands of identical queries. What happened, and how do you prevent it?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Diagnose it: a single hot key (a homepage, a trending post) was serving everyone from cache. The moment it expires, every concurrent request misses, and they <em>all</em> run the same expensive query against the database at once — the 'thundering herd.' The database, sized for cache-hit traffic, falls over.
+          </p>
+          <p>
+            <strong>Request coalescing (single-flight).</strong> The core fix: when many requests need the same missing key, let <strong>one</strong> recompute it while the others <strong>wait</strong> for that result. One database query serves the whole herd instead of thousands.
+          </p>
+          <p>
+            <strong>Locking on rebuild.</strong> Equivalent idea across instances: the first request to miss takes a short distributed lock and repopulates the cache; everyone else briefly waits or serves stale. Only the lock holder touches the database.
+          </p>
+          <p>
+            <strong>Stale-while-revalidate.</strong> Serve the slightly-stale cached value immediately and refresh it in the <em>background</em> just before expiry, so users never actually hit a cold miss. This removes the synchronous miss entirely.
+          </p>
+          <p>
+            <strong>Stagger TTLs (jitter).</strong> If many keys were cached together, they expire together. Add randomness to each TTL so expirations spread out instead of firing in lockstep.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Caching libraries and CDNs build this in: HTTP's stale-while-revalidate, Go's singleflight, and .NET's HybridCache all coalesce concurrent misses so a hot key triggers one origin fetch. The cautionary tale is a site that sets the same 60-second TTL on a popular fragment for every server — every minute, on the same second, the whole fleet stampedes the database. Adding jitter and single-flight turns that spike into a single quiet refresh.
+            </p>
+          </div>
+
+          <h2>One rebuild, not thousands</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Hot key expires → coalesce the herd</text><rect class="dgm-box" x="20" y="50" width="80" height="22" rx="8"/><text class="dgm-sub" x="60" y="65" text-anchor="middle">req</text><rect class="dgm-box" x="20" y="76" width="80" height="22" rx="8"/><text class="dgm-sub" x="60" y="91" text-anchor="middle">req</text><rect class="dgm-box" x="20" y="102" width="80" height="22" rx="8"/><text class="dgm-sub" x="60" y="117" text-anchor="middle">req</text><line x1="102" y1="61" x2="150" y2="80" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="102" y1="87" x2="150" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="102" y1="113" x2="150" y2="92" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="152" y="68" width="100" height="34" rx="8"/><text class="dgm-sub" x="202" y="89" text-anchor="middle">single-flight</text><line x1="254" y1="85" x2="300" y2="85" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="302" y="68" width="90" height="34" rx="8"/><text class="dgm-sub" x="347" y="89" text-anchor="middle">1 query</text><line x1="394" y1="85" x2="440" y2="85" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="442" y="68" width="90" height="34" rx="8"/><text class="dgm-sub" x="487" y="89" text-anchor="middle">Database</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Others wait for the one result · or serve stale while it rebuilds</text></svg>
+            <figcaption>Figure 1 — Coalesce concurrent misses so a single request rebuilds the key and the rest reuse it; the database sees one query, not a herd.</figcaption>
+          </figure>
+
+          <h2>Coalesce concurrent misses</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — one rebuild serves all waiters</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// HybridCache coalesces concurrent misses for the same key automatically:
+var product = await cache.GetOrCreateAsync(
+    $"product:{id}",
+    async ct =&gt; await db.Products.FindAsync(id),     // runs ONCE for the herd
+    new HybridCacheEntryOptions {
+        Expiration = TimeSpan.FromMinutes(5),
+        // add jitter so keys don't all expire on the same tick
+        LocalCacheExpiration = TimeSpan.FromMinutes(4 + Random.Shared.Next(2))
+    });
+// The first caller rebuilds; concurrent callers await the same Task.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A stampede = a hot key expires and every concurrent request misses and hits the DB at once.</li>
+              <li>Fix with <strong>request coalescing / single-flight</strong> (or a rebuild lock): exactly one request recomputes, the rest wait or serve stale.</li>
+              <li><strong>Stale-while-revalidate</strong> removes the synchronous miss; <strong>TTL jitter</strong> stops many keys expiring in lockstep.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/caching.html"><span class="rc-cat">System Design</span><span class="rc-title">Caching</span></a>
+            <a class="related-card" href="../database/caching-strategies.html"><span class="rc-cat">Database</span><span class="rc-title">Caching Strategies</span></a>
+            <a class="related-card" href="../interview-scenarios/hot-key-problem.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">The Hot Key Problem</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Name the term ('thundering herd' / 'cache stampede') and go straight to <strong>single-flight</strong> as the fix — it's the answer interviewers want. Bonus depth: stale-while-revalidate to avoid the miss entirely, and TTL jitter so keys don't expire in lockstep.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

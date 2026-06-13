@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Designing for High Availability — DevLens</title>
+  <meta name="description" content="How to design a system with no single point of failure: redundancy across availability zones, automatic failover, health checks, and the availability math behind 'how many nines'." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="designing-for-high-availability" data-title="Designing for High Availability">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Designing for High Availability</h1>
+          <p class="lede">
+            High availability is the discipline of having <strong>no single point of failure</strong> — every tier redundant, and failover that happens automatically, fast, and without losing data.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#availability</span>
+            <span class="tag">#redundancy</span>
+            <span class="tag">#failover</span>
+            <span class="tag">#reliability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“How would you design this service for high availability — say, 99.99% uptime?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Anchor it in a number. 99.9% is ~8.8 hours of downtime a year; 99.99% is ~52 minutes. Adding a nine usually means removing a class of single failure, so first <strong>hunt for single points of failure (SPOFs)</strong>: one app server, one database primary, one load balancer, one availability zone.
+          </p>
+          <p>
+            <strong>Redundancy at every tier.</strong> Run N+1 instances of the app behind a load balancer; run the database as a primary with replicas; deploy the load balancer itself as a managed, redundant service. The rule: any single component can die and the system keeps serving.
+          </p>
+          <p>
+            <strong>Spread across failure domains.</strong> Two app servers in the <em>same</em> rack or availability zone still share a fate. Distribute across multiple <strong>availability zones</strong> (and regions for the highest tiers) so a data-center outage doesn't take you down.
+          </p>
+          <p>
+            <strong>Detect and fail over automatically.</strong> Health checks remove unhealthy instances from rotation; the database promotes a replica to primary on failure. The two metrics that matter are <strong>RTO</strong> (how fast you recover) and <strong>RPO</strong> (how much data you can lose) — synchronous replication gives RPO≈0 at a latency cost.
+          </p>
+          <p>
+            Finally, accept the CAP trade-off: during a network partition you choose availability or consistency. And remember availability multiplies — a request touching five tiers that are each 99.9% is only ~99.5% end to end, so redundancy has to be everywhere.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Cloud providers expose this directly: you deploy across multiple Availability Zones, run a Multi-AZ RDS database that auto-promotes a standby on failure, and front everything with a managed load balancer that health-checks targets. A well-run service survives losing an entire AZ with a blip, not an outage — because nothing critical existed in just one place. The famous outages are usually a hidden SPOF: a single config service, a shared cache, or a region-wide dependency.
+            </p>
+          </div>
+
+          <h2>No single point of failure</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Redundant across two availability zones</text><rect class="dgm-box-accent" x="40" y="46" width="100" height="30" rx="8"/><text class="dgm-sub" x="90" y="65" text-anchor="middle">Load Balancer</text><text class="dgm-sub" x="245" y="42" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">AZ-A</text><text class="dgm-sub" x="455" y="42" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">AZ-B</text><rect class="dgm-box" x="195" y="52" width="90" height="26" rx="8"/><text class="dgm-sub" x="240" y="69" text-anchor="middle">app</text><rect class="dgm-box" x="195" y="84" width="90" height="26" rx="8"/><text class="dgm-sub" x="240" y="101" text-anchor="middle">app</text><rect class="dgm-box" x="410" y="52" width="90" height="26" rx="8"/><text class="dgm-sub" x="455" y="69" text-anchor="middle">app</text><rect class="dgm-box" x="410" y="84" width="90" height="26" rx="8"/><text class="dgm-sub" x="455" y="101" text-anchor="middle">app</text><line x1="140" y1="61" x2="193" y2="64" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="140" y1="61" x2="408" y2="64" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="195" y="124" width="90" height="26" rx="8"/><text class="dgm-sub" x="240" y="141" text-anchor="middle">DB primary</text><rect class="dgm-box" x="410" y="124" width="90" height="26" rx="8"/><text class="dgm-sub" x="455" y="141" text-anchor="middle">DB replica</text><line x1="285" y1="137" x2="408" y2="137" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><text class="dgm-sub" x="347" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">sync replication → auto-failover (RPO≈0)</text></svg>
+            <figcaption>Figure 1 — Every tier is duplicated and spread across zones; lose any instance — or a whole AZ — and traffic shifts to the survivors.</figcaption>
+          </figure>
+
+          <h2>Health checks drive failover</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# / YAML — only healthy instances receive traffic</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// App exposes a real readiness probe (checks its own dependencies):
+builder.Services.AddHealthChecks()
+    .AddNpgSql(connString)        // can I reach the DB?
+    .AddRedis(redisConn);         // can I reach the cache?
+app.MapHealthChecks("/health/ready");
+
+/* The orchestrator/LB removes a failing instance automatically:
+   readinessProbe:
+     httpGet: { path: /health/ready, port: 8080 }
+     periodSeconds: 5
+     failureThreshold: 3        # 3 strikes → pulled from rotation   */</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>High availability = <strong>no single point of failure</strong>: redundancy at every tier, spread across availability zones.</li>
+              <li>Recovery must be <strong>automatic</strong> — health checks pull bad instances, replicas get promoted; size it by <strong>RTO</strong> (recovery time) and <strong>RPO</strong> (data loss).</li>
+              <li>Availability <strong>multiplies</strong> across tiers, and during a partition you trade availability vs consistency (CAP) — so redundancy has to be everywhere.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/cap-theorem.html"><span class="rc-cat">System Design</span><span class="rc-title">CAP Theorem</span></a>
+            <a class="related-card" href="../database/replication.html"><span class="rc-cat">Database</span><span class="rc-title">Replication</span></a>
+            <a class="related-card" href="../interview-scenarios/preventing-cascading-failures.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Preventing Cascading Failures</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Start by quantifying the nines, then systematically eliminate SPOFs tier by tier. Drop <strong>RTO/RPO</strong> and the fact that availability multiplies across the call chain — both show you think about HA quantitatively, not as 'just add a replica.'
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

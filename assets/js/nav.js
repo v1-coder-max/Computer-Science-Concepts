@@ -985,6 +985,28 @@
         ]
       },
       {
+        id: "interview-scenarios", slug: "interview-scenarios", title: "Interview Scenarios", icon: "🧩",
+        color: "var(--cat-interview-scenarios)", expected: 15,
+        blurb: "Open-ended senior-engineer questions: scaling, concurrency, availability, consistency, and the trade-offs behind them.",
+        concepts: [
+          { slug: "scaling-a-web-application", title: "Scaling a Web Application" },
+          { slug: "handling-concurrent-users", title: "Handling Many Concurrent Users" },
+          { slug: "designing-for-high-availability", title: "Designing for High Availability" },
+          { slug: "surviving-traffic-spikes", title: "Surviving Traffic Spikes" },
+          { slug: "reducing-latency-globally", title: "Reducing Latency for a Global Audience" },
+          { slug: "cache-stampede", title: "Cache Stampede & Thundering Herd" },
+          { slug: "designing-for-durability", title: "Designing So You Never Lose Data" },
+          { slug: "preventing-cascading-failures", title: "Preventing Cascading Failures" },
+          { slug: "hot-key-problem", title: "The Hot Key (Celebrity) Problem" },
+          { slug: "idempotency-in-distributed-systems", title: "Idempotency in Distributed Systems" },
+          { slug: "zero-downtime-database-migration", title: "Zero-Downtime Database Migration" },
+          { slug: "read-heavy-vs-write-heavy", title: "Read-Heavy vs Write-Heavy Systems" },
+          { slug: "data-consistency-across-services", title: "Keeping Data Consistent Across Services" },
+          { slug: "debugging-a-latency-spike", title: "Debugging a Production Latency Spike" },
+          { slug: "scaling-the-database", title: "Scaling the Database Tier" },
+        ]
+      },
+      {
         id: "web-fundamentals", slug: "web-fundamentals", title: "Web Fundamentals", icon: "🌐",
         color: "var(--cat-web-fundamentals)", expected: 12,
         blurb: "HTTP, cookies, CORS, WebSockets, JWT and the OAuth handshake.",
