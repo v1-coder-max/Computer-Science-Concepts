@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alerting & Dashboards — DevLens</title>
+  <meta name="description" content="How to alert on symptoms not causes, page only on actionable user-impacting conditions, avoid alert fatigue, and design dashboards that answer 'is it healthy?' at a glance." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="observability" data-concept="alerting-and-dashboards" data-title="Alerting & Dashboards">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Alerting & Dashboards</h1>
+          <p class="lede">
+            Telemetry is useless if nobody looks until it's too late. Good <strong>alerting</strong> wakes a human only for real, actionable, user-facing problems; good <strong>dashboards</strong> show health at a glance.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#observability</span>
+            <span class="tag">#alerting</span>
+            <span class="tag">#dashboards</span>
+            <span class="tag">#on-call</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            The cardinal rule of alerting: <strong>alert on symptoms, not causes</strong>. Page when <em>users</em> are affected — error rate up, latency past the SLO, the SLO's error budget burning fast — not on every internal cause like high CPU (which may be harmless). Cause-based alerts are noisy and miss novel failures; symptom-based alerts catch what actually matters.
+          </p>
+          <p>
+            Every page must be <strong>actionable and urgent</strong>. If an alert fires and the on-call's response is 'nothing to do' or 'I'll look tomorrow', it shouldn't have paged. The deadliest failure mode is <strong>alert fatigue</strong>: too many noisy alerts train people to ignore them, so the one real alert gets missed. Ruthlessly tune or delete noisy alerts.
+          </p>
+          <p>
+            Tier your responses: <strong>page</strong> (wake someone) only for urgent user impact; use <strong>tickets/notifications</strong> for things that need attention but not at 3 AM. Alert on the SLO <strong>burn rate</strong> so you page when the budget is being consumed dangerously fast, not on every transient blip.
+          </p>
+          <p>
+            <strong>Dashboards</strong> serve the other half: a top-level view (the golden signals — latency, traffic, errors, saturation) that answers 'is this service healthy?' in seconds, with drill-downs for investigation. The best dashboard is the one your on-call opens first during an incident and immediately knows where to look.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              SRE-influenced on-call rotations page on a small number of symptom-based, SLO-burn alerts and route everything else to dashboards and tickets. Teams that ignored this learn the hard way: a wall of CPU/disk/queue alerts trains everyone to mute the channel, and then a real outage's alert is lost in the noise. The fix is always fewer, sharper, user-impact alerts plus a clean 'golden signals' dashboard per service.
+            </p>
+          </div>
+
+          <h2>Page on symptoms, dashboard the rest</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Wake a human only for actionable user impact</text><rect class="dgm-box-accent" x="30" y="60" width="150" height="28" rx="8"/><text class="dgm-sub" x="105" y="78" text-anchor="middle">symptom + SLO burn</text><line x1="184" y1="74" x2="230" y2="74" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="232" y="56" width="90" height="36" rx="8"/><text class="dgm-sub" x="277" y="78" text-anchor="middle">PAGE</text><text class="dgm-sub" x="277" y="110" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">urgent, actionable</text><rect class="dgm-box" x="30" y="100" width="150" height="28" rx="8"/><text class="dgm-sub" x="105" y="118" text-anchor="middle">cause / non-urgent</text><line x1="184" y1="114" x2="230" y2="114" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="232" y="100" width="110" height="28" rx="8"/><text class="dgm-sub" x="287" y="118" text-anchor="middle">ticket / dashboard</text><rect class="dgm-box-accent" x="400" y="70" width="170" height="44" rx="8"/><text class="dgm-sub" x="485" y="96" text-anchor="middle">golden-signals dashboard</text><text class="dgm-sub" x="485" y="130" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">is it healthy? at a glance</text><text class="dgm-sub" x="300" y="168" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Alert fatigue is the real enemy — fewer, sharper alerts</text></svg>
+            <figcaption>Figure 1 — Symptom + burn-rate conditions page a human; causes and non-urgent issues go to dashboards/tickets; a golden-signals view shows health.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">YAML</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml"># Alert on a USER SYMPTOM + budget burn, not on a raw cause.
+- alert: HighErrorRateBurn
+  expr: error_budget_burn_rate{service="orders"} &gt; 14   # fast burn
+  for: 5m
+  labels:    { severity: page }            # wake someone — actionable
+  annotations: { summary: "orders burning error budget fast" }
+
+# ❌ Avoid paging on causes that may not affect users:
+#   alert on CPU &gt; 80%  → noisy, trains people to ignore alerts.
+# Dashboards: chart the golden signals (latency, traffic, errors, saturation).</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Alert on symptoms</strong> (user impact, SLO burn), not causes (CPU) — symptom alerts catch what matters and novel failures.</li>
+              <li>Every page must be <strong>actionable and urgent</strong>; <strong>alert fatigue</strong> from noisy alerts is the real danger — tune ruthlessly.</li>
+              <li>Dashboards show health at a glance via the <strong>golden signals</strong>, with drill-downs for investigation.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../observability/metrics-and-slos.html"><span class="rc-cat">Observability</span><span class="rc-title">Metrics, SLIs & SLOs</span></a>
+            <a class="related-card" href="../observability/three-pillars-of-observability.html"><span class="rc-cat">Observability</span><span class="rc-title">The Three Pillars</span></a>
+            <a class="related-card" href="../interview-scenarios/responding-to-a-production-outage.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Responding to a Production Outage</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Lead with 'alert on symptoms, not causes' and 'every page must be actionable,' then name alert fatigue as the failure mode to avoid. Tying alerts to SLO burn rate (not raw thresholds) shows modern, SRE-aware thinking.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

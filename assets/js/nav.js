@@ -73,7 +73,7 @@
       },
       {
         id: "csharp", slug: "csharp", title: "C# & Design Patterns", icon: "🧩",
-        color: "var(--cat-csharp)", expected: 28,
+        color: "var(--cat-csharp)", expected: 31,
         blurb: "Language deep-dives plus the key GoF patterns and modern ones.",
         concepts: [
           { slug: "singleton-pattern", title: "Singleton Pattern" },
@@ -103,7 +103,10 @@
           { slug: "variance", title: "Covariance & Contravariance" },
           { slug: "reflection", title: "Reflection & Attributes" },
           { slug: "yield-iterators", title: "yield & Iterators" },
-          { slug: "extension-methods", title: "Extension Methods" }
+          { slug: "extension-methods", title: "Extension Methods" },
+          { slug: "value-vs-reference-types", title: "Value vs Reference Types" },
+          { slug: "boxing-and-unboxing", title: "Boxing & Unboxing" },
+          { slug: "records", title: "Records" },
         ]
       },
       {
@@ -146,7 +149,7 @@
       },
       {
         id: "microservices", slug: "microservices", title: "Microservices", icon: "🔗",
-        color: "var(--cat-microservices)", expected: 14,
+        color: "var(--cat-microservices)", expected: 17,
         blurb: "Gateways, saga & outbox, circuit breakers, tracing, Docker/K8s.",
         concepts: [
           { slug: "monolith-vs-microservices", title: "Monolith vs Microservices" },
@@ -162,7 +165,10 @@
           { slug: "centralized-logging", title: "Centralized Logging" },
           { slug: "docker", title: "Docker & Containers" },
           { slug: "kubernetes", title: "Kubernetes Concepts" },
-          { slug: "dotnet-microservices", title: "Microservices with .NET" }
+          { slug: "dotnet-microservices", title: "Microservices with .NET" },
+          { slug: "service-mesh", title: "Service Mesh" },
+          { slug: "api-versioning", title: "API Versioning" },
+          { slug: "strangler-fig-pattern", title: "Strangler Fig Pattern" },
         ]
       },
       {
@@ -1053,6 +1059,56 @@
           { slug: "merge-vs-rebase", title: "Merge vs Rebase" },
           { slug: "resolving-conflicts", title: "Resolving Merge Conflicts" },
           { slug: "undoing-changes", title: "Undoing Changes: reset, revert, reflog" },
+        ]
+      },
+      {
+        id: "devops", slug: "devops", title: "DevOps & CI/CD", icon: "🚀",
+        color: "var(--cat-devops)", expected: 5,
+        blurb: "Shipping safely and often: containers and images, CI/CD pipelines, deployment strategies, infrastructure as code, and feature flags.",
+        concepts: [
+          { slug: "ci-cd-pipelines", title: "CI/CD Pipelines" },
+          { slug: "containers-and-images", title: "Containers & Images" },
+          { slug: "deployment-strategies", title: "Deployment Strategies" },
+          { slug: "infrastructure-as-code", title: "Infrastructure as Code" },
+          { slug: "feature-flags", title: "Feature Flags" },
+        ]
+      },
+      {
+        id: "security", slug: "security", title: "Security Fundamentals", icon: "🔒",
+        color: "var(--cat-security)", expected: 5,
+        blurb: "The security basics every developer needs: authentication vs authorization, hashing & salting, encryption, and the classic web attacks (SQLi, XSS).",
+        concepts: [
+          { slug: "authentication-vs-authorization", title: "Authentication vs Authorization" },
+          { slug: "hashing-and-salting", title: "Hashing & Salting" },
+          { slug: "encryption-basics", title: "Encryption Basics" },
+          { slug: "sql-injection", title: "SQL Injection" },
+          { slug: "cross-site-scripting", title: "Cross-Site Scripting (XSS)" },
+        ]
+      },
+      {
+        id: "observability", slug: "observability", title: "Observability", icon: "📈",
+        color: "var(--cat-observability)", expected: 5,
+        blurb: "Understanding a running system from the outside: the three pillars (logs, metrics, traces), structured logging, SLIs/SLOs, and actionable alerting.",
+        concepts: [
+          { slug: "three-pillars-of-observability", title: "The Three Pillars: Logs, Metrics, Traces" },
+          { slug: "structured-logging", title: "Structured Logging" },
+          { slug: "metrics-and-slos", title: "Metrics, SLIs & SLOs" },
+          { slug: "tracing-and-spans", title: "Distributed Tracing & Spans" },
+          { slug: "alerting-and-dashboards", title: "Alerting & Dashboards" },
+        ]
+      },
+      {
+        id: "dsa", slug: "dsa", title: "Data Structures & Algorithms", icon: "📐",
+        color: "var(--cat-dsa)", expected: 7,
+        blurb: "The primer behind the coding problems: Big-O, a complexity cheat sheet, the core data structures, and the sorting algorithms — what to use and what it costs.",
+        concepts: [
+          { slug: "big-o-notation", title: "Big-O Notation" },
+          { slug: "big-o-cheat-sheet", title: "Big-O Cheat Sheet" },
+          { slug: "arrays-vs-linked-lists", title: "Arrays vs Linked Lists" },
+          { slug: "hash-tables", title: "Hash Tables" },
+          { slug: "stacks-and-queues", title: "Stacks & Queues" },
+          { slug: "trees-and-graphs", title: "Trees & Graphs" },
+          { slug: "sorting-algorithms", title: "Sorting Algorithms" },
         ]
       },
       {

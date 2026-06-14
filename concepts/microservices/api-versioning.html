@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Versioning — DevLens</title>
+  <meta name="description" content="How to evolve an API without breaking existing clients: versioning strategies (URL, header, media type), backward-compatible additive changes, and deprecation policy." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="api-versioning" data-title="API Versioning">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>API Versioning</h1>
+          <p class="lede">
+            Once others depend on your API, you can't just change it — you'd break them. <strong>Versioning</strong> and <strong>backward compatibility</strong> let you evolve without breaking existing clients.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#microservices</span>
+            <span class="tag">#api</span>
+            <span class="tag">#versioning</span>
+            <span class="tag">#compatibility</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            An API is a <strong>contract</strong> with its consumers. Any change that breaks that contract — removing a field, renaming one, changing a type, tightening validation — breaks clients you may not control or be able to update in lockstep. Versioning is how you ship change anyway.
+          </p>
+          <p>
+            Prefer <strong>backward-compatible (additive) changes</strong> whenever possible: adding a new optional field or endpoint doesn't break anyone, so it needs no new version. Reserve a new version for genuinely breaking changes. This 'tolerant reader / additive change' discipline avoids most version proliferation.
+          </p>
+          <p>
+            When you do need versions, the common strategies are: <strong>URL path</strong> (<code>/v1/orders</code> — explicit, easy to route and cache, most popular); <strong>query string</strong> (<code>?api-version=2</code>); <strong>custom header</strong> (<code>api-version: 2</code> — keeps URLs clean); and <strong>media type</strong> / content negotiation (<code>Accept: application/vnd.api.v2+json</code> — 'purist' REST). Pick one and be consistent.
+          </p>
+          <p>
+            Versioning also needs a <strong>deprecation policy</strong>: run old and new versions in parallel, announce timelines, signal deprecation (a <code>Sunset</code> header, docs), and give clients time to migrate before removing the old one. Internally, smaller teams lean on additive changes and consumer-driven contract tests to evolve safely without heavy versioning at all.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Public APIs (Stripe, GitHub, Twilio) version explicitly and keep old versions alive for years with clear deprecation timelines, because their customers can't all upgrade at once — Stripe famously pins each account to the API version it was created with. Internally, microservice teams favor additive, backward-compatible changes plus contract tests so services can deploy independently; a breaking change to a shared API is treated as a migration project, not a casual edit.
+            </p>
+          </div>
+
+          <h2>Evolve without breaking clients</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Additive changes need no version; breaking changes do</text><rect class="dgm-box-accent" x="30" y="60" width="150" height="40" rx="8"/><text class="dgm-sub" x="105" y="84" text-anchor="middle">add optional field</text><text class="dgm-sub" x="105" y="116" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">backward-compatible → no new version</text><rect class="dgm-box" x="30" y="130" width="150" height="34" rx="8"/><text class="dgm-sub" x="105" y="151" text-anchor="middle">remove/rename field</text><text class="dgm-sub" x="105" y="178" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">breaking → new version</text><rect class="dgm-box" x="360" y="60" width="90" height="30" rx="8"/><text class="dgm-sub" x="405" y="79" text-anchor="middle">/v1/orders</text><rect class="dgm-box-accent" x="360" y="96" width="90" height="30" rx="8"/><text class="dgm-sub" x="405" y="115" text-anchor="middle">/v2/orders</text><text class="dgm-sub" x="490" y="80" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">run both in parallel</text><text class="dgm-sub" x="490" y="110" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">+ deprecation window</text></svg>
+            <figcaption>Figure 1 — Additive changes ship without a version bump; breaking changes get a new version that runs alongside the old during a deprecation window.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Asp.Versioning — declare versions; clients pick via URL/header/query.
+builder.Services.AddApiVersioning(o =&gt; {
+    o.DefaultApiVersion = new ApiVersion(1, 0);
+    o.ReportApiVersions = true;          // advertise supported versions
+});
+
+[ApiVersion("1.0")] [ApiVersion("2.0")]
+[Route("v{version:apiVersion}/orders")]   // URL versioning
+public class OrdersController : ControllerBase
+{
+    [HttpGet, MapToApiVersion("2.0")]
+    public IActionResult GetV2() =&gt; Ok(/* new shape */);
+}
+// Rule of thumb: add fields freely (no bump); version only on breaking changes.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>An API is a <strong>contract</strong> — prefer <strong>additive, backward-compatible</strong> changes (no version needed); version only on breaking changes.</li>
+              <li>Strategies: <strong>URL path</strong> (most common), query string, custom header, or media type — pick one, stay consistent.</li>
+              <li>Run old + new in <strong>parallel</strong> with a clear <strong>deprecation policy</strong>; internally, additive changes + contract tests often suffice.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/api-gateway.html"><span class="rc-cat">Microservices</span><span class="rc-title">API Gateway</span></a>
+            <a class="related-card" href="../web-fundamentals/rest.html"><span class="rc-cat">Web Fundamentals</span><span class="rc-title">REST</span></a>
+            <a class="related-card" href="../interview-scenarios/zero-downtime-database-migration.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Zero-Downtime Database Migration</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Lead with 'prefer additive changes, version only when you must break the contract,' then list the strategies (URL is most common). Mentioning a deprecation policy and parallel-running versions shows you think about consumers you can't force to upgrade.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

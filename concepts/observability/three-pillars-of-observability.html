@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Three Pillars: Logs, Metrics, Traces — DevLens</title>
+  <meta name="description" content="The three telemetry signals that make a system observable — logs (events), metrics (aggregates), and traces (request journeys) — and which question each one answers." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="observability" data-concept="three-pillars-of-observability" data-title="The Three Pillars: Logs, Metrics, Traces">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>The Three Pillars: Logs, Metrics, Traces</h1>
+          <p class="lede">
+            Observability is being able to ask <em>any</em> question about your running system from its outputs. Three complementary signals — logs, metrics, traces — answer different questions.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#observability</span>
+            <span class="tag">#logging</span>
+            <span class="tag">#metrics</span>
+            <span class="tag">#tracing</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Observability</strong> is the property that you can understand a system's internal state from its external outputs, without shipping new code to investigate. It's broader than monitoring: monitoring watches known dashboards for known problems; observability lets you debug the <em>unknown</em> ones. The signals come in three pillars.
+          </p>
+          <p>
+            <strong>Metrics</strong> are cheap numeric aggregates over time — request rate, error rate, latency percentiles, CPU. They answer <strong>'is something wrong, and how much?'</strong> and power dashboards and alerts. They're tiny to store but lack detail (no per-request context).
+          </p>
+          <p>
+            <strong>Logs</strong> are discrete, timestamped event records. They answer <strong>'what exactly happened here?'</strong> with rich detail, but are voluminous and hard to aggregate. Structured (key-value) logs make them queryable.
+          </p>
+          <p>
+            <strong>Traces</strong> follow a single request across services as a tree of timed <em>spans</em>. They answer <strong>'where did the time go / where did it fail?'</strong> in a distributed call — the piece metrics and logs alone can't give you. Used together, you go metrics → traces → logs: alert on a metric, find the slow span in a trace, read the log for the cause.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Mature teams run all three — Prometheus/Grafana for metrics, a log platform (ELK, Loki, Splunk) for logs, and distributed tracing (OpenTelemetry → Jaeger/Tempo) — and increasingly correlate them with shared IDs. The debugging flow during an incident is exactly the drill-down: a metric alert fires, a trace shows which service/span is slow, and its logs explain why. A system with only one pillar leaves you guessing about the others.
+            </p>
+          </div>
+
+          <h2>Three signals, three questions</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Drill down: metrics → traces → logs</text><rect class="dgm-box-accent" x="30" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="105" y="90" text-anchor="middle">Metrics</text><text class="dgm-sub" x="105" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">is it wrong? how much?</text><line x1="182" y1="86" x2="222" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="224" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="299" y="90" text-anchor="middle">Traces</text><text class="dgm-sub" x="299" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">where did time go?</text><line x1="376" y1="86" x2="416" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="418" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="493" y="90" text-anchor="middle">Logs</text><text class="dgm-sub" x="493" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">what exactly happened?</text><text class="dgm-sub" x="300" y="152" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Aggregate + cheap → per-request journey → rich detail</text></svg>
+            <figcaption>Figure 1 — Metrics tell you something's wrong, a trace localizes it to a span, and logs explain the cause.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// One request often emits all three signals — correlate them by trace id.
+// Metric: a counter/histogram (aggregated).
+Metrics.CreateCounter("orders_total").Add(1);
+
+// Trace: a span around the work (OpenTelemetry).
+using var span = tracer.StartActivity("CreateOrder");
+span?.SetTag("order.id", id);
+
+// Log: a structured event carrying the trace id for correlation.
+logger.LogInformation("Order {OrderId} created in {Ms}ms", id, elapsed);</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Observability</strong> = understand internal state from outputs (debug unknowns), broader than monitoring (watch knowns).</li>
+              <li>Three pillars: <strong>metrics</strong> (is it wrong?), <strong>traces</strong> (where?), <strong>logs</strong> (what exactly?).</li>
+              <li>Use them together — drill <strong>metrics → traces → logs</strong>, correlated by a shared trace id.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../observability/structured-logging.html"><span class="rc-cat">Observability</span><span class="rc-title">Structured Logging</span></a>
+            <a class="related-card" href="../observability/metrics-and-slos.html"><span class="rc-cat">Observability</span><span class="rc-title">Metrics, SLIs & SLOs</span></a>
+            <a class="related-card" href="../microservices/distributed-tracing.html"><span class="rc-cat">Microservices</span><span class="rc-title">Distributed Tracing</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Name the three pillars and the distinct question each answers, then describe the drill-down workflow (metrics → traces → logs). Distinguishing observability (debug unknowns) from monitoring (watch knowns) is the framing that stands out.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

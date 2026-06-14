@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Big-O Cheat Sheet — DevLens</title>
+  <meta name="description" content="A scannable reference of time and space complexities: common data-structure operations (array, hash table, BST, heap) and the major sorting algorithms, with best/average/worst cases." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dsa" data-concept="big-o-cheat-sheet" data-title="Big-O Cheat Sheet">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Big-O Cheat Sheet</h1>
+          <p class="lede">
+            A one-page reference for the complexities you're expected to know cold — data-structure operations and sorting algorithms, at a glance.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dsa</span>
+            <span class="tag">#big-o</span>
+            <span class="tag">#complexity</span>
+            <span class="tag">#reference</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            This page is a <strong>quick reference</strong>, not a tutorial — bookmark it for interviews and performance work. The tables below give the <strong>average</strong> and <strong>worst-case</strong> time complexity of the operations on the core data structures, then the time/space and stability of the common sorting algorithms.
+          </p>
+          <p>
+            A few reminders while you read them. Hash tables are <strong>O(1) average</strong> but <strong>O(n) worst case</strong> (everything colliding into one bucket) — the average is what you rely on, the worst is what you guard against. A <strong>balanced</strong> BST guarantees O(log n); an unbalanced one degrades to O(n), which is why production trees self-balance (red-black, AVL).
+          </p>
+          <p>
+            For sorting, the practical default is an <strong>O(n log n)</strong> comparison sort — that's the proven lower bound for comparison-based sorting. <strong>Quicksort</strong> is usually fastest in practice (great cache behavior) but is O(n²) worst-case; <strong>mergesort</strong> guarantees O(n log n) and is stable but uses O(n) extra space; <strong>heapsort</strong> is O(n log n) in place but not stable. Non-comparison sorts (counting/radix) can beat O(n log n) for restricted integer keys.
+          </p>
+          <p>
+            <strong>Stable</strong> means equal elements keep their relative order — it matters when you sort by one key after another. Match the structure and algorithm to your access pattern and constraints; the tables tell you the costs of each choice.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              These complexities are exactly what coding interviews probe ('what's the lookup cost?', 'why is your sort O(n log n)?') and what guides real engineering decisions — choosing a hash set for O(1) membership over a list's O(n) scan, or knowing a join inside a loop is quietly O(n·m). Language standard libraries pick their sort accordingly: .NET's <code>Array.Sort</code> uses an introsort (quicksort that falls back to heapsort to avoid the O(n²) worst case), and stable sorts where order must be preserved.
+            </p>
+          </div>
+
+          <h2>Complexity, at a glance</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Pick the structure/algorithm whose costs fit your access pattern</text><rect class="dgm-box-accent" x="30" y="60" width="110" height="40" rx="8"/><text class="dgm-sub" x="85" y="84" text-anchor="middle">hash table</text><text class="dgm-sub" x="85" y="116" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">O(1) avg lookup</text><rect class="dgm-box" x="160" y="60" width="110" height="40" rx="8"/><text class="dgm-sub" x="215" y="84" text-anchor="middle">balanced BST</text><text class="dgm-sub" x="215" y="116" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">O(log n) sorted</text><rect class="dgm-box" x="290" y="60" width="110" height="40" rx="8"/><text class="dgm-sub" x="345" y="84" text-anchor="middle">array</text><text class="dgm-sub" x="345" y="116" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">O(1) index, O(n) search</text><rect class="dgm-box-accent" x="420" y="60" width="150" height="40" rx="8"/><text class="dgm-sub" x="495" y="84" text-anchor="middle">O(n log n) sort</text><text class="dgm-sub" x="495" y="116" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">the practical floor</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Average vs worst case both matter — see the tables below</text></svg>
+            <figcaption>Figure 1 — Each structure trades operations differently; the tables below give the precise average and worst-case costs.</figcaption>
+          </figure>
+
+          <h3>Data structure operations (time)</h3>
+          <table>
+            <thead><tr><th>Structure</th><th>Access</th><th>Search</th><th>Insert</th><th>Delete</th><th>Space</th></tr></thead>
+            <tbody>
+              <tr><td>Array</td><td>O(1)</td><td>O(n)</td><td>O(n)</td><td>O(n)</td><td>O(n)</td></tr>
+              <tr><td>Dynamic array</td><td>O(1)</td><td>O(n)</td><td>O(1)*</td><td>O(n)</td><td>O(n)</td></tr>
+              <tr><td>Linked list</td><td>O(n)</td><td>O(n)</td><td>O(1)</td><td>O(1)</td><td>O(n)</td></tr>
+              <tr><td>Stack / Queue</td><td>O(n)</td><td>O(n)</td><td>O(1)</td><td>O(1)</td><td>O(n)</td></tr>
+              <tr><td>Hash table</td><td>—</td><td>O(1) avg · O(n) worst</td><td>O(1) avg · O(n) worst</td><td>O(1) avg · O(n) worst</td><td>O(n)</td></tr>
+              <tr><td>Balanced BST</td><td>O(log n)</td><td>O(log n)</td><td>O(log n)</td><td>O(log n)</td><td>O(n)</td></tr>
+              <tr><td>Binary heap</td><td>—</td><td>O(n)</td><td>O(log n)</td><td>O(log n)†</td><td>O(n)</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:0.85rem;color:var(--text-faint)">* amortized (occasional resize). † delete-min/max; peek is O(1).</p>
+
+          <h3>Sorting algorithms</h3>
+          <table>
+            <thead><tr><th>Algorithm</th><th>Best</th><th>Average</th><th>Worst</th><th>Space</th><th>Stable?</th></tr></thead>
+            <tbody>
+              <tr><td>Bubble / Insertion</td><td>O(n)</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td><td>Yes</td></tr>
+              <tr><td>Selection</td><td>O(n²)</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td><td>No</td></tr>
+              <tr><td>Merge sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>Yes</td></tr>
+              <tr><td>Quicksort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n²)</td><td>O(log n)</td><td>No</td></tr>
+              <tr><td>Heapsort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(1)</td><td>No</td></tr>
+              <tr><td>Counting / Radix</td><td>O(n+k)</td><td>O(n+k)</td><td>O(n+k)</td><td>O(n+k)</td><td>Yes</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:0.85rem;color:var(--text-faint)">Comparison sorts can't beat O(n log n); counting/radix exploit bounded integer keys.</p>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Big-O ladder, slowest-growing first:
+//   O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²) &lt; O(2^n) &lt; O(n!)
+
+// Library sorts pick pragmatically — .NET Array.Sort uses introsort
+// (quicksort + heapsort fallback) to get average speed without the O(n²) worst case:
+Array.Sort(nums);                 // O(n log n) average, not stable
+var stable = nums.OrderBy(x =&gt; x).ToArray();   // LINQ OrderBy is stable</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Hash table = <strong>O(1) average</strong>, O(n) worst; <strong>balanced</strong> BST = O(log n); array = O(1) index but O(n) search.</li>
+              <li>Comparison sorts bottom out at <strong>O(n log n)</strong> — quicksort fastest in practice, mergesort stable but O(n) space, heapsort in-place.</li>
+              <li><strong>Stable</strong> sorts preserve equal-element order; counting/radix beat O(n log n) only for bounded integer keys.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dsa/big-o-notation.html"><span class="rc-cat">DSA</span><span class="rc-title">Big-O Notation</span></a>
+            <a class="related-card" href="../dsa/hash-tables.html"><span class="rc-cat">DSA</span><span class="rc-title">Hash Tables</span></a>
+            <a class="related-card" href="../dsa/sorting-algorithms.html"><span class="rc-cat">DSA</span><span class="rc-title">Sorting Algorithms</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Have these numbers instant: hash O(1) avg, balanced tree O(log n), comparison sort O(n log n) floor. The follow-ups that catch people are hash's O(n) worst case and quicksort's O(n²) worst case — know why each happens.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

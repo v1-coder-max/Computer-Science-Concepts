@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encryption Basics — DevLens</title>
+  <meta name="description" content="Symmetric vs asymmetric encryption, what each is good for, how TLS combines them, and the difference between encryption in transit and at rest — without rolling your own crypto." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="security" data-concept="encryption-basics" data-title="Encryption Basics">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Encryption Basics</h1>
+          <p class="lede">
+            Encryption makes data unreadable without a key. The two families — <strong>symmetric</strong> (one shared key) and <strong>asymmetric</strong> (a key pair) — solve different problems and are usually combined.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#security</span>
+            <span class="tag">#encryption</span>
+            <span class="tag">#tls</span>
+            <span class="tag">#cryptography</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Symmetric encryption</strong> uses one secret key to both encrypt and decrypt (AES is the standard). It's fast and ideal for bulk data — but both parties need the same key, which raises the hard question: how do you share that key securely over an untrusted network?
+          </p>
+          <p>
+            <strong>Asymmetric encryption</strong> solves key distribution with a <em>key pair</em>: a <strong>public key</strong> (shareable) and a <strong>private key</strong> (secret). Anything encrypted with the public key can only be decrypted with the private key, so anyone can send you a secret without a pre-shared key. It's slow, so it's used for small things — like exchanging a symmetric key, or signatures.
+          </p>
+          <p>
+            <strong>TLS (HTTPS)</strong> combines them perfectly: the handshake uses asymmetric crypto to authenticate the server (via its certificate) and agree on a fresh symmetric session key, then all the actual traffic is encrypted with fast symmetric crypto. Best of both worlds.
+          </p>
+          <p>
+            Two scopes to keep distinct: <strong>in transit</strong> (TLS protects data on the wire) and <strong>at rest</strong> (disk/database encryption protects stored data if media is stolen). And the cardinal rule: <strong>don't roll your own crypto</strong> — use vetted libraries and standard algorithms; subtle mistakes break security completely.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every HTTPS connection is this hybrid: your browser uses the site's certificate (asymmetric) to verify identity and negotiate an AES session key (symmetric) for the page data. Databases and cloud storage add encryption at rest so a stolen disk or backup is useless. The recurring security failure isn't broken AES — it's home-grown crypto, reused keys, or missing TLS, which is why 'use TLS, use a library, don't invent algorithms' is the practical advice.
+            </p>
+          </div>
+
+          <h2>Asymmetric to share a key, symmetric for the data</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">TLS: handshake (asymmetric) → fast session (symmetric)</text><rect class="dgm-box" x="30" y="64" width="110" height="44" rx="8"/><text class="dgm-sub" x="85" y="90" text-anchor="middle">client</text><line x1="142" y1="76" x2="210" y2="76" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><text class="dgm-sub" x="176" y="66" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">public key →</text><rect class="dgm-box-accent" x="212" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="287" y="90" text-anchor="middle">agree session key</text><line x1="364" y1="76" x2="432" y2="76" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="434" y="64" width="140" height="44" rx="8"/><text class="dgm-sub" x="504" y="90" text-anchor="middle">AES-encrypted data</text><text class="dgm-sub" x="300" y="130" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Asymmetric = key exchange + identity · Symmetric = bulk speed</text><text class="dgm-sub" x="300" y="156" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">Protect data in transit (TLS) AND at rest (disk/db) · never roll your own</text></svg>
+            <figcaption>Figure 1 — TLS authenticates and exchanges a key with asymmetric crypto, then encrypts the bulk traffic with fast symmetric crypto.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Use the platform's vetted primitives — never hand-rolled crypto.
+// Symmetric (bulk data): AES via the framework.
+using var aes = Aes.Create();                // strong defaults, random IV
+aes.Key = key;                               // 256-bit key from a KDF / vault
+
+// Asymmetric (key exchange / signatures): RSA or ECDSA.
+using var rsa = RSA.Create(2048);
+
+// In practice you rarely touch these directly — TLS handles transit,
+// and a KMS/key vault manages keys for encryption at rest.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Symmetric</strong> (one shared key, e.g. AES) is fast for bulk data; <strong>asymmetric</strong> (public/private pair) solves key distribution and identity.</li>
+              <li><strong>TLS</strong> combines them: asymmetric handshake to exchange a symmetric session key.</li>
+              <li>Encrypt <strong>in transit</strong> (TLS) <em>and</em> <strong>at rest</strong>; <strong>never roll your own crypto</strong> — use vetted libraries.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/https-tls.html"><span class="rc-cat">Web Fundamentals</span><span class="rc-title">HTTPS & TLS</span></a>
+            <a class="related-card" href="../security/hashing-and-salting.html"><span class="rc-cat">Security</span><span class="rc-title">Hashing & Salting</span></a>
+            <a class="related-card" href="../interview-scenarios/managing-secrets-and-credentials.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Managing Secrets & Credentials</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Contrast symmetric (fast, shared key) and asymmetric (key pair, solves distribution), then explain TLS as the hybrid. Add 'in transit vs at rest' and 'don't roll your own crypto' to round out a complete, practical answer.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infrastructure as Code — DevLens</title>
+  <meta name="description" content="Managing servers, networks, and cloud resources as version-controlled, declarative code — so infrastructure is reproducible, reviewable, and free of manual 'snowflake' drift." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="devops" data-concept="infrastructure-as-code" data-title="Infrastructure as Code">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Infrastructure as Code</h1>
+          <p class="lede">
+            Stop clicking in cloud consoles. <strong>Infrastructure as Code</strong> describes your servers, networks, and databases in version-controlled files you apply repeatably.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#devops</span>
+            <span class="tag">#iac</span>
+            <span class="tag">#terraform</span>
+            <span class="tag">#automation</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Infrastructure as Code (IaC)</strong> means defining your infrastructure — VMs, load balancers, databases, DNS, permissions — in text files that you commit to Git and apply with a tool. The infrastructure becomes reproducible, reviewable in pull requests, and diff-able over time, just like application code.
+          </p>
+          <p>
+            It's usually <strong>declarative</strong>: you describe the <em>desired state</em> ('three web servers, this database, that firewall rule') and the tool figures out the changes to get there. That makes it <strong>idempotent</strong> — applying the same config twice yields the same result, no duplicate resources.
+          </p>
+          <p>
+            The big problems it solves are <strong>snowflakes</strong> and <strong>drift</strong>. A hand-clicked server nobody can reproduce is a snowflake; when reality diverges from what you think is deployed, that's drift. IaC kills both: the code <em>is</em> the source of truth, and you can detect and correct drift by re-applying.
+          </p>
+          <p>
+            It also enables disposable, identical environments — spin up a staging that exactly mirrors prod, then tear it down — and disaster recovery (rebuild from code). Tools: Terraform/OpenTofu and Pulumi (cloud-agnostic), plus cloud-native ARM/Bicep and CloudFormation.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Cloud teams define their entire stack in Terraform: every VPC, subnet, database, and IAM role is code in a repo, changed only through reviewed pull requests and applied by a pipeline. New environments are a <code>terraform apply</code> away and are identical by construction. The anti-pattern it replaces — a production server someone configured by hand two years ago that nobody dares touch — is exactly the snowflake IaC exists to prevent.
+            </p>
+          </div>
+
+          <h2>Declare desired state, apply repeatably</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Code in Git is the source of truth for infrastructure</text><rect class="dgm-box-accent" x="30" y="64" width="120" height="44" rx="8"/><text class="dgm-sub" x="90" y="90" text-anchor="middle">*.tf in Git</text><text class="dgm-sub" x="90" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">desired state</text><line x1="152" y1="86" x2="200" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="202" y="64" width="110" height="44" rx="8"/><text class="dgm-sub" x="257" y="90" text-anchor="middle">plan / apply</text><text class="dgm-sub" x="257" y="124" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">idempotent</text><line x1="312" y1="86" x2="360" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="362" y="64" width="100" height="44" rx="8"/><text class="dgm-sub" x="412" y="90" text-anchor="middle">cloud</text><rect class="dgm-box" x="478" y="64" width="100" height="44" rx="8"/><text class="dgm-sub" x="528" y="90" text-anchor="middle">= matches code</text><line x1="462" y1="86" x2="476" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><text class="dgm-sub" x="300" y="152" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Re-apply to fix drift · review changes in PRs · rebuild from scratch</text></svg>
+            <figcaption>Figure 1 — Version-controlled declarations are applied idempotently to the cloud; re-applying corrects any drift from the declared state.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">HCL</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-hcl"># Terraform — declare the desired state; the tool reconciles reality to it.
+resource "aws_instance" "web" {
+  count         = 3                    # exactly three, idempotently
+  ami           = "ami-0abc123"
+  instance_type = "t3.small"
+  tags = { Name = "web", Env = "prod" }
+}
+
+# Workflow: edit → 'terraform plan' (preview the diff) → PR review →
+# 'terraform apply'. Running apply again with no changes does nothing.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>IaC = infrastructure as <strong>version-controlled, declarative code</strong> — reproducible, reviewable, diffable.</li>
+              <li>Declarative + <strong>idempotent</strong>: describe desired state, apply repeatably with no duplicates.</li>
+              <li>Eliminates <strong>snowflakes and drift</strong>; enables identical environments and rebuild-from-code recovery.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../devops/ci-cd-pipelines.html"><span class="rc-cat">DevOps & CI/CD</span><span class="rc-title">CI/CD Pipelines</span></a>
+            <a class="related-card" href="../microservices/kubernetes.html"><span class="rc-cat">Microservices</span><span class="rc-title">Kubernetes</span></a>
+            <a class="related-card" href="../interview-scenarios/managing-secrets-and-credentials.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Managing Secrets & Credentials</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define IaC as declarative, version-controlled infrastructure and name what it kills: snowflakes and configuration drift. Mentioning idempotency and 'the code is the source of truth, re-apply to fix drift' shows you've operated it, not just heard of it.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

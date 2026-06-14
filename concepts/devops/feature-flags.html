@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feature Flags — DevLens</title>
+  <meta name="description" content="Feature flags decouple deploying code from releasing a feature — letting you ship dark, roll out gradually, run experiments, and kill a bad feature instantly without a redeploy." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="devops" data-concept="feature-flags" data-title="Feature Flags">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Feature Flags</h1>
+          <p class="lede">
+            A feature flag is a runtime switch around new code. It separates <strong>deploy</strong> (the code is live) from <strong>release</strong> (users can see it) — the key to safe, gradual delivery.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#devops</span>
+            <span class="tag">#feature-flags</span>
+            <span class="tag">#release</span>
+            <span class="tag">#experimentation</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>feature flag</strong> (toggle) wraps a feature in a conditional checked at runtime: if the flag is on, the new path runs; if off, the old one. The code is deployed either way — you control exposure with configuration, not a deployment.
+          </p>
+          <p>
+            This <strong>decouples deploy from release</strong>, which unlocks a lot. You can <strong>ship dark</strong>: merge incomplete work to main behind an off flag (enabling trunk-based development without long-lived branches). You can do a <strong>gradual rollout</strong>: turn the feature on for 1%, then 10%, then everyone — a canary at the application layer.
+          </p>
+          <p>
+            It's also your <strong>kill switch</strong>: if a new feature misbehaves in production, flip the flag off instantly — no redeploy, no rollback, seconds not minutes. That's often the fastest mitigation available during an incident.
+          </p>
+          <p>
+            Flags power <strong>experimentation</strong> too (A/B tests, targeting specific users or regions). The cost is discipline: flags are debt — remove them once a feature is fully rolled out, or you accumulate a tangle of stale conditionals and untested code paths.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Companies like Facebook and Netflix release continuously behind flags: code ships to production constantly but features are 'dark' until enabled for a cohort, then ramped while metrics are watched. Platforms like LaunchDarkly exist entirely for this. The kill-switch value is real — when a launch goes wrong, flipping a flag off is the incident mitigation that beats waiting for a rollback deploy to roll through the fleet.
+            </p>
+          </div>
+
+          <h2>Deploy ≠ release</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">One switch controls exposure, no redeploy needed</text><rect class="dgm-box-accent" x="30" y="64" width="110" height="44" rx="8"/><text class="dgm-sub" x="85" y="90" text-anchor="middle">deployed code</text><line x1="142" y1="86" x2="188" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="190" y="64" width="96" height="44" rx="8"/><text class="dgm-sub" x="238" y="90" text-anchor="middle">flag check</text><line x1="286" y1="74" x2="332" y2="64" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="286" y1="98" x2="332" y2="108" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="334" y="52" width="100" height="26" rx="8"/><text class="dgm-sub" x="384" y="69" text-anchor="middle">on → new path</text><rect class="dgm-box" x="334" y="92" width="100" height="26" rx="8"/><text class="dgm-sub" x="384" y="109" text-anchor="middle">off → old path</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Ship dark · ramp 1→100% · kill switch · A/B test — all by config</text></svg>
+            <figcaption>Figure 1 — A runtime flag chooses the path, so the same deployed build can expose a feature to nobody, some, or everyone.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// The feature is deployed; the flag decides who sees it.
+if (await _flags.IsEnabledAsync("new-checkout", user))
+    return NewCheckout(cart);     // ramp 1% → 100%, or flip OFF instantly
+else
+    return LegacyCheckout(cart);
+
+// Enables: trunk-based dev (merge dark), gradual rollout, A/B tests,
+// and an incident kill switch — no redeploy. Then DELETE the flag when done.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A feature flag <strong>decouples deploy from release</strong> — ship code dark, expose it by config.</li>
+              <li>Enables <strong>gradual rollout</strong> (app-layer canary), trunk-based dev, A/B tests, and an instant <strong>kill switch</strong>.</li>
+              <li>Flags are <strong>debt</strong> — remove them after full rollout to avoid stale, untested branches.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../devops/deployment-strategies.html"><span class="rc-cat">DevOps & CI/CD</span><span class="rc-title">Deployment Strategies</span></a>
+            <a class="related-card" href="../git/branching-strategies.html"><span class="rc-cat">Git</span><span class="rc-title">Branching Strategies</span></a>
+            <a class="related-card" href="../interview-scenarios/responding-to-a-production-outage.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Responding to a Production Outage</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The phrase that lands is 'decouple deploy from release.' Mention ship-dark (enables trunk-based dev), gradual rollout, and the kill switch as the fastest incident mitigation — then note flags are debt to be removed.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

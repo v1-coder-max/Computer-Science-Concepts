@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Records — DevLens</title>
+  <meta name="description" content="How C# records give you concise, immutable reference types with value-based equality, non-destructive mutation via with-expressions, and built-in deconstruction — ideal for DTOs and domain values." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="records" data-title="Records">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Records</h1>
+          <p class="lede">
+            <strong>Records</strong> are C#'s answer to boilerplate-heavy data types: a concise, immutable type with <strong>value-based equality</strong> and copy-with-changes built in.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#csharp</span>
+            <span class="tag">#records</span>
+            <span class="tag">#immutability</span>
+            <span class="tag">#value-equality</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>record</strong> is a type designed to hold data. From one line — <code>public record Money(decimal Amount, string Currency);</code> — the compiler generates an immutable type with a constructor, init-only properties, value-based <code>Equals</code>/<code>GetHashCode</code>, a readable <code>ToString</code>, and deconstruction. It removes the dozens of lines you'd hand-write for a well-behaved data class.
+          </p>
+          <p>
+            The headline feature is <strong>value-based equality</strong>. Two records are equal if their contents are equal, unlike normal classes which compare by reference (identity). So two <code>Money(10, "USD")</code> instances are equal — exactly what you want for DTOs, domain values, and dictionary keys.
+          </p>
+          <p>
+            Records are <strong>immutable by default</strong> (init-only properties), which makes them ideal for safe sharing (including across threads). To 'change' one you use a <strong>with-expression</strong> — <code>order with { Status = "Paid" }</code> — which creates a <em>new</em> record copying the rest. This <strong>non-destructive mutation</strong> is the immutable-data way to evolve state without mutating the original.
+          </p>
+          <p>
+            <code>record class</code> (the default) is a reference type with value equality; <code>record struct</code> is a value type with the same conveniences. Use records for data-centric types — DTOs, API models, events, value objects — and keep regular classes for entities with identity and rich behavior. They pair naturally with pattern matching.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Records have become the default for DTOs, API request/response models, domain value objects, and immutable events/messages in modern C# — anywhere you want 'compare and copy by value, don't mutate.' They're especially common in functional-leaning and concurrent code (immutability removes whole classes of bugs) and in CQRS/event-sourced systems where commands and events are naturally immutable value-like records.
+            </p>
+          </div>
+
+          <h2>Value equality + non-destructive copy</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Equal by contents; 'change' = copy a new one</text><rect class="dgm-box-accent" x="40" y="64" width="200" height="30" rx="8"/><text class="dgm-sub" x="140" y="83" text-anchor="middle">Money(10,'USD') == Money(10,'USD')</text><text class="dgm-sub" x="140" y="116" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">value equality (true)</text><rect class="dgm-box" x="340" y="56" width="120" height="30" rx="8"/><text class="dgm-sub" x="400" y="75" text-anchor="middle">order</text><line x1="462" y1="71" x2="500" y2="71" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><text class="dgm-sub" x="481" y="60" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">with</text><rect class="dgm-box-accent" x="440" y="100" width="150" height="30" rx="8"/><text class="dgm-sub" x="515" y="119" text-anchor="middle">new { ...order, Paid }</text><line x1="400" y1="86" x2="470" y2="98" stroke="var(--text-faint)" stroke-width="1.2"/><text class="dgm-sub" x="300" y="156" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Immutable by default · concise · great for DTOs and domain values</text></svg>
+            <figcaption>Figure 1 — Records compare by content and use with-expressions to produce a modified copy, leaving the original untouched.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// One line → immutable type with value equality, ToString, deconstruction.
+public record Money(decimal Amount, string Currency);
+
+var a = new Money(10, "USD");
+var b = new Money(10, "USD");
+bool same = a == b;              // True — value equality (not reference)
+
+// Non-destructive mutation: copy with changes, original untouched.
+var raise = a with { Amount = 12 };   // new Money(12,"USD"); a is unchanged
+
+// record class (default, reference type) vs record struct (value type).
+public record struct Point(int X, int Y);</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Records</strong> generate a concise, immutable data type with <strong>value-based equality</strong>, <code>ToString</code>, and deconstruction.</li>
+              <li>Equal by <strong>contents</strong> (not reference); 'change' via a <strong>with-expression</strong> that copies a new instance (non-destructive mutation).</li>
+              <li>Use for <strong>DTOs, value objects, events</strong>; <code>record class</code> (reference) vs <code>record struct</code> (value) — keep classes for identity-rich entities.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/value-vs-reference-types.html"><span class="rc-cat">C# & Patterns</span><span class="rc-title">Value vs Reference Types</span></a>
+            <a class="related-card" href="../concurrency/thread-safety.html"><span class="rc-cat">Concurrency</span><span class="rc-title">Thread Safety & Atomicity</span></a>
+            <a class="related-card" href="../oop/encapsulation.html"><span class="rc-cat">OOP</span><span class="rc-title">Encapsulation</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Lead with value equality and immutability as the two reasons records exist, then show a with-expression for non-destructive mutation. Knowing when <em>not</em> to use them (entities with identity and behavior → regular classes) shows judgment, not just syntax.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Big-O Notation — DevLens</title>
+  <meta name="description" content="What Big-O actually measures — how an algorithm's time or space grows with input size — the common classes from O(1) to O(n!), and why we care about growth, not stopwatch time." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dsa" data-concept="big-o-notation" data-title="Big-O Notation">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Big-O Notation</h1>
+          <p class="lede">
+            Big-O describes how an algorithm's cost <strong>grows</strong> as the input gets bigger — the single most important lens for comparing approaches before you ever run them.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dsa</span>
+            <span class="tag">#big-o</span>
+            <span class="tag">#complexity</span>
+            <span class="tag">#algorithms</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Big-O notation</strong> expresses the <em>growth rate</em> of an algorithm's running time (or memory) as a function of input size <code>n</code>, ignoring constants and lower-order terms. It answers 'if the input doubles, what happens to the work?' — not 'how many milliseconds', because hardware varies but growth doesn't.
+          </p>
+          <p>
+            It describes the <strong>asymptotic worst case</strong> (the dominant term as <code>n</code> grows). So <code>3n + 50</code> is <code>O(n)</code> and <code>2n² + 100n</code> is <code>O(n²)</code> — constants and smaller terms vanish because for large <code>n</code> the highest-order term dominates everything.
+          </p>
+          <p>
+            The classes you must know, fastest-growing last: <strong>O(1)</strong> constant (hash lookup), <strong>O(log n)</strong> logarithmic (binary search), <strong>O(n)</strong> linear (a scan), <strong>O(n log n)</strong> (good sorts), <strong>O(n²)</strong> quadratic (nested loops), <strong>O(2ⁿ)</strong> exponential and <strong>O(n!)</strong> factorial (brute-force combinatorics — infeasible beyond tiny inputs).
+          </p>
+          <p>
+            Two cautions. The gap is enormous: at n = 1,000,000, O(n) is a million steps while O(n²) is a trillion — that's the difference between instant and never. But Big-O hides constants, so for <em>small</em> n a 'worse' Big-O with tiny constants can win; and always consider <strong>space</strong> complexity too, not just time.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Big-O is the lingua franca of technical interviews and real performance work alike. When a feature that was instant in testing crawls in production, it's almost always an accidental O(n²) (a nested loop, or a query inside a loop) that was invisible at small scale. Engineers reach for Big-O to reason about whether an approach will hold up at 10× or 100× the data before writing a line — and to explain in code review why one solution scales and another doesn't.
+            </p>
+          </div>
+
+          <h2>How the classes diverge</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Same n, wildly different work as input grows</text><line x1="60" y1="150" x2="560" y2="150" stroke="var(--border)" stroke-width="1.4"/><line x1="60" y1="150" x2="60" y2="40" stroke="var(--border)" stroke-width="1.4"/><path d="M60 148 L560 140" fill="none" stroke="var(--c-success)" stroke-width="2"/><text class="dgm-sub" x="540" y="132" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">O(1)/O(log n)</text><path d="M60 150 L560 70" fill="none" stroke="var(--accent)" stroke-width="2"/><text class="dgm-sub" x="545" y="64" text-anchor="middle" fill="var(--accent)" style="font:600 11px var(--font-sans)">O(n)</text><path d="M60 150 Q 240 120 360 45" fill="none" stroke="var(--c-warning)" stroke-width="2"/><text class="dgm-sub" x="330" y="40" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">O(n²)</text><path d="M60 150 Q 110 150 130 45" fill="none" stroke="#ef4444" stroke-width="2"/><text class="dgm-sub" x="150" y="50" text-anchor="middle" fill="#ef4444" style="font:600 11px var(--font-sans)">O(2ⁿ)</text><text class="dgm-sub" x="300" y="172" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">input size n →</text></svg>
+            <figcaption>Figure 1 — Constant/log stay flat, linear rises steadily, quadratic curves up fast, and exponential explodes almost immediately.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// O(1) — constant: one hash lookup regardless of size.
+bool has = set.Contains(x);
+
+// O(n) — linear: one pass over the input.
+foreach (var v in nums) sum += v;
+
+// O(n²) — quadratic: a loop inside a loop (watch for this in prod!).
+for (int i = 0; i &lt; n; i++)
+    for (int j = 0; j &lt; n; j++)
+        Compare(nums[i], nums[j]);
+
+// O(log n) — halve the search space each step (binary search).</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Big-O measures how cost <strong>grows with input size</strong> (worst-case, dropping constants/lower terms) — growth, not wall-clock time.</li>
+              <li>Know the ladder: <strong>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²) &lt; O(2ⁿ) &lt; O(n!)</strong>.</li>
+              <li>The gap is huge at scale (an accidental <strong>O(n²)</strong> is the classic prod slowdown) — but consider constants at small n, and analyze <strong>space</strong> too.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dsa/big-o-cheat-sheet.html"><span class="rc-cat">DSA</span><span class="rc-title">Big-O Cheat Sheet</span></a>
+            <a class="related-card" href="../dsa/sorting-algorithms.html"><span class="rc-cat">DSA</span><span class="rc-title">Sorting Algorithms</span></a>
+            <a class="related-card" href="../dsa/hash-tables.html"><span class="rc-cat">DSA</span><span class="rc-title">Hash Tables</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Be able to give the class of any snippet on sight (nested loop → O(n²), halving → O(log n)) and explain that Big-O is about growth, not time. Mentioning that constants matter at small n, and analyzing space too, shows nuance beyond rote memorization.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

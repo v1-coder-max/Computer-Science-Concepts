@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metrics, SLIs & SLOs — DevLens</title>
+  <meta name="description" content="How to measure reliability that matters: the golden signals, SLIs (what you measure), SLOs (the target), SLAs (the contract), and error budgets that balance reliability against shipping speed." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="observability" data-concept="metrics-and-slos" data-title="Metrics, SLIs & SLOs">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Metrics, SLIs & SLOs</h1>
+          <p class="lede">
+            Not all metrics matter equally. <strong>SLIs</strong> are the few that capture user happiness, <strong>SLOs</strong> are your targets for them, and the <strong>error budget</strong> turns reliability into a number you can spend.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#observability</span>
+            <span class="tag">#metrics</span>
+            <span class="tag">#slo</span>
+            <span class="tag">#reliability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Start with <em>what</em> to measure. The <strong>four golden signals</strong> (Google SRE) are <strong>latency, traffic, errors, and saturation</strong> — measure these on every service and you'll catch most problems. (RED — Rate, Errors, Duration — and USE — Utilization, Saturation, Errors — are related shorthands.)
+          </p>
+          <p>
+            A <strong>Service Level Indicator (SLI)</strong> is a specific measure of the service's behavior — e.g. 'the proportion of requests served in under 200 ms' or 'the success rate.' It should reflect <em>user experience</em>, not internal trivia like CPU.
+          </p>
+          <p>
+            A <strong>Service Level Objective (SLO)</strong> is the target for an SLI over a window — e.g. '99.9% of requests succeed over 30 days.' A <strong>Service Level Agreement (SLA)</strong> is the contractual promise to customers (with penalties), usually looser than your internal SLO so you have headroom.
+          </p>
+          <p>
+            The clever part is the <strong>error budget</strong>: 99.9% allows 0.1% failures — that budget is something you can <em>spend</em>. Plenty of budget left? Ship faster, take risks. Budget exhausted? Freeze features and focus on reliability. It turns the eternal stability-vs-velocity argument into data, and it's why you don't chase 100% (impossibly expensive, and it leaves no room to ship).
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              SRE-influenced teams define a handful of SLOs per service (success rate, p99 latency), publish them on dashboards, and alert on <em>budget burn rate</em> rather than every blip. When a service blows its error budget, the policy is to stop shipping features and fix reliability until it recovers — a concrete, non-political mechanism. The four golden signals are the default first dashboard for any new service.
+            </p>
+          </div>
+
+          <h2>SLI → SLO → error budget</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Measure user-facing signals; budget the allowed failure</text><rect class="dgm-box-accent" x="20" y="64" width="130" height="44" rx="8"/><text class="dgm-sub" x="85" y="90" text-anchor="middle">SLI</text><text class="dgm-sub" x="85" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">what you measure</text><line x1="152" y1="86" x2="192" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="194" y="64" width="130" height="44" rx="8"/><text class="dgm-sub" x="259" y="90" text-anchor="middle">SLO</text><text class="dgm-sub" x="259" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">target (99.9%)</text><line x1="326" y1="86" x2="366" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="368" y="64" width="200" height="44" rx="8"/><text class="dgm-sub" x="468" y="90" text-anchor="middle">Error budget = 0.1%</text><text class="dgm-sub" x="468" y="124" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">spend on velocity vs reliability</text><text class="dgm-sub" x="300" y="152" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Golden signals: latency · traffic · errors · saturation</text></svg>
+            <figcaption>Figure 1 — An SLI is measured against an SLO; the gap to 100% is an error budget you spend on shipping speed or stability.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">YAML</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml"># An SLO expressed against an SLI (the success-rate indicator):
+#   SLI  = successful_requests / total_requests
+#   SLO  = 99.9% over a rolling 30 days
+#   Error budget = 0.1%  →  ~43 minutes of downtime per month
+
+# Alert on BURN RATE, not raw errors — page when the budget is being
+# consumed fast enough to blow the 30-day window:
+#   alert: error_budget_burn_rate &gt; 14x  (fast burn → wake someone up)
+
+# Golden signals to chart first: latency, traffic, errors, saturation.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Measure the <strong>four golden signals</strong> (latency, traffic, errors, saturation); pick SLIs that reflect <strong>user experience</strong>.</li>
+              <li><strong>SLI</strong> = the measure, <strong>SLO</strong> = the target, <strong>SLA</strong> = the customer contract (looser than the SLO).</li>
+              <li>The <strong>error budget</strong> (gap to 100%) turns reliability-vs-velocity into a number you spend; don't chase 100%.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../observability/three-pillars-of-observability.html"><span class="rc-cat">Observability</span><span class="rc-title">The Three Pillars</span></a>
+            <a class="related-card" href="../observability/alerting-and-dashboards.html"><span class="rc-cat">Observability</span><span class="rc-title">Alerting & Dashboards</span></a>
+            <a class="related-card" href="../interview-scenarios/designing-for-high-availability.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Designing for High Availability</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define SLI/SLO/SLA crisply and bring up the error budget — it's the concept that impresses, because it reframes reliability vs feature velocity as spending a budget rather than an argument. Golden signals show you know what to measure.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

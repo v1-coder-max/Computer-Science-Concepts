@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boxing & Unboxing — DevLens</title>
+  <meta name="description" content="What happens when a value type is treated as an object — it's boxed onto the heap — why that costs allocations and GC pressure, and how generics let you avoid it." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="boxing-and-unboxing" data-title="Boxing & Unboxing">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Boxing & Unboxing</h1>
+          <p class="lede">
+            <strong>Boxing</strong> is the hidden cost of putting a value type where an <code>object</code> is expected: it gets wrapped on the heap. Death by a thousand boxes is a classic .NET performance trap.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#csharp</span>
+            <span class="tag">#boxing</span>
+            <span class="tag">#performance</span>
+            <span class="tag">#memory</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Boxing</strong> converts a value type (an <code>int</code>, a struct) into a reference-type <code>object</code> by allocating a box on the <strong>heap</strong> and copying the value into it. <strong>Unboxing</strong> reverses it — extracting the value back out (with a type check). It happens whenever a value type is used where a reference type is expected: assigning to <code>object</code>, putting an <code>int</code> in a non-generic collection, or passing one to a method taking <code>object</code>.
+          </p>
+          <p>
+            The problem is cost. Each box is a <strong>heap allocation</strong> plus a copy, and those boxes later create <strong>GC pressure</strong>. One box is trivial; boxing in a hot loop or per-item across a big collection quietly tanks performance and allocates megabytes of garbage.
+          </p>
+          <p>
+            It's often <strong>invisible</strong> — the compiler inserts it silently. Classic triggers: the old non-generic <code>ArrayList</code> (stores <code>object</code>, so every <code>int</code> boxes), calling an interface method on a struct, or string formatting that takes <code>object[]</code>. You won't see it in the code; you see it in the allocation profiler.
+          </p>
+          <p>
+            The fix is <strong>generics</strong>. <code>List&lt;int&gt;</code> stores <code>int</code>s directly — no boxing — which is the main reason generic collections replaced the non-generic ones. Generally: prefer generic APIs over <code>object</code>-based ones, and watch for accidental boxing (struct-to-interface, value types in <code>object</code> parameters) in performance-sensitive paths.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Boxing is a top finding in .NET performance reviews: a service that allocates excessively and spends too long in GC is frequently boxing value types somewhere hot — logging that passes <code>int</code> args as <code>object</code>, a struct enumerator that boxes, or legacy <code>ArrayList</code>/<code>Hashtable</code> usage. Switching to generics and struct-aware APIs (and tools like allocation profilers / Roslyn analyzers that flag boxing) is standard practice for high-throughput code where GC pauses matter.
+            </p>
+          </div>
+
+          <h2>Value → boxed object on the heap</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Treating a value type as object allocates a box</text><rect class="dgm-box" x="40" y="70" width="90" height="36" rx="8"/><text class="dgm-sub" x="85" y="92" text-anchor="middle">int 42</text><text class="dgm-sub" x="85" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">value (inline)</text><line x1="132" y1="88" x2="180" y2="88" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><text class="dgm-sub" x="156" y="78" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">box</text><rect class="dgm-box-accent" x="182" y="70" width="140" height="36" rx="8"/><text class="dgm-sub" x="252" y="92" text-anchor="middle">object { 42 }</text><text class="dgm-sub" x="252" y="124" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">heap allocation + copy</text><rect class="dgm-box-accent" x="400" y="70" width="170" height="36" rx="8"/><text class="dgm-sub" x="485" y="92" text-anchor="middle">List<int> — no box</text><text class="dgm-sub" x="485" y="124" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">generics avoid it</text><text class="dgm-sub" x="300" y="160" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">One box is fine; boxing in a hot loop = GC pressure</text></svg>
+            <figcaption>Figure 1 — Using a value type as object allocates a heap box and copies the value; generics store the value directly and skip the box.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ Boxing — value type used as object (heap allocation each time).
+object o = 42;                       // box
+int back = (int)o;                   // unbox (with a type check)
+
+ArrayList list = new();              // stores object → every int boxes
+for (int i = 0; i &lt; 1_000_000; i++) list.Add(i);   // a million boxes 😱
+
+// ✅ Generics — no boxing, value stored directly.
+List&lt;int&gt; fast = new();
+for (int i = 0; i &lt; 1_000_000; i++) fast.Add(i);   // zero boxing
+
+// Watch for hidden boxing: struct → interface, value types in object params.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Boxing</strong> wraps a value type in a heap-allocated <code>object</code> (copy + allocation); <strong>unboxing</strong> extracts it back.</li>
+              <li>It's often <strong>invisible</strong> and cheap once, but boxing in hot paths causes <strong>allocations and GC pressure</strong>.</li>
+              <li><strong>Generics</strong> (<code>List&lt;int&gt;</code>) avoid it — prefer generic APIs over <code>object</code>-based ones; watch struct-to-interface boxing.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/value-vs-reference-types.html"><span class="rc-cat">C# & Patterns</span><span class="rc-title">Value vs Reference Types</span></a>
+            <a class="related-card" href="../csharp/generics.html"><span class="rc-cat">C# & Patterns</span><span class="rc-title">Generics</span></a>
+            <a class="related-card" href="../dotnet/garbage-collection.html"><span class="rc-cat">.NET</span><span class="rc-title">Garbage Collection</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define boxing as wrapping a value type on the heap and explain the cost (allocation + GC pressure), then give the fix: generics. Knowing the invisible triggers — non-generic collections, struct-to-interface calls — is what separates a real answer from the textbook definition.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

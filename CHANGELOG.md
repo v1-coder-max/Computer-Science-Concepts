@@ -7,6 +7,19 @@ interview tip) and is registered in `assets/js/nav.js` + `data/search-index.json
 
 ## [Unreleased]
 
+### Added — 2026-06-13 · More tracks + cheat sheet (Phase 2)
+
+- **DevOps & CI/CD** 🚀 (5) — CI/CD Pipelines · Containers & Images · Deployment
+  Strategies (rolling / blue-green / canary) · Infrastructure as Code · Feature Flags.
+- **Security Fundamentals** 🔒 (5) — Authentication vs Authorization · Hashing &
+  Salting · Encryption Basics · SQL Injection · Cross-Site Scripting (XSS).
+- **Observability** 📈 (5) — The Three Pillars (logs/metrics/traces) · Structured
+  Logging · Metrics, SLIs & SLOs · Distributed Tracing & Spans · Alerting & Dashboards.
+- **Data Structures & Algorithms** 📐 (7) — Big-O Notation · **Big-O Cheat Sheet** ·
+  Arrays vs Linked Lists · Hash Tables · Stacks & Queues · Trees & Graphs · Sorting Algorithms.
+- **Microservices** (+3) — Service Mesh · API Versioning · Strangler Fig Pattern.
+- **C# & Design Patterns** (+3) — Value vs Reference Types · Boxing & Unboxing · Records.
+
 ### Added — 2026-06-13 · New foundational tracks (Phase 1)
 
 - **Concurrency & Multithreading** 🧵 (6) — Concurrency vs Parallelism · Async/Await

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CI/CD Pipelines — DevLens</title>
+  <meta name="description" content="What continuous integration and continuous delivery/deployment actually mean: the automated build → test → deploy pipeline, fast feedback, and shipping small changes often." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="devops" data-concept="ci-cd-pipelines" data-title="CI/CD Pipelines">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>CI/CD Pipelines</h1>
+          <p class="lede">
+            A pipeline turns 'it works on my machine' into 'it's tested and deployable on every commit.' CI integrates and verifies; CD gets it safely to production.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#devops</span>
+            <span class="tag">#ci-cd</span>
+            <span class="tag">#automation</span>
+            <span class="tag">#delivery</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Continuous Integration (CI)</strong> means everyone merges to a shared branch frequently, and every push triggers an automated <strong>build + test</strong>. The point is fast feedback: you find integration bugs in minutes, not at a painful 'integration week' months later.
+          </p>
+          <p>
+            <strong>Continuous Delivery (CD)</strong> extends that — every change that passes the pipeline is <em>automatically prepared</em> for release, so deploying is a one-click (or zero-click) routine, not an event. <strong>Continuous Deployment</strong> goes one step further: passing changes ship to production with no human gate at all.
+          </p>
+          <p>
+            A pipeline is a series of <strong>stages</strong>, each a gate: compile → unit tests → build an immutable artifact (often a container image) → integration tests → deploy to staging → deploy to production. A failure stops the line, so broken code never reaches users.
+          </p>
+          <p>
+            The cultural payoff is <strong>small batches</strong>: tiny, frequent, automatically-verified changes are far less risky than big quarterly releases. This is what DORA's research links to elite performance — high deploy frequency <em>and</em> low change-failure rate go together precisely because automation makes each change small and safe.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              GitHub Actions, GitLab CI, Azure Pipelines, and Jenkins all express the same shape: on every push, run the build and tests, produce a versioned artifact, and promote it through environments with automated checks. High-performing teams deploy many times a day through these pipelines with confidence, because each deploy is a small, fully-tested increment — the opposite of the big-bang release weekend that the practice was invented to kill.
+            </p>
+          </div>
+
+          <h2>Build → test → deploy, on every commit</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Each stage is a gate; a failure stops the line</text><rect class="dgm-box-accent" x="18" y="64" width="96" height="40" rx="8"/><text class="dgm-sub" x="66" y="88" text-anchor="middle">commit</text><line x1="116" y1="84" x2="140" y2="84" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="142" y="64" width="96" height="40" rx="8"/><text class="dgm-sub" x="190" y="88" text-anchor="middle">build</text><line x1="240" y1="84" x2="264" y2="84" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="266" y="64" width="96" height="40" rx="8"/><text class="dgm-sub" x="314" y="88" text-anchor="middle">test</text><line x1="364" y1="84" x2="388" y2="84" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="390" y="64" width="96" height="40" rx="8"/><text class="dgm-sub" x="438" y="88" text-anchor="middle">artifact</text><line x1="488" y1="84" x2="512" y2="84" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="508" y="64" width="80" height="40" rx="8"/><text class="dgm-sub" x="548" y="88" text-anchor="middle">deploy</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Fast feedback · immutable artifact promoted across environments</text></svg>
+            <figcaption>Figure 1 — Every commit flows through automated gates; only an artifact that passes all of them is promoted toward production.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">YAML</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml"># A minimal CI pipeline (GitHub Actions): build, test, publish artifact.
+name: ci
+on: [push]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: dotnet build -c Release
+      - run: dotnet test -c Release           # gate: fails the pipeline on red
+      - run: docker build -t app:${{ github.sha }} .   # immutable, tagged artifact
+      # later stages: push image → deploy to staging → promote to prod</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>CI</strong> = integrate often + automated build/test on every push (fast feedback); <strong>CD</strong> = always-deployable, automated path to release.</li>
+              <li>A pipeline is a chain of <strong>gates</strong> producing an <strong>immutable artifact</strong> promoted across environments.</li>
+              <li><strong>Small, frequent batches</strong> are safer than big releases — high deploy frequency and low failure rate go together.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../devops/containers-and-images.html"><span class="rc-cat">DevOps & CI/CD</span><span class="rc-title">Containers & Images</span></a>
+            <a class="related-card" href="../devops/deployment-strategies.html"><span class="rc-cat">DevOps & CI/CD</span><span class="rc-title">Deployment Strategies</span></a>
+            <a class="related-card" href="../git/branching-strategies.html"><span class="rc-cat">Git</span><span class="rc-title">Branching Strategies</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Distinguish CI (integrate + test continuously) from continuous delivery vs deployment (auto-prepared vs auto-shipped). The mature point: small batches lower risk, which is why deploy frequency and stability rise together, not in tension.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

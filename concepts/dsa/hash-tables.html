@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hash Tables — DevLens</title>
+  <meta name="description" content="How hash tables give O(1) average lookup by mapping keys to buckets, how collisions are handled (chaining vs open addressing), and why the worst case is O(n) and load factor matters." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dsa" data-concept="hash-tables" data-title="Hash Tables">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Hash Tables</h1>
+          <p class="lede">
+            The workhorse data structure: a hash table turns a key into an array index via a hash function, giving <strong>O(1) average</strong> insert, lookup, and delete.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dsa</span>
+            <span class="tag">#hash-table</span>
+            <span class="tag">#hashing</span>
+            <span class="tag">#collisions</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>hash table</strong> stores key-value pairs in an array of <strong>buckets</strong>. A <strong>hash function</strong> maps each key to a bucket index, so to find a key you hash it and jump straight to its bucket — no scanning. That's the source of the magic <strong>O(1) average</strong> operations.
+          </p>
+          <p>
+            Different keys can hash to the same bucket — a <strong>collision</strong> — and handling them is the crux. <strong>Chaining</strong> stores a small list (or tree) per bucket. <strong>Open addressing</strong> probes for the next free slot. Either way, if too many keys land in one bucket, operations on it degrade toward a linear scan.
+          </p>
+          <p>
+            That's why the <strong>worst case is O(n)</strong>: if every key collides (a bad hash, or an adversary crafting collisions), the table becomes one long list. Good hash functions spread keys uniformly, and the <strong>load factor</strong> (entries ÷ buckets) is kept low — when it crosses a threshold (~0.7), the table <strong>resizes</strong> and rehashes everything to keep buckets short. Resizing is O(n) but rare, so insertion stays amortized O(1).
+          </p>
+          <p>
+            Keys must have consistent <strong>equality and hashing</strong>: equal keys must produce equal hashes (in .NET, override <code>Equals</code> and <code>GetHashCode</code> together), and keys should be immutable — mutating a key after insertion changes its hash and 'loses' it in the table. This is the most common hash bug in practice.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Hash tables back <code>Dictionary&lt;K,V&gt;</code> and <code>HashSet&lt;T&gt;</code> in .NET, Python dicts, Java HashMaps — they're everywhere because O(1) lookup is transformative (it's how Two Sum drops from O(n²) to O(n)). Real systems also mind the adversarial worst case: web frameworks randomize hash seeds to prevent 'hash-flooding' denial-of-service attacks where an attacker sends keys engineered to collide and force O(n) behavior.
+            </p>
+          </div>
+
+          <h2>Key → hash → bucket</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Hash the key to jump straight to its bucket</text><rect class="dgm-box-accent" x="30" y="64" width="90" height="40" rx="8"/><text class="dgm-sub" x="75" y="88" text-anchor="middle">key</text><line x1="122" y1="84" x2="160" y2="84" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="162" y="64" width="110" height="40" rx="8"/><text class="dgm-sub" x="217" y="88" text-anchor="middle">hash(key) % n</text><line x1="274" y1="84" x2="312" y2="84" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="314" y="48" width="90" height="22" rx="8"/><text class="dgm-sub" x="359" y="63" text-anchor="middle">bucket 0</text><rect class="dgm-box" x="314" y="74" width="90" height="22" rx="8"/><text class="dgm-sub" x="359" y="89" text-anchor="middle">bucket 1 → →</text><rect class="dgm-box" x="314" y="100" width="90" height="22" rx="8"/><text class="dgm-sub" x="359" y="115" text-anchor="middle">bucket 2</text><text class="dgm-sub" x="440" y="70" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">collision → chain in a bucket</text><text class="dgm-sub" x="440" y="100" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">load factor high → resize</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">O(1) average · O(n) worst (all collide) · keys: stable Equals+GetHashCode</text></svg>
+            <figcaption>Figure 1 — Hashing maps a key to a bucket for direct access; collisions chain within a bucket, and a high load factor triggers a resize.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Dictionary / HashSet are hash tables — O(1) average lookup.
+var counts = new Dictionary&lt;string, int&gt;();
+counts["a"] = counts.GetValueOrDefault("a") + 1;   // hash → bucket, O(1) avg
+
+// Custom keys MUST implement Equals + GetHashCode consistently,
+// and be immutable (mutating a key after insert "loses" it):
+public sealed record Point(int X, int Y);   // records do this for you
+
+// This O(1) lookup is what turns Two Sum from O(n²) into O(n).</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A hash table maps keys to buckets via a <strong>hash function</strong> → <strong>O(1) average</strong> insert/lookup/delete.</li>
+              <li><strong>Collisions</strong> (chaining or open addressing) and a high <strong>load factor</strong> degrade it; resizing keeps buckets short — worst case is <strong>O(n)</strong>.</li>
+              <li>Keys need consistent <strong>Equals + GetHashCode</strong> and should be <strong>immutable</strong> (mutating a key loses it).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dsa/big-o-cheat-sheet.html"><span class="rc-cat">DSA</span><span class="rc-title">Big-O Cheat Sheet</span></a>
+            <a class="related-card" href="../csharp/boxing-and-unboxing.html"><span class="rc-cat">C# & Patterns</span><span class="rc-title">Boxing & Unboxing</span></a>
+            <a class="related-card" href="../coding-problems/two-sum.html"><span class="rc-cat">Coding Problems</span><span class="rc-title">Two Sum</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Explain O(1) average via hashing-to-a-bucket, then immediately address the worst case (collisions → O(n)) and the Equals/GetHashCode contract. Knowing about load factor/resizing and hash-flooding DoS is the senior depth.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

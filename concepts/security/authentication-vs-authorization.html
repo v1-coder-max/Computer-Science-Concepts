@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authentication vs Authorization — DevLens</title>
+  <meta name="description" content="The core distinction every security discussion rests on: authentication proves who you are; authorization decides what you're allowed to do — two separate steps, often confused." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="security" data-concept="authentication-vs-authorization" data-title="Authentication vs Authorization">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Authentication vs Authorization</h1>
+          <p class="lede">
+            Two words one letter apart that people constantly mix up. <strong>Authentication</strong> = who are you? <strong>Authorization</strong> = what are you allowed to do? Different steps, different failures.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#security</span>
+            <span class="tag">#auth</span>
+            <span class="tag">#identity</span>
+            <span class="tag">#access-control</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Authentication (authn)</strong> verifies <em>identity</em> — proving you are who you claim to be. It's the login: a password, a one-time code, a biometric, a token. Its output is a trusted answer to 'who is this?'
+          </p>
+          <p>
+            <strong>Authorization (authz)</strong> happens <em>after</em> authentication and decides <em>permissions</em> — what this now-known identity may access or do. Being logged in (authenticated) doesn't mean you can delete another user's data (that's an authorization check).
+          </p>
+          <p>
+            The order matters: authenticate first, then authorize each action. They fail differently too — a failed authentication is '401 Unauthorized' (we don't know who you are), while a failed authorization is '403 Forbidden' (we know you, but you can't do this). The HTTP names are historically confusing, but that's the mapping.
+          </p>
+          <p>
+            Authorization models include <strong>role-based (RBAC)</strong> — permissions by role (admin, editor) — and <strong>attribute/claims-based</strong> — decisions from attributes (owner of this resource, in this department). The most common real-world bug is checking authentication but forgetting per-resource authorization, letting a logged-in user act on objects that aren't theirs.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every app does both: you log in (authn) once, then each action is authorized — can <em>this</em> user edit <em>that</em> document? The classic breach (OWASP's #1 API risk, BOLA/IDOR) is an authorization failure: the app authenticates you, then trusts an object ID from the request without checking you own it, so changing <code>/orders/123</code> to <code>/orders/124</code> exposes someone else's order.
+            </p>
+          </div>
+
+          <h2>Identify first, then permit</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Authenticate once, authorize every action</text><rect class="dgm-box-accent" x="40" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="115" y="90" text-anchor="middle">Authentication</text><text class="dgm-sub" x="115" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">who are you? (401)</text><line x1="192" y1="86" x2="250" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="252" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="327" y="90" text-anchor="middle">Authorization</text><text class="dgm-sub" x="327" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">what may you do? (403)</text><line x1="404" y1="86" x2="462" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="464" y="64" width="110" height="44" rx="8"/><text class="dgm-sub" x="519" y="90" text-anchor="middle">resource</text><text class="dgm-sub" x="300" y="152" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">Most breaches: authenticated but no per-object authorization check</text></svg>
+            <figcaption>Figure 1 — Authentication establishes identity (401 if it fails); authorization gates each action on that identity (403 if it fails).</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Authentication: establish identity (who you are).
+[Authorize]                                  // must be authenticated at all
+public class OrdersController : ControllerBase
+{
+    [HttpGet("{id}")]
+    public async Task&lt;IActionResult&gt; Get(int id)
+    {
+        var order = await _db.Orders.FindAsync(id);
+        // Authorization: does THIS identity own THIS resource? (the missing check)
+        if (order is null || order.UserId != User.GetId())
+            return Forbid();                 // 403 — authenticated, not permitted
+        return Ok(order);
+    }
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Authentication</strong> = who you are (login); <strong>authorization</strong> = what you're allowed to do (permissions) — authn first, then authz.</li>
+              <li>Failure codes: <strong>401</strong> (not authenticated) vs <strong>403</strong> (authenticated but forbidden).</li>
+              <li>Most real breaches are <strong>authorization</strong> failures — check per-resource ownership, not just 'is logged in.'</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../security/hashing-and-salting.html"><span class="rc-cat">Security</span><span class="rc-title">Hashing & Salting</span></a>
+            <a class="related-card" href="../interview-scenarios/securing-a-rest-api.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Securing a REST API</span></a>
+            <a class="related-card" href="../web-fundamentals/oauth.html"><span class="rc-cat">Web Fundamentals</span><span class="rc-title">OAuth 2.0</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define both in one breath ('who you are vs what you can do') and map them to 401 vs 403. The depth signal: most vulnerabilities are missing <em>authorization</em> (per-object) checks, not authentication.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

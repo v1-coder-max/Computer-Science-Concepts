@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Distributed Tracing & Spans — DevLens</title>
+  <meta name="description" content="How distributed tracing follows one request across services as a tree of timed spans, how trace context propagates between hops, and why it's the only signal that localizes latency in a distributed call." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="observability" data-concept="tracing-and-spans" data-title="Distributed Tracing & Spans">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Distributed Tracing & Spans</h1>
+          <p class="lede">
+            When one user request fans out across ten services, a <strong>trace</strong> stitches the whole journey into one timeline of <em>spans</em> — so you can see exactly where the time (or the error) went.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#observability</span>
+            <span class="tag">#tracing</span>
+            <span class="tag">#spans</span>
+            <span class="tag">#microservices</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>trace</strong> represents a single request's end-to-end path through your system. It's a tree of <strong>spans</strong>, where each span is one unit of work (an HTTP call, a database query, a function) with a start time, duration, and metadata. The root span is the incoming request; children are the downstream calls it makes.
+          </p>
+          <p>
+            The magic is <strong>context propagation</strong>. A <strong>trace ID</strong> is generated at the entry point and passed along with every downstream call (via HTTP headers like W3C <code>traceparent</code>), plus a <strong>span ID</strong> linking parent to child. So even though the work spans many processes and machines, the backend can reassemble it into one coherent trace.
+          </p>
+          <p>
+            This is the only pillar that answers <strong>'where in the distributed call did the time go?'</strong> Metrics tell you a service is slow overall; a trace of a slow request shows the exact span — maybe a single downstream API taking 2 seconds — that metrics and logs alone can't isolate.
+          </p>
+          <p>
+            <strong>OpenTelemetry</strong> is the vendor-neutral standard: instrument once (much is automatic for HTTP/DB), export to any backend (Jaeger, Tempo, Honeycomb). Sampling keeps the volume affordable — you don't store every trace, just a representative and error-biased slice.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              In a microservices request that touches gateway → orders → payments → inventory, a trace shows each hop as a span on a waterfall, instantly revealing that, say, the payments call dominates the latency. Teams instrument with OpenTelemetry and view traces in Jaeger/Tempo; during a latency incident it's the fastest way to pin the slow service. The same trace ID also appears in the logs, so you jump from span to root-cause log in one click.
+            </p>
+          </div>
+
+          <h2>A trace is a tree of timed spans</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">One request → spans across services, linked by a trace id</text><rect class="dgm-box-accent" x="40" y="56" width="280" height="22" rx="8"/><text class="dgm-sub" x="180" y="71" text-anchor="middle">gateway  (root span)</text><rect class="dgm-box" x="70" y="84" width="200" height="20" rx="8"/><text class="dgm-sub" x="170" y="98" text-anchor="middle">orders</text><rect class="dgm-box" x="100" y="108" width="150" height="20" rx="8"/><text class="dgm-sub" x="175" y="122" text-anchor="middle">payments — slow</text><rect class="dgm-box" x="100" y="132" width="90" height="20" rx="8"/><text class="dgm-sub" x="145" y="146" text-anchor="middle">inventory</text><text class="dgm-sub" x="175" y="172" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">waterfall reveals the dominating span</text><rect class="dgm-box-accent" x="420" y="90" width="150" height="40" rx="8"/><text class="dgm-sub" x="495" y="114" text-anchor="middle">trace id in logs too</text><text class="dgm-sub" x="495" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">span → log in one click</text></svg>
+            <figcaption>Figure 1 — Spans nest into a waterfall for one request; the long 'payments' span is the bottleneck a trace makes obvious.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// OpenTelemetry: instrument once, export anywhere. Much is automatic.
+builder.Services.AddOpenTelemetry().WithTracing(t =&gt; t
+    .AddAspNetCoreInstrumentation()      // root span per incoming request
+    .AddHttpClientInstrumentation()      // child span per downstream call
+    .AddEntityFrameworkCoreInstrumentation()
+    .AddOtlpExporter());                 // → Jaeger / Tempo / vendor
+
+// Trace context propagates automatically via the W3C 'traceparent' header,
+// so spans from every service reassemble into one trace.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A <strong>trace</strong> is one request's journey as a tree of timed <strong>spans</strong>; the root is the entry request, children are downstream calls.</li>
+              <li><strong>Context propagation</strong> (a trace id passed in headers, e.g. W3C <code>traceparent</code>) reassembles work across services into one trace.</li>
+              <li>It's the only signal that <strong>localizes latency/failure</strong> in a distributed call; standardize on <strong>OpenTelemetry</strong>, use sampling for volume.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/distributed-tracing.html"><span class="rc-cat">Microservices</span><span class="rc-title">Distributed Tracing</span></a>
+            <a class="related-card" href="../observability/three-pillars-of-observability.html"><span class="rc-cat">Observability</span><span class="rc-title">The Three Pillars</span></a>
+            <a class="related-card" href="../interview-scenarios/debugging-a-latency-spike.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Debugging a Production Latency Spike</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Describe a trace as a tree of spans and stress context propagation (the trace id in headers) as what makes cross-service correlation possible. 'It's the only pillar that localizes latency in a distributed call' is the line that nails why tracing matters.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

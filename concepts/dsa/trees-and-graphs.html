@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trees & Graphs — DevLens</title>
+  <meta name="description" content="The non-linear structures behind huge swaths of problems: trees (hierarchies, BSTs, heaps) and graphs (networks), plus the two traversals — DFS and BFS — that power most algorithms on them." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dsa" data-concept="trees-and-graphs" data-title="Trees & Graphs">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Trees & Graphs</h1>
+          <p class="lede">
+            When data isn't a line but a <em>hierarchy</em> or a <em>network</em>, you reach for trees and graphs — and almost everything you do with them is a variation on two traversals: DFS and BFS.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dsa</span>
+            <span class="tag">#trees</span>
+            <span class="tag">#graphs</span>
+            <span class="tag">#traversal</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>tree</strong> is a hierarchy: nodes with a single root, each node having children, no cycles. Special trees do specific jobs — a <strong>binary search tree</strong> keeps elements sorted for O(log n) search/insert (when balanced), a <strong>heap</strong> keeps the min/max at the root for O(log n) priority operations, a <strong>trie</strong> indexes strings by prefix. Trees model file systems, the DOM, org charts, and parse trees.
+          </p>
+          <p>
+            A <strong>graph</strong> generalizes a tree: nodes (vertices) connected by edges, with <em>any</em> structure — cycles, multiple paths, disconnected pieces. Edges can be <strong>directed</strong> or undirected, <strong>weighted</strong> or not. Graphs model social networks, maps/routes, dependencies, and the web. You store one as an <strong>adjacency list</strong> (each node's neighbors — compact for sparse graphs) or matrix.
+          </p>
+          <p>
+            The two traversals do most of the work. <strong>Depth-First Search (DFS)</strong> goes as deep as possible before backtracking — uses a <strong>stack</strong> (or recursion). It's natural for exploring all paths, detecting cycles, and topological sorting. <strong>Breadth-First Search (BFS)</strong> explores level by level — uses a <strong>queue</strong> — and finds the <strong>shortest path</strong> in an unweighted graph because it reaches nearer nodes first.
+          </p>
+          <p>
+            Most graph algorithms are DFS/BFS plus bookkeeping: track <strong>visited</strong> nodes (or you'll loop forever on cycles — the key difference from trees), and layer on extras for weighted shortest paths (Dijkstra), connectivity (union-find), or ordering (topological sort). Recognizing 'this is a graph, and I need DFS or BFS' is half the battle in interviews.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Graphs are everywhere at scale: a social network is a graph and 'people you may know' is a traversal; map routing is a weighted shortest-path (Dijkstra/A*); a build system topologically sorts a dependency graph; package managers detect cycles. Trees back databases (B-trees for indexes), priority scheduling (heaps), and autocomplete (tries). The traversal choice is load-bearing — BFS for shortest unweighted path, DFS for exhaustive exploration — which is why these two algorithms anchor a huge fraction of the coding-problem set.
+            </p>
+          </div>
+
+          <h2>Hierarchy vs network; DFS vs BFS</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Tree = hierarchy (no cycles) · Graph = network (any edges)</text><text class="dgm-sub" x="120" y="48" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Tree</text><rect class="dgm-box-accent" x="95" y="56" width="50" height="22" rx="8"/><text class="dgm-sub" x="120" y="71" text-anchor="middle">root</text><rect class="dgm-box" x="50" y="92" width="44" height="22" rx="8"/><text class="dgm-sub" x="72" y="107" text-anchor="middle">A</text><rect class="dgm-box" x="150" y="92" width="44" height="22" rx="8"/><text class="dgm-sub" x="172" y="107" text-anchor="middle">B</text><line x1="110" y1="78" x2="78" y2="90" stroke="var(--text-faint)" stroke-width="1.4"/><line x1="130" y1="78" x2="166" y2="90" stroke="var(--text-faint)" stroke-width="1.4"/><text class="dgm-sub" x="420" y="48" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Graph</text><rect class="dgm-box" x="360" y="60" width="40" height="22" rx="8"/><text class="dgm-sub" x="380" y="75" text-anchor="middle">1</text><rect class="dgm-box" x="450" y="56" width="40" height="22" rx="8"/><text class="dgm-sub" x="470" y="71" text-anchor="middle">2</text><rect class="dgm-box" x="440" y="104" width="40" height="22" rx="8"/><text class="dgm-sub" x="460" y="119" text-anchor="middle">3</text><rect class="dgm-box" x="350" y="108" width="40" height="22" rx="8"/><text class="dgm-sub" x="370" y="123" text-anchor="middle">4</text><line x1="400" y1="71" x2="450" y2="67" stroke="var(--text-faint)" stroke-width="1.4"/><line x1="470" y1="78" x2="460" y2="104" stroke="var(--text-faint)" stroke-width="1.4"/><line x1="440" y1="115" x2="390" y2="118" stroke="var(--text-faint)" stroke-width="1.4"/><line x1="370" y1="108" x2="378" y2="82" stroke="var(--text-faint)" stroke-width="1.4"/><text class="dgm-sub" x="300" y="158" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">DFS (stack, go deep) · BFS (queue, go wide → shortest path) · track visited!</text></svg>
+            <figcaption>Figure 1 — A tree branches from a root without cycles; a graph allows arbitrary edges and cycles — so traversals must track visited nodes.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Adjacency list — compact graph representation.
+var adj = new Dictionary&lt;int, List&lt;int&gt;&gt;();
+
+// BFS — level by level with a QUEUE → shortest path (unweighted).
+var q = new Queue&lt;int&gt;(); var seen = new HashSet&lt;int&gt;();
+q.Enqueue(start); seen.Add(start);
+while (q.Count &gt; 0) {
+    int node = q.Dequeue();
+    foreach (var nbr in adj[node])
+        if (seen.Add(nbr)) q.Enqueue(nbr);     // 'visited' set prevents cycles looping
+}
+
+// DFS — go deep with a STACK or recursion → paths, cycles, topo-sort.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Tree</strong> = hierarchy, no cycles (BST/heap/trie for sorted/priority/prefix); <strong>graph</strong> = network with arbitrary edges (adjacency list for sparse).</li>
+              <li><strong>DFS</strong> (stack/recursion) goes deep — paths, cycles, topo-sort; <strong>BFS</strong> (queue) goes wide — <strong>shortest path</strong> in unweighted graphs.</li>
+              <li>Always track <strong>visited</strong> nodes on graphs (cycles!) — that's the key difference from tree traversal.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dsa/stacks-and-queues.html"><span class="rc-cat">DSA</span><span class="rc-title">Stacks & Queues</span></a>
+            <a class="related-card" href="../dsa/big-o-cheat-sheet.html"><span class="rc-cat">DSA</span><span class="rc-title">Big-O Cheat Sheet</span></a>
+            <a class="related-card" href="../coding-problems/number-of-islands.html"><span class="rc-cat">Coding Problems</span><span class="rc-title">Number of Islands</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Be able to say which traversal fits a problem — BFS for shortest unweighted path, DFS for exhaustive/path/cycle work — and why (queue vs stack). The detail that trips people: graphs need a visited set or they loop on cycles, unlike trees.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

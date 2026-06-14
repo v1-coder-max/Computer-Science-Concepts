@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Structured Logging — DevLens</title>
+  <meta name="description" content="Why logging key-value structured events beats plain text strings: machine-queryable fields, message templates, correlation IDs, and appropriate log levels — so logs are searchable, not just readable." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="observability" data-concept="structured-logging" data-title="Structured Logging">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Structured Logging</h1>
+          <p class="lede">
+            Plain-text logs read fine to a human and are miserable to a machine. <strong>Structured logging</strong> records events as key-value data you can filter, aggregate, and correlate.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#observability</span>
+            <span class="tag">#logging</span>
+            <span class="tag">#structured</span>
+            <span class="tag">#diagnostics</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Traditional logging concatenates everything into a string: <code>$"Order {id} failed for {user}"</code>. It's readable line-by-line but unqueryable at scale — you can't reliably ask 'all failures for user 42 in the last hour' across millions of lines without brittle regex.
+          </p>
+          <p>
+            <strong>Structured logging</strong> instead records each event as a set of named fields (an order id, a user id, a duration, a level) — typically emitted as JSON. Now your log platform can index those fields and you can <em>query</em>: filter by <code>userId = 42</code>, group by error type, chart durations. Logs become data, not prose.
+          </p>
+          <p>
+            The .NET idiom is the <strong>message template</strong>: <code>logger.LogInformation("Order {OrderId} failed for {User}", id, user)</code>. The named holes both render a readable message <em>and</em> capture <code>OrderId</code> and <code>User</code> as structured properties. Pair it with a <strong>correlation/trace ID</strong> in scope so all logs for one request are tied together.
+          </p>
+          <p>
+            Round it out with sensible <strong>levels</strong> (Trace/Debug/Information/Warning/Error/Critical) so you can dial verbosity, and with hygiene: don't log secrets or PII, and don't log so much that the signal drowns. Good structured logs are the 'what exactly happened' pillar that pairs with metrics and traces.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Production .NET services use Serilog or the built-in <code>ILogger</code> with message templates, emitting JSON to Elasticsearch/Seq/Loki where engineers query by field during incidents. The difference shows under pressure: with structured logs you filter to the failing request's correlation ID and read its exact path in seconds; with string logs you're grepping and guessing. Cloud log platforms are built around structured fields for exactly this reason.
+            </p>
+          </div>
+
+          <h2>Strings vs queryable fields</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Same event, but one is data you can query</text><rect class="dgm-box" x="30" y="60" width="240" height="30" rx="8"/><text class="dgm-sub" x="150" y="79" text-anchor="middle">"Order 17 failed for alice"</text><text class="dgm-sub" x="150" y="108" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">readable, but not queryable</text><rect class="dgm-box-accent" x="320" y="56" width="250" height="40" rx="8"/><text class="dgm-sub" x="445" y="80" text-anchor="middle">{ msg, OrderId:17, User:'alice', level }</text><text class="dgm-sub" x="445" y="112" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">filter / group / chart by field</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">+ correlation id ties every log of one request together</text></svg>
+            <figcaption>Figure 1 — A structured event carries named fields a platform can index and query; a string can only be grepped.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ✅ Message template: readable message + structured properties.
+logger.LogInformation("Order {OrderId} failed for {User} after {Ms}ms",
+    orderId, user, elapsed);
+// → emits { OrderId: 17, User: "alice", Ms: 240, Level: "Information", ... }
+
+// Correlate every log of one request with a scope (or the trace id):
+using (logger.BeginScope(new Dictionary&lt;string, object&gt; { ["TraceId"] = traceId }))
+{
+    // all logs in here carry TraceId → query one request end-to-end
+}
+
+// ❌ Avoid: logger.LogInformation($"Order {orderId} failed");  // string only</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Log events as <strong>key-value fields</strong> (usually JSON), not concatenated strings — so logs are queryable, not just readable.</li>
+              <li>Use <strong>message templates</strong> (<code>{OrderId}</code>) to get a readable message <em>and</em> structured properties, plus a <strong>correlation/trace id</strong>.</li>
+              <li>Use appropriate <strong>levels</strong>; never log secrets/PII, and avoid drowning the signal.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../observability/three-pillars-of-observability.html"><span class="rc-cat">Observability</span><span class="rc-title">The Three Pillars</span></a>
+            <a class="related-card" href="../microservices/centralized-logging.html"><span class="rc-cat">Microservices</span><span class="rc-title">Centralized Logging</span></a>
+            <a class="related-card" href="../observability/alerting-and-dashboards.html"><span class="rc-cat">Observability</span><span class="rc-title">Alerting & Dashboards</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Contrast string logs (greppable) with structured fields (queryable), then show the message-template idiom and correlation IDs. The maturity signal: levels, no PII, and 'logs are data you query during an incident,' not prose you scroll.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

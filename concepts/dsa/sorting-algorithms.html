@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sorting Algorithms — DevLens</title>
+  <meta name="description" content="Why comparison sorts can't beat O(n log n), how quicksort/mergesort/heapsort differ in practice (speed, space, stability), and when non-comparison sorts (counting/radix) apply." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="dsa" data-concept="sorting-algorithms" data-title="Sorting Algorithms">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Sorting Algorithms</h1>
+          <p class="lede">
+            Sorting is the most-studied algorithm for a reason — it teaches the whole toolkit. The headline: comparison sorts bottom out at <strong>O(n log n)</strong>, and the differences are in the constants and trade-offs.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#dsa</span>
+            <span class="tag">#sorting</span>
+            <span class="tag">#algorithms</span>
+            <span class="tag">#complexity</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            There's a proven <strong>lower bound</strong>: any sort that works by <em>comparing</em> elements needs at least <strong>O(n log n)</strong> comparisons in the worst case. So the practical choices among O(n log n) sorts come down to speed in practice, memory, and stability — not asymptotic class.
+          </p>
+          <p>
+            <strong>Quicksort</strong> partitions around a pivot and recurses. It's usually the <em>fastest in practice</em> thanks to excellent cache behavior and in-place work (O(log n) stack), but a bad pivot gives O(n²) worst case — mitigated by randomized or median-of-three pivots. Not stable.
+          </p>
+          <p>
+            <strong>Mergesort</strong> splits in half, sorts each, and merges. It <em>guarantees</em> O(n log n) even in the worst case and is <strong>stable</strong>, but needs O(n) extra space for the merge — the go-to when worst-case guarantees or stability matter (and for external/linked sorting). <strong>Heapsort</strong> is O(n log n) and <strong>in-place</strong> (O(1) space) but cache-unfriendly and not stable.
+          </p>
+          <p>
+            Below the comparison bound live <strong>counting</strong> and <strong>radix</strong> sort: O(n + k) by exploiting bounded integer keys (no comparisons). And the simple O(n²) sorts (insertion, bubble) aren't useless — insertion sort is fast on <em>small</em> or <em>nearly-sorted</em> inputs, which is why real library sorts (introsort, Timsort) switch to it for small partitions. <strong>Stability</strong> — preserving equal elements' order — matters when sorting by successive keys.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Standard libraries are pragmatic hybrids: .NET's <code>Array.Sort</code> uses <strong>introsort</strong> (quicksort that falls back to heapsort to dodge the O(n²) worst case, and insertion sort for tiny partitions), while Python and Java's object sort use <strong>Timsort</strong> (a stable mergesort/insertion hybrid tuned for real-world partially-ordered data). You rarely implement a sort, but you choose <code>OrderBy</code> (stable) vs <code>Array.Sort</code> (faster, unstable) based on whether you need stability — so knowing the trade-offs is practical, not academic.
+            </p>
+          </div>
+
+          <h2>Divide-and-conquer, different trade-offs</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">All O(n log n) — the difference is speed, space, stability</text><rect class="dgm-box-accent" x="20" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="95" y="90" text-anchor="middle">Quicksort</text><text class="dgm-sub" x="95" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">fastest · in-place · O(n²) worst</text><rect class="dgm-box" x="190" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="265" y="90" text-anchor="middle">Mergesort</text><text class="dgm-sub" x="265" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">stable · O(n) space · guaranteed</text><rect class="dgm-box-accent" x="360" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="435" y="90" text-anchor="middle">Heapsort</text><text class="dgm-sub" x="435" y="124" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">in-place · not stable</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Comparison floor O(n log n) · counting/radix O(n+k) for bounded ints</text></svg>
+            <figcaption>Figure 1 — The three O(n log n) sorts trade speed, space, and stability; non-comparison sorts beat the bound only for restricted keys.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Library sorts are tuned hybrids — pick by whether you need stability.
+Array.Sort(nums);                          // introsort: fast, in-place, NOT stable
+var byKeyStable = items.OrderBy(i =&gt; i.Key); // LINQ OrderBy: STABLE (mergesort-like)
+
+// Quicksort idea: partition around a pivot, recurse on each side.
+// Mergesort idea: split in half, sort each, merge (stable, O(n) space).
+// Counting/radix: O(n+k), no comparisons — only for bounded integer keys.
+
+// Why it matters: sorting by City then by Name needs a STABLE sort to keep
+// the City order within equal Names.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Comparison sorts can't beat <strong>O(n log n)</strong>; choose among them by speed, space, and stability — not Big-O class.</li>
+              <li><strong>Quicksort</strong>: fastest in practice, in-place, O(n²) worst; <strong>mergesort</strong>: stable + guaranteed but O(n) space; <strong>heapsort</strong>: in-place, not stable.</li>
+              <li><strong>Counting/radix</strong> beat the bound (O(n+k)) for bounded integer keys; libraries use hybrids (introsort/Timsort) and switch to insertion sort for small inputs.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dsa/big-o-cheat-sheet.html"><span class="rc-cat">DSA</span><span class="rc-title">Big-O Cheat Sheet</span></a>
+            <a class="related-card" href="../dsa/big-o-notation.html"><span class="rc-cat">DSA</span><span class="rc-title">Big-O Notation</span></a>
+            <a class="related-card" href="../coding-problems/merge-intervals.html"><span class="rc-cat">Coding Problems</span><span class="rc-title">Merge Intervals</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              State the O(n log n) comparison lower bound, then differentiate quicksort/mergesort/heapsort by speed/space/stability. Knowing libraries use introsort/Timsort and why stability matters (sorting by successive keys) is the applied depth interviewers reward.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

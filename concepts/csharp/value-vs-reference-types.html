@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Value vs Reference Types — DevLens</title>
+  <meta name="description" content="The core C# type distinction: value types (structs) copied by value and usually stack/inline-allocated, vs reference types (classes) copied by reference and heap-allocated — and where each lives." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="csharp" data-concept="value-vs-reference-types" data-title="Value vs Reference Types">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Value vs Reference Types</h1>
+          <p class="lede">
+            The distinction that explains half of C#'s surprising behaviors: <strong>value types</strong> are copied by value, <strong>reference types</strong> are copied by reference — and that changes how assignment, equality, and mutation behave.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#csharp</span>
+            <span class="tag">#value-types</span>
+            <span class="tag">#reference-types</span>
+            <span class="tag">#memory</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Value types</strong> (all <code>struct</code>s — <code>int</code>, <code>bool</code>, <code>DateTime</code>, your own structs) <em>hold their data directly</em>. Assigning one or passing it to a method <strong>copies the whole value</strong>, so the copy is independent — change one, the other is unaffected. <strong>Reference types</strong> (all <code>class</code>es — <code>string</code>, arrays, your classes) hold a <em>reference</em> to data elsewhere; assigning copies the <strong>reference</strong>, so two variables point at the <em>same</em> object and a change through one is visible through the other.
+          </p>
+          <p>
+            Where they live: value types are typically allocated <strong>inline</strong> — on the stack as locals, or embedded inside their containing object — and disappear with no GC work. Reference types live on the <strong>managed heap</strong> and are cleaned up by the garbage collector. (This is a useful mental model, though the precise location depends on context, e.g. a struct field of a heap object lives on the heap.)
+          </p>
+          <p>
+            This drives behavior you must know. <strong>Default equality</strong> differs: value types compare by their contents, reference types by identity (same object) unless overridden. <strong>Mutation</strong> differs: passing a struct to a method that changes it won't affect the original (it got a copy) unless you pass by <code>ref</code>. And large structs are expensive to copy around — a reason to keep them small.
+          </p>
+          <p>
+            Practical guidance: use a <strong>class</strong> by default; use a <strong>struct</strong> for small, immutable, value-like data (a coordinate, a money amount) where copy semantics are desired and you want to avoid heap allocations. <code>record class</code> vs <code>record struct</code> lets you get value-based equality either way — choosing the type kind is choosing copy and identity semantics.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              This distinction is behind countless real bugs and optimizations: a method that 'modifies' a struct parameter but the caller sees no change (it mutated a copy), or two list elements that unexpectedly change together (they're the same reference). On the performance side, high-throughput .NET code uses small structs and <code>Span&lt;T&gt;</code> to avoid heap allocations and GC pressure — the value-type semantics are exactly why <code>struct</code> can be a deliberate performance choice, not just a modeling one.
+            </p>
+          </div>
+
+          <h2>Copy the value vs copy the reference</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Assignment copies the value, or copies the reference</text><text class="dgm-sub" x="150" y="50" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Value type (struct)</text><rect class="dgm-box" x="40" y="60" width="90" height="30" rx="8"/><text class="dgm-sub" x="85" y="79" text-anchor="middle">a = {5}</text><rect class="dgm-box" x="160" y="60" width="90" height="30" rx="8"/><text class="dgm-sub" x="205" y="79" text-anchor="middle">b = {5}</text><text class="dgm-sub" x="150" y="110" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">independent copies</text><text class="dgm-sub" x="440" y="50" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Reference type (class)</text><rect class="dgm-box" x="340" y="60" width="80" height="30" rx="8"/><text class="dgm-sub" x="380" y="79" text-anchor="middle">a •</text><rect class="dgm-box" x="460" y="60" width="80" height="30" rx="8"/><text class="dgm-sub" x="500" y="79" text-anchor="middle">b •</text><rect class="dgm-box-accent" x="400" y="110" width="90" height="26" rx="8"/><text class="dgm-sub" x="445" y="127" text-anchor="middle">{ obj }</text><line x1="380" y1="90" x2="430" y2="108" stroke="var(--text-faint)" stroke-width="1.4" marker-end="url(#ar)"/><line x1="500" y1="90" x2="470" y2="108" stroke="var(--text-faint)" stroke-width="1.4" marker-end="url(#ar)"/><text class="dgm-sub" x="445" y="156" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">both point to the SAME object</text></svg>
+            <figcaption>Figure 1 — Copying a value type duplicates the data; copying a reference type duplicates only the pointer, so both share one object.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Value type: copied by value — independent.
+struct PointS { public int X; }
+var a = new PointS { X = 5 };
+var b = a;                       // COPY of the value
+b.X = 9;                         // a.X is still 5
+
+// Reference type: copied by reference — shared.
+class PointC { public int X; }
+var c = new PointC { X = 5 };
+var d = c;                       // copy of the REFERENCE
+d.X = 9;                         // c.X is now 9 too — same object
+
+// Equality differs: structs compare by contents, classes by identity (unless overridden).</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Value types (structs)</strong> copy the whole value (independent); <strong>reference types (classes)</strong> copy the reference (shared object).</li>
+              <li>Value types are usually <strong>inline/stack</strong> (no GC); reference types live on the <strong>heap</strong> (GC-managed).</li>
+              <li>It drives <strong>default equality</strong> (contents vs identity) and <strong>mutation</strong> semantics — use structs for small, immutable, value-like data.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../csharp/boxing-and-unboxing.html"><span class="rc-cat">C# & Patterns</span><span class="rc-title">Boxing & Unboxing</span></a>
+            <a class="related-card" href="../csharp/records.html"><span class="rc-cat">C# & Patterns</span><span class="rc-title">Records</span></a>
+            <a class="related-card" href="../dotnet/memory-management.html"><span class="rc-cat">.NET</span><span class="rc-title">Memory Management</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Nail the copy semantics (value copies data, reference copies the pointer) and tie them to equality and mutation surprises. Mentioning stack/heap and that structs can be a deliberate allocation optimization shows you understand the 'why,' not just the rule.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

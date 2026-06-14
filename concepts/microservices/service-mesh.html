@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Service Mesh — DevLens</title>
+  <meta name="description" content="How a service mesh moves cross-cutting networking concerns — retries, mTLS, traffic shifting, observability — out of application code into sidecar proxies managed by a control plane." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="microservices" data-concept="service-mesh" data-title="Service Mesh">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Service Mesh</h1>
+          <p class="lede">
+            Once you have dozens of services, every one needs retries, timeouts, mTLS, and tracing. A <strong>service mesh</strong> provides all of that in the infrastructure, so your code doesn't have to.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#microservices</span>
+            <span class="tag">#service-mesh</span>
+            <span class="tag">#networking</span>
+            <span class="tag">#sidecar</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            As a system grows to many services, the same <strong>cross-cutting networking concerns</strong> recur in every one: retries with backoff, timeouts, circuit breaking, mutual TLS, load balancing, traffic splitting, and request tracing. Implementing them in each service (and each language) is duplicated, inconsistent effort.
+          </p>
+          <p>
+            A <strong>service mesh</strong> extracts that into the platform. It deploys a <strong>sidecar proxy</strong> (e.g. Envoy) next to every service instance; all traffic flows through the proxy, which transparently applies the policies. The application just makes a normal call to another service — the mesh handles the resilience, security, and telemetry around it.
+          </p>
+          <p>
+            It splits into a <strong>data plane</strong> (the sidecar proxies doing the actual work) and a <strong>control plane</strong> (which configures them centrally). So you declare 'mTLS everywhere, retry these calls 3×, send 5% of traffic to v2' once, and the control plane pushes it to every proxy — no code change, no redeploy of services.
+          </p>
+          <p>
+            The big wins are <strong>uniform mTLS</strong> (encrypted, authenticated service-to-service traffic by default), consistent resilience and traffic management (canary/blue-green at the network layer), and automatic observability (every hop is traced and measured). The cost is real operational complexity and per-hop latency from the extra proxies — so a mesh earns its keep at scale, not for three services.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Istio and Linkerd are the common meshes, deploying Envoy sidecars across a Kubernetes cluster to give every service mTLS, retries, and tracing without touching application code. Large platforms use the mesh to do canary rollouts and enforce zero-trust networking centrally. Smaller systems often skip it — the operational overhead and added latency outweigh the benefit until you have enough services that doing this per-service is genuinely painful.
+            </p>
+          </div>
+
+          <h2>Sidecars carry the cross-cutting concerns</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">All traffic flows through sidecar proxies, configured centrally</text><rect class="dgm-box-accent" x="40" y="70" width="80" height="30" rx="8"/><text class="dgm-sub" x="80" y="89" text-anchor="middle">Service A</text><rect class="dgm-box" x="40" y="104" width="80" height="22" rx="8"/><text class="dgm-sub" x="80" y="119" text-anchor="middle">proxy</text><line x1="122" y1="92" x2="200" y2="92" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><text class="dgm-sub" x="160" y="82" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">mTLS · retry · trace</text><rect class="dgm-box-accent" x="202" y="70" width="80" height="30" rx="8"/><text class="dgm-sub" x="242" y="89" text-anchor="middle">Service B</text><rect class="dgm-box" x="202" y="104" width="80" height="22" rx="8"/><text class="dgm-sub" x="242" y="119" text-anchor="middle">proxy</text><rect class="dgm-box-accent" x="420" y="60" width="150" height="36" rx="8"/><text class="dgm-sub" x="495" y="82" text-anchor="middle">control plane</text><line x1="450" y1="96" x2="160" y2="104" stroke="var(--text-faint)" stroke-width="1.2" stroke-dasharray="3 3"/><line x1="490" y1="96" x2="242" y2="104" stroke="var(--text-faint)" stroke-width="1.2" stroke-dasharray="3 3"/><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Data plane (proxies) does the work · control plane configures it</text></svg>
+            <figcaption>Figure 1 — Sidecar proxies intercept all service traffic to apply mTLS, retries, and tracing; a control plane configures them centrally.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">YAML</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml"># A service mesh moves this OUT of your code into the sidecar.
+# Declare policy once (Istio) — applied to every proxy, no app change:
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+spec:
+  http:
+    - retries: { attempts: 3, perTryTimeout: 2s }   # resilience, no code
+      route:
+        - destination: { host: orders, subset: v1 }
+          weight: 95                                  # canary: 5% to v2
+        - destination: { host: orders, subset: v2 }
+          weight: 5
+# Plus automatic mTLS + tracing for every hop.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A service mesh moves <strong>cross-cutting networking</strong> (retries, timeouts, mTLS, tracing, traffic shifting) out of app code into <strong>sidecar proxies</strong>.</li>
+              <li><strong>Data plane</strong> (proxies) does the work; <strong>control plane</strong> configures them centrally — change policy without redeploying services.</li>
+              <li>Wins: uniform mTLS, consistent resilience/observability; costs: operational complexity and per-hop latency — worth it <em>at scale</em>.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../microservices/circuit-breaker.html"><span class="rc-cat">Microservices</span><span class="rc-title">Circuit Breaker</span></a>
+            <a class="related-card" href="../microservices/kubernetes.html"><span class="rc-cat">Microservices</span><span class="rc-title">Kubernetes</span></a>
+            <a class="related-card" href="../microservices/distributed-tracing.html"><span class="rc-cat">Microservices</span><span class="rc-title">Distributed Tracing</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Frame it as moving cross-cutting networking concerns into sidecars (data plane) configured by a control plane. The balanced take — uniform mTLS/resilience/observability vs operational overhead and latency — shows you'd adopt it at the right scale, not reflexively.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

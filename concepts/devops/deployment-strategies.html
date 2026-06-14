@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deployment Strategies — DevLens</title>
+  <meta name="description" content="How to release without downtime or big-bang risk: rolling, blue-green, and canary deployments — and how each trades infrastructure cost against rollback speed and blast radius." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="devops" data-concept="deployment-strategies" data-title="Deployment Strategies">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Deployment Strategies</h1>
+          <p class="lede">
+            How you roll out a new version decides your downtime and your blast radius. The main strategies — rolling, blue-green, canary — trade cost for safety differently.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#devops</span>
+            <span class="tag">#deployment</span>
+            <span class="tag">#blue-green</span>
+            <span class="tag">#canary</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Rolling deployment</strong> replaces instances a few at a time: spin up some new-version instances, drain and remove old ones, repeat. No extra fleet needed and no downtime, but during the rollout both versions serve traffic, and rollback means rolling back across the fleet.
+          </p>
+          <p>
+            <strong>Blue-green</strong> runs two full environments — <em>blue</em> (current) and <em>green</em> (new). You deploy and test green privately, then flip <strong>all</strong> traffic to it at once. Rollback is instant (flip back to blue), but you pay for double the infrastructure during the switch.
+          </p>
+          <p>
+            <strong>Canary</strong> releases the new version to a <em>small slice</em> of traffic (say 1–5%), watches its error rate and latency, and gradually ramps to 100% only if it's healthy. It catches problems with minimal blast radius — most real users never see a bad version — at the cost of more orchestration and good monitoring.
+          </p>
+          <p>
+            Underpinning all of them: <strong>feature flags</strong> decouple deploy from release (ship code dark, turn it on later), and every strategy needs <strong>health checks + fast rollback</strong>. The trade-off axis is blast radius and rollback speed vs infrastructure and complexity.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Big platforms lean on canary: a new version goes to a tiny percentage of traffic (often one region or 1% of users), automated checks compare its error/latency against the baseline, and it auto-ramps or auto-rolls-back. Blue-green is common for databases-light services that want instant rollback, and rolling is the default for stateless Kubernetes deployments. The unifying goal is the same — never expose all users to an unverified version at once.
+            </p>
+          </div>
+
+          <h2>Rolling · Blue-Green · Canary</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Trade infrastructure cost & complexity for smaller blast radius</text><text class="dgm-sub" x="95" y="50" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Rolling</text><rect class="dgm-box" x="40" y="60" width="50" height="22" rx="8"/><text class="dgm-sub" x="65" y="75" text-anchor="middle">v2</text><rect class="dgm-box" x="95" y="60" width="50" height="22" rx="8"/><text class="dgm-sub" x="120" y="75" text-anchor="middle">v1</text><rect class="dgm-box" x="150" y="60" width="50" height="22" rx="8"/><text class="dgm-sub" x="175" y="75" text-anchor="middle">v1</text><text class="dgm-sub" x="120" y="100" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">replace gradually</text><text class="dgm-sub" x="300" y="50" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Blue-Green</text><rect class="dgm-box" x="255" y="60" width="50" height="22" rx="8"/><text class="dgm-sub" x="280" y="75" text-anchor="middle">blue v1</text><rect class="dgm-box-accent" x="315" y="60" width="55" height="22" rx="8"/><text class="dgm-sub" x="342.5" y="75" text-anchor="middle">green v2</text><text class="dgm-sub" x="312" y="100" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">flip all at once</text><text class="dgm-sub" x="490" y="50" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Canary</text><rect class="dgm-box-accent" x="430" y="60" width="40" height="22" rx="8"/><text class="dgm-sub" x="450" y="75" text-anchor="middle">1%</text><rect class="dgm-box" x="475" y="60" width="95" height="22" rx="8"/><text class="dgm-sub" x="522.5" y="75" text-anchor="middle">99% v1</text><text class="dgm-sub" x="500" y="100" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">ramp if healthy</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">All need health checks + fast rollback; flags decouple deploy from release</text></svg>
+            <figcaption>Figure 1 — Rolling replaces gradually, blue-green flips wholesale (instant rollback), canary exposes a small slice first.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">YAML</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml"># Kubernetes rolling update — replace pods gradually, no downtime.
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%            # how many extra new pods during rollout
+      maxUnavailable: 0        # never drop below desired capacity
+  # readinessProbe gates traffic; a failing new version stalls the rollout.
+
+# Canary (concept): route 5% to v2, watch metrics, then ramp 5 → 25 → 100%.
+# Blue-green (concept): deploy green, test, switch the load balancer atomically.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Rolling</strong> = gradual replace (cheap, no downtime); <strong>blue-green</strong> = two environments, instant flip + rollback (2× infra); <strong>canary</strong> = small slice first, ramp on health (smallest blast radius).</li>
+              <li>All require <strong>health checks and fast rollback</strong>; <strong>feature flags</strong> decouple deploying code from releasing it.</li>
+              <li>The trade-off is blast radius / rollback speed vs infrastructure cost and orchestration.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../devops/feature-flags.html"><span class="rc-cat">DevOps & CI/CD</span><span class="rc-title">Feature Flags</span></a>
+            <a class="related-card" href="../devops/ci-cd-pipelines.html"><span class="rc-cat">DevOps & CI/CD</span><span class="rc-title">CI/CD Pipelines</span></a>
+            <a class="related-card" href="../interview-scenarios/responding-to-a-production-outage.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Responding to a Production Outage</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Compare the three on blast radius, rollback speed, and cost. The senior framing: canary minimizes the number of users who ever see a bad version, and feature flags let you deploy and release separately.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

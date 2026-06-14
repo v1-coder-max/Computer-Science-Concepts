@@ -6905,5 +6905,341 @@
     ],
     "description": "The right tool for each undo: revert to safely undo a public commit, reset to move a branch (and the soft/mixed/hard modes), and reflog to recover commits you thought you lost.",
     "url": "concepts/git/undoing-changes.html"
+  },
+  {
+    "title": "CI/CD Pipelines",
+    "category": "devops",
+    "tags": [
+      "devops",
+      "ci-cd",
+      "automation",
+      "delivery"
+    ],
+    "description": "What continuous integration and continuous delivery/deployment actually mean: the automated build → test → deploy pipeline, fast feedback, and shipping small changes often.",
+    "url": "concepts/devops/ci-cd-pipelines.html"
+  },
+  {
+    "title": "Containers & Images",
+    "category": "devops",
+    "tags": [
+      "devops",
+      "docker",
+      "containers",
+      "images"
+    ],
+    "description": "How container images package an app with its dependencies into a portable, immutable, layered artifact — and why 'build once, run anywhere' fixes the works-on-my-machine problem.",
+    "url": "concepts/devops/containers-and-images.html"
+  },
+  {
+    "title": "Deployment Strategies",
+    "category": "devops",
+    "tags": [
+      "devops",
+      "deployment",
+      "blue-green",
+      "canary"
+    ],
+    "description": "How to release without downtime or big-bang risk: rolling, blue-green, and canary deployments — and how each trades infrastructure cost against rollback speed and blast radius.",
+    "url": "concepts/devops/deployment-strategies.html"
+  },
+  {
+    "title": "Infrastructure as Code",
+    "category": "devops",
+    "tags": [
+      "devops",
+      "iac",
+      "terraform",
+      "automation"
+    ],
+    "description": "Managing servers, networks, and cloud resources as version-controlled, declarative code — so infrastructure is reproducible, reviewable, and free of manual 'snowflake' drift.",
+    "url": "concepts/devops/infrastructure-as-code.html"
+  },
+  {
+    "title": "Feature Flags",
+    "category": "devops",
+    "tags": [
+      "devops",
+      "feature-flags",
+      "release",
+      "experimentation"
+    ],
+    "description": "Feature flags decouple deploying code from releasing a feature — letting you ship dark, roll out gradually, run experiments, and kill a bad feature instantly without a redeploy.",
+    "url": "concepts/devops/feature-flags.html"
+  },
+  {
+    "title": "Authentication vs Authorization",
+    "category": "security",
+    "tags": [
+      "security",
+      "auth",
+      "identity",
+      "access-control"
+    ],
+    "description": "The core distinction every security discussion rests on: authentication proves who you are; authorization decides what you're allowed to do — two separate steps, often confused.",
+    "url": "concepts/security/authentication-vs-authorization.html"
+  },
+  {
+    "title": "Hashing & Salting",
+    "category": "security",
+    "tags": [
+      "security",
+      "hashing",
+      "passwords",
+      "cryptography"
+    ],
+    "description": "Why passwords are hashed not encrypted, what a salt defends against (rainbow tables), and why a slow password hash (bcrypt/Argon2) beats a fast one like SHA-256.",
+    "url": "concepts/security/hashing-and-salting.html"
+  },
+  {
+    "title": "Encryption Basics",
+    "category": "security",
+    "tags": [
+      "security",
+      "encryption",
+      "tls",
+      "cryptography"
+    ],
+    "description": "Symmetric vs asymmetric encryption, what each is good for, how TLS combines them, and the difference between encryption in transit and at rest — without rolling your own crypto.",
+    "url": "concepts/security/encryption-basics.html"
+  },
+  {
+    "title": "SQL Injection",
+    "category": "security",
+    "tags": [
+      "security",
+      "sql-injection",
+      "owasp",
+      "validation"
+    ],
+    "description": "How SQL injection works — untrusted input concatenated into a query becomes executable SQL — and the one real fix: parameterized queries that separate code from data.",
+    "url": "concepts/security/sql-injection.html"
+  },
+  {
+    "title": "Cross-Site Scripting (XSS)",
+    "category": "security",
+    "tags": [
+      "security",
+      "xss",
+      "owasp",
+      "frontend"
+    ],
+    "description": "How XSS injects attacker JavaScript into your pages (stored, reflected, DOM-based), what it lets attackers do, and the defenses: output encoding, Content Security Policy, and sanitization.",
+    "url": "concepts/security/cross-site-scripting.html"
+  },
+  {
+    "title": "The Three Pillars: Logs, Metrics, Traces",
+    "category": "observability",
+    "tags": [
+      "observability",
+      "logging",
+      "metrics",
+      "tracing"
+    ],
+    "description": "The three telemetry signals that make a system observable — logs (events), metrics (aggregates), and traces (request journeys) — and which question each one answers.",
+    "url": "concepts/observability/three-pillars-of-observability.html"
+  },
+  {
+    "title": "Structured Logging",
+    "category": "observability",
+    "tags": [
+      "observability",
+      "logging",
+      "structured",
+      "diagnostics"
+    ],
+    "description": "Why logging key-value structured events beats plain text strings: machine-queryable fields, message templates, correlation IDs, and appropriate log levels — so logs are searchable, not just readable.",
+    "url": "concepts/observability/structured-logging.html"
+  },
+  {
+    "title": "Metrics, SLIs & SLOs",
+    "category": "observability",
+    "tags": [
+      "observability",
+      "metrics",
+      "slo",
+      "reliability"
+    ],
+    "description": "How to measure reliability that matters: the golden signals, SLIs (what you measure), SLOs (the target), SLAs (the contract), and error budgets that balance reliability against shipping speed.",
+    "url": "concepts/observability/metrics-and-slos.html"
+  },
+  {
+    "title": "Distributed Tracing & Spans",
+    "category": "observability",
+    "tags": [
+      "observability",
+      "tracing",
+      "spans",
+      "microservices"
+    ],
+    "description": "How distributed tracing follows one request across services as a tree of timed spans, how trace context propagates between hops, and why it's the only signal that localizes latency in a distributed call.",
+    "url": "concepts/observability/tracing-and-spans.html"
+  },
+  {
+    "title": "Alerting & Dashboards",
+    "category": "observability",
+    "tags": [
+      "observability",
+      "alerting",
+      "dashboards",
+      "on-call"
+    ],
+    "description": "How to alert on symptoms not causes, page only on actionable user-impacting conditions, avoid alert fatigue, and design dashboards that answer 'is it healthy?' at a glance.",
+    "url": "concepts/observability/alerting-and-dashboards.html"
+  },
+  {
+    "title": "Big-O Notation",
+    "category": "dsa",
+    "tags": [
+      "dsa",
+      "big-o",
+      "complexity",
+      "algorithms"
+    ],
+    "description": "What Big-O actually measures — how an algorithm's time or space grows with input size — the common classes from O(1) to O(n!), and why we care about growth, not stopwatch time.",
+    "url": "concepts/dsa/big-o-notation.html"
+  },
+  {
+    "title": "Big-O Cheat Sheet",
+    "category": "dsa",
+    "tags": [
+      "dsa",
+      "big-o",
+      "complexity",
+      "reference"
+    ],
+    "description": "A scannable reference of time and space complexities: common data-structure operations (array, hash table, BST, heap) and the major sorting algorithms, with best/average/worst cases.",
+    "url": "concepts/dsa/big-o-cheat-sheet.html"
+  },
+  {
+    "title": "Arrays vs Linked Lists",
+    "category": "dsa",
+    "tags": [
+      "dsa",
+      "arrays",
+      "linked-list",
+      "memory"
+    ],
+    "description": "The fundamental trade-off between contiguous arrays (O(1) indexing, cache-friendly) and linked lists (O(1) insert/delete given the node) — and why arrays usually win in practice.",
+    "url": "concepts/dsa/arrays-vs-linked-lists.html"
+  },
+  {
+    "title": "Hash Tables",
+    "category": "dsa",
+    "tags": [
+      "dsa",
+      "hash-table",
+      "hashing",
+      "collisions"
+    ],
+    "description": "How hash tables give O(1) average lookup by mapping keys to buckets, how collisions are handled (chaining vs open addressing), and why the worst case is O(n) and load factor matters.",
+    "url": "concepts/dsa/hash-tables.html"
+  },
+  {
+    "title": "Stacks & Queues",
+    "category": "dsa",
+    "tags": [
+      "dsa",
+      "stack",
+      "queue",
+      "data-structures"
+    ],
+    "description": "Two restricted sequences that show up everywhere: the stack (LIFO — undo, recursion, parsing) and the queue (FIFO — scheduling, BFS, buffering), both with O(1) push/pop.",
+    "url": "concepts/dsa/stacks-and-queues.html"
+  },
+  {
+    "title": "Trees & Graphs",
+    "category": "dsa",
+    "tags": [
+      "dsa",
+      "trees",
+      "graphs",
+      "traversal"
+    ],
+    "description": "The non-linear structures behind huge swaths of problems: trees (hierarchies, BSTs, heaps) and graphs (networks), plus the two traversals — DFS and BFS — that power most algorithms on them.",
+    "url": "concepts/dsa/trees-and-graphs.html"
+  },
+  {
+    "title": "Sorting Algorithms",
+    "category": "dsa",
+    "tags": [
+      "dsa",
+      "sorting",
+      "algorithms",
+      "complexity"
+    ],
+    "description": "Why comparison sorts can't beat O(n log n), how quicksort/mergesort/heapsort differ in practice (speed, space, stability), and when non-comparison sorts (counting/radix) apply.",
+    "url": "concepts/dsa/sorting-algorithms.html"
+  },
+  {
+    "title": "Service Mesh",
+    "category": "microservices",
+    "tags": [
+      "microservices",
+      "service-mesh",
+      "networking",
+      "sidecar"
+    ],
+    "description": "How a service mesh moves cross-cutting networking concerns — retries, mTLS, traffic shifting, observability — out of application code into sidecar proxies managed by a control plane.",
+    "url": "concepts/microservices/service-mesh.html"
+  },
+  {
+    "title": "API Versioning",
+    "category": "microservices",
+    "tags": [
+      "microservices",
+      "api",
+      "versioning",
+      "compatibility"
+    ],
+    "description": "How to evolve an API without breaking existing clients: versioning strategies (URL, header, media type), backward-compatible additive changes, and deprecation policy.",
+    "url": "concepts/microservices/api-versioning.html"
+  },
+  {
+    "title": "Strangler Fig Pattern",
+    "category": "microservices",
+    "tags": [
+      "microservices",
+      "migration",
+      "legacy",
+      "refactoring"
+    ],
+    "description": "How to migrate off a legacy monolith incrementally and safely: route slices of functionality to new services behind a façade, growing the new system as the old one shrinks — no big-bang rewrite.",
+    "url": "concepts/microservices/strangler-fig-pattern.html"
+  },
+  {
+    "title": "Value vs Reference Types",
+    "category": "csharp",
+    "tags": [
+      "csharp",
+      "value-types",
+      "reference-types",
+      "memory"
+    ],
+    "description": "The core C# type distinction: value types (structs) copied by value and usually stack/inline-allocated, vs reference types (classes) copied by reference and heap-allocated — and where each lives.",
+    "url": "concepts/csharp/value-vs-reference-types.html"
+  },
+  {
+    "title": "Boxing & Unboxing",
+    "category": "csharp",
+    "tags": [
+      "csharp",
+      "boxing",
+      "performance",
+      "memory"
+    ],
+    "description": "What happens when a value type is treated as an object — it's boxed onto the heap — why that costs allocations and GC pressure, and how generics let you avoid it.",
+    "url": "concepts/csharp/boxing-and-unboxing.html"
+  },
+  {
+    "title": "Records",
+    "category": "csharp",
+    "tags": [
+      "csharp",
+      "records",
+      "immutability",
+      "value-equality"
+    ],
+    "description": "How C# records give you concise, immutable reference types with value-based equality, non-destructive mutation via with-expressions, and built-in deconstruction — ideal for DTOs and domain values.",
+    "url": "concepts/csharp/records.html"
   }
 ]
