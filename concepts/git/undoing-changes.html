@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Undoing Changes: reset, revert, reflog — DevLens</title>
+  <meta name="description" content="The right tool for each undo: revert to safely undo a public commit, reset to move a branch (and the soft/mixed/hard modes), and reflog to recover commits you thought you lost." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="git" data-concept="undoing-changes" data-title="Undoing Changes: reset, revert, reflog">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Undoing Changes: reset, revert, reflog</h1>
+          <p class="lede">
+            Git rarely loses anything — you just need the right undo. The trio: <strong>revert</strong> for shared history, <strong>reset</strong> for local history, and <strong>reflog</strong> to rescue 'lost' commits.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#git</span>
+            <span class="tag">#reset</span>
+            <span class="tag">#revert</span>
+            <span class="tag">#reflog</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong><code>git revert</code></strong> undoes a commit by creating a <em>new</em> commit that applies the inverse change. History is preserved and moves forward, so it's <strong>safe on shared branches</strong> — everyone just sees an 'undo' commit. This is the right way to back out a bad change that's already pushed.
+          </p>
+          <p>
+            <strong><code>git reset</code></strong> moves the current branch pointer to a different commit, effectively rewriting local history. Its three modes differ in what they touch: <code>--soft</code> moves the branch but keeps your changes staged; <code>--mixed</code> (default) unstages them but keeps them in your working files; <code>--hard</code> discards them entirely. Use reset on <strong>local, unpushed</strong> work — it rewrites history, so it's dangerous on shared branches.
+          </p>
+          <p>
+            <strong><code>git reflog</code></strong> is the safety net: Git logs everywhere <code>HEAD</code> has been (commits, resets, rebases, checkouts) for ~90 days. So after a bad <code>reset --hard</code> or a botched rebase, the 'lost' commit is still findable — grab its hash from the reflog and <code>git reset --hard</code> or <code>cherry-pick</code> it back.
+          </p>
+          <p>
+            The decision rule: <strong>revert what's public, reset what's private, and reach for reflog when you think you've lost work</strong> — because you usually haven't.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              When a deploy goes bad, teams <code>git revert</code> the offending merge so main rolls forward to a safe state with full history intact (and a clear audit trail). Individually, developers <code>reset --soft HEAD~1</code> to recombine the last commit, or recover from a panicked <code>reset --hard</code> via <code>reflog</code> — the moment every developer learns that Git almost never truly deletes a committed change.
+            </p>
+          </div>
+
+          <h2>Three undos for three situations</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Match the tool to whether history is shared</text><rect class="dgm-box-accent" x="20" y="64" width="160" height="44" rx="8"/><text class="dgm-sub" x="100" y="90" text-anchor="middle">revert</text><text class="dgm-sub" x="100" y="128" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">new inverse commit — safe on shared</text><rect class="dgm-box" x="210" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="285" y="90" text-anchor="middle">reset</text><text class="dgm-sub" x="285" y="128" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">moves branch — local only</text><rect class="dgm-box-accent" x="390" y="64" width="190" height="44" rx="8"/><text class="dgm-sub" x="485" y="90" text-anchor="middle">reflog</text><text class="dgm-sub" x="485" y="128" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">recover 'lost' commits (~90 days)</text><text class="dgm-sub" x="300" y="158" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">reset modes: --soft (keep staged) · --mixed (keep files) · --hard (discard)</text></svg>
+            <figcaption>Figure 1 — revert for public history, reset for local history, reflog to recover — and the three reset modes differ in how much they undo.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">bash</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-bash"># Undo a PUSHED commit safely (new inverse commit, history preserved):
+git revert &lt;bad-commit&gt;
+
+# Rewrite LOCAL history — three modes, increasingly destructive:
+git reset --soft  HEAD~1     # keep changes STAGED
+git reset --mixed HEAD~1     # keep changes in working dir (default)
+git reset --hard  HEAD~1     # DISCARD changes — careful
+
+# Recover after a bad reset/rebase — your commit is still in the reflog:
+git reflog                   # find the lost commit's hash
+git reset --hard &lt;hash&gt;      # restore it</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>revert</strong> = new inverse commit, safe on <strong>shared</strong> branches; <strong>reset</strong> = move the branch pointer, for <strong>local</strong> history only.</li>
+              <li>reset modes: <code>--soft</code> (keep staged), <code>--mixed</code> (keep in working dir), <code>--hard</code> (discard).</li>
+              <li><strong>reflog</strong> is the safety net — it remembers where HEAD has been (~90 days), so 'lost' commits are usually recoverable.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../git/git-internals.html"><span class="rc-cat">Git</span><span class="rc-title">How Git Works: Objects & Refs</span></a>
+            <a class="related-card" href="../git/merge-vs-rebase.html"><span class="rc-cat">Git</span><span class="rc-title">Merge vs Rebase</span></a>
+            <a class="related-card" href="../interview-scenarios/responding-to-a-production-outage.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Responding to a Production Outage</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The crisp answer: 'revert for public, reset for private, reflog to recover.' Knowing the three reset modes and that reflog makes most 'lost' commits recoverable shows you won't panic — or destroy shared history — under pressure.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

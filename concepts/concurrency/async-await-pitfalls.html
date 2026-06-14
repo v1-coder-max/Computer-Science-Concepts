@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Async/Await Pitfalls — DevLens</title>
+  <meta name="description" content="The classic async/await traps in C#: blocking with .Result/.Wait() causing deadlocks, async void, fire-and-forget, and missing ConfigureAwait — and how to avoid each." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="concurrency" data-concept="async-await-pitfalls" data-title="Async/Await Pitfalls">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Async/Await Pitfalls</h1>
+          <p class="lede">
+            <code>async/await</code> is easy to write and easy to misuse. A handful of well-known traps cause deadlocks, swallowed exceptions, and thread-pool starvation.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#async</span>
+            <span class="tag">#deadlock</span>
+            <span class="tag">#concurrency</span>
+            <span class="tag">#csharp</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Don't block on async code.</strong> Calling <code>.Result</code> or <code>.Wait()</code> on a Task blocks the current thread until it finishes. In a context with a synchronization context (classic ASP.NET, UI apps), the continuation needs that same thread — which is blocked — so you get a <strong>deadlock</strong>. The rule: <em>async all the way down</em>; never mix blocking and async.
+          </p>
+          <p>
+            <strong>Avoid <code>async void</code>.</strong> An <code>async void</code> method can't be awaited and its exceptions can't be caught by the caller — they crash the process. The only legitimate use is event handlers. Everywhere else return <code>Task</code>.
+          </p>
+          <p>
+            <strong>Fire-and-forget is a trap.</strong> Calling an async method without awaiting it discards the Task, so exceptions vanish and you have no idea when (or if) it finished. If you truly want background work, hand it to a proper background service, not a dropped Task.
+          </p>
+          <p>
+            <strong>ConfigureAwait(false)</strong> in library code avoids capturing the context, which both prevents the deadlock above and is a small performance win. Application code in modern ASP.NET Core doesn't need it (no sync context), but libraries should still use it.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Nearly every team has hit the <code>.Result</code> deadlock: a synchronous controller action or a constructor calls <code>SomeAsync().Result</code>, works fine under light load, then deadlocks under load or in a UI app and the thread pool fills with blocked threads. The fix is always the same — make the call chain async end to end. Library authors (e.g., the BCL, Polly) sprinkle <code>ConfigureAwait(false)</code> everywhere precisely to be safe inside any caller's context.
+            </p>
+          </div>
+
+          <h2>How the .Result deadlock happens</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Blocking on a Task whose continuation needs the blocked thread</text><rect class="dgm-box-accent" x="40" y="62" width="150" height="40" rx="8"/><text class="dgm-sub" x="115" y="86" text-anchor="middle">UI / request thread</text><text class="dgm-sub" x="115" y="120" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">calls .Result → blocks</text><line x1="192" y1="82" x2="250" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="252" y="62" width="130" height="40" rx="8"/><text class="dgm-sub" x="317" y="86" text-anchor="middle">await SomeAsync()</text><line x1="382" y1="82" x2="440" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="442" y="62" width="130" height="40" rx="8"/><text class="dgm-sub" x="507" y="86" text-anchor="middle">continuation</text><line x1="507" y1="104" x2="115" y2="104" stroke="var(--c-warning)" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)"/><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">needs the original thread — which is blocked → deadlock</text></svg>
+            <figcaption>Figure 1 — The continuation is scheduled back onto the captured thread, but that thread is blocked waiting on .Result, so neither proceeds.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ Deadlock risk + thread starvation: blocking on async.
+var data = GetDataAsync().Result;            // or .Wait()
+
+// ✅ Async all the way down.
+var data = await GetDataAsync();
+
+// ❌ async void: exceptions escape and crash the process.
+async void Save() { await db.SaveAsync(); }  // only OK for event handlers
+
+// ✅ Return Task so callers can await and catch.
+async Task SaveAsync() { await db.SaveAsync(); }
+
+// In LIBRARY code, don't capture the context:
+await SomeAsync().ConfigureAwait(false);</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Never block on async (<code>.Result</code>/<code>.Wait()</code>) — go <strong>async all the way</strong> to avoid deadlocks and starvation.</li>
+              <li>Avoid <strong>async void</strong> (except event handlers); return <code>Task</code> so exceptions are observable.</li>
+              <li>Use <strong>ConfigureAwait(false)</strong> in libraries; don't fire-and-forget Tasks you care about.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../dotnet/async-await.html"><span class="rc-cat">.NET</span><span class="rc-title">Async / Await Internals</span></a>
+            <a class="related-card" href="../concurrency/cancellation-and-timeouts.html"><span class="rc-cat">Concurrency</span><span class="rc-title">Cancellation & Timeouts</span></a>
+            <a class="related-card" href="../concurrency/concurrency-vs-parallelism.html"><span class="rc-cat">Concurrency</span><span class="rc-title">Concurrency vs Parallelism</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Be ready to explain the <code>.Result</code> deadlock in terms of the captured synchronization context. Saying 'async all the way down, never block, avoid async void' covers the three traps interviewers probe.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

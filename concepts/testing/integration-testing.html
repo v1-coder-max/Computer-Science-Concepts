@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integration Testing — DevLens</title>
+  <meta name="description" content="Why integration tests catch the bugs unit tests can't — wiring, serialization, SQL, configuration — and how to write them realistically with in-memory hosts and real dependencies in containers." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="testing" data-concept="integration-testing" data-title="Integration Testing">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Integration Testing</h1>
+          <p class="lede">
+            Unit tests prove each part works alone; <strong>integration tests</strong> prove they work <em>together</em> — against a real database, a real HTTP pipeline, real serialization.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#testing</span>
+            <span class="tag">#integration</span>
+            <span class="tag">#database</span>
+            <span class="tag">#api</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            An <strong>integration test</strong> exercises several components wired together, crossing a boundary your unit tests faked — typically your code plus the database, or a full request through the HTTP stack. It catches the bugs that live <em>between</em> units: a wrong SQL query, a broken DI registration, a serialization mismatch, a misconfigured route.
+          </p>
+          <p>
+            These are the failures mocks hide. A repository unit test with a mocked database can't catch a malformed query or a migration that didn't run — only a test against a real database can. That realism is the whole point.
+          </p>
+          <p>
+            Make them realistic but repeatable. In .NET, <code>WebApplicationFactory</code> spins up your app in-memory and lets you send real HTTP requests through the actual middleware pipeline. For the database, prefer a <strong>real</strong> engine in a disposable container (Testcontainers) over an in-memory substitute, because in-memory providers don't behave like the real SQL you ship.
+          </p>
+          <p>
+            They're slower and fewer than unit tests (the pyramid's middle), so reserve them for the wiring and the critical paths, and keep each one isolated — a fresh database per test or transaction rollback so tests don't bleed into each other.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Teams run a suite of integration tests that boot the API with <code>WebApplicationFactory</code> against a Postgres container started by Testcontainers, then hit real endpoints and assert on real database rows. This catches the classic 'works in unit tests, 500s in production' bugs — a missing migration, a JSON casing mismatch, an EF Core query that throws only against real SQL — none of which a mocked test would ever surface.
+            </p>
+          </div>
+
+          <h2>Test across the real boundary</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Drive the real pipeline against real dependencies</text><rect class="dgm-box-accent" x="30" y="64" width="110" height="44" rx="8"/><text class="dgm-sub" x="85" y="90" text-anchor="middle">test sends HTTP</text><line x1="142" y1="86" x2="182" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="184" y="64" width="110" height="44" rx="8"/><text class="dgm-sub" x="239" y="90" text-anchor="middle">real middleware</text><line x1="296" y1="86" x2="336" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="338" y="64" width="100" height="44" rx="8"/><text class="dgm-sub" x="388" y="90" text-anchor="middle">handler + EF</text><line x1="440" y1="86" x2="480" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="482" y="64" width="100" height="44" rx="8"/><text class="dgm-sub" x="532" y="90" text-anchor="middle">DB (container)</text><text class="dgm-sub" x="300" y="152" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Catches wiring, SQL, serialization, config — what mocks hide</text></svg>
+            <figcaption>Figure 1 — A request flows through the real middleware, handler, and a real database in a container — exercising the wiring units fake out.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// WebApplicationFactory boots the real app in-memory.
+public class OrdersTests : IClassFixture&lt;WebApplicationFactory&lt;Program&gt;&gt;
+{
+    private readonly HttpClient _client;
+    public OrdersTests(WebApplicationFactory&lt;Program&gt; f) =&gt; _client = f.CreateClient();
+
+    [Fact]
+    public async Task Post_Order_Persists_And_Returns_201()
+    {
+        var resp = await _client.PostAsJsonAsync("/orders", new { item = "book" });
+        Assert.Equal(HttpStatusCode.Created, resp.StatusCode);   // real pipeline + real DB
+    }
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Integration tests catch the bugs <em>between</em> units: wiring, SQL, serialization, configuration — what mocks hide.</li>
+              <li>Use <strong>WebApplicationFactory</strong> for the real HTTP pipeline and a <strong>real DB in a container</strong> (Testcontainers), not an in-memory fake.</li>
+              <li>They're slower and fewer (the pyramid's middle) — keep each isolated with a fresh DB or transaction rollback.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../testing/test-pyramid.html"><span class="rc-cat">Testing</span><span class="rc-title">The Test Pyramid</span></a>
+            <a class="related-card" href="../testing/unit-testing.html"><span class="rc-cat">Testing</span><span class="rc-title">Unit Testing</span></a>
+            <a class="related-card" href="../microservices/docker.html"><span class="rc-cat">Microservices</span><span class="rc-title">Docker & Containers</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Explain what integration tests catch that units can't, and argue for a <em>real</em> database in a container over an in-memory provider — the in-memory one passes tests that the real SQL would fail. That nuance shows production scars.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

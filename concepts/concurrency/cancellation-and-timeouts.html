@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cancellation & Timeouts — DevLens</title>
+  <meta name="description" content="How cooperative cancellation works in .NET with CancellationToken: passing tokens through async calls, enforcing timeouts, linking tokens, and why cancellation is cooperative, not forced." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="concurrency" data-concept="cancellation-and-timeouts" data-title="Cancellation & Timeouts">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Cancellation & Timeouts</h1>
+          <p class="lede">
+            You can't safely <em>kill</em> a thread, so .NET uses <strong>cooperative</strong> cancellation: you pass a <code>CancellationToken</code>, and well-behaved code checks it and bows out cleanly.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#concurrency</span>
+            <span class="tag">#cancellation</span>
+            <span class="tag">#timeouts</span>
+            <span class="tag">#async</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Forcibly aborting a thread leaves locks held and state half-written — so .NET doesn't do it. Instead, cancellation is <strong>cooperative</strong>: a <code>CancellationTokenSource</code> produces a <code>CancellationToken</code>, you thread that token through your async calls, and each operation periodically checks it (or the framework checks it for you) and throws <code>OperationCanceledException</code> to unwind cleanly.
+          </p>
+          <p>
+            <strong>Timeouts</strong> are just cancellation on a timer: <code>new CancellationTokenSource(TimeSpan.FromSeconds(5))</code> cancels its token after five seconds, so any awaited call observing that token gives up. This is how you stop a slow dependency from hanging a request forever — the single most important resilience habit.
+          </p>
+          <p>
+            Tokens <strong>compose</strong>: <code>CreateLinkedTokenSource</code> combines, say, the request's cancellation token with a timeout token, so the operation cancels if <em>either</em> fires. Pass the token everywhere — into <code>HttpClient</code>, EF Core, your own loops — so cancellation propagates end to end.
+          </p>
+          <p>
+            Honor it: check <code>token.ThrowIfCancellationRequested()</code> in long loops, and treat <code>OperationCanceledException</code> as a normal, expected outcome (not an error to log as a failure).
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              ASP.NET Core hands every request a <code>HttpContext.RequestAborted</code> token; pass it down and when the client disconnects, the database query and downstream calls cancel automatically instead of wasting work on a response nobody will read. Combine it with a timeout token and you get the resilience pattern every service needs — a slow dependency can't tie up a request forever, which is the foundation of not cascading failures.
+            </p>
+          </div>
+
+          <h2>Cooperative cancellation flows through the call chain</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">One token, threaded through every await; timeout = cancel on a timer</text><rect class="dgm-box-accent" x="30" y="62" width="120" height="40" rx="8"/><text class="dgm-sub" x="90" y="86" text-anchor="middle">CancellationTokenSource</text><text class="dgm-sub" x="90" y="120" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">timeout or client-abort</text><line x1="152" y1="82" x2="200" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="202" y="62" width="100" height="40" rx="8"/><text class="dgm-sub" x="252" y="86" text-anchor="middle">your method</text><line x1="302" y1="82" x2="350" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="352" y="62" width="100" height="40" rx="8"/><text class="dgm-sub" x="402" y="86" text-anchor="middle">HttpClient</text><line x1="452" y1="82" x2="500" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="502" y="62" width="84" height="40" rx="8"/><text class="dgm-sub" x="544" y="86" text-anchor="middle">EF Core</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Token check at each hop → OperationCanceledException unwinds cleanly</text></svg>
+            <figcaption>Figure 1 — A single token passed through the chain lets a timeout or client disconnect cancel the whole operation cleanly.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Timeout = a token that cancels itself after a delay.
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+// Pass the token through EVERY async call so cancellation propagates.
+var data = await httpClient.GetStringAsync(url, cts.Token);   // gives up after 5s
+
+// Combine a request token with a timeout — cancels if either fires.
+using var linked = CancellationTokenSource.CreateLinkedTokenSource(
+    requestToken, cts.Token);
+
+// In a long loop, cooperate:
+foreach (var item in items) { ct.ThrowIfCancellationRequested(); Process(item); }</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Cancellation is <strong>cooperative</strong> — pass a <code>CancellationToken</code> through every async call; code checks it and throws <code>OperationCanceledException</code>.</li>
+              <li>A <strong>timeout</strong> is cancellation on a timer (<code>CancellationTokenSource(TimeSpan)</code>) — the key to not hanging on slow dependencies.</li>
+              <li><strong>Link</strong> tokens to combine timeout + request cancellation; treat cancellation as expected, not an error.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../concurrency/async-await-pitfalls.html"><span class="rc-cat">Concurrency</span><span class="rc-title">Async/Await Pitfalls</span></a>
+            <a class="related-card" href="../interview-scenarios/preventing-cascading-failures.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Preventing Cascading Failures</span></a>
+            <a class="related-card" href="../microservices/retry-bulkhead.html"><span class="rc-cat">Microservices</span><span class="rc-title">Retry & Bulkhead</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Explain why cancellation is cooperative (you can't safely abort a thread), then show a timeout as a self-cancelling token. 'Pass the token everywhere' and linking tokens are the details that signal real async experience.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

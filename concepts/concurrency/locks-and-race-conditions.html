@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Locks & Race Conditions — DevLens</title>
+  <meta name="description" content="Why concurrent access to shared mutable state corrupts it, and how locks (mutual exclusion) fix it — plus the costs: contention, deadlocks, and why you minimize the critical section." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="concurrency" data-concept="locks-and-race-conditions" data-title="Locks & Race Conditions">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Locks & Race Conditions</h1>
+          <p class="lede">
+            When two threads touch the same mutable data at once, you get a <strong>race condition</strong> — results that depend on timing. A lock restores order by letting only one thread in at a time.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#concurrency</span>
+            <span class="tag">#locks</span>
+            <span class="tag">#race-condition</span>
+            <span class="tag">#thread-safety</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>race condition</strong> happens when the correctness of your program depends on the <em>interleaving</em> of threads. The classic case: <code>count++</code> is actually read, increment, write — three steps. Two threads can both read the same value, both increment, and both write back, so two increments produce one. The data is now wrong, intermittently and unreproducibly.
+          </p>
+          <p>
+            A <strong>lock</strong> enforces <em>mutual exclusion</em>: only one thread can hold it at a time, so the protected <strong>critical section</strong> runs atomically with respect to other threads. In C#, <code>lock(obj){ ... }</code> is the everyday tool (sugar over <code>Monitor</code>).
+          </p>
+          <p>
+            Locks have costs. <strong>Contention</strong> — threads queuing for the same lock — serializes your program and kills the benefit of multiple cores, so keep the critical section as small as possible. And taking multiple locks in different orders across threads causes <strong>deadlock</strong> (each waits for a lock the other holds); always acquire locks in a consistent order.
+          </p>
+          <p>
+            Prefer alternatives when you can: <code>Interlocked</code> for simple atomic counters, concurrent collections for shared containers, and immutability (no shared mutable state = no races) above all.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every shared in-memory cache, counter, or connection pool wrestles with this. A bank-transfer bug where a balance occasionally goes wrong under load is almost always an unprotected read-modify-write. Production systems lean on <code>ConcurrentDictionary</code>, <code>Interlocked</code>, and careful lock ordering; high-throughput code goes further and avoids shared mutable state entirely (per-thread state, immutable messages) because the fastest lock is the one you never take.
+            </p>
+          </div>
+
+          <h2>Why count++ loses updates</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Two threads, unsynchronized read-modify-write</text><rect class="dgm-box" x="30" y="56" width="120" height="26" rx="8"/><text class="dgm-sub" x="90" y="73" text-anchor="middle">T1 read 5</text><rect class="dgm-box" x="30" y="88" width="120" height="26" rx="8"/><text class="dgm-sub" x="90" y="105" text-anchor="middle">T2 read 5</text><line x1="152" y1="69" x2="200" y2="69" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="152" y1="101" x2="200" y2="101" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="202" y="56" width="120" height="26" rx="8"/><text class="dgm-sub" x="262" y="73" text-anchor="middle">T1 write 6</text><rect class="dgm-box" x="202" y="88" width="120" height="26" rx="8"/><text class="dgm-sub" x="262" y="105" text-anchor="middle">T2 write 6</text><text class="dgm-sub" x="176" y="134" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">two increments → final value 6, not 7</text><rect class="dgm-box-accent" x="400" y="70" width="170" height="40" rx="8"/><text class="dgm-sub" x="485" y="94" text-anchor="middle">lock { count++; }</text><text class="dgm-sub" x="485" y="130" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">critical section runs atomically</text></svg>
+            <figcaption>Figure 1 — Without a lock, interleaved read-modify-write loses an update; a lock makes the section atomic.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">private readonly object _gate = new();
+private int _count;
+
+// ✅ Mutual exclusion: one thread in the critical section at a time.
+public void Increment()
+{
+    lock (_gate) { _count++; }     // keep this section tiny to reduce contention
+}
+
+// ✅ Even better for a simple counter — lock-free atomic:
+Interlocked.Increment(ref _count);
+
+// Deadlock rule: if you must hold two locks, always acquire them in the SAME order.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A <strong>race condition</strong> = correctness depends on thread timing; <code>count++</code> is not atomic.</li>
+              <li>A <strong>lock</strong> gives mutual exclusion — keep the critical section tiny to limit contention.</li>
+              <li>Prefer <strong>Interlocked</strong>, concurrent collections, or immutability; acquire multiple locks in a consistent order to avoid deadlock.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../concurrency/thread-safety.html"><span class="rc-cat">Concurrency</span><span class="rc-title">Thread Safety & Atomicity</span></a>
+            <a class="related-card" href="../database/deadlocks.html"><span class="rc-cat">Database</span><span class="rc-title">Deadlocks</span></a>
+            <a class="related-card" href="../dotnet/task-vs-thread.html"><span class="rc-cat">.NET</span><span class="rc-title">Task vs Thread</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Explain why <code>count++</code> races (read-modify-write), then the lock fix and its cost (contention). Mentioning <code>Interlocked</code>/immutability as ways to avoid locking shows depth beyond 'just wrap it in lock.'
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unit Testing — DevLens</title>
+  <meta name="description" content="What a good unit test looks like: testing one unit in isolation, the Arrange-Act-Assert structure, the FIRST properties, and testing behavior rather than implementation." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="testing" data-concept="unit-testing" data-title="Unit Testing">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Unit Testing</h1>
+          <p class="lede">
+            A unit test checks <strong>one unit of behavior in isolation</strong>, fast and deterministically. Good ones are your safety net; bad ones are a tax you pay on every refactor.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#testing</span>
+            <span class="tag">#unit</span>
+            <span class="tag">#xunit</span>
+            <span class="tag">#aaa</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            A <strong>unit test</strong> exercises a single unit — usually one class or method — with its dependencies controlled, so a failure points to exactly one place. It runs in milliseconds with no database, network, or file system, which is what lets you run thousands on every save.
+          </p>
+          <p>
+            Structure each test as <strong>Arrange-Act-Assert (AAA)</strong>: set up the inputs, perform the one action under test, then assert on the outcome. One logical assertion per test keeps failures unambiguous.
+          </p>
+          <p>
+            Good unit tests are <strong>FIRST</strong>: <em>Fast</em>, <em>Isolated</em> (no shared state or ordering), <em>Repeatable</em> (same result every run — no clocks/randomness leaking in), <em>Self-validating</em> (pass/fail, no manual checking), and <em>Timely</em> (written with the code).
+          </p>
+          <p>
+            Test <strong>behavior, not implementation</strong>. Assert on observable outputs and effects, not private internals, so the test survives a refactor. A test that breaks every time you rename a private method is testing the wrong thing — it impedes the very refactoring tests are meant to enable.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every CI pipeline runs the unit suite first because it's the fastest, most precise feedback available — a red unit test names the broken class in seconds. Teams use xUnit/NUnit with a mocking library for dependencies, and the well-tested codebases are the ones developers refactor fearlessly, because the behavior-focused unit tests catch regressions without breaking on internal changes.
+            </p>
+          </div>
+
+          <h2>Arrange · Act · Assert</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">One unit, isolated, three clear phases</text><rect class="dgm-box-accent" x="40" y="64" width="140" height="44" rx="8"/><text class="dgm-sub" x="110" y="90" text-anchor="middle">Arrange</text><text class="dgm-sub" x="110" y="128" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">inputs + doubles</text><line x1="182" y1="86" x2="222" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="224" y="64" width="140" height="44" rx="8"/><text class="dgm-sub" x="294" y="90" text-anchor="middle">Act</text><text class="dgm-sub" x="294" y="128" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">the one action</text><line x1="366" y1="86" x2="406" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="408" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="483" y="90" text-anchor="middle">Assert</text><text class="dgm-sub" x="483" y="128" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">observable outcome</text><text class="dgm-sub" x="300" y="158" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Fast · Isolated · Repeatable · Self-validating · Timely (FIRST)</text></svg>
+            <figcaption>Figure 1 — Arrange the inputs, Act once, Assert on the observable outcome; keep it FIRST.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">[Fact]                                   // xUnit
+public void Withdraw_MoreThanBalance_Throws()
+{
+    // Arrange
+    var account = new Account(balance: 100m);
+
+    // Act + Assert (the one behavior under test)
+    var ex = Assert.Throws&lt;InvalidOperationException&gt;(
+        () =&gt; account.Withdraw(150m));
+
+    Assert.Equal(100m, account.Balance);   // state unchanged — behavior, not internals
+}</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A unit test checks <strong>one unit in isolation</strong>, fast and deterministic, so failures localize precisely.</li>
+              <li>Structure as <strong>Arrange-Act-Assert</strong>; keep tests <strong>FIRST</strong> (Fast, Isolated, Repeatable, Self-validating, Timely).</li>
+              <li>Test <strong>behavior, not implementation</strong>, so tests survive refactors instead of obstructing them.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../testing/mocking-and-test-doubles.html"><span class="rc-cat">Testing</span><span class="rc-title">Mocking & Test Doubles</span></a>
+            <a class="related-card" href="../testing/test-pyramid.html"><span class="rc-cat">Testing</span><span class="rc-title">The Test Pyramid</span></a>
+            <a class="related-card" href="../testing/tdd.html"><span class="rc-cat">Testing</span><span class="rc-title">Test-Driven Development</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              AAA and FIRST are table stakes; the differentiator is 'test behavior, not implementation' — explain that coupling tests to internals breaks the refactoring safety net they're supposed to provide.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Branching Strategies — DevLens</title>
+  <meta name="description" content="The main branching models — Git Flow, GitHub Flow, and trunk-based development — and how branch lifetime and merge frequency trade off against integration pain and release cadence." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="git" data-concept="branching-strategies" data-title="Branching Strategies">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Branching Strategies</h1>
+          <p class="lede">
+            How a team branches shapes how often it integrates and how it releases. The spectrum runs from heavy <strong>Git Flow</strong> to lightweight <strong>trunk-based</strong> development.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#git</span>
+            <span class="tag">#workflow</span>
+            <span class="tag">#trunk-based</span>
+            <span class="tag">#git-flow</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Git Flow</strong> is the heavyweight model: long-lived <code>develop</code> and <code>main</code> branches plus <code>feature/*</code>, <code>release/*</code>, and <code>hotfix/*</code> branches with strict rules. It suits versioned software with scheduled releases, but the long-lived branches mean code integrates late and merges hurt.
+          </p>
+          <p>
+            <strong>GitHub Flow</strong> simplifies to one rule: <code>main</code> is always deployable; you branch a short-lived feature branch, open a pull request, review, and merge back quickly. It fits continuous delivery and is the common default for web apps.
+          </p>
+          <p>
+            <strong>Trunk-based development</strong> goes furthest: everyone commits to <code>main</code> (trunk) at least daily, with very short-lived or no feature branches, and unfinished work hidden behind <strong>feature flags</strong>. It maximizes integration frequency and is what high-performing CI/CD teams (per DORA research) tend to use.
+          </p>
+          <p>
+            The core trade-off is <strong>branch lifetime vs merge pain</strong>: the longer a branch lives, the more it diverges and the worse 'merge hell' gets. Short-lived branches and frequent integration keep merges trivial — which is why the industry has drifted from Git Flow toward trunk-based.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Most modern web teams run GitHub Flow or trunk-based: small PRs merged to an always-deployable main, behind feature flags so incomplete features can ship dark. DORA's research links trunk-based development and small batch sizes to elite delivery performance. Git Flow still appears where there are real versioned releases (desktop apps, libraries, firmware) that need parallel maintenance of multiple versions.
+            </p>
+          </div>
+
+          <h2>From heavy to light</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Shorter branch lifetime → easier merges, faster integration</text><rect class="dgm-box-accent" x="20" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="95" y="90" text-anchor="middle">Git Flow</text><text class="dgm-sub" x="95" y="128" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">long-lived branches</text><line x1="172" y1="86" x2="206" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="208" y="64" width="150" height="44" rx="8"/><text class="dgm-sub" x="283" y="90" text-anchor="middle">GitHub Flow</text><text class="dgm-sub" x="283" y="128" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">short feature branches</text><line x1="360" y1="86" x2="394" y2="86" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="396" y="64" width="184" height="44" rx="8"/><text class="dgm-sub" x="488" y="90" text-anchor="middle">Trunk-based</text><text class="dgm-sub" x="488" y="128" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">commit to main daily + flags</text><text class="dgm-sub" x="300" y="158" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Longer-lived branches = more divergence = worse merge conflicts</text></svg>
+            <figcaption>Figure 1 — The models trade release ceremony for integration frequency; shorter branches mean smaller, easier merges.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">bash</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-bash"># GitHub Flow — the common default:
+git switch -c feature/checkout-fix     # short-lived branch off main
+# ...commit small changes...
+git push -u origin feature/checkout-fix
+# open a PR → review → merge → delete branch (main stays deployable)
+
+# Trunk-based — integrate daily, hide unfinished work behind a flag:
+if (FeatureFlags.IsEnabled("new-checkout")) { NewCheckout(); } else { OldCheckout(); }</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Spectrum: <strong>Git Flow</strong> (heavy, versioned releases) → <strong>GitHub Flow</strong> (short branches, always-deployable main) → <strong>trunk-based</strong> (commit to main daily + feature flags).</li>
+              <li>Core trade-off: <strong>branch lifetime vs merge pain</strong> — long branches diverge and cause merge hell.</li>
+              <li>High-performing CI/CD teams favor <strong>trunk-based development</strong> with small batches and feature flags.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../git/merge-vs-rebase.html"><span class="rc-cat">Git</span><span class="rc-title">Merge vs Rebase</span></a>
+            <a class="related-card" href="../git/resolving-conflicts.html"><span class="rc-cat">Git</span><span class="rc-title">Resolving Merge Conflicts</span></a>
+            <a class="related-card" href="../microservices/docker.html"><span class="rc-cat">Microservices</span><span class="rc-title">Docker & Containers</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Name the three models and frame the trade-off as branch lifetime vs integration pain. Citing trunk-based + feature flags (and DORA) as the high-performance default signals you think about delivery flow, not just Git mechanics.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

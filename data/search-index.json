@@ -6713,5 +6713,197 @@
     ],
     "description": "A method for finding a production memory leak: confirm the steady-growth trend, capture and diff heap dumps to find the growing type, trace what roots it (static collections, unremoved event handlers, undisposed resources, unbounded caches), then bound and dispose.",
     "url": "concepts/interview-scenarios/debugging-a-memory-leak.html"
+  },
+  {
+    "title": "Concurrency vs Parallelism",
+    "category": "concurrency",
+    "tags": [
+      "concurrency",
+      "parallelism",
+      "threads",
+      "async"
+    ],
+    "description": "Concurrency is structuring work so tasks can make progress independently; parallelism is literally running them at the same time on multiple cores — related but not the same.",
+    "url": "concepts/concurrency/concurrency-vs-parallelism.html"
+  },
+  {
+    "title": "Async/Await Pitfalls",
+    "category": "concurrency",
+    "tags": [
+      "async",
+      "deadlock",
+      "concurrency",
+      "csharp"
+    ],
+    "description": "The classic async/await traps in C#: blocking with .Result/.Wait() causing deadlocks, async void, fire-and-forget, and missing ConfigureAwait — and how to avoid each.",
+    "url": "concepts/concurrency/async-await-pitfalls.html"
+  },
+  {
+    "title": "Locks & Race Conditions",
+    "category": "concurrency",
+    "tags": [
+      "concurrency",
+      "locks",
+      "race-condition",
+      "thread-safety"
+    ],
+    "description": "Why concurrent access to shared mutable state corrupts it, and how locks (mutual exclusion) fix it — plus the costs: contention, deadlocks, and why you minimize the critical section.",
+    "url": "concepts/concurrency/locks-and-race-conditions.html"
+  },
+  {
+    "title": "Thread Safety & Atomicity",
+    "category": "concurrency",
+    "tags": [
+      "concurrency",
+      "thread-safety",
+      "atomic",
+      "immutability"
+    ],
+    "description": "What makes code thread-safe: atomic operations, immutability, confinement, and concurrent collections — and why visibility (memory barriers) matters as much as mutual exclusion.",
+    "url": "concepts/concurrency/thread-safety.html"
+  },
+  {
+    "title": "Channels & Producer/Consumer",
+    "category": "concurrency",
+    "tags": [
+      "concurrency",
+      "channels",
+      "backpressure",
+      "async"
+    ],
+    "description": "How System.Threading.Channels gives you a safe async producer/consumer pipeline with built-in backpressure — decoupling fast producers from slower consumers without manual locking.",
+    "url": "concepts/concurrency/channels-and-producer-consumer.html"
+  },
+  {
+    "title": "Cancellation & Timeouts",
+    "category": "concurrency",
+    "tags": [
+      "concurrency",
+      "cancellation",
+      "timeouts",
+      "async"
+    ],
+    "description": "How cooperative cancellation works in .NET with CancellationToken: passing tokens through async calls, enforcing timeouts, linking tokens, and why cancellation is cooperative, not forced.",
+    "url": "concepts/concurrency/cancellation-and-timeouts.html"
+  },
+  {
+    "title": "The Test Pyramid",
+    "category": "testing",
+    "tags": [
+      "testing",
+      "strategy",
+      "unit",
+      "integration"
+    ],
+    "description": "The test pyramid: many fast unit tests at the base, fewer integration tests in the middle, and a handful of slow end-to-end tests at the top — and why inverting it (the ice-cream cone) hurts.",
+    "url": "concepts/testing/test-pyramid.html"
+  },
+  {
+    "title": "Unit Testing",
+    "category": "testing",
+    "tags": [
+      "testing",
+      "unit",
+      "xunit",
+      "aaa"
+    ],
+    "description": "What a good unit test looks like: testing one unit in isolation, the Arrange-Act-Assert structure, the FIRST properties, and testing behavior rather than implementation.",
+    "url": "concepts/testing/unit-testing.html"
+  },
+  {
+    "title": "Mocking & Test Doubles",
+    "category": "testing",
+    "tags": [
+      "testing",
+      "mocking",
+      "test-doubles",
+      "isolation"
+    ],
+    "description": "The family of test doubles — dummy, stub, spy, mock, fake — how they isolate the unit under test from slow or nondeterministic dependencies, and the trap of over-mocking.",
+    "url": "concepts/testing/mocking-and-test-doubles.html"
+  },
+  {
+    "title": "Integration Testing",
+    "category": "testing",
+    "tags": [
+      "testing",
+      "integration",
+      "database",
+      "api"
+    ],
+    "description": "Why integration tests catch the bugs unit tests can't — wiring, serialization, SQL, configuration — and how to write them realistically with in-memory hosts and real dependencies in containers.",
+    "url": "concepts/testing/integration-testing.html"
+  },
+  {
+    "title": "Test-Driven Development",
+    "category": "testing",
+    "tags": [
+      "testing",
+      "tdd",
+      "design",
+      "red-green-refactor"
+    ],
+    "description": "Test-Driven Development: the red-green-refactor loop, writing the failing test first to drive design, and why TDD is as much a design discipline as a testing one.",
+    "url": "concepts/testing/tdd.html"
+  },
+  {
+    "title": "How Git Works: Objects & Refs",
+    "category": "git",
+    "tags": [
+      "git",
+      "internals",
+      "commits",
+      "dag"
+    ],
+    "description": "Git's data model demystified: content-addressed blobs, trees and commits, branches as movable pointers, and why a commit is an immutable snapshot in a directed acyclic graph.",
+    "url": "concepts/git/git-internals.html"
+  },
+  {
+    "title": "Branching Strategies",
+    "category": "git",
+    "tags": [
+      "git",
+      "workflow",
+      "trunk-based",
+      "git-flow"
+    ],
+    "description": "The main branching models — Git Flow, GitHub Flow, and trunk-based development — and how branch lifetime and merge frequency trade off against integration pain and release cadence.",
+    "url": "concepts/git/branching-strategies.html"
+  },
+  {
+    "title": "Merge vs Rebase",
+    "category": "git",
+    "tags": [
+      "git",
+      "merge",
+      "rebase",
+      "history"
+    ],
+    "description": "Merge preserves history with a merge commit; rebase rewrites commits onto a new base for a linear history. When to use each, and the golden rule: never rebase shared/public branches.",
+    "url": "concepts/git/merge-vs-rebase.html"
+  },
+  {
+    "title": "Resolving Merge Conflicts",
+    "category": "git",
+    "tags": [
+      "git",
+      "conflicts",
+      "merge",
+      "workflow"
+    ],
+    "description": "Why merge conflicts happen, how to read the conflict markers, the step-by-step resolution workflow, and how to prevent conflicts by integrating early and keeping changes small.",
+    "url": "concepts/git/resolving-conflicts.html"
+  },
+  {
+    "title": "Undoing Changes: reset, revert, reflog",
+    "category": "git",
+    "tags": [
+      "git",
+      "reset",
+      "revert",
+      "reflog"
+    ],
+    "description": "The right tool for each undo: revert to safely undo a public commit, reset to move a branch (and the soft/mixed/hard modes), and reflog to recover commits you thought you lost.",
+    "url": "concepts/git/undoing-changes.html"
   }
 ]

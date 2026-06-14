@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resolving Merge Conflicts — DevLens</title>
+  <meta name="description" content="Why merge conflicts happen, how to read the conflict markers, the step-by-step resolution workflow, and how to prevent conflicts by integrating early and keeping changes small." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="git" data-concept="resolving-conflicts" data-title="Resolving Merge Conflicts">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Resolving Merge Conflicts</h1>
+          <p class="lede">
+            A conflict just means Git can't decide between two edits to the same lines and is asking <em>you</em> to choose. They're routine — knowing the workflow turns panic into a two-minute task.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#git</span>
+            <span class="tag">#conflicts</span>
+            <span class="tag">#merge</span>
+            <span class="tag">#workflow</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Git auto-merges changes that don't overlap. A <strong>conflict</strong> arises only when two branches changed the <em>same lines</em> of the same file (or one edited a file the other deleted). Git pauses the merge/rebase and marks the spots, leaving the decision to you — it won't guess.
+          </p>
+          <p>
+            Inside a conflicted file, Git inserts <strong>markers</strong>: <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> shows your side, <code>=======</code> separates, and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; branch</code> shows theirs. You edit the region to the correct final result, delete the markers, then stage the file.
+          </p>
+          <p>
+            The workflow: run the merge/rebase, list conflicts with <code>git status</code>, open each file and resolve it (often combining both sides, not just picking one), <code>git add</code> the resolved files, then <code>git commit</code> (merge) or <code>git rebase --continue</code>. A merge tool or your IDE's 3-way view makes this far easier than raw markers.
+          </p>
+          <p>
+            Prevention beats cure: <strong>integrate early and often</strong> (pull/rebase frequently so divergence stays small), keep <strong>changes small</strong> and focused, and agree on formatting (so whitespace doesn't manufacture conflicts). Big, long-lived branches are conflict factories — which is the practical argument for trunk-based development.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Conflicts are a daily, normal part of team development — two people touch the same function and Git asks who wins. Experienced developers resolve them calmly with their IDE's 3-way merge view and a quick test run; the teams that suffer 'merge hell' are the ones with long-lived branches that diverged for weeks. That pain is exactly why short-lived branches and frequent integration are recommended.
+            </p>
+          </div>
+
+          <h2>Two edits to the same lines</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Overlapping edits → Git asks you to choose the final result</text><rect class="dgm-box" x="40" y="56" width="130" height="30" rx="8"/><text class="dgm-sub" x="105" y="75" text-anchor="middle">HEAD: price = 10</text><rect class="dgm-box" x="40" y="92" width="130" height="30" rx="8"/><text class="dgm-sub" x="105" y="111" text-anchor="middle">branch: price = 12</text><line x1="176" y1="88" x2="220" y2="88" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="222" y="60" width="150" height="56" rx="8"/><text class="dgm-sub" x="297" y="92" text-anchor="middle">conflict markers</text><text class="dgm-sub" x="297" y="132" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)"><<<<<<< === >>>>>>></text><line x1="374" y1="88" x2="418" y2="88" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="420" y="60" width="150" height="56" rx="8"/><text class="dgm-sub" x="495" y="92" text-anchor="middle">you edit → resolved</text><text class="dgm-sub" x="495" y="132" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">add + commit/continue</text><text class="dgm-sub" x="300" y="162" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Prevent: integrate often · small changes · shared formatting</text></svg>
+            <figcaption>Figure 1 — When edits overlap, Git inserts markers; you choose the final text, remove the markers, and stage the file.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">bash</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-bash">$ git merge feature
+Auto-merging Pricing.cs
+CONFLICT (content): Merge conflict in Pricing.cs
+
+# The file now contains:
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+var price = 10;          // your side
+=======
+var price = 12;          // their side
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature
+
+# Edit to the correct result, remove the markers, then:
+$ git add Pricing.cs
+$ git commit             # (or: git rebase --continue)</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>A conflict means two branches changed the <strong>same lines</strong>; Git pauses and asks you to choose — it never guesses.</li>
+              <li>Resolve by editing between the <strong>markers</strong> (<code>&lt;&lt;&lt;</code>/<code>===</code>/<code>&gt;&gt;&gt;</code>), then <code>git add</code> and commit/continue; a 3-way merge tool helps.</li>
+              <li>Prevent conflicts by <strong>integrating early</strong>, keeping changes small, and standardizing formatting.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../git/merge-vs-rebase.html"><span class="rc-cat">Git</span><span class="rc-title">Merge vs Rebase</span></a>
+            <a class="related-card" href="../git/branching-strategies.html"><span class="rc-cat">Git</span><span class="rc-title">Branching Strategies</span></a>
+            <a class="related-card" href="../git/undoing-changes.html"><span class="rc-cat">Git</span><span class="rc-title">Undoing Changes</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Show you understand conflicts are normal and have a calm workflow (status → resolve → add → continue). The prevention angle — small, frequent integrations beat heroic merges — connects it to delivery practice.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Test Pyramid — DevLens</title>
+  <meta name="description" content="The test pyramid: many fast unit tests at the base, fewer integration tests in the middle, and a handful of slow end-to-end tests at the top — and why inverting it (the ice-cream cone) hurts." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="testing" data-concept="test-pyramid" data-title="The Test Pyramid">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>The Test Pyramid</h1>
+          <p class="lede">
+            A simple shape that tells you <strong>how many</strong> of each kind of test to write: lots of fast unit tests, fewer integration tests, very few slow end-to-end tests.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#testing</span>
+            <span class="tag">#strategy</span>
+            <span class="tag">#unit</span>
+            <span class="tag">#integration</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            The <strong>test pyramid</strong> stratifies tests by scope and speed. The wide <strong>base is unit tests</strong>: tiny, fast, isolated, testing one class or function. You write thousands; they run in seconds and pinpoint exactly what broke.
+          </p>
+          <p>
+            The <strong>middle is integration tests</strong>: a few components together — your code plus a real database or HTTP call — catching the wiring bugs units can't. Fewer of these, because they're slower and touch more.
+          </p>
+          <p>
+            The narrow <strong>top is end-to-end (E2E)</strong> tests: the whole system through the UI or API. They give the most realistic confidence but are slow, brittle, and hard to debug, so you write only a handful covering critical user journeys.
+          </p>
+          <p>
+            The point is <strong>proportions</strong>. Inverting the pyramid into an 'ice-cream cone' — mostly slow E2E tests, few units — gives a test suite that's slow, flaky, and tells you <em>that</em> something broke but not <em>where</em>. Push tests <strong>down</strong> the pyramid: prefer a fast unit test to a slow E2E one whenever it can catch the same bug.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Healthy engineering orgs report exactly this distribution — thousands of unit tests running in under a minute on every commit, a few hundred integration tests, and a small, curated E2E suite for checkout/login-style flows. Teams that skipped units and leaned on E2E end up with a CI pipeline that takes an hour and 'flaky test' Slack threads; the cure is always to rebalance toward fast, isolated unit tests.
+            </p>
+          </div>
+
+          <h2>Many fast, few slow</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Proportions matter: push tests down the pyramid</text><polygon points="300,40 360,80 240,80" class="dgm-box-accent"/><text class="dgm-sub" x="300" y="66" text-anchor="middle" fill="var(--text)" style="font:600 11px var(--font-sans)">E2E</text><polygon points="240,84 360,84 410,128 190,128" class="dgm-box"/><text class="dgm-sub" x="300" y="112" text-anchor="middle" fill="var(--text)" style="font:600 11px var(--font-sans)">Integration</text><polygon points="190,132 410,132 470,176 130,176" class="dgm-box-accent"/><text class="dgm-sub" x="300" y="160" text-anchor="middle" fill="var(--text)" style="font:600 11px var(--font-sans)">Unit (many, fast)</text><text class="dgm-sub" x="530" y="70" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">slow, few</text><text class="dgm-sub" x="530" y="165" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">fast, many</text></svg>
+            <figcaption>Figure 1 — Many fast unit tests at the base, fewer integration tests, a few slow E2E tests at the top.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Unit (base): pure logic, no I/O — runs in microseconds.
+[Fact]
+public void Discount_Over100_Is10Percent()
+    =&gt; Assert.Equal(90m, Pricing.Apply(100m));
+
+// Integration (middle): real DB via a test container / in-memory host.
+[Fact]
+public async Task Saves_And_Reads_Back() { /* spin up DB, round-trip */ }
+
+// E2E (top): drive the running app through its API/UI — few of these.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Write <strong>many fast unit tests</strong>, fewer integration tests, very few slow E2E tests.</li>
+              <li>Inverting it (the <strong>ice-cream cone</strong>) gives a slow, flaky suite that can't localize failures.</li>
+              <li>Push tests <strong>down</strong>: prefer a unit test to an E2E test whenever it catches the same bug.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../testing/unit-testing.html"><span class="rc-cat">Testing</span><span class="rc-title">Unit Testing</span></a>
+            <a class="related-card" href="../testing/integration-testing.html"><span class="rc-cat">Testing</span><span class="rc-title">Integration Testing</span></a>
+            <a class="related-card" href="../testing/tdd.html"><span class="rc-cat">Testing</span><span class="rc-title">Test-Driven Development</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Sketch the pyramid and name the anti-pattern (ice-cream cone). The strong answer explains <em>why</em> proportions matter: fast feedback and precise failure localization, not just 'more tests good.'
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

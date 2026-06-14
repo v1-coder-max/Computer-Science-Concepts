@@ -1019,6 +1019,43 @@
         ]
       },
       {
+        id: "concurrency", slug: "concurrency", title: "Concurrency & Multithreading", icon: "🧵",
+        color: "var(--cat-concurrency)", expected: 6,
+        blurb: "Doing many things at once without corrupting state: tasks, async pitfalls, locks, atomics, channels and cancellation.",
+        concepts: [
+          { slug: "concurrency-vs-parallelism", title: "Concurrency vs Parallelism" },
+          { slug: "async-await-pitfalls", title: "Async/Await Pitfalls" },
+          { slug: "locks-and-race-conditions", title: "Locks & Race Conditions" },
+          { slug: "thread-safety", title: "Thread Safety & Atomicity" },
+          { slug: "channels-and-producer-consumer", title: "Channels & Producer/Consumer" },
+          { slug: "cancellation-and-timeouts", title: "Cancellation & Timeouts" },
+        ]
+      },
+      {
+        id: "testing", slug: "testing", title: "Testing", icon: "✅",
+        color: "var(--cat-testing)", expected: 5,
+        blurb: "Confidence you can ship: the test pyramid, unit and integration tests, mocking, and test-driven development.",
+        concepts: [
+          { slug: "test-pyramid", title: "The Test Pyramid" },
+          { slug: "unit-testing", title: "Unit Testing" },
+          { slug: "mocking-and-test-doubles", title: "Mocking & Test Doubles" },
+          { slug: "integration-testing", title: "Integration Testing" },
+          { slug: "tdd", title: "Test-Driven Development" },
+        ]
+      },
+      {
+        id: "git", slug: "git", title: "Git & Version Control", icon: "🔀",
+        color: "var(--cat-git)", expected: 5,
+        blurb: "Working with history confidently: branching strategies, merge vs rebase, conflict resolution, the object model, and undoing mistakes.",
+        concepts: [
+          { slug: "git-internals", title: "How Git Works: Objects & Refs" },
+          { slug: "branching-strategies", title: "Branching Strategies" },
+          { slug: "merge-vs-rebase", title: "Merge vs Rebase" },
+          { slug: "resolving-conflicts", title: "Resolving Merge Conflicts" },
+          { slug: "undoing-changes", title: "Undoing Changes: reset, revert, reflog" },
+        ]
+      },
+      {
         id: "web-fundamentals", slug: "web-fundamentals", title: "Web Fundamentals", icon: "🌐",
         color: "var(--cat-web-fundamentals)", expected: 12,
         blurb: "HTTP, cookies, CORS, WebSockets, JWT and the OAuth handshake.",

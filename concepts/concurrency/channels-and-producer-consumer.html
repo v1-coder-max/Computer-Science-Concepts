@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Channels & Producer/Consumer — DevLens</title>
+  <meta name="description" content="How System.Threading.Channels gives you a safe async producer/consumer pipeline with built-in backpressure — decoupling fast producers from slower consumers without manual locking." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="concurrency" data-concept="channels-and-producer-consumer" data-title="Channels & Producer/Consumer">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Channels & Producer/Consumer</h1>
+          <p class="lede">
+            When one part of your app produces work faster than another can consume it, a <strong>channel</strong> is the clean, thread-safe, async pipe between them — with backpressure built in.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#concurrency</span>
+            <span class="tag">#channels</span>
+            <span class="tag">#backpressure</span>
+            <span class="tag">#async</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            The <strong>producer/consumer</strong> pattern decouples whoever <em>creates</em> work from whoever <em>processes</em> it via a queue in between. This smooths bursts, lets you scale producers and consumers independently, and keeps each side simple.
+          </p>
+          <p>
+            <strong>System.Threading.Channels</strong> is .NET's modern, async-first implementation. Producers <code>await writer.WriteAsync(item)</code> and consumers <code>await foreach</code> over the reader — all thread-safe, no manual locks. It replaces the older <code>BlockingCollection</code> for async code.
+          </p>
+          <p>
+            The killer feature is <strong>backpressure</strong>: a <em>bounded</em> channel has a capacity, and when it's full, <code>WriteAsync</code> <em>waits</em> rather than letting the producer race ahead and blow up memory. This naturally throttles a fast producer to the consumer's pace — the safe default for any real pipeline.
+          </p>
+          <p>
+            Channels come in single/multi producer and consumer flavors and let you pick the behavior when full (wait, drop oldest, drop newest). They're the building block for ingestion pipelines, work queues, and event fan-out inside a process.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              An ingestion service that receives events over HTTP and writes them to a database in batches is a textbook channel: the HTTP handlers are producers writing to a bounded channel, and a background consumer drains it, batching writes. If the database slows, the bounded channel fills, <code>WriteAsync</code> backs up, and the pressure propagates to the producers (who return 503) instead of the service running out of memory — exactly the graceful degradation you want.
+            </p>
+          </div>
+
+          <h2>A bounded channel between producer and consumer</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Producers write, consumers read; full channel applies backpressure</text><rect class="dgm-box-accent" x="30" y="62" width="90" height="40" rx="8"/><text class="dgm-sub" x="75" y="86" text-anchor="middle">producers</text><line x1="122" y1="82" x2="160" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="162" y="56" width="150" height="50" rx="8"/><text class="dgm-sub" x="237" y="85" text-anchor="middle">bounded channel</text><text class="dgm-sub" x="237" y="124" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">capacity N — WriteAsync waits when full</text><line x1="314" y1="82" x2="352" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="354" y="62" width="110" height="40" rx="8"/><text class="dgm-sub" x="409" y="86" text-anchor="middle">consumer</text><line x1="466" y1="82" x2="504" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="506" y="62" width="80" height="40" rx="8"/><text class="dgm-sub" x="546" y="86" text-anchor="middle">DB / sink</text><text class="dgm-sub" x="300" y="152" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Fast producer is throttled to the consumer's pace — memory stays bounded</text></svg>
+            <figcaption>Figure 1 — A bounded channel decouples producers from a slower consumer and back-pressures producers when full, keeping memory bounded.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Bounded channel = built-in backpressure.
+var channel = Channel.CreateBounded&lt;Event&gt;(new BoundedChannelOptions(1000)
+{
+    FullMode = BoundedChannelFullMode.Wait     // producer awaits when full
+});
+
+// Producer (e.g. an HTTP handler):
+await channel.Writer.WriteAsync(evt);          // waits if the channel is full
+
+// Consumer (a background service): drains and batches.
+await foreach (var e in channel.Reader.ReadAllAsync(ct))
+    await SaveAsync(e);</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Channels</strong> give a thread-safe, async producer/consumer pipe — no manual locking.</li>
+              <li>A <strong>bounded</strong> channel provides <strong>backpressure</strong>: a full channel makes the producer wait, keeping memory bounded.</li>
+              <li>It's the modern async replacement for <code>BlockingCollection</code> and the building block for in-process pipelines.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../concurrency/async-await-pitfalls.html"><span class="rc-cat">Concurrency</span><span class="rc-title">Async/Await Pitfalls</span></a>
+            <a class="related-card" href="../system-design/message-queues.html"><span class="rc-cat">System Design</span><span class="rc-title">Message Queues</span></a>
+            <a class="related-card" href="../interview-scenarios/surviving-traffic-spikes.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Surviving Traffic Spikes</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Describe producer/consumer and then make the backpressure point: a bounded channel throttles a fast producer instead of exhausting memory. That's the detail that shows you'd use it correctly in a real pipeline.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

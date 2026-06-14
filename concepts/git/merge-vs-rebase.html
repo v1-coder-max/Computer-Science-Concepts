@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merge vs Rebase — DevLens</title>
+  <meta name="description" content="Merge preserves history with a merge commit; rebase rewrites commits onto a new base for a linear history. When to use each, and the golden rule: never rebase shared/public branches." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="git" data-concept="merge-vs-rebase" data-title="Merge vs Rebase">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Merge vs Rebase</h1>
+          <p class="lede">
+            Two ways to combine branches: <strong>merge</strong> records what really happened (with a merge commit); <strong>rebase</strong> rewrites your commits onto the latest base for a clean, linear story.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#git</span>
+            <span class="tag">#merge</span>
+            <span class="tag">#rebase</span>
+            <span class="tag">#history</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            <strong>Merge</strong> takes the two branch tips and creates a new <strong>merge commit</strong> with both as parents. It's non-destructive — every commit stays exactly as it happened — but a busy repo accumulates merge commits and a tangled graph.
+          </p>
+          <p>
+            <strong>Rebase</strong> instead <em>replays</em> your branch's commits one by one on top of the target branch's latest commit, producing brand-new commits (new hashes) and a <strong>linear history</strong> with no merge commit. It's great for tidying your local feature branch before sharing — <code>git rebase main</code> so your work sits cleanly on top.
+          </p>
+          <p>
+            The trade-off is <strong>honesty vs cleanliness</strong>. Merge preserves the true, messy timeline; rebase fabricates a tidier one. Many teams combine them: rebase your feature branch to stay current and clean, then merge it into main (optionally squashed) so main reads as a sequence of features.
+          </p>
+          <p>
+            The <strong>golden rule of rebase</strong>: never rebase commits that others have already pulled. Rebasing rewrites history (new hashes), so a shared branch's history diverges from everyone else's, forcing painful force-pushes and duplicate commits. Rebase <em>local/private</em> work; merge <em>shared</em> work.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              A common team policy: developers rebase their feature branch onto main while working (to integrate the latest and resolve conflicts incrementally), then open a PR that's squash-merged — giving main a clean, linear history of one commit per feature. The cardinal sin everyone learns once: rebasing or force-pushing a shared branch and breaking every teammate's checkout, which is why <code>main</code>/<code>develop</code> are protected from force-push.
+            </p>
+          </div>
+
+          <h2>Merge commit vs linear replay</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Merge keeps both lines; rebase replays onto the new base</text><text class="dgm-sub" x="150" y="46" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Merge</text><rect class="dgm-box" x="40" y="60" width="50" height="24" rx="8"/><text class="dgm-sub" x="65" y="76" text-anchor="middle">A</text><rect class="dgm-box" x="100" y="60" width="50" height="24" rx="8"/><text class="dgm-sub" x="125" y="76" text-anchor="middle">B</text><rect class="dgm-box" x="70" y="96" width="50" height="24" rx="8"/><text class="dgm-sub" x="95" y="112" text-anchor="middle">F1</text><rect class="dgm-box" x="130" y="96" width="50" height="24" rx="8"/><text class="dgm-sub" x="155" y="112" text-anchor="middle">F2</text><rect class="dgm-box-accent" x="190" y="78" width="60" height="24" rx="8"/><text class="dgm-sub" x="220" y="94" text-anchor="middle">merge</text><line x1="150" y1="72" x2="188" y2="84" stroke="var(--text-faint)" stroke-width="1.4"/><line x1="180" y1="108" x2="188" y2="96" stroke="var(--text-faint)" stroke-width="1.4"/><text class="dgm-sub" x="450" y="46" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Rebase</text><rect class="dgm-box" x="330" y="78" width="50" height="24" rx="8"/><text class="dgm-sub" x="355" y="94" text-anchor="middle">A</text><rect class="dgm-box" x="390" y="78" width="50" height="24" rx="8"/><text class="dgm-sub" x="415" y="94" text-anchor="middle">B</text><rect class="dgm-box-accent" x="450" y="78" width="55" height="24" rx="8"/><text class="dgm-sub" x="477.5" y="94" text-anchor="middle">F1'</text><rect class="dgm-box-accent" x="515" y="78" width="55" height="24" rx="8"/><text class="dgm-sub" x="542.5" y="94" text-anchor="middle">F2'</text><text class="dgm-sub" x="450" y="130" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">linear, new hashes</text><text class="dgm-sub" x="300" y="168" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">Golden rule: never rebase a branch others have pulled</text></svg>
+            <figcaption>Figure 1 — Merge joins both histories with a merge commit; rebase replays your commits onto the base as new commits.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">bash</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-bash"># Rebase your private feature branch onto the latest main (clean, linear):
+git switch feature
+git rebase main                 # replays feature's commits on top of main
+
+# Merge shared work (preserves history with a merge commit):
+git switch main
+git merge feature
+
+# ⚠️ Golden rule: do NOT rebase commits already pushed and pulled by others.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>Merge</strong> = non-destructive, adds a merge commit (true history); <strong>rebase</strong> = replays commits for a clean linear history (new hashes).</li>
+              <li>Common workflow: <strong>rebase local</strong> branches to stay current, <strong>merge (or squash)</strong> into main.</li>
+              <li><strong>Golden rule:</strong> never rebase commits others have already pulled — it rewrites shared history.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../git/git-internals.html"><span class="rc-cat">Git</span><span class="rc-title">How Git Works: Objects & Refs</span></a>
+            <a class="related-card" href="../git/resolving-conflicts.html"><span class="rc-cat">Git</span><span class="rc-title">Resolving Merge Conflicts</span></a>
+            <a class="related-card" href="../git/branching-strategies.html"><span class="rc-cat">Git</span><span class="rc-title">Branching Strategies</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Contrast honest-history (merge) vs clean-history (rebase), then state the golden rule unprompted — 'rebase local, merge shared.' Knowing rebase rewrites hashes (and why that breaks shared branches) is the depth check.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

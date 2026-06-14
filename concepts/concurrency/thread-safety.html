@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thread Safety & Atomicity — DevLens</title>
+  <meta name="description" content="What makes code thread-safe: atomic operations, immutability, confinement, and concurrent collections — and why visibility (memory barriers) matters as much as mutual exclusion." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="concurrency" data-concept="thread-safety" data-title="Thread Safety & Atomicity">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Thread Safety & Atomicity</h1>
+          <p class="lede">
+            Code is <strong>thread-safe</strong> if it behaves correctly when called from multiple threads at once. There are only a few ways to get there — and they're cheaper than locking everything.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#concurrency</span>
+            <span class="tag">#thread-safety</span>
+            <span class="tag">#atomic</span>
+            <span class="tag">#immutability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Thread safety isn't one technique; it's a set of strategies, roughly in order of preference. <strong>Immutability:</strong> if data never changes after creation, no thread can corrupt it — sharing is free. This is why <code>record</code> types, <code>string</code>, and immutable collections are so valuable in concurrent code.
+          </p>
+          <p>
+            <strong>Confinement:</strong> don't share at all — give each thread its own state (e.g., <code>ThreadLocal</code>, or a per-request scope). No sharing means no synchronization.
+          </p>
+          <p>
+            <strong>Atomic operations:</strong> for the unavoidable shared counter or flag, <code>Interlocked</code> provides operations (increment, compare-and-swap) that complete as a single indivisible step the hardware guarantees — no lock needed.
+          </p>
+          <p>
+            <strong>Concurrent collections:</strong> <code>ConcurrentDictionary</code>, <code>ConcurrentQueue</code>, etc. are built to be safely used from many threads. And don't forget <strong>visibility</strong>: without a memory barrier (which locks and <code>Interlocked</code> and <code>volatile</code> provide), one thread may not <em>see</em> another's writes due to caching/reordering — atomicity and visibility are both required.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              High-concurrency .NET services lean hard on immutability and concurrent collections: an in-memory cache backed by <code>ConcurrentDictionary</code>, request state confined to the request scope, and configuration passed as immutable records. The bugs that slip through are usually visibility ones — a flag written by one thread that another never observes because there's no barrier — which is why <code>volatile</code> and <code>Interlocked</code> exist alongside locks.
+            </p>
+          </div>
+
+          <h2>Four routes to thread safety</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Pick the cheapest that fits — locking is the last resort</text><rect class="dgm-box-accent" x="20" y="60" width="130" height="44" rx="8"/><text class="dgm-sub" x="85" y="86" text-anchor="middle">Immutable</text><text class="dgm-sub" x="85" y="120" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">never changes</text><rect class="dgm-box" x="165" y="60" width="130" height="44" rx="8"/><text class="dgm-sub" x="230" y="86" text-anchor="middle">Confined</text><text class="dgm-sub" x="230" y="120" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">not shared</text><rect class="dgm-box-accent" x="310" y="60" width="130" height="44" rx="8"/><text class="dgm-sub" x="375" y="86" text-anchor="middle">Atomic</text><text class="dgm-sub" x="375" y="120" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Interlocked</text><rect class="dgm-box" x="455" y="60" width="125" height="44" rx="8"/><text class="dgm-sub" x="517.5" y="86" text-anchor="middle">Locked</text><text class="dgm-sub" x="517" y="120" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">last resort</text><text class="dgm-sub" x="300" y="150" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Also need visibility: a memory barrier so writes are seen across threads</text></svg>
+            <figcaption>Figure 1 — Prefer immutability and confinement; reach for atomics, then locks. All require a memory barrier for writes to be visible.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C#</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// 1. Immutable — safe to share with zero synchronization.
+public record Money(decimal Amount, string Currency);
+
+// 2. Atomic — lock-free compare-and-swap for shared state.
+int original, updated;
+do { original = _value; updated = original + 1; }
+while (Interlocked.CompareExchange(ref _value, updated, original) != original);
+
+// 3. Concurrent collection — safe multi-threaded access built in.
+var cache = new ConcurrentDictionary&lt;string, byte[]&gt;();
+cache.GetOrAdd(key, k =&gt; Load(k));</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Prefer, in order: <strong>immutability → confinement → atomics (Interlocked) → concurrent collections → locks</strong>.</li>
+              <li>Thread safety needs <strong>both</strong> atomicity and <strong>visibility</strong> (a memory barrier), or threads won't see each other's writes.</li>
+              <li>The cheapest synchronization is none — immutable, unshared data can't race.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../concurrency/locks-and-race-conditions.html"><span class="rc-cat">Concurrency</span><span class="rc-title">Locks & Race Conditions</span></a>
+            <a class="related-card" href="../concurrency/concurrency-vs-parallelism.html"><span class="rc-cat">Concurrency</span><span class="rc-title">Concurrency vs Parallelism</span></a>
+            <a class="related-card" href="../dotnet/garbage-collection.html"><span class="rc-cat">.NET</span><span class="rc-title">Garbage Collection</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              List the strategies in preference order and note that <em>visibility</em> matters as much as mutual exclusion — a write without a barrier may never be seen. That second point separates a deep answer from 'use ConcurrentDictionary.'
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

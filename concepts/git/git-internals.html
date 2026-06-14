@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How Git Works: Objects & Refs — DevLens</title>
+  <meta name="description" content="Git's data model demystified: content-addressed blobs, trees and commits, branches as movable pointers, and why a commit is an immutable snapshot in a directed acyclic graph." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="git" data-concept="git-internals" data-title="How Git Works: Objects & Refs">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>How Git Works: Objects & Refs</h1>
+          <p class="lede">
+            Git stops being magic once you see the model: a few object types in a content-addressed store, and branches that are just <strong>pointers</strong> to commits.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#git</span>
+            <span class="tag">#internals</span>
+            <span class="tag">#commits</span>
+            <span class="tag">#dag</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <h2>The idea in plain English</h2>
+          <p>
+            Git stores four object types, each identified by the SHA-1/256 hash of its content (so identical content is stored once). A <strong>blob</strong> is a file's bytes; a <strong>tree</strong> is a directory listing (names → blobs/trees); a <strong>commit</strong> points to one tree (a full snapshot of the project) plus parent commit(s), an author, and a message.
+          </p>
+          <p>
+            Crucially, a commit is a <strong>snapshot, not a diff</strong> — it references the complete tree of the project at that moment. Git computes diffs on the fly for display, but stores snapshots, which is why history operations are fast and reliable.
+          </p>
+          <p>
+            Commits link to their parents, forming a <strong>directed acyclic graph (DAG)</strong> of history. A <strong>branch</strong> is nothing but a lightweight, movable pointer to one commit; <code>HEAD</code> points to your current branch. 'Creating a branch' just writes a 40-byte ref — which is why branching is instant in Git.
+          </p>
+          <p>
+            This model explains everything else: a merge creates a commit with two parents; a rebase rewrites commits onto a new base (new hashes); 'detached HEAD' means HEAD points straight at a commit instead of a branch. Once you picture commits-as-snapshots-in-a-DAG and branches-as-pointers, Git commands stop being incantations.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every Git host — GitHub, GitLab — visualizes this DAG as the commit graph, and the speed you feel (instant branches, fast switches) comes directly from branches being mere pointers and objects being deduplicated by hash. Understanding it is what lets engineers confidently use <code>rebase</code>, <code>cherry-pick</code>, and <code>reflog</code> instead of fearing them, because they know each command just moves pointers and adds objects.
+            </p>
+          </div>
+
+          <h2>Commits in a DAG, branches as pointers</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">A commit = snapshot + parent(s); a branch = a movable pointer</text><rect class="dgm-box" x="60" y="70" width="70" height="36" rx="8"/><text class="dgm-sub" x="95" y="92" text-anchor="middle">C1</text><line x1="132" y1="88" x2="168" y2="88" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="170" y="70" width="70" height="36" rx="8"/><text class="dgm-sub" x="205" y="92" text-anchor="middle">C2</text><line x1="242" y1="88" x2="278" y2="88" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="280" y="70" width="70" height="36" rx="8"/><text class="dgm-sub" x="315" y="92" text-anchor="middle">C3</text><rect class="dgm-box" x="280" y="40" width="70" height="22" rx="8"/><text class="dgm-sub" x="315" y="55" text-anchor="middle">main →</text><rect class="dgm-box-accent" x="390" y="110" width="70" height="36" rx="8"/><text class="dgm-sub" x="425" y="132" text-anchor="middle">C4</text><line x1="315" y1="106" x2="410" y2="110" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="390" y="150" width="90" height="22" rx="8"/><text class="dgm-sub" x="435" y="165" text-anchor="middle">feature →</text><text class="dgm-sub" x="300" y="178" text-anchor="middle" fill="var(--text-faint)" style="font:600 11px var(--font-sans)">Each commit points to its parent; branches just label commits</text></svg>
+            <figcaption>Figure 1 — Commits form a DAG by pointing to parents; main and feature are just pointers to commits.</figcaption>
+          </figure>
+
+          <h2>In C#</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">bash</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-bash"># A commit references a full tree snapshot + parent(s) + metadata.
+$ git cat-file -p HEAD
+tree 9c1f2a...            # the project snapshot at this commit
+parent 4b7d3e...          # previous commit (the DAG edge)
+author Jane &lt;jane@x.io&gt; 1700000000 +0000
+
+# A branch is just a 40-char pointer in a file:
+$ cat .git/refs/heads/main
+3c2a9f8e...               # the commit 'main' points to — that's the whole branch</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Git stores <strong>snapshots, not diffs</strong>: blobs (files), trees (dirs), commits (tree + parents), all content-addressed by hash.</li>
+              <li>Commits form a <strong>DAG</strong>; a <strong>branch is just a movable pointer</strong> to a commit (so branching is instant).</li>
+              <li>Merge = a commit with two parents; rebase = replay commits onto a new base (new hashes).</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../git/merge-vs-rebase.html"><span class="rc-cat">Git</span><span class="rc-title">Merge vs Rebase</span></a>
+            <a class="related-card" href="../git/branching-strategies.html"><span class="rc-cat">Git</span><span class="rc-title">Branching Strategies</span></a>
+            <a class="related-card" href="../git/undoing-changes.html"><span class="rc-cat">Git</span><span class="rc-title">Undoing Changes</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              If you can say 'a commit is a snapshot pointing to a tree and parents, and a branch is just a pointer,' the rest of Git follows. That mental model is what interviewers are checking when they ask 'how does Git store history?'
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>
