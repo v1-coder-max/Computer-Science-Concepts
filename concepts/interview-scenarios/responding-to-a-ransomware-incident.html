@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ransomware Hit Your Cloud Storage: The First 15 Minutes — DevLens</title>
+  <meta name="description" content="A calm, structured first-15-minutes incident-response playbook for a cloud storage ransomware event: contain the blast radius, assess scope, escalate, then recover from immutable backups — never improvise alone." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="responding-to-a-ransomware-incident" data-title="Ransomware Hit Your Cloud Storage: The First 15 Minutes">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Ransomware Hit Your Cloud Storage: The First 15 Minutes</h1>
+          <p class="lede">
+            The 3 AM call is testing your <strong>process under pressure</strong>, not your heroics. You contain, assess, and escalate first — you do not start 'fixing' a security incident alone.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#security</span>
+            <span class="tag">#incident-response</span>
+            <span class="tag">#backups</span>
+            <span class="tag">#cloud</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Your CTO calls at 3 AM: the entire S3 bucket just got encrypted, with a ransom note in the object metadata. What do you do in the first 15 minutes?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Open with the meta-point: this is an <strong>incident-response</strong> question. The wrong answer is to start poking at the bucket; the right answer is to follow a playbook — <em>contain, assess, communicate, recover</em> — and to recognize that 'ransom note in object metadata' means someone had <strong>write credentials</strong>, so a compromised key is the likely entry point.
+          </p>
+          <p>
+            <strong>Contain the blast radius (minutes 0–5).</strong> Stop the bleeding: revoke/rotate the credentials and access keys that could touch the bucket, lock down the bucket policy (deny writes/deletes), and isolate any compromised IAM principals or instances. The goal is to ensure the attacker can't encrypt or exfiltrate <em>more</em>.
+          </p>
+          <p>
+            <strong>Assess scope (minutes 5–10).</strong> What exactly is affected — one bucket or many? Is data <strong>encrypted in place, deleted, or exfiltrated</strong> (a copy stolen)? Crucially: are <strong>backups / object versions intact and isolated</strong>? With S3 versioning + Object Lock, the 'encryption' may just be new object versions over recoverable originals.
+          </p>
+          <p>
+            <strong>Communicate and escalate (minutes 10–15).</strong> Declare an incident, assign an <strong>incident commander</strong>, and pull in security, legal, and leadership. Don't go solo — ransomware has legal/regulatory and PR dimensions. Preserve evidence (logs, the ransom note) for forensics; do not destroy the crime scene while flailing.
+          </p>
+          <p>
+            <strong>Then recover — don't pay if you can avoid it.</strong> Restore from immutable/versioned backups (paying funds crime and doesn't guarantee a key). Afterward: root-cause the entry (leaked key? over-broad permissions?), rotate everything, enable MFA, tighten least-privilege, and turn on versioning + Object Lock so it can't recur. Test the restore.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Mature orgs run exactly this: an incident-response runbook, an on-call incident commander, and cloud guardrails that make recovery boring — S3 Versioning keeps prior object versions, Object Lock (WORM) makes them undeletable for a retention period, and MFA-delete blocks destructive calls. The breaches that turn catastrophic are the ones where a single long-lived access key had broad write permissions and backups lived in the same account with no versioning — so 'just restore' wasn't an option. The fix is always least-privilege credentials plus immutable, isolated backups.
+            </p>
+          </div>
+
+          <h2>Contain → Assess → Communicate → Recover</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">First 15 minutes: a playbook, not heroics</text><rect class="dgm-box-accent" x="18" y="60" width="120" height="40" rx="8"/><text class="dgm-sub" x="78" y="84" text-anchor="middle">Contain</text><text class="dgm-sub" x="78" y="116" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">revoke keys, lock bucket</text><line x1="140" y1="80" x2="172" y2="80" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="174" y="60" width="120" height="40" rx="8"/><text class="dgm-sub" x="234" y="84" text-anchor="middle">Assess</text><text class="dgm-sub" x="234" y="116" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">scope · backups safe?</text><line x1="296" y1="80" x2="328" y2="80" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="330" y="60" width="120" height="40" rx="8"/><text class="dgm-sub" x="390" y="84" text-anchor="middle">Communicate</text><text class="dgm-sub" x="390" y="116" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">IC, security, legal</text><line x1="452" y1="80" x2="484" y2="80" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="486" y="60" width="96" height="40" rx="8"/><text class="dgm-sub" x="534" y="84" text-anchor="middle">Recover</text><text class="dgm-sub" x="300" y="156" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Restore from immutable/versioned backups · don't pay · don't go solo</text></svg>
+            <figcaption>Figure 1 — Stop the spread, learn the scope (especially whether backups are intact), escalate to a real incident team, then recover from immutable backups.</figcaption>
+          </figure>
+
+          <h2>Make recovery boring, before the incident</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">config — versioning + object lock + MFA delete</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-bash"># Immutable, recoverable backups turn ransomware into an inconvenience.
+aws s3api put-bucket-versioning --bucket prod-data \
+    --versioning-configuration Status=Enabled,MFADelete=Enabled
+
+# Object Lock (WORM): versions can't be deleted/overwritten for the retention period.
+aws s3api put-object-lock-configuration --bucket prod-data \
+    --object-lock-configuration 'ObjectLockEnabled=Enabled,Rule={DefaultRetention={Mode=COMPLIANCE,Days=30}}'
+
+# Principle: short-lived, least-privilege credentials — no single key should be
+# able to overwrite an entire bucket. Keep backups in a separate, locked-down account.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>It's an <strong>incident-response</strong> question: contain → assess → communicate → recover, and never start fixing a breach solo.</li>
+              <li><strong>Contain first</strong> (revoke keys, lock the bucket); the entry point is almost certainly a compromised write credential.</li>
+              <li>Recovery depends on <strong>immutable, isolated backups</strong> (versioning + Object Lock) — set those up <em>before</em> the incident; don't pay the ransom.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../interview-scenarios/managing-secrets-and-credentials.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Managing Secrets & Credentials</span></a>
+            <a class="related-card" href="../interview-scenarios/responding-to-a-production-outage.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Responding to a Production Outage</span></a>
+            <a class="related-card" href="../interview-scenarios/designing-for-durability.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Designing So You Never Lose Data</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              They're testing composure and process. Say the words <strong>contain, assess, communicate, recover</strong> and 'declare an incident / assign a commander.' The senior insight: a ransom note in metadata means a leaked write credential, and recovery hinges on <strong>immutable backups</strong> you set up beforehand — not on paying.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

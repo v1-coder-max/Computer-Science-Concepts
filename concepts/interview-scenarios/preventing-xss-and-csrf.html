@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Defending Against XSS & CSRF — DevLens</title>
+  <meta name="description" content="The two classic web attacks and their defenses: XSS (injected scripts → output encoding, CSP, HttpOnly cookies) and CSRF (forged authenticated requests → SameSite cookies, anti-forgery tokens, Origin checks)." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="preventing-xss-and-csrf" data-title="Defending Against XSS & CSRF">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Defending Against XSS & CSRF</h1>
+          <p class="lede">
+            XSS and CSRF are different attacks with different fixes that interviewers love to conflate. XSS runs <strong>their script on your page</strong>; CSRF makes <strong>the browser send a request the user didn't intend</strong>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#security</span>
+            <span class="tag">#frontend</span>
+            <span class="tag">#xss</span>
+            <span class="tag">#csrf</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“What's the difference between XSS and CSRF, and how do you defend against each?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            <strong>XSS (Cross-Site Scripting)</strong> = the attacker gets <em>their</em> JavaScript to run in <em>your</em> page (via an unescaped comment, username, URL param). That script runs with full access to the DOM, cookies readable by JS, and the user's session — it can steal tokens, keylog, or act as the user.
+          </p>
+          <p>
+            <strong>Defend XSS by never trusting data as code.</strong> <strong>Output-encode/escape</strong> everything you render (frameworks like React/Razor auto-escape by default), sanitize any HTML you must allow, and add a <strong>Content Security Policy</strong> that blocks inline and unknown-origin scripts. Mark session cookies <strong>HttpOnly</strong> so even a successful XSS can't read the token.
+          </p>
+          <p>
+            <strong>CSRF (Cross-Site Request Forgery)</strong> = a malicious site causes the user's browser to send an authenticated request to <em>your</em> site, riding on cookies that are sent automatically. The attacker can't read the response, but the state change (transfer money, change email) already happened.
+          </p>
+          <p>
+            <strong>Defend CSRF by proving intent.</strong> <strong>SameSite</strong> cookies (<code>Lax</code>/<code>Strict</code>) stop the cookie being sent on cross-site requests — the single biggest mitigation. Add an <strong>anti-forgery token</strong> (synchronizer or double-submit) that a forging site can't know, and verify the <strong>Origin/Referer</strong> on state-changing requests.
+          </p>
+          <p>
+            Tie them together: this is exactly why the JWT-storage debate matters. HttpOnly cookies remove the XSS token-theft, but because cookies are auto-sent you then owe CSRF defenses. The two attacks pull on opposite ends of the same cookie, which is why you address both, not one.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Frameworks bake these in: React escapes interpolated values, ASP.NET Razor HTML-encodes by default and ships antiforgery tokens, and modern browsers default cookies to SameSite=Lax. Real incidents still happen through the gaps — a dangerouslySetInnerHTML with unsanitized input (XSS), or a state-changing GET endpoint with no token and a permissive cookie (CSRF). Defense-in-depth (CSP + HttpOnly + SameSite + tokens) is standard because any single layer can be bypassed.
+            </p>
+          </div>
+
+          <h2>Two different attacks</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">XSS: their script on your page · CSRF: forged request with your cookies</text><rect class="dgm-box-accent" x="30" y="56" width="150" height="40" rx="8"/><text class="dgm-sub" x="105" y="80" text-anchor="middle">XSS</text><text class="dgm-sub" x="105" y="112" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">inject JS → steal/act</text><text class="dgm-sub" x="105" y="132" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">fix: encode · CSP · HttpOnly</text><rect class="dgm-box-accent" x="360" y="56" width="200" height="40" rx="8"/><text class="dgm-sub" x="460" y="80" text-anchor="middle">CSRF</text><text class="dgm-sub" x="460" y="112" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">forged request, auto cookies</text><text class="dgm-sub" x="460" y="132" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">fix: SameSite · token · Origin</text><text class="dgm-sub" x="300" y="168" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Related but distinct — HttpOnly cookies need CSRF defense too</text></svg>
+            <figcaption>Figure 1 — XSS is a code-injection problem (encode + CSP); CSRF is an intent problem (SameSite + tokens). The defenses don't overlap, so you need both.</figcaption>
+          </figure>
+
+          <h2>Layer the defenses</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — CSP, antiforgery, SameSite</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// XSS: a Content-Security-Policy that blocks inline/unknown scripts.
+app.Use(async (ctx, next) =&gt; {
+    ctx.Response.Headers["Content-Security-Policy"] =
+        "default-src 'self'; script-src 'self'";      // no inline scripts
+    await next();
+});
+
+// CSRF: anti-forgery token + SameSite cookies on state-changing requests.
+builder.Services.AddAntiforgery(o =&gt; o.Cookie.SameSite = SameSiteMode.Strict);
+app.MapPost("/transfer", [ValidateAntiForgeryToken] (TransferDto d) =&gt; Move(d));
+// Session cookies: HttpOnly + Secure so XSS can't read them, SameSite so CSRF can't ride them.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li><strong>XSS</strong> = attacker's script runs on your page → <strong>output-encode, CSP, HttpOnly cookies, sanitize</strong>.</li>
+              <li><strong>CSRF</strong> = forged authenticated request via auto-sent cookies → <strong>SameSite cookies, anti-forgery tokens, Origin checks</strong>.</li>
+              <li>They're distinct threats needing distinct fixes — and HttpOnly cookies (anti-XSS) still require CSRF defense.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../interview-scenarios/where-to-store-jwt-frontend.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Where to Store a JWT on the Frontend</span></a>
+            <a class="related-card" href="../interview-scenarios/securing-a-rest-api.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Securing a REST API</span></a>
+            <a class="related-card" href="../web-fundamentals/cors.html"><span class="rc-cat">Web Fundamentals</span><span class="rc-title">CORS</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Define both crisply — 'XSS runs their code on my page; CSRF makes the browser send a request the user didn't intend' — then give each its own defense list. Connecting it to the JWT-storage trade-off (HttpOnly fixes XSS theft but owes CSRF defense) is the senior tie-together.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

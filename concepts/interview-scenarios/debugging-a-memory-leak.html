@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Debugging a Memory Leak in Production — DevLens</title>
+  <meta name="description" content="A method for finding a production memory leak: confirm the steady-growth trend, capture and diff heap dumps to find the growing type, trace what roots it (static collections, unremoved event handlers, undisposed resources, unbounded caches), then bound and dispose." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="debugging-a-memory-leak" data-title="Debugging a Memory Leak in Production">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Debugging a Memory Leak in Production</h1>
+          <p class="lede">
+            A leak shows up as memory that <strong>climbs and never comes back down</strong>, ending in OOM restarts. You find it by capturing heap dumps over time and asking <em>what's holding these objects alive</em>.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#debugging</span>
+            <span class="tag">#performance</span>
+            <span class="tag">#memory</span>
+            <span class="tag">#incident-response</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“A service's memory keeps climbing until it gets OOM-killed and restarts. How do you find and fix the leak?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            <strong>Confirm the pattern first.</strong> Plot memory (RSS / managed heap) over time: a leak is a steady upward trend across requests that GC can't reclaim, often sawtoothing up to an OOM and restart. Rule out 'just high load' (which plateaus) and a too-small heap.
+          </p>
+          <p>
+            <strong>Capture heap snapshots over time.</strong> Take dumps at intervals (e.g. via <code>dotnet-gcdump</code>/<code>dotnet-dump</code>) and <strong>diff</strong> them. The object types that keep growing between snapshots are your suspects — that comparison is the single most useful technique.
+          </p>
+          <p>
+            <strong>Find what roots them.</strong> A leak in a GC language isn't unfreed memory — it's objects still <em>referenced</em>, so GC can't collect them. Follow the retention path to the root. The usual culprits: a <strong>static/long-lived collection</strong> that only ever grows, <strong>event handlers never unsubscribed</strong> (the subscriber is pinned by the publisher), <strong>IDisposable not disposed</strong> (streams, connections, timers), an <strong>unbounded cache</strong>, or a captured closure holding a big object.
+          </p>
+          <p>
+            <strong>Mitigate, then fix.</strong> Buy time by recycling the process / rolling restarts and, if needed, raising the limit — but that's a band-aid. The real fix is at the root: bound caches (size/TTL, or weak references), <strong>unsubscribe</strong> from events, <strong>dispose</strong> resources (<code>using</code>), and stop unbounded accumulation.
+          </p>
+          <p>
+            <strong>Prevent recurrence:</strong> add a memory alert on the growth trend, load/soak-test to surface slow leaks before production, and code-review for the classic patterns. Note GC tuning won't fix a true leak — if it's rooted, no collector can reclaim it.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              The .NET diagnostics flow is exactly this: dotnet-counters to spot the trend, dotnet-gcdump to capture, and a diff in Visual Studio / PerfView to find the growing type and its GC roots. The textbook .NET leak is an event handler — a long-lived publisher holds a reference to a short-lived subscriber that forgot to unsubscribe, so neither is collected. Unbounded in-memory caches (a Dictionary that only grows) and undisposed HttpClient/connection patterns are the other repeat offenders.
+            </p>
+          </div>
+
+          <h2>Trend → diff → root</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Memory climbs and never recovers → find the GC root</text><polyline points="40,120 90,110 140,118 190,95 240,104 290,78 340,88 390,62" fill="none" stroke="var(--c-warning)" stroke-width="2"/><text class="dgm-sub" x="210" y="145" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">steady upward trend → OOM</text><line x1="400" y1="95" x2="432" y2="95" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="434" y="60" width="130" height="32" rx="8"/><text class="dgm-sub" x="499" y="80" text-anchor="middle">diff heap dumps</text><rect class="dgm-box-accent" x="434" y="98" width="130" height="32" rx="8"/><text class="dgm-sub" x="499" y="118" text-anchor="middle">growing type → root</text><text class="dgm-sub" x="300" y="170" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">static collection · unremoved event handler · undisposed · unbounded cache</text></svg>
+            <figcaption>Figure 1 — Confirm the never-recovering trend, diff snapshots to find the type that keeps growing, then follow its references to the root that pins it.</figcaption>
+          </figure>
+
+          <h2>The classic leak — and the fix</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — unsubscribe and bound</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// ❌ LEAK: the long-lived publisher pins every subscriber that never unsubscribes.
+publisher.OnTick += handler;            // subscriber can't be collected while subscribed
+
+// ✅ Unsubscribe when done (or use weak event patterns):
+publisher.OnTick -= handler;
+
+// ❌ LEAK: an unbounded cache that only ever grows.
+static readonly Dictionary&lt;string, byte[]&gt; _cache = new();
+
+// ✅ Bound it — size/TTL eviction so it can't grow forever:
+var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 10_000 });
+// And dispose resources: using var stream = File.OpenRead(path);</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Confirm a <strong>steady, non-recovering growth</strong> trend (not just high load), then capture and <strong>diff heap dumps</strong> to find the growing type.</li>
+              <li>A managed leak = objects still <strong>referenced</strong> (can't be GC'd); find the root — static collections, <strong>unremoved event handlers</strong>, undisposed resources, unbounded caches.</li>
+              <li>Mitigate with restarts, but <strong>fix at the root</strong>: unsubscribe, dispose, and bound caches — GC tuning won't reclaim a rooted object.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../interview-scenarios/debugging-a-latency-spike.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Debugging a Production Latency Spike</span></a>
+            <a class="related-card" href="../dotnet/garbage-collection.html"><span class="rc-cat">.NET</span><span class="rc-title">Garbage Collection</span></a>
+            <a class="related-card" href="../dotnet/memory-management.html"><span class="rc-cat">.NET</span><span class="rc-title">Memory Management</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Show the method: confirm the trend, <strong>diff heap dumps</strong> to find the growing type, trace it to a GC root. Naming the classic causes — especially the <strong>event-handler leak</strong> and unbounded caches — and 'a rooted object can't be GC'd, so tuning won't help' marks real production experience.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

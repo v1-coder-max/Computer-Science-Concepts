@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Where to Store a JWT on the Frontend — DevLens</title>
+  <meta name="description" content="localStorage vs HttpOnly cookies for a JWT: the XSS-vs-CSRF trade-off, why HttpOnly+Secure+SameSite cookies are the safer default, and the modern access-token-in-memory + refresh-in-cookie pattern." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="where-to-store-jwt-frontend" data-title="Where to Store a JWT on the Frontend">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Where to Store a JWT on the Frontend</h1>
+          <p class="lede">
+            This is a <strong>threat-model</strong> question, not a storage one. localStorage exposes the token to XSS; cookies expose you to CSRF. The right answer names both threats and picks the lesser evil.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#security</span>
+            <span class="tag">#auth</span>
+            <span class="tag">#jwt</span>
+            <span class="tag">#frontend</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Where should you store a JWT on the frontend — localStorage or HttpOnly cookies? And why?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Frame the trade-off precisely. <strong>localStorage</strong> is convenient (read it in JS, attach it as a Bearer header), but <em>any</em> JavaScript on the page can read it — so a single <strong>XSS</strong> flaw (a malicious script, a compromised dependency) lets an attacker steal the token and impersonate the user. That's the dealbreaker.
+          </p>
+          <p>
+            <strong>HttpOnly cookies</strong> can't be read by JavaScript, so an XSS bug can't exfiltrate the token. The catch: cookies are sent <em>automatically</em> with every request to your domain, which opens <strong>CSRF</strong> — a malicious site can trigger an authenticated request using the user's cookie. So you must add CSRF defenses.
+          </p>
+          <p>
+            <strong>The recommended default: HttpOnly + Secure + SameSite cookies.</strong> <code>HttpOnly</code> blocks JS access (XSS-safe for the token), <code>Secure</code> forces HTTPS, and <code>SameSite=Lax/Strict</code> stops the cookie from being sent on cross-site requests — which neutralizes most CSRF. Add an anti-forgery token for the remaining cases.
+          </p>
+          <p>
+            <strong>The modern pattern</strong> splits the difference: keep a <em>short-lived access token in memory</em> (JS variable — gone on refresh, never persisted, not XSS-persistable) and a <em>refresh token in an HttpOnly cookie</em>. The app silently refreshes; a stolen-in-memory token expires in minutes.
+          </p>
+          <p>
+            Close with the honest caveat: <strong>if you have XSS, you've largely lost regardless</strong> — an attacker can ride the session even with HttpOnly cookies. So storage choice is damage-limitation; the real fix is preventing XSS (CSP, output encoding) in the first place.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Security teams and frameworks push toward HttpOnly, Secure, SameSite cookies for session tokens precisely because localStorage's XSS exposure is a recurring breach vector — a leaked token from a third-party script is game over. SPAs that need Bearer-header semantics commonly use the in-memory access token + HttpOnly refresh cookie pattern (e.g., libraries and BFF/'backend-for-frontend' setups), so the long-lived secret never touches JavaScript and the short-lived one is gone the moment the tab closes.
+            </p>
+          </div>
+
+          <h2>XSS-exposed vs CSRF-exposed</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Pick your threat: token readable by JS, or sent automatically</text><rect class="dgm-box-accent" x="30" y="56" width="150" height="36" rx="8"/><text class="dgm-sub" x="105" y="78" text-anchor="middle">localStorage</text><text class="dgm-sub" x="105" y="110" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">JS can read it</text><text class="dgm-sub" x="105" y="128" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">→ XSS steals the token</text><rect class="dgm-box-accent" x="360" y="56" width="200" height="36" rx="8"/><text class="dgm-sub" x="460" y="78" text-anchor="middle">HttpOnly + Secure + SameSite cookie</text><text class="dgm-sub" x="460" y="110" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">JS can't read it (XSS-safe)</text><text class="dgm-sub" x="460" y="128" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">auto-sent → add CSRF defense</text><text class="dgm-sub" x="300" y="165" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Best: short-lived access token in memory + refresh token in HttpOnly cookie</text></svg>
+            <figcaption>Figure 1 — localStorage trades XSS exposure for convenience; an HttpOnly cookie removes the XSS read at the cost of CSRF, which SameSite + tokens then close.</figcaption>
+          </figure>
+
+          <h2>Issue the token as a hardened cookie</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — HttpOnly, Secure, SameSite</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Store the token where JavaScript can't read it, only over HTTPS, not cross-site.
+Response.Cookies.Append("access_token", jwt, new CookieOptions
+{
+    HttpOnly = true,                       // JS cannot read it → XSS can't steal it
+    Secure   = true,                       // sent only over HTTPS
+    SameSite = SameSiteMode.Strict,        // not sent on cross-site requests → blunts CSRF
+    Expires  = DateTimeOffset.UtcNow.AddMinutes(15)
+});
+// Pair a long-lived refresh token (also HttpOnly) with a short access-token TTL,
+// and add an anti-forgery token for state-changing requests.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>It's an <strong>XSS vs CSRF</strong> trade-off: localStorage is XSS-readable; cookies are auto-sent (CSRF).</li>
+              <li>Default to <strong>HttpOnly + Secure + SameSite</strong> cookies (XSS can't read the token) plus a CSRF token — avoid localStorage for sensitive tokens.</li>
+              <li>Best practice: <strong>short-lived access token in memory + refresh token in an HttpOnly cookie</strong>; and remember XSS prevention (CSP) is the real fix.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../web-fundamentals/jwt.html"><span class="rc-cat">Web Fundamentals</span><span class="rc-title">JSON Web Tokens</span></a>
+            <a class="related-card" href="../web-fundamentals/cookies.html"><span class="rc-cat">Web Fundamentals</span><span class="rc-title">Cookies & Sessions</span></a>
+            <a class="related-card" href="../interview-scenarios/preventing-xss-and-csrf.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Defending Against XSS & CSRF</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Don't just pick one — name <strong>both threat models</strong>. The strong answer: HttpOnly+Secure+SameSite cookie (so XSS can't read the token) plus CSRF protection, or the in-memory access + HttpOnly refresh pattern. The maturity signal: 'if you have XSS, storage choice only limits damage — prevent XSS.'
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

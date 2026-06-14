@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mitigating a DDoS Attack — DevLens</title>
+  <meta name="description" content="How to mitigate volumetric, protocol, and application-layer DDoS attacks: absorb at the edge with a CDN/scrubbing service, filter with a WAF and rate limits, autoscale, and shed bad traffic before the origin." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="mitigating-a-ddos-attack" data-title="Mitigating a DDoS Attack">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Mitigating a DDoS Attack</h1>
+          <p class="lede">
+            You can't out-buy a botnet's bandwidth from your origin — you <strong>absorb at the edge</strong> and <strong>filter early</strong>, so the flood breaks against infrastructure far bigger than yours.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#security</span>
+            <span class="tag">#ddos</span>
+            <span class="tag">#scaling</span>
+            <span class="tag">#incident-response</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Your site is being hit by a DDoS attack. How do you stay up?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Classify the attack, because the defense differs. <strong>Volumetric</strong> floods your bandwidth (UDP/amplification); <strong>protocol</strong> attacks exhaust connection state (SYN floods); <strong>application-layer (L7)</strong> sends expensive-looking-but-valid requests (a flood of searches/logins) that are hardest to tell from real users.
+          </p>
+          <p>
+            <strong>Absorb volume at the edge.</strong> The first line is a CDN / DDoS-scrubbing service (Cloudflare, AWS Shield, Akamai) sitting in front via anycast: their global network soaks up terabits and only forwards clean traffic. You physically cannot absorb a large volumetric flood at a single origin — push it upstream.
+          </p>
+          <p>
+            <strong>Filter with a WAF and rate limits.</strong> A web application firewall blocks known-bad patterns and signatures; per-IP/per-key <strong>rate limiting</strong> caps abusers; IP-reputation and geo-rules drop obvious junk. For suspicious clients, a <strong>challenge</strong> (CAPTCHA / JS / proof-of-work) separates bots from humans cheaply.
+          </p>
+          <p>
+            <strong>Reduce origin cost and scale the rest.</strong> Cache aggressively so even traffic that gets through hits cache, not your database; <strong>autoscale</strong> to ride out the surge; and use a queue/load-shedding so the backend degrades gracefully instead of toppling.
+          </p>
+          <p>
+            Treat it as an <strong>incident</strong>: detect via traffic anomaly alerts, turn on the heightened protections (many are a config flip), communicate, and afterward review what got through. The honest point: pure-volumetric defense ultimately depends on your upstream provider's capacity, so having that in place <em>before</em> the attack is the real preparation.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Sites under attack route traffic through Cloudflare/Shield, flip on 'under attack' mode (JS challenges), tighten WAF rules and rate limits, and lean on cached responses so the origin barely notices. Record-breaking volumetric attacks (tens of millions of RPS) are absorbed by these providers' anycast networks, not by the target's servers. The teams that survive are the ones who had edge protection and caching configured beforehand; scrambling to add a CDN mid-attack is far harder.
+            </p>
+          </div>
+
+          <h2>Absorb at the edge, filter early</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Flood breaks against the edge; only clean traffic reaches origin</text><polyline points="30,60 30,120" fill="none" stroke="var(--c-warning)" stroke-width="2"/><text class="dgm-sub" x="60" y="50" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">attack + users</text><line x1="70" y1="90" x2="110" y2="90" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="70" y1="70" x2="110" y2="84" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="70" y1="110" x2="110" y2="96" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="112" y="64" width="120" height="50" rx="8"/><text class="dgm-sub" x="172" y="93" text-anchor="middle">CDN / scrubbing</text><text class="dgm-sub" x="172" y="130" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">WAF · rate limit · challenge</text><line x1="234" y1="90" x2="286" y2="90" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="234" y1="78" x2="270" y2="68" stroke="var(--c-warning)" stroke-width="1.4" stroke-dasharray="3 3"/><text class="dgm-sub" x="258" y="60" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">junk dropped</text><rect class="dgm-box-accent" x="288" y="64" width="110" height="50" rx="8"/><text class="dgm-sub" x="343" y="93" text-anchor="middle">clean traffic</text><line x1="398" y1="90" x2="440" y2="90" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="442" y="64" width="110" height="50" rx="8"/><text class="dgm-sub" x="497" y="93" text-anchor="middle">origin (cached)</text><text class="dgm-sub" x="300" y="162" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Can't absorb a volumetric flood at the origin — push it upstream, before the attack</text></svg>
+            <figcaption>Figure 1 — A CDN/scrubbing layer soaks up the volume and a WAF + rate limits drop the junk, so the origin sees only filtered, mostly-cached traffic.</figcaption>
+          </figure>
+
+          <h2>Layers that blunt a flood</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">config — edge protection + caching + limits</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml"># 1. Front everything with a CDN / DDoS-scrubbing network (anycast).
+#    Volumetric floods are absorbed there, not at your origin.
+
+# 2. WAF rules + per-IP rate limit at the edge:
+rate_limit:
+  key: client_ip
+  requests_per_minute: 600
+  action: challenge          # JS/CAPTCHA challenge for suspicious clients
+
+# 3. Cache aggressively so traffic that gets through hits cache, not the DB:
+cache_control: "public, max-age=60, stale-while-revalidate=30"
+
+# 4. Autoscale the origin + load-shed (429/503) beyond capacity.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Classify the attack: <strong>volumetric</strong> (bandwidth), <strong>protocol</strong> (connection state), <strong>L7</strong> (expensive valid-looking requests).</li>
+              <li><strong>Absorb at the edge</strong> (CDN/scrubbing via anycast) — you can't soak a volumetric flood at a single origin.</li>
+              <li>Layer <strong>WAF + rate limits + challenges + caching + autoscale</strong>, and have it configured <em>before</em> the attack.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../interview-scenarios/surviving-traffic-spikes.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Surviving Traffic Spikes</span></a>
+            <a class="related-card" href="../interview-scenarios/designing-a-rate-limiter.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Designing a Rate Limiter</span></a>
+            <a class="related-card" href="../system-design/cdn.html"><span class="rc-cat">System Design</span><span class="rc-title">Content Delivery Networks</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Classify the attack type first, then make the key point: <strong>volumetric floods are absorbed upstream at the edge</strong>, not at your origin. Layer WAF + rate limiting + challenges + caching on top, and frame it as an incident with protections prepared in advance.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

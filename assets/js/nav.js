@@ -986,7 +986,7 @@
       },
       {
         id: "interview-scenarios", slug: "interview-scenarios", title: "Interview Scenarios", icon: "🧩",
-        color: "var(--cat-interview-scenarios)", expected: 15,
+        color: "var(--cat-interview-scenarios)", expected: 27,
         blurb: "Open-ended senior-engineer questions: scaling, concurrency, availability, consistency, and the trade-offs behind them.",
         concepts: [
           { slug: "scaling-a-web-application", title: "Scaling a Web Application" },
@@ -1004,6 +1004,18 @@
           { slug: "data-consistency-across-services", title: "Keeping Data Consistent Across Services" },
           { slug: "debugging-a-latency-spike", title: "Debugging a Production Latency Spike" },
           { slug: "scaling-the-database", title: "Scaling the Database Tier" },
+          { slug: "designing-an-api-for-high-throughput", title: "Designing an API for 1 Million Requests/Second" },
+          { slug: "responding-to-a-ransomware-incident", title: "Ransomware Hit Your Cloud Storage: The First 15 Minutes" },
+          { slug: "where-to-store-jwt-frontend", title: "Where to Store a JWT on the Frontend" },
+          { slug: "designing-a-rate-limiter", title: "Designing a Rate Limiter" },
+          { slug: "securing-a-rest-api", title: "Securing a REST API" },
+          { slug: "storing-passwords-securely", title: "Storing Passwords Securely" },
+          { slug: "mitigating-a-ddos-attack", title: "Mitigating a DDoS Attack" },
+          { slug: "responding-to-a-production-outage", title: "Responding to a Production Outage" },
+          { slug: "managing-secrets-and-credentials", title: "Managing Secrets & Credentials" },
+          { slug: "preventing-xss-and-csrf", title: "Defending Against XSS & CSRF" },
+          { slug: "designing-an-authentication-system", title: "Designing Authentication & Sessions" },
+          { slug: "debugging-a-memory-leak", title: "Debugging a Memory Leak in Production" },
         ]
       },
       {

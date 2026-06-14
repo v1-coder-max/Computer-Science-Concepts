@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Designing a Rate Limiter — DevLens</title>
+  <meta name="description" content="How to design a distributed rate limiter: fixed/sliding window vs token/leaky bucket algorithms, an atomic Redis counter for the distributed case, per-key limits, and 429 + Retry-After responses." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="designing-a-rate-limiter" data-title="Designing a Rate Limiter">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Designing a Rate Limiter</h1>
+          <p class="lede">
+            A rate limiter caps how fast a client can call you. The interesting parts are the <strong>algorithm</strong> (bursts vs smoothness) and making it work <strong>across many servers</strong> with one shared counter.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#api</span>
+            <span class="tag">#rate-limiting</span>
+            <span class="tag">#distributed-systems</span>
+            <span class="tag">#algorithms</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Design a rate limiter that allows N requests per user per minute. How does it work across a fleet of servers?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Start with the algorithms and their trade-offs. <strong>Fixed window</strong> (count per minute bucket) is trivial but allows a 2× burst at the window boundary. <strong>Sliding window</strong> smooths that by weighting the previous window. <strong>Token bucket</strong> — the most common — refills tokens at a steady rate and lets each request spend one, allowing controlled bursts up to the bucket size. <strong>Leaky bucket</strong> enforces a smooth output rate. Pick token bucket unless you need strictly smooth output.
+          </p>
+          <p>
+            <strong>Make it distributed.</strong> On a fleet, an in-memory counter per server is wrong (10 servers = 10× the limit). The counter must live in a <strong>shared store</strong> — typically Redis — so every instance sees the same state. Use an <em>atomic</em> operation (<code>INCR</code> with a TTL, or a small Lua script for token bucket) so concurrent requests can't race past the limit.
+          </p>
+          <p>
+            <strong>Key it correctly.</strong> Limit per user, per API key, or per IP depending on the threat — usually a composite like <code>user:endpoint</code>. Put the limiter at the <strong>edge / API gateway</strong> so bad traffic is rejected before it costs you backend work.
+          </p>
+          <p>
+            <strong>Respond properly.</strong> Over-limit requests get HTTP <strong>429 Too Many Requests</strong> with a <code>Retry-After</code> header and ideally <code>X-RateLimit-Remaining</code>, so well-behaved clients back off instead of hammering.
+          </p>
+          <p>
+            Mention the trade-offs: Redis adds a network hop per request (acceptable; can be optimized with local pre-checks or approximate counting), and you decide between <em>hard</em> limits (reject) and <em>soft</em> limits (throttle/queue). For resilience, fail open or closed deliberately if Redis is down.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Every public API — Stripe, GitHub, Twitter — rate-limits with exactly these pieces: a token-bucket-style limit keyed per API key, enforced at the gateway, returning 429 + Retry-After and rate-limit headers. At scale the counter lives in Redis (or a purpose-built service) using atomic scripts so the limit holds across hundreds of instances. The classic bug is a per-instance in-memory limiter that silently allows N× the intended rate once you scale horizontally.
+            </p>
+          </div>
+
+          <h2>Token bucket on a shared counter</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Refill tokens steadily; each request spends one</text><rect class="dgm-box-accent" x="30" y="56" width="110" height="40" rx="8"/><text class="dgm-sub" x="85" y="80" text-anchor="middle">token bucket</text><text class="dgm-sub" x="85" y="112" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">+ tokens / sec</text><line x1="142" y1="76" x2="180" y2="76" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="182" y="56" width="96" height="40" rx="8"/><text class="dgm-sub" x="230" y="80" text-anchor="middle">has token?</text><line x1="278" y1="66" x2="320" y2="60" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="278" y1="86" x2="320" y2="96" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="322" y="46" width="90" height="26" rx="8"/><text class="dgm-sub" x="367" y="63" text-anchor="middle">yes → serve</text><rect class="dgm-box-accent" x="322" y="84" width="90" height="26" rx="8"/><text class="dgm-sub" x="367" y="101" text-anchor="middle">no → 429</text><text class="dgm-sub" x="367" y="126" text-anchor="middle" fill="var(--c-warning)" style="font:600 11px var(--font-sans)">Retry-After</text><rect class="dgm-box-accent" x="452" y="56" width="110" height="40" rx="8"/><text class="dgm-sub" x="507" y="80" text-anchor="middle">Redis (shared)</text><line x1="450" y1="76" x2="414" y2="76" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><text class="dgm-sub" x="300" y="162" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Counter in Redis (atomic) so the limit holds across every server</text></svg>
+            <figcaption>Figure 1 — A token bucket allows controlled bursts; storing it in Redis with atomic ops keeps one true limit across the whole fleet.</figcaption>
+          </figure>
+
+          <h2>Atomic per-key limit in Redis</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — fixed window with INCR + TTL</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// One shared, atomic counter per key+window — correct across all instances.
+public async Task&lt;bool&gt; AllowAsync(string key, int limit, TimeSpan window)
+{
+    var bucket = $"rl:{key}:{DateTime.UtcNow:yyyyMMddHHmm}";   // per-minute window
+    long count = await _redis.StringIncrementAsync(bucket);     // atomic
+    if (count == 1) await _redis.KeyExpireAsync(bucket, window); // set TTL once
+    return count &lt;= limit;
+}
+
+// On reject:
+//   return Results.StatusCode(429) with header Retry-After: &lt;seconds&gt;.
+// (Token bucket is a small Lua script so the check + decrement is one atomic step.)</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Know the algorithms: <strong>fixed/sliding window</strong> (simple) vs <strong>token/leaky bucket</strong> (bursts vs smooth) — token bucket is the common default.</li>
+              <li>Across a fleet the counter must be a <strong>shared, atomic store</strong> (Redis INCR/Lua), or each instance allows N× the limit.</li>
+              <li>Key per user/API-key/IP, enforce at the <strong>gateway</strong>, and respond with <strong>429 + Retry-After</strong> so clients back off.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../system-design/rate-limiting.html"><span class="rc-cat">System Design</span><span class="rc-title">Rate Limiting</span></a>
+            <a class="related-card" href="../interview-scenarios/designing-an-api-for-high-throughput.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Designing an API for 1M Requests/Second</span></a>
+            <a class="related-card" href="../interview-scenarios/mitigating-a-ddos-attack.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Mitigating a DDoS Attack</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Compare the algorithms (token bucket is the safe default), then make the distributed point explicitly: the counter lives in <strong>Redis with atomic ops</strong>, not in process memory. Finish with the 429 + Retry-After contract and the fail-open/closed decision if the store is down.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Designing Authentication & Sessions — DevLens</title>
+  <meta name="description" content="How to design authentication for a web app: stateful server sessions vs stateless JWTs and their revocation trade-off, the access + refresh token pattern, OAuth/OIDC for third-party login, and MFA." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="designing-an-authentication-system" data-title="Designing Authentication & Sessions">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Designing Authentication & Sessions</h1>
+          <p class="lede">
+            Authentication design is mostly one trade-off — <strong>stateful sessions vs stateless tokens</strong> — plus the details (refresh tokens, revocation, MFA, and not storing passwords yourself).
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#auth</span>
+            <span class="tag">#sessions</span>
+            <span class="tag">#oauth</span>
+            <span class="tag">#security</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Design the authentication system for a web application. Sessions or JWTs?”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            Frame the core choice. <strong>Server sessions:</strong> on login you create a session, store its state server-side (Redis/DB), and hand the client an opaque <strong>session ID</strong> in a cookie. Easy to <strong>revoke</strong> (delete the session) and small cookies, but it's <em>stateful</em> — every request does a lookup, and the store must scale.
+          </p>
+          <p>
+            <strong>Stateless JWTs:</strong> the token itself carries signed claims, so any server validates it with no lookup — great for horizontal scale and microservices. The cost: you <em>can't easily revoke</em> a JWT before it expires (it's self-contained), so a stolen token is valid until expiry.
+          </p>
+          <p>
+            <strong>Resolve the revocation problem with short TTLs + refresh tokens.</strong> Issue a short-lived <strong>access token</strong> (minutes) plus a long-lived <strong>refresh token</strong>; the access token's brief life limits damage, and you revoke by invalidating the refresh token (a denylist or rotating refresh tokens). This is the common production pattern.
+          </p>
+          <p>
+            <strong>Store tokens safely</strong> (the JWT-storage question): access token in memory, refresh token in an HttpOnly+Secure+SameSite cookie. <strong>Don't store passwords</strong> if you can delegate — use <strong>OAuth2/OIDC</strong> (Google/GitHub/Auth0) so a provider handles credentials and you get an identity token.
+          </p>
+          <p>
+            Round it out with the security essentials: hash passwords properly if you do own them, offer <strong>MFA</strong>, build secure password-reset and email-verification flows, lock/throttle after failed attempts (credential stuffing), and log auth events. Match the choice to the system — sessions for a single web app, JWT/OIDC for APIs and microservices.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              Most large systems land on a hybrid: OIDC/OAuth for login (delegating credentials to an identity provider), short-lived JWT access tokens for stateless API calls, and refresh tokens (HttpOnly cookie, often rotating) for longevity with revocation. Single classic web apps still happily use server-side sessions because revocation and simplicity matter more than statelessness. The anti-pattern is a long-lived JWT in localStorage with no refresh story — unrevocable and XSS-exposed.
+            </p>
+          </div>
+
+          <h2>Sessions vs tokens, and the refresh pattern</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Login → short access token + refresh token</text><rect class="dgm-box-accent" x="30" y="60" width="90" height="40" rx="8"/><text class="dgm-sub" x="75" y="84" text-anchor="middle">login + MFA</text><line x1="122" y1="80" x2="154" y2="80" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="156" y="60" width="130" height="40" rx="8"/><text class="dgm-sub" x="221" y="84" text-anchor="middle">issue tokens</text><line x1="288" y1="66" x2="330" y2="58" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><line x1="288" y1="94" x2="330" y2="100" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="332" y="44" width="150" height="26" rx="8"/><text class="dgm-sub" x="407" y="61" text-anchor="middle">access token (mins, in memory)</text><rect class="dgm-box" x="332" y="86" width="170" height="26" rx="8"/><text class="dgm-sub" x="417" y="103" text-anchor="middle">refresh token (HttpOnly cookie)</text><text class="dgm-sub" x="300" y="140" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Stateless JWT scales; short TTL + refresh denylist gives revocation</text><text class="dgm-sub" x="300" y="162" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">Delegate to OAuth/OIDC so you never store passwords</text></svg>
+            <figcaption>Figure 1 — A short-lived access token gives stateless scale while the refresh token (revocable, HttpOnly) restores control; OIDC offloads credential handling entirely.</figcaption>
+          </figure>
+
+          <h2>Cookie sessions vs JWT bearer</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">C# — pick the model deliberately</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-csharp">// Stateful: server session, opaque ID in a hardened cookie — easy to revoke.
+builder.Services.AddAuthentication().AddCookie(o =&gt; {
+    o.Cookie.HttpOnly = true; o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    o.Cookie.SameSite = SameSiteMode.Strict; o.ExpireTimeSpan = TimeSpan.FromHours(8);
+});
+
+// Stateless: JWT bearer — no server lookup, scales across services.
+builder.Services.AddAuthentication().AddJwtBearer(o =&gt; {
+    o.TokenValidationParameters = new() {
+        ValidateIssuer = true, ValidateAudience = true,
+        ValidateLifetime = true };            // short TTL + refresh token for revocation
+});
+// Or delegate the whole thing: AddOpenIdConnect(...) → don't store passwords at all.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Core trade-off: <strong>sessions</strong> (stateful, easy revoke, needs a store) vs <strong>JWTs</strong> (stateless, scalable, hard to revoke).</li>
+              <li>Square the circle with <strong>short-lived access tokens + refresh tokens</strong>; store access in memory, refresh in an HttpOnly cookie.</li>
+              <li><strong>Delegate to OAuth2/OIDC</strong> to avoid storing passwords; add MFA, throttling, and secure reset flows.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../interview-scenarios/where-to-store-jwt-frontend.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Where to Store a JWT on the Frontend</span></a>
+            <a class="related-card" href="../interview-scenarios/storing-passwords-securely.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Storing Passwords Securely</span></a>
+            <a class="related-card" href="../web-fundamentals/oauth.html"><span class="rc-cat">Web Fundamentals</span><span class="rc-title">OAuth 2.0</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              Frame it as sessions-vs-JWT and immediately name the JWT <strong>revocation</strong> weakness, then solve it with short access TTLs + refresh tokens. Mentioning OIDC ('don't store passwords if you can delegate') and MFA shows breadth beyond the token mechanics.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Responding to a Production Outage — DevLens</title>
+  <meta name="description" content="A structured production-outage playbook: assess severity, communicate and assign an incident commander, mitigate before root-causing (rollback/failover), diagnose with telemetry, resolve, then run a blameless post-mortem." />
+
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+
+<body data-category="interview-scenarios" data-concept="responding-to-a-production-outage" data-title="Responding to a Production Outage">
+
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="../../index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+
+    <main class="content">
+      <div class="content-inner">
+        <nav class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+        <article class="article">
+          <h1>Responding to a Production Outage</h1>
+          <p class="lede">
+            An outage is graded on <strong>process</strong>, not heroics. Stop the bleeding first, communicate clearly, and only then hunt the root cause — with a blameless follow-up so it can't recur.
+          </p>
+
+          <div class="concept-meta">
+            <span class="tag">#incident-response</span>
+            <span class="tag">#reliability</span>
+            <span class="tag">#on-call</span>
+            <span class="tag">#observability</span>
+            <button class="read-toggle" data-read-toggle>○ Mark as read</button>
+          </div>
+
+          <div class="callout">
+            <p class="callout-title">❓ The interview question</p>
+            <p>“Production is down. Walk me through exactly what you do.”</p>
+          </div>
+
+          <h2>How to think about it</h2>
+          <p>
+            <strong>Assess and declare.</strong> Confirm it's real and scope the severity — everything down, or one feature? How many users? Declare an <strong>incident</strong> with a clear severity level so the right people and urgency kick in; don't quietly debug a SEV-1 alone.
+          </p>
+          <p>
+            <strong>Communicate and assign roles.</strong> Open an incident channel, post to the status page, and name an <strong>incident commander</strong> (coordinates, decides) plus comms and ops roles. Clear ownership prevents the chaos of five people poking at the same thing.
+          </p>
+          <p>
+            <strong>Mitigate before you root-cause.</strong> The goal is restoring service, not understanding it yet. Reach for the fast levers: <strong>roll back</strong> the recent deploy (the usual culprit), fail over to a healthy region/replica, scale out, or flip a feature flag off. A known mitigation beats a perfect diagnosis the users are waiting on.
+          </p>
+          <p>
+            <strong>Diagnose with telemetry.</strong> Once stable (or in parallel), ask <em>what changed</em> (deploy, config, traffic, dependency) and drill <strong>metrics → traces → logs</strong> to localize tier → span → cause. The change log is your fastest lead.
+          </p>
+          <p>
+            <strong>Resolve and learn.</strong> Apply the durable fix, confirm recovery, then run a <strong>blameless post-mortem</strong>: timeline, root cause, and concrete action items (add the missing alert, the rollback automation, the test) so the same outage can't happen twice. Blameless because you want honesty, not scapegoats.
+          </p>
+
+          <h2>Real-world example</h2>
+          <div class="callout real-world">
+            <p class="callout-title">🏢 How this works in production</p>
+            <p>
+              This mirrors Google SRE / PagerDuty incident-management practice: severity levels, an incident commander, a dedicated channel and status page, mitigate-then-diagnose, and a blameless post-mortem with tracked action items. The single most common root cause is a recent deploy, which is why a fast, rehearsed rollback is the most valuable button in the building — and why mature teams invest in feature flags and one-click rollback so 'mitigate first' is actually possible.
+            </p>
+          </div>
+
+          <h2>The incident flow</h2>
+          <figure class="figure">
+            <svg viewBox="0 0 600 185" role="img" aria-label="diagram"><defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--text-faint)"/></marker></defs><text class="dgm-label" x="20" y="22">Mitigate first; understand second; learn last</text><rect class="dgm-box-accent" x="14" y="62" width="86" height="40" rx="8"/><text class="dgm-sub" x="57" y="86" text-anchor="middle">Detect</text><line x1="100" y1="82" x2="124" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="126" y="62" width="96" height="40" rx="8"/><text class="dgm-sub" x="174" y="86" text-anchor="middle">Communicate</text><line x1="222" y1="82" x2="246" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="248" y="62" width="90" height="40" rx="8"/><text class="dgm-sub" x="293" y="86" text-anchor="middle">Mitigate</text><text class="dgm-sub" x="293" y="116" text-anchor="middle" fill="var(--c-success)" style="font:600 11px var(--font-sans)">rollback / failover</text><line x1="338" y1="82" x2="362" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box" x="364" y="62" width="90" height="40" rx="8"/><text class="dgm-sub" x="409" y="86" text-anchor="middle">Diagnose</text><line x1="454" y1="82" x2="478" y2="82" stroke="var(--text-faint)" stroke-width="1.6" marker-end="url(#ar)"/><rect class="dgm-box-accent" x="480" y="62" width="104" height="40" rx="8"/><text class="dgm-sub" x="532" y="86" text-anchor="middle">Post-mortem</text><text class="dgm-sub" x="300" y="158" text-anchor="middle" fill="var(--text-muted)" style="font:600 11px var(--font-sans)">Incident commander coordinates · blameless review → action items</text></svg>
+            <figcaption>Figure 1 — Restore service with fast mitigations (usually a rollback), then diagnose with telemetry, then close the loop with a blameless post-mortem.</figcaption>
+          </figure>
+
+          <h2>Make 'mitigate first' possible</h2>
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="lang">config — rollback + flags + health gates</span>
+              <button class="copy-btn" type="button">Copy</button>
+            </div>
+<pre><code class="language-yaml"># Fast rollback is the most valuable lever in an outage — automate it.
+deploy:
+  strategy: rolling
+  autoRollback:
+    onHealthCheckFailure: true        # bad deploy reverts itself
+    onErrorRateAbove: 2%
+
+# Feature flags let you disable a broken path without a deploy:
+flags:
+  new-checkout-flow: off              # flip off to mitigate instantly
+
+# Readiness gates keep traffic off unhealthy instances during failover.</code></pre>
+          </div>
+
+          <h2>Key takeaways</h2>
+          <div class="callout takeaways">
+            <p class="callout-title">🎯 Remember these three</p>
+            <ul>
+              <li>Declare an incident and assign an <strong>incident commander</strong> — don't debug a major outage silently or alone.</li>
+              <li><strong>Mitigate before root-causing</strong>: rollback, failover, scale, or feature-flag off; restoring service beats understanding it.</li>
+              <li>Diagnose via <strong>what-changed + metrics→traces→logs</strong>, then run a <strong>blameless post-mortem</strong> with concrete action items.</li>
+            </ul>
+          </div>
+
+          <h2>Related concepts</h2>
+          <div class="related-grid">
+            <a class="related-card" href="../interview-scenarios/debugging-a-latency-spike.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Debugging a Production Latency Spike</span></a>
+            <a class="related-card" href="../interview-scenarios/preventing-cascading-failures.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Preventing Cascading Failures</span></a>
+            <a class="related-card" href="../interview-scenarios/responding-to-a-ransomware-incident.html"><span class="rc-cat">Interview Scenarios</span><span class="rc-title">Ransomware Hit Your Cloud Storage</span></a>
+          </div>
+
+          <h2>Interview tip</h2>
+          <div class="callout interview">
+            <p class="callout-title">🗣️ When this comes up</p>
+            <p>
+              The structure is the answer: assess → communicate (incident commander) → <strong>mitigate before diagnosing</strong> → fix → blameless post-mortem. Saying 'roll back first, understand later' and 'blameless' signals you've actually been on call, not just read about it.
+            </p>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="toc" id="toc" aria-label="Table of contents"></aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script>
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path =
+        "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/";
+    }
+  </script>
+  <script src="../../assets/js/theme.js"></script>
+  <script src="../../assets/js/nav.js"></script>
+  <script src="../../assets/js/search.js"></script>
+</body>
+</html>

@@ -6545,5 +6545,173 @@
     ],
     "description": "How to scale the hardest tier: caching and read replicas for read load, then partitioning/sharding for write and data volume, plus connection pooling and CQRS — and the trade-offs of each.",
     "url": "concepts/interview-scenarios/scaling-the-database.html"
+  },
+  {
+    "title": "Designing an API for 1 Million Requests/Second",
+    "category": "interview-scenarios",
+    "tags": [
+      "api",
+      "scaling",
+      "caching",
+      "load-balancing",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to design an API that survives a million requests per second: stateless horizontal scale, edge caching, connection pooling, async I/O, async writes via a queue, rate limiting, and efficient protocols.",
+    "url": "concepts/interview-scenarios/designing-an-api-for-high-throughput.html"
+  },
+  {
+    "title": "Ransomware Hit Your Cloud Storage: The First 15 Minutes",
+    "category": "interview-scenarios",
+    "tags": [
+      "security",
+      "incident-response",
+      "backups",
+      "cloud",
+      "interview",
+      "system-design"
+    ],
+    "description": "A calm, structured first-15-minutes incident-response playbook for a cloud storage ransomware event: contain the blast radius, assess scope, escalate, then recover from immutable backups — never improvise alone.",
+    "url": "concepts/interview-scenarios/responding-to-a-ransomware-incident.html"
+  },
+  {
+    "title": "Where to Store a JWT on the Frontend",
+    "category": "interview-scenarios",
+    "tags": [
+      "security",
+      "auth",
+      "jwt",
+      "frontend",
+      "interview",
+      "system-design"
+    ],
+    "description": "localStorage vs HttpOnly cookies for a JWT: the XSS-vs-CSRF trade-off, why HttpOnly+Secure+SameSite cookies are the safer default, and the modern access-token-in-memory + refresh-in-cookie pattern.",
+    "url": "concepts/interview-scenarios/where-to-store-jwt-frontend.html"
+  },
+  {
+    "title": "Designing a Rate Limiter",
+    "category": "interview-scenarios",
+    "tags": [
+      "api",
+      "rate-limiting",
+      "distributed-systems",
+      "algorithms",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to design a distributed rate limiter: fixed/sliding window vs token/leaky bucket algorithms, an atomic Redis counter for the distributed case, per-key limits, and 429 + Retry-After responses.",
+    "url": "concepts/interview-scenarios/designing-a-rate-limiter.html"
+  },
+  {
+    "title": "Securing a REST API",
+    "category": "interview-scenarios",
+    "tags": [
+      "security",
+      "api",
+      "auth",
+      "owasp",
+      "interview",
+      "system-design"
+    ],
+    "description": "The layered defenses for a REST API: TLS everywhere, authentication, per-object authorization (the #1 OWASP API risk), input validation, rate limiting, secrets management, and audit logging.",
+    "url": "concepts/interview-scenarios/securing-a-rest-api.html"
+  },
+  {
+    "title": "Storing Passwords Securely",
+    "category": "interview-scenarios",
+    "tags": [
+      "security",
+      "hashing",
+      "auth",
+      "cryptography",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to store passwords: never plaintext or reversible encryption, never fast hashes — use a slow, salted password hash (Argon2/bcrypt/scrypt) with a tunable work factor, plus constant-time compare.",
+    "url": "concepts/interview-scenarios/storing-passwords-securely.html"
+  },
+  {
+    "title": "Mitigating a DDoS Attack",
+    "category": "interview-scenarios",
+    "tags": [
+      "security",
+      "ddos",
+      "scaling",
+      "incident-response",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to mitigate volumetric, protocol, and application-layer DDoS attacks: absorb at the edge with a CDN/scrubbing service, filter with a WAF and rate limits, autoscale, and shed bad traffic before the origin.",
+    "url": "concepts/interview-scenarios/mitigating-a-ddos-attack.html"
+  },
+  {
+    "title": "Responding to a Production Outage",
+    "category": "interview-scenarios",
+    "tags": [
+      "incident-response",
+      "reliability",
+      "on-call",
+      "observability",
+      "interview",
+      "system-design"
+    ],
+    "description": "A structured production-outage playbook: assess severity, communicate and assign an incident commander, mitigate before root-causing (rollback/failover), diagnose with telemetry, resolve, then run a blameless post-mortem.",
+    "url": "concepts/interview-scenarios/responding-to-a-production-outage.html"
+  },
+  {
+    "title": "Managing Secrets & Credentials",
+    "category": "interview-scenarios",
+    "tags": [
+      "security",
+      "secrets",
+      "devops",
+      "cloud",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to manage secrets and credentials safely: never in code or git, store in a secrets manager/vault, inject at runtime via managed identities, rotate regularly, scope least-privilege, and prefer short-lived credentials.",
+    "url": "concepts/interview-scenarios/managing-secrets-and-credentials.html"
+  },
+  {
+    "title": "Defending Against XSS & CSRF",
+    "category": "interview-scenarios",
+    "tags": [
+      "security",
+      "frontend",
+      "xss",
+      "csrf",
+      "interview",
+      "system-design"
+    ],
+    "description": "The two classic web attacks and their defenses: XSS (injected scripts → output encoding, CSP, HttpOnly cookies) and CSRF (forged authenticated requests → SameSite cookies, anti-forgery tokens, Origin checks).",
+    "url": "concepts/interview-scenarios/preventing-xss-and-csrf.html"
+  },
+  {
+    "title": "Designing Authentication & Sessions",
+    "category": "interview-scenarios",
+    "tags": [
+      "auth",
+      "sessions",
+      "oauth",
+      "security",
+      "interview",
+      "system-design"
+    ],
+    "description": "How to design authentication for a web app: stateful server sessions vs stateless JWTs and their revocation trade-off, the access + refresh token pattern, OAuth/OIDC for third-party login, and MFA.",
+    "url": "concepts/interview-scenarios/designing-an-authentication-system.html"
+  },
+  {
+    "title": "Debugging a Memory Leak in Production",
+    "category": "interview-scenarios",
+    "tags": [
+      "debugging",
+      "performance",
+      "memory",
+      "incident-response",
+      "interview",
+      "system-design"
+    ],
+    "description": "A method for finding a production memory leak: confirm the steady-growth trend, capture and diff heap dumps to find the growing type, trace what roots it (static collections, unremoved event handlers, undisposed resources, unbounded caches), then bound and dispose.",
+    "url": "concepts/interview-scenarios/debugging-a-memory-leak.html"
   }
 ]
