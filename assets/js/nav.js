@@ -1389,6 +1389,83 @@
     paint();
   }
 
+  /* ---- Flashcard / quiz mode (built from a page's 3 key takeaways) ----- */
+  function escHtml(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  function wireFlashcards(active) {
+    if (!active || !active.concept) return;                 // concept pages only
+    var callout = document.querySelector(".callout.takeaways");
+    if (!callout) return;
+    var lis = callout.querySelectorAll("ul li");
+    if (lis.length < 2) return;
+
+    var cards = [];
+    lis.forEach(function (li) {
+      var full = li.innerHTML.trim();
+      // Cloze quiz: blank the bold key phrase(s); flip to reveal.
+      var front = full.replace(/<strong>[\s\S]*?<\/strong>/g, '<span class="cloze">_______</span>');
+      cards.push({ front: front, back: full });
+    });
+    var title = document.body.getAttribute("data-title") || "this concept";
+
+    var btn = el("button", { class: "study-btn", type: "button" }, "🎴 Study these as flashcards");
+    callout.parentNode.insertBefore(btn, callout.nextSibling);
+    btn.addEventListener("click", function () { openFlash(cards, title); });
+  }
+
+  function openFlash(cards, title) {
+    var i = 0, flipped = false;
+    var ov = el("div", { class: "flash-overlay" });
+    ov.innerHTML =
+      '<div class="flash-modal">' +
+        '<div class="flash-head"><span>🎴 Flashcards — ' + escHtml(title) + '</span>' +
+          '<button class="flash-btn" data-fc-close aria-label="Close">✕</button></div>' +
+        '<div class="flash-card" data-fc-card><div class="flash-inner">' +
+          '<div class="flash-face flash-front"><div class="ff-tag" data-fc-tag></div><div class="ff-body" data-fc-front></div></div>' +
+          '<div class="flash-face flash-back"><div class="ff-tag">✅ Answer</div><div class="ff-body" data-fc-back></div></div>' +
+        '</div></div>' +
+        '<div class="flash-controls">' +
+          '<button class="flash-btn" data-fc-prev>← Prev</button>' +
+          '<button class="flash-btn primary" data-fc-flip>Flip</button>' +
+          '<button class="flash-btn" data-fc-next>Next →</button>' +
+        '</div>' +
+        '<div class="flash-hint">Space / click = flip · ← → = navigate · Esc = close</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    var card = ov.querySelector("[data-fc-card]");
+    function paint() {
+      ov.querySelector("[data-fc-front]").innerHTML = cards[i].front;
+      ov.querySelector("[data-fc-back]").innerHTML = cards[i].back;
+      ov.querySelector("[data-fc-tag]").textContent = "Recall the key term · card " + (i + 1) + " / " + cards.length;
+      flipped = false; card.classList.remove("flipped");
+    }
+    function flip() { flipped = !flipped; card.classList.toggle("flipped", flipped); }
+    function go(d) { i = (i + d + cards.length) % cards.length; paint(); }
+    function close() { document.removeEventListener("keydown", key); ov.remove(); }
+    function key(e) {
+      if (e.key === "Escape") close();
+      else if (e.key === " ") { e.preventDefault(); flip(); }
+      else if (e.key === "ArrowRight") go(1);
+      else if (e.key === "ArrowLeft") go(-1);
+    }
+    card.addEventListener("click", flip);
+    ov.querySelector("[data-fc-flip]").addEventListener("click", function (e) { e.stopPropagation(); flip(); });
+    ov.querySelector("[data-fc-prev]").addEventListener("click", function (e) { e.stopPropagation(); go(-1); });
+    ov.querySelector("[data-fc-next]").addEventListener("click", function (e) { e.stopPropagation(); go(1); });
+    ov.querySelector("[data-fc-close]").addEventListener("click", close);
+    ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
+    document.addEventListener("keydown", key);
+    paint();
+  }
+
+  function injectFeedLink() {
+    if (document.querySelector('link[type="application/rss+xml"]')) return;
+    var l = document.createElement("link");
+    l.rel = "alternate"; l.type = "application/rss+xml";
+    l.title = "DevLens — new concepts"; l.href = ROOT + "feed.xml";
+    document.head.appendChild(l);
+  }
+
   /* ---- Public API + auto-init ----------------------------------------- */
   window.DevLensNav = {
     ROOT: ROOT,
@@ -1432,6 +1509,8 @@
     if (prog) renderProgress(prog);
 
     wireReadToggle(active);
+    wireFlashcards(active);
+    injectFeedLink();
   }
 
   if (document.readyState === "loading") {

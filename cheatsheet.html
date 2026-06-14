@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cheat Sheets — DevLens</title>
+  <meta name="description" content="Condensed, scannable cheat sheets — every concept in a track distilled to its three key takeaways." />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="alternate" type="application/rss+xml" title="DevLens — new concepts" href="feed.xml" />
+</head>
+<body data-title="Cheat Sheets">
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout no-toc">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+    <main class="content">
+      <div class="content-inner">
+        <article class="article">
+          <h1 id="csTitle">Cheat Sheets</h1>
+          <p class="lede">Every concept in a track, distilled to its three key takeaways. Pick a track.</p>
+          <div class="cheat-chips" id="csChips"></div>
+          <div id="csBody"></div>
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p><strong>DevLens</strong> · <a href="index.html">Home</a> · <a href="roadmap.html">Roadmap</a> · <a href="conceptmap.html">Concept map</a> · <a href="feed.xml">RSS</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/nav.js"></script>
+  <script src="assets/js/search.js"></script>
+  <script>
+    (function () {
+      var N = window.DevLensNav; if (!N) return;
+      var meta = {};
+      N.SITE.categories.forEach(function (c) { meta[c.id] = c; });
+
+      fetch(N.ROOT + "data/cards.json").then(function (r) { return r.json(); }).then(function (data) {
+        var cards = data.cards;
+        var order = N.SITE.categories.map(function (c) { return c.id; });
+        var present = order.filter(function (id) { return cards.some(function (c) { return c.category === id; }); });
+
+        var sel = new URLSearchParams(location.search).get("cat");
+        if (!present.includes(sel)) sel = present[0];
+
+        // chips
+        document.getElementById("csChips").innerHTML = present.map(function (id) {
+          var c = meta[id] || { title: id, icon: "" };
+          return '<a class="cheat-chip' + (id === sel ? " active" : "") + '" href="cheatsheet.html?cat=' + id + '">'
+            + (c.icon || "") + " " + c.title + '</a>';
+        }).join("");
+
+        // body
+        var c = meta[sel] || { title: sel, color: "var(--accent)", icon: "" };
+        document.getElementById("csTitle").textContent = c.title + " — Cheat Sheet";
+        var items = cards.filter(function (x) { return x.category === sel; });
+        document.getElementById("csBody").innerHTML = items.map(function (x) {
+          var lis = (x.takeaways || []).map(function (t) { return "<li>" + t + "</li>"; }).join("");
+          return '<div class="cheat-item" style="--cat:' + (c.color || "var(--accent)") + '">'
+            + '<h3><a href="' + N.ROOT + x.url + '">' + x.title + '</a></h3>'
+            + "<ul>" + lis + "</ul></div>";
+        }).join("");
+        if (!items.length) document.getElementById("csBody").innerHTML = '<p style="color:var(--text-muted)">No cheat sheet for this track yet.</p>';
+      }).catch(function () {
+        document.getElementById("csBody").innerHTML = '<p style="color:var(--text-muted)">Could not load cheat-sheet data.</p>';
+      });
+    })();
+  </script>
+</body>
+</html>

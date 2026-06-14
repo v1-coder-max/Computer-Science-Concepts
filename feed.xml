@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>DevLens — New Concepts</title>
+    <link>https://v1-coder-max.github.io/Computer-Science-Concepts/</link>
+    <description>Newly added concepts on DevLens, a free static knowledge base for working developers.</description>
+    <language>en</language>
+    <lastBuildDate>Sat, 13 Jun 2026 12:00:00 GMT</lastBuildDate>
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="https://v1-coder-max.github.io/Computer-Science-Concepts/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Async/Await Pitfalls</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/async-await-pitfalls.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/async-await-pitfalls.html</guid>
+      <category>Concurrency &amp; Multithreading</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The classic async/await traps in C#: blocking with .Result/.Wait() causing deadlocks, async void, fire-and-forget, and missing ConfigureAwait — and how to avoid each.</description>
+    </item>
+    <item>
+      <title>Cancellation &amp; Timeouts</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/cancellation-and-timeouts.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/cancellation-and-timeouts.html</guid>
+      <category>Concurrency &amp; Multithreading</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How cooperative cancellation works in .NET with CancellationToken: passing tokens through async calls, enforcing timeouts, linking tokens, and why cancellation is cooperative, not forced.</description>
+    </item>
+    <item>
+      <title>Channels &amp; Producer/Consumer</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/channels-and-producer-consumer.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/channels-and-producer-consumer.html</guid>
+      <category>Concurrency &amp; Multithreading</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How System.Threading.Channels gives you a safe async producer/consumer pipeline with built-in backpressure — decoupling fast producers from slower consumers without manual locking.</description>
+    </item>
+    <item>
+      <title>Concurrency vs Parallelism</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/concurrency-vs-parallelism.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/concurrency-vs-parallelism.html</guid>
+      <category>Concurrency &amp; Multithreading</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Concurrency is structuring work so tasks can make progress independently; parallelism is literally running them at the same time on multiple cores — related but not the same.</description>
+    </item>
+    <item>
+      <title>Locks &amp; Race Conditions</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/locks-and-race-conditions.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/locks-and-race-conditions.html</guid>
+      <category>Concurrency &amp; Multithreading</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Why concurrent access to shared mutable state corrupts it, and how locks (mutual exclusion) fix it — plus the costs: contention, deadlocks, and why you minimize the critical section.</description>
+    </item>
+    <item>
+      <title>Thread Safety &amp; Atomicity</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/thread-safety.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/concurrency/thread-safety.html</guid>
+      <category>Concurrency &amp; Multithreading</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>What makes code thread-safe: atomic operations, immutability, confinement, and concurrent collections — and why visibility (memory barriers) matters as much as mutual exclusion.</description>
+    </item>
+    <item>
+      <title>Integration Testing</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/integration-testing.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/integration-testing.html</guid>
+      <category>Testing</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Why integration tests catch the bugs unit tests can't — wiring, serialization, SQL, configuration — and how to write them realistically with in-memory hosts and real dependencies in containers.</description>
+    </item>
+    <item>
+      <title>Mocking &amp; Test Doubles</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/mocking-and-test-doubles.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/mocking-and-test-doubles.html</guid>
+      <category>Testing</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The family of test doubles — dummy, stub, spy, mock, fake — how they isolate the unit under test from slow or nondeterministic dependencies, and the trap of over-mocking.</description>
+    </item>
+    <item>
+      <title>Test-Driven Development</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/tdd.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/tdd.html</guid>
+      <category>Testing</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Test-Driven Development: the red-green-refactor loop, writing the failing test first to drive design, and why TDD is as much a design discipline as a testing one.</description>
+    </item>
+    <item>
+      <title>The Test Pyramid</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/test-pyramid.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/test-pyramid.html</guid>
+      <category>Testing</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The test pyramid: many fast unit tests at the base, fewer integration tests in the middle, and a handful of slow end-to-end tests at the top — and why inverting it (the ice-cream cone) hurts.</description>
+    </item>
+    <item>
+      <title>Unit Testing</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/unit-testing.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/testing/unit-testing.html</guid>
+      <category>Testing</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>What a good unit test looks like: testing one unit in isolation, the Arrange-Act-Assert structure, the FIRST properties, and testing behavior rather than implementation.</description>
+    </item>
+    <item>
+      <title>Branching Strategies</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/branching-strategies.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/branching-strategies.html</guid>
+      <category>Git &amp; Version Control</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The main branching models — Git Flow, GitHub Flow, and trunk-based development — and how branch lifetime and merge frequency trade off against integration pain and release cadence.</description>
+    </item>
+    <item>
+      <title>How Git Works: Objects &amp; Refs</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/git-internals.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/git-internals.html</guid>
+      <category>Git &amp; Version Control</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Git's data model demystified: content-addressed blobs, trees and commits, branches as movable pointers, and why a commit is an immutable snapshot in a directed acyclic graph.</description>
+    </item>
+    <item>
+      <title>Merge vs Rebase</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/merge-vs-rebase.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/merge-vs-rebase.html</guid>
+      <category>Git &amp; Version Control</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Merge preserves history with a merge commit; rebase rewrites commits onto a new base for a linear history. When to use each, and the golden rule: never rebase shared/public branches.</description>
+    </item>
+    <item>
+      <title>Resolving Merge Conflicts</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/resolving-conflicts.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/resolving-conflicts.html</guid>
+      <category>Git &amp; Version Control</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Why merge conflicts happen, how to read the conflict markers, the step-by-step resolution workflow, and how to prevent conflicts by integrating early and keeping changes small.</description>
+    </item>
+    <item>
+      <title>Undoing Changes: reset, revert, reflog</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/undoing-changes.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/git/undoing-changes.html</guid>
+      <category>Git &amp; Version Control</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The right tool for each undo: revert to safely undo a public commit, reset to move a branch (and the soft/mixed/hard modes), and reflog to recover commits you thought you lost.</description>
+    </item>
+    <item>
+      <title>CI/CD Pipelines</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/ci-cd-pipelines.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/ci-cd-pipelines.html</guid>
+      <category>DevOps &amp; CI/CD</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>What continuous integration and continuous delivery/deployment actually mean: the automated build → test → deploy pipeline, fast feedback, and shipping small changes often.</description>
+    </item>
+    <item>
+      <title>Containers &amp; Images</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/containers-and-images.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/containers-and-images.html</guid>
+      <category>DevOps &amp; CI/CD</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How container images package an app with its dependencies into a portable, immutable, layered artifact — and why 'build once, run anywhere' fixes the works-on-my-machine problem.</description>
+    </item>
+    <item>
+      <title>Deployment Strategies</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/deployment-strategies.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/deployment-strategies.html</guid>
+      <category>DevOps &amp; CI/CD</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How to release without downtime or big-bang risk: rolling, blue-green, and canary deployments — and how each trades infrastructure cost against rollback speed and blast radius.</description>
+    </item>
+    <item>
+      <title>Feature Flags</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/feature-flags.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/feature-flags.html</guid>
+      <category>DevOps &amp; CI/CD</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Feature flags decouple deploying code from releasing a feature — letting you ship dark, roll out gradually, run experiments, and kill a bad feature instantly without a redeploy.</description>
+    </item>
+    <item>
+      <title>Infrastructure as Code</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/infrastructure-as-code.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/devops/infrastructure-as-code.html</guid>
+      <category>DevOps &amp; CI/CD</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Managing servers, networks, and cloud resources as version-controlled, declarative code — so infrastructure is reproducible, reviewable, and free of manual 'snowflake' drift.</description>
+    </item>
+    <item>
+      <title>Authentication vs Authorization</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/authentication-vs-authorization.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/authentication-vs-authorization.html</guid>
+      <category>Security Fundamentals</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The core distinction every security discussion rests on: authentication proves who you are; authorization decides what you're allowed to do — two separate steps, often confused.</description>
+    </item>
+    <item>
+      <title>Cross-Site Scripting (XSS)</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/cross-site-scripting.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/cross-site-scripting.html</guid>
+      <category>Security Fundamentals</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How XSS injects attacker JavaScript into your pages (stored, reflected, DOM-based), what it lets attackers do, and the defenses: output encoding, Content Security Policy, and sanitization.</description>
+    </item>
+    <item>
+      <title>Encryption Basics</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/encryption-basics.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/encryption-basics.html</guid>
+      <category>Security Fundamentals</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Symmetric vs asymmetric encryption, what each is good for, how TLS combines them, and the difference between encryption in transit and at rest — without rolling your own crypto.</description>
+    </item>
+    <item>
+      <title>Hashing &amp; Salting</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/hashing-and-salting.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/hashing-and-salting.html</guid>
+      <category>Security Fundamentals</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Why passwords are hashed not encrypted, what a salt defends against (rainbow tables), and why a slow password hash (bcrypt/Argon2) beats a fast one like SHA-256.</description>
+    </item>
+    <item>
+      <title>SQL Injection</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/sql-injection.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/security/sql-injection.html</guid>
+      <category>Security Fundamentals</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How SQL injection works — untrusted input concatenated into a query becomes executable SQL — and the one real fix: parameterized queries that separate code from data.</description>
+    </item>
+    <item>
+      <title>Alerting &amp; Dashboards</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/alerting-and-dashboards.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/alerting-and-dashboards.html</guid>
+      <category>Observability</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How to alert on symptoms not causes, page only on actionable user-impacting conditions, avoid alert fatigue, and design dashboards that answer 'is it healthy?' at a glance.</description>
+    </item>
+    <item>
+      <title>Distributed Tracing &amp; Spans</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/tracing-and-spans.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/tracing-and-spans.html</guid>
+      <category>Observability</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How distributed tracing follows one request across services as a tree of timed spans, how trace context propagates between hops, and why it's the only signal that localizes latency in a distributed call.</description>
+    </item>
+    <item>
+      <title>Metrics, SLIs &amp; SLOs</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/metrics-and-slos.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/metrics-and-slos.html</guid>
+      <category>Observability</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How to measure reliability that matters: the golden signals, SLIs (what you measure), SLOs (the target), SLAs (the contract), and error budgets that balance reliability against shipping speed.</description>
+    </item>
+    <item>
+      <title>Structured Logging</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/structured-logging.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/structured-logging.html</guid>
+      <category>Observability</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Why logging key-value structured events beats plain text strings: machine-queryable fields, message templates, correlation IDs, and appropriate log levels — so logs are searchable, not just readable.</description>
+    </item>
+    <item>
+      <title>The Three Pillars: Logs, Metrics, Traces</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/three-pillars-of-observability.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/observability/three-pillars-of-observability.html</guid>
+      <category>Observability</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The three telemetry signals that make a system observable — logs (events), metrics (aggregates), and traces (request journeys) — and which question each one answers.</description>
+    </item>
+    <item>
+      <title>Arrays vs Linked Lists</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/arrays-vs-linked-lists.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/arrays-vs-linked-lists.html</guid>
+      <category>Data Structures &amp; Algorithms</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The fundamental trade-off between contiguous arrays (O(1) indexing, cache-friendly) and linked lists (O(1) insert/delete given the node) — and why arrays usually win in practice.</description>
+    </item>
+    <item>
+      <title>Big-O Cheat Sheet</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/big-o-cheat-sheet.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/big-o-cheat-sheet.html</guid>
+      <category>Data Structures &amp; Algorithms</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>A scannable reference of time and space complexities: common data-structure operations (array, hash table, BST, heap) and the major sorting algorithms, with best/average/worst cases.</description>
+    </item>
+    <item>
+      <title>Big-O Notation</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/big-o-notation.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/big-o-notation.html</guid>
+      <category>Data Structures &amp; Algorithms</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>What Big-O actually measures — how an algorithm's time or space grows with input size — the common classes from O(1) to O(n!), and why we care about growth, not stopwatch time.</description>
+    </item>
+    <item>
+      <title>Hash Tables</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/hash-tables.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/hash-tables.html</guid>
+      <category>Data Structures &amp; Algorithms</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How hash tables give O(1) average lookup by mapping keys to buckets, how collisions are handled (chaining vs open addressing), and why the worst case is O(n) and load factor matters.</description>
+    </item>
+    <item>
+      <title>Sorting Algorithms</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/sorting-algorithms.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/sorting-algorithms.html</guid>
+      <category>Data Structures &amp; Algorithms</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Why comparison sorts can't beat O(n log n), how quicksort/mergesort/heapsort differ in practice (speed, space, stability), and when non-comparison sorts (counting/radix) apply.</description>
+    </item>
+    <item>
+      <title>Stacks &amp; Queues</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/stacks-and-queues.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/stacks-and-queues.html</guid>
+      <category>Data Structures &amp; Algorithms</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>Two restricted sequences that show up everywhere: the stack (LIFO — undo, recursion, parsing) and the queue (FIFO — scheduling, BFS, buffering), both with O(1) push/pop.</description>
+    </item>
+    <item>
+      <title>Trees &amp; Graphs</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/trees-and-graphs.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/dsa/trees-and-graphs.html</guid>
+      <category>Data Structures &amp; Algorithms</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The non-linear structures behind huge swaths of problems: trees (hierarchies, BSTs, heaps) and graphs (networks), plus the two traversals — DFS and BFS — that power most algorithms on them.</description>
+    </item>
+    <item>
+      <title>API Versioning</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/microservices/api-versioning.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/microservices/api-versioning.html</guid>
+      <category>Microservices</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How to evolve an API without breaking existing clients: versioning strategies (URL, header, media type), backward-compatible additive changes, and deprecation policy.</description>
+    </item>
+    <item>
+      <title>Service Mesh</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/microservices/service-mesh.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/microservices/service-mesh.html</guid>
+      <category>Microservices</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How a service mesh moves cross-cutting networking concerns — retries, mTLS, traffic shifting, observability — out of application code into sidecar proxies managed by a control plane.</description>
+    </item>
+    <item>
+      <title>Strangler Fig Pattern</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/microservices/strangler-fig-pattern.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/microservices/strangler-fig-pattern.html</guid>
+      <category>Microservices</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How to migrate off a legacy monolith incrementally and safely: route slices of functionality to new services behind a façade, growing the new system as the old one shrinks — no big-bang rewrite.</description>
+    </item>
+    <item>
+      <title>Boxing &amp; Unboxing</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/csharp/boxing-and-unboxing.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/csharp/boxing-and-unboxing.html</guid>
+      <category>C# &amp; Design Patterns</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>What happens when a value type is treated as an object — it's boxed onto the heap — why that costs allocations and GC pressure, and how generics let you avoid it.</description>
+    </item>
+    <item>
+      <title>Records</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/csharp/records.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/csharp/records.html</guid>
+      <category>C# &amp; Design Patterns</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>How C# records give you concise, immutable reference types with value-based equality, non-destructive mutation via with-expressions, and built-in deconstruction — ideal for DTOs and domain values.</description>
+    </item>
+    <item>
+      <title>Value vs Reference Types</title>
+      <link>https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/csharp/value-vs-reference-types.html</link>
+      <guid isPermaLink="true">https://v1-coder-max.github.io/Computer-Science-Concepts/concepts/csharp/value-vs-reference-types.html</guid>
+      <category>C# &amp; Design Patterns</category>
+      <pubDate>Sat, 13 Jun 2026 12:00:00 GMT</pubDate>
+      <description>The core C# type distinction: value types (structs) copied by value and usually stack/inline-allocated, vs reference types (classes) copied by reference and heap-allocated — and where each lives.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roadmap — DevLens</title>
+  <meta name="description" content="DevLens build progress across every track — concepts built vs planned, with completion status for each category." />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="alternate" type="application/rss+xml" title="DevLens — new concepts" href="feed.xml" />
+</head>
+<body data-title="Roadmap">
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout no-toc">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+    <main class="content">
+      <div class="content-inner">
+        <article class="article">
+          <h1>Roadmap</h1>
+          <p class="lede">Where every track stands — concepts built versus planned, and what's complete.</p>
+
+          <div class="roadmap-summary" id="rmSummary"></div>
+
+          <table>
+            <thead>
+              <tr><th>Track</th><th>Progress</th><th>Built</th><th>Status</th></tr>
+            </thead>
+            <tbody id="roadmapBody"></tbody>
+          </table>
+          <p style="font-size:0.85rem;color:var(--text-faint)">Status reflects pages built vs the planned total for each track. “Read” progress is tracked separately on your device.</p>
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p><strong>DevLens</strong> · <a href="index.html">Home</a> · <a href="conceptmap.html">Concept map</a> · <a href="cheatsheet.html">Cheat sheets</a> · <a href="feed.xml">RSS</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/nav.js"></script>
+  <script src="assets/js/search.js"></script>
+  <script>
+    (function () {
+      var N = window.DevLensNav; if (!N) return;
+      var cats = N.SITE.categories;
+      var built = 0, exp = 0, doneCount = 0, rows = "";
+      cats.forEach(function (c) {
+        var b = c.concepts.length, e = c.expected, pct = e ? Math.round(b / e * 100) : 0;
+        built += b; exp += e; if (b >= e && e > 0) doneCount++;
+        var status = (b >= e && e > 0)
+          ? '<span class="status-badge status-done">✅ Complete</span>'
+          : b > 0
+            ? '<span class="status-badge status-progress">🚧 ' + pct + '%</span>'
+            : '<span class="status-badge status-planned">📋 Planned</span>';
+        var href = b ? N.conceptHref(c.slug, c.concepts[0].slug) : (N.ROOT + "index.html#" + c.id);
+        rows += '<tr>'
+          + '<td><a href="' + href + '"><span style="color:' + c.color + '">' + c.icon + '</span> ' + c.title + '</a></td>'
+          + '<td><div class="bar-mini"><span style="width:' + pct + '%;background:' + c.color + '"></span></div></td>'
+          + '<td>' + b + ' / ' + e + '</td>'
+          + '<td>' + status + '</td>'
+          + '</tr>';
+      });
+      document.getElementById("roadmapBody").innerHTML = rows;
+      document.getElementById("rmSummary").innerHTML =
+        '<div><div class="rm-num">' + built + '</div><div class="rm-lbl">concepts built</div></div>'
+        + '<div><div class="rm-num">' + cats.length + '</div><div class="rm-lbl">tracks</div></div>'
+        + '<div><div class="rm-num">' + doneCount + '</div><div class="rm-lbl">tracks complete</div></div>'
+        + '<div><div class="rm-num">' + Math.round(built / exp * 100) + '%</div><div class="rm-lbl">of planned scope</div></div>';
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2661 @@
+{
+  "generated": "2026-06-13",
+  "nodes": [
+    {
+      "id": "concurrency/async-await-pitfalls",
+      "title": "Async/Await Pitfalls",
+      "category": "concurrency"
+    },
+    {
+      "id": "concurrency/cancellation-and-timeouts",
+      "title": "Cancellation & Timeouts",
+      "category": "concurrency"
+    },
+    {
+      "id": "concurrency/channels-and-producer-consumer",
+      "title": "Channels & Producer/Consumer",
+      "category": "concurrency"
+    },
+    {
+      "id": "concurrency/concurrency-vs-parallelism",
+      "title": "Concurrency vs Parallelism",
+      "category": "concurrency"
+    },
+    {
+      "id": "concurrency/locks-and-race-conditions",
+      "title": "Locks & Race Conditions",
+      "category": "concurrency"
+    },
+    {
+      "id": "concurrency/thread-safety",
+      "title": "Thread Safety & Atomicity",
+      "category": "concurrency"
+    },
+    {
+      "id": "csharp/abstract-factory",
+      "title": "Abstract Factory",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/adapter",
+      "title": "Adapter Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/boxing-and-unboxing",
+      "title": "Boxing & Unboxing",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/builder",
+      "title": "Builder Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/chain-of-responsibility",
+      "title": "Chain of Responsibility",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/command",
+      "title": "Command Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/composite",
+      "title": "Composite Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/cqrs",
+      "title": "CQRS",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/decorator",
+      "title": "Decorator Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/delegates-events",
+      "title": "Delegates & Events",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/extension-methods",
+      "title": "Extension Methods",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/facade",
+      "title": "Facade Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/factory-pattern",
+      "title": "Factory Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/generics",
+      "title": "Generics",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/linq-internals",
+      "title": "LINQ Internals",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/mediator",
+      "title": "Mediator Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/observer",
+      "title": "Observer Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/prototype",
+      "title": "Prototype Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/proxy",
+      "title": "Proxy Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/records",
+      "title": "Records",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/reflection",
+      "title": "Reflection & Attributes",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/repository",
+      "title": "Repository Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/singleton-pattern",
+      "title": "Singleton Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/specification",
+      "title": "Specification Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/state",
+      "title": "State Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/strategy",
+      "title": "Strategy Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/template-method",
+      "title": "Template Method Pattern",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/unit-of-work",
+      "title": "Unit of Work",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/value-vs-reference-types",
+      "title": "Value vs Reference Types",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/variance",
+      "title": "Covariance & Contravariance",
+      "category": "csharp"
+    },
+    {
+      "id": "csharp/yield-iterators",
+      "title": "yield & Iterators",
+      "category": "csharp"
+    },
+    {
+      "id": "database/caching-strategies",
+      "title": "Caching Strategies",
+      "category": "database"
+    },
+    {
+      "id": "database/connection-pooling",
+      "title": "Connection Pooling",
+      "category": "database"
+    },
+    {
+      "id": "database/deadlocks",
+      "title": "Deadlocks",
+      "category": "database"
+    },
+    {
+      "id": "database/execution-plans",
+      "title": "Reading Execution Plans",
+      "category": "database"
+    },
+    {
+      "id": "database/indexing",
+      "title": "Database Indexing",
+      "category": "database"
+    },
+    {
+      "id": "database/isolation-levels",
+      "title": "Isolation Levels",
+      "category": "database"
+    },
+    {
+      "id": "database/normalization",
+      "title": "Normalization vs Denormalization",
+      "category": "database"
+    },
+    {
+      "id": "database/nosql-patterns",
+      "title": "NoSQL Patterns",
+      "category": "database"
+    },
+    {
+      "id": "database/redis",
+      "title": "Redis Internals",
+      "category": "database"
+    },
+    {
+      "id": "database/replication",
+      "title": "Replication",
+      "category": "database"
+    },
+    {
+      "id": "database/sharding",
+      "title": "Partitioning & Sharding",
+      "category": "database"
+    },
+    {
+      "id": "database/sql-vs-nosql",
+      "title": "SQL vs NoSQL",
+      "category": "database"
+    },
+    {
+      "id": "database/stored-procedures-vs-orm",
+      "title": "Stored Procedures vs ORMs",
+      "category": "database"
+    },
+    {
+      "id": "database/transactions-acid",
+      "title": "Transactions & ACID",
+      "category": "database"
+    },
+    {
+      "id": "devops/ci-cd-pipelines",
+      "title": "CI/CD Pipelines",
+      "category": "devops"
+    },
+    {
+      "id": "devops/containers-and-images",
+      "title": "Containers & Images",
+      "category": "devops"
+    },
+    {
+      "id": "devops/deployment-strategies",
+      "title": "Deployment Strategies",
+      "category": "devops"
+    },
+    {
+      "id": "devops/feature-flags",
+      "title": "Feature Flags",
+      "category": "devops"
+    },
+    {
+      "id": "devops/infrastructure-as-code",
+      "title": "Infrastructure as Code",
+      "category": "devops"
+    },
+    {
+      "id": "dotnet/aot-compilation",
+      "title": "Native AOT",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/assemblies",
+      "title": "Assemblies &amp; Metadata",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/async-await",
+      "title": "Async / Await Internals",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/auth-pipeline",
+      "title": "Authentication &amp; Authorization",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/blazor",
+      "title": "Blazor Basics",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/clr",
+      "title": "The CLR",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/configuration",
+      "title": "The Configuration System",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/dependency-injection",
+      "title": "Dependency Injection",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/ef-core-internals",
+      "title": "EF Core Internals",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/garbage-collection",
+      "title": "Garbage Collection",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/global-usings",
+      "title": "Global Usings",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/grpc",
+      "title": "gRPC",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/health-checks",
+      "title": "Health Checks",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/http-client-factory",
+      "title": "HttpClientFactory",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/ihostedservice",
+      "title": "IHostedService",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/jit-compilation",
+      "title": "JIT Compilation",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/logging",
+      "title": "Logging",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/memory-management",
+      "title": "Memory Management",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/middleware-pipeline",
+      "title": "The Middleware Pipeline",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/minimal-apis",
+      "title": "Minimal APIs",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/nullable-reference-types",
+      "title": "Nullable Reference Types",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/pattern-matching",
+      "title": "Pattern Matching",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/records",
+      "title": "Records",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/signalr",
+      "title": "SignalR",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/source-generators",
+      "title": "Source Generators",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/span",
+      "title": "Span<T> & Memory<T>",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/task-vs-thread",
+      "title": "Task vs Thread",
+      "category": "dotnet"
+    },
+    {
+      "id": "dotnet/threadpool",
+      "title": "The Thread Pool",
+      "category": "dotnet"
+    },
+    {
+      "id": "dsa/arrays-vs-linked-lists",
+      "title": "Arrays vs Linked Lists",
+      "category": "dsa"
+    },
+    {
+      "id": "dsa/big-o-cheat-sheet",
+      "title": "Big-O Cheat Sheet",
+      "category": "dsa"
+    },
+    {
+      "id": "dsa/big-o-notation",
+      "title": "Big-O Notation",
+      "category": "dsa"
+    },
+    {
+      "id": "dsa/hash-tables",
+      "title": "Hash Tables",
+      "category": "dsa"
+    },
+    {
+      "id": "dsa/sorting-algorithms",
+      "title": "Sorting Algorithms",
+      "category": "dsa"
+    },
+    {
+      "id": "dsa/stacks-and-queues",
+      "title": "Stacks & Queues",
+      "category": "dsa"
+    },
+    {
+      "id": "dsa/trees-and-graphs",
+      "title": "Trees & Graphs",
+      "category": "dsa"
+    },
+    {
+      "id": "git/branching-strategies",
+      "title": "Branching Strategies",
+      "category": "git"
+    },
+    {
+      "id": "git/git-internals",
+      "title": "How Git Works: Objects & Refs",
+      "category": "git"
+    },
+    {
+      "id": "git/merge-vs-rebase",
+      "title": "Merge vs Rebase",
+      "category": "git"
+    },
+    {
+      "id": "git/resolving-conflicts",
+      "title": "Resolving Merge Conflicts",
+      "category": "git"
+    },
+    {
+      "id": "git/undoing-changes",
+      "title": "Undoing Changes: reset, revert, reflog",
+      "category": "git"
+    },
+    {
+      "id": "interview-scenarios/cache-stampede",
+      "title": "Cache Stampede & Thundering Herd",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/data-consistency-across-services",
+      "title": "Keeping Data Consistent Across Services",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/debugging-a-latency-spike",
+      "title": "Debugging a Production Latency Spike",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/debugging-a-memory-leak",
+      "title": "Debugging a Memory Leak in Production",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/designing-a-rate-limiter",
+      "title": "Designing a Rate Limiter",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/designing-an-api-for-high-throughput",
+      "title": "Designing an API for 1 Million Requests/Second",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/designing-an-authentication-system",
+      "title": "Designing Authentication & Sessions",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/designing-for-durability",
+      "title": "Designing So You Never Lose Data",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/designing-for-high-availability",
+      "title": "Designing for High Availability",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/handling-concurrent-users",
+      "title": "Handling Many Concurrent Users",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/hot-key-problem",
+      "title": "The Hot Key (Celebrity) Problem",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/idempotency-in-distributed-systems",
+      "title": "Idempotency in Distributed Systems",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/managing-secrets-and-credentials",
+      "title": "Managing Secrets & Credentials",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/mitigating-a-ddos-attack",
+      "title": "Mitigating a DDoS Attack",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/preventing-cascading-failures",
+      "title": "Preventing Cascading Failures",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/preventing-xss-and-csrf",
+      "title": "Defending Against XSS & CSRF",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/read-heavy-vs-write-heavy",
+      "title": "Read-Heavy vs Write-Heavy Systems",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/reducing-latency-globally",
+      "title": "Reducing Latency for a Global Audience",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/responding-to-a-production-outage",
+      "title": "Responding to a Production Outage",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/responding-to-a-ransomware-incident",
+      "title": "Ransomware Hit Your Cloud Storage: The First 15 Minutes",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/scaling-a-web-application",
+      "title": "Scaling a Web Application",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/scaling-the-database",
+      "title": "Scaling the Database Tier",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/securing-a-rest-api",
+      "title": "Securing a REST API",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/storing-passwords-securely",
+      "title": "Storing Passwords Securely",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/surviving-traffic-spikes",
+      "title": "Surviving Traffic Spikes",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/where-to-store-jwt-frontend",
+      "title": "Where to Store a JWT on the Frontend",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "interview-scenarios/zero-downtime-database-migration",
+      "title": "Zero-Downtime Database Migration",
+      "category": "interview-scenarios"
+    },
+    {
+      "id": "microservices/api-gateway",
+      "title": "API Gateway",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/api-versioning",
+      "title": "API Versioning",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/centralized-logging",
+      "title": "Centralized Logging",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/circuit-breaker",
+      "title": "Circuit Breaker",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/distributed-tracing",
+      "title": "Distributed Tracing",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/docker",
+      "title": "Docker & Containers",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/dotnet-microservices",
+      "title": "Microservices with .NET",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/event-driven",
+      "title": "Event-Driven Architecture",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/inter-service-comms",
+      "title": "Inter-Service Communication",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/kubernetes",
+      "title": "Kubernetes Concepts",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/monolith-vs-microservices",
+      "title": "Monolith vs Microservices",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/outbox-pattern",
+      "title": "Outbox Pattern",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/retry-bulkhead",
+      "title": "Retry, Timeout & Bulkhead",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/saga-pattern",
+      "title": "Saga Pattern",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/service-discovery",
+      "title": "Service Discovery",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/service-mesh",
+      "title": "Service Mesh",
+      "category": "microservices"
+    },
+    {
+      "id": "microservices/strangler-fig-pattern",
+      "title": "Strangler Fig Pattern",
+      "category": "microservices"
+    },
+    {
+      "id": "observability/alerting-and-dashboards",
+      "title": "Alerting & Dashboards",
+      "category": "observability"
+    },
+    {
+      "id": "observability/metrics-and-slos",
+      "title": "Metrics, SLIs & SLOs",
+      "category": "observability"
+    },
+    {
+      "id": "observability/structured-logging",
+      "title": "Structured Logging",
+      "category": "observability"
+    },
+    {
+      "id": "observability/three-pillars-of-observability",
+      "title": "The Three Pillars: Logs, Metrics, Traces",
+      "category": "observability"
+    },
+    {
+      "id": "observability/tracing-and-spans",
+      "title": "Distributed Tracing & Spans",
+      "category": "observability"
+    },
+    {
+      "id": "oop/abstract-vs-interface",
+      "title": "Abstract Class vs Interface",
+      "category": "oop"
+    },
+    {
+      "id": "oop/abstraction",
+      "title": "Abstraction",
+      "category": "oop"
+    },
+    {
+      "id": "oop/composition-vs-inheritance",
+      "title": "Composition vs Inheritance",
+      "category": "oop"
+    },
+    {
+      "id": "oop/coupling-cohesion",
+      "title": "Coupling & Cohesion",
+      "category": "oop"
+    },
+    {
+      "id": "oop/dry-kiss-yagni",
+      "title": "DRY, KISS & YAGNI",
+      "category": "oop"
+    },
+    {
+      "id": "oop/encapsulation",
+      "title": "Encapsulation",
+      "category": "oop"
+    },
+    {
+      "id": "oop/inheritance",
+      "title": "Inheritance",
+      "category": "oop"
+    },
+    {
+      "id": "oop/law-of-demeter",
+      "title": "Law of Demeter",
+      "category": "oop"
+    },
+    {
+      "id": "oop/polymorphism",
+      "title": "Polymorphism",
+      "category": "oop"
+    },
+    {
+      "id": "oop/solid",
+      "title": "SOLID Principles",
+      "category": "oop"
+    },
+    {
+      "id": "security/authentication-vs-authorization",
+      "title": "Authentication vs Authorization",
+      "category": "security"
+    },
+    {
+      "id": "security/cross-site-scripting",
+      "title": "Cross-Site Scripting (XSS)",
+      "category": "security"
+    },
+    {
+      "id": "security/encryption-basics",
+      "title": "Encryption Basics",
+      "category": "security"
+    },
+    {
+      "id": "security/hashing-and-salting",
+      "title": "Hashing & Salting",
+      "category": "security"
+    },
+    {
+      "id": "security/sql-injection",
+      "title": "SQL Injection",
+      "category": "security"
+    },
+    {
+      "id": "system-design/caching",
+      "title": "Caching at Scale",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/cap-theorem",
+      "title": "CAP Theorem",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/cdn",
+      "title": "CDNs",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/consistent-hashing",
+      "title": "Consistent Hashing",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/horizontal-vs-vertical-scaling",
+      "title": "Horizontal vs Vertical Scaling",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/how-gmail",
+      "title": "How Gmail Works",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/how-instagram-feed",
+      "title": "How Instagram's Feed Works",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/how-netflix-streaming",
+      "title": "How Netflix Streaming Works",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/how-twitter-timeline",
+      "title": "How Twitter's Timeline Works",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/load-balancers",
+      "title": "Load Balancers & Reverse Proxies",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/message-queues",
+      "title": "Message Queues",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/rate-limiting",
+      "title": "Rate Limiting Algorithms",
+      "category": "system-design"
+    },
+    {
+      "id": "system-design/sessions",
+      "title": "How Sessions Work",
+      "category": "system-design"
+    },
+    {
+      "id": "testing/integration-testing",
+      "title": "Integration Testing",
+      "category": "testing"
+    },
+    {
+      "id": "testing/mocking-and-test-doubles",
+      "title": "Mocking & Test Doubles",
+      "category": "testing"
+    },
+    {
+      "id": "testing/tdd",
+      "title": "Test-Driven Development",
+      "category": "testing"
+    },
+    {
+      "id": "testing/test-pyramid",
+      "title": "The Test Pyramid",
+      "category": "testing"
+    },
+    {
+      "id": "testing/unit-testing",
+      "title": "Unit Testing",
+      "category": "testing"
+    },
+    {
+      "id": "web-fundamentals/content-negotiation",
+      "title": "Content Negotiation",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/cookies",
+      "title": "How Cookies Work",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/cors",
+      "title": "CORS",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/dns",
+      "title": "How DNS Works",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/http-caching",
+      "title": "HTTP Caching",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/http-status-codes",
+      "title": "HTTP Status Codes",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/http",
+      "title": "HTTP Fundamentals",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/https-tls",
+      "title": "HTTPS & TLS",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/jwt",
+      "title": "JWT & Stateless Auth",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/oauth",
+      "title": "OAuth 2.0 & OpenID Connect",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/rest",
+      "title": "REST API Design",
+      "category": "web-fundamentals"
+    },
+    {
+      "id": "web-fundamentals/websockets",
+      "title": "WebSockets vs Polling vs SSE",
+      "category": "web-fundamentals"
+    }
+  ],
+  "links": [
+    {
+      "source": "concurrency/async-await-pitfalls",
+      "target": "dotnet/async-await"
+    },
+    {
+      "source": "concurrency/async-await-pitfalls",
+      "target": "concurrency/cancellation-and-timeouts"
+    },
+    {
+      "source": "concurrency/async-await-pitfalls",
+      "target": "concurrency/concurrency-vs-parallelism"
+    },
+    {
+      "source": "concurrency/cancellation-and-timeouts",
+      "target": "interview-scenarios/preventing-cascading-failures"
+    },
+    {
+      "source": "concurrency/cancellation-and-timeouts",
+      "target": "microservices/retry-bulkhead"
+    },
+    {
+      "source": "concurrency/async-await-pitfalls",
+      "target": "concurrency/channels-and-producer-consumer"
+    },
+    {
+      "source": "concurrency/channels-and-producer-consumer",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "concurrency/channels-and-producer-consumer",
+      "target": "interview-scenarios/surviving-traffic-spikes"
+    },
+    {
+      "source": "concurrency/concurrency-vs-parallelism",
+      "target": "dotnet/task-vs-thread"
+    },
+    {
+      "source": "concurrency/concurrency-vs-parallelism",
+      "target": "dotnet/threadpool"
+    },
+    {
+      "source": "concurrency/locks-and-race-conditions",
+      "target": "concurrency/thread-safety"
+    },
+    {
+      "source": "concurrency/locks-and-race-conditions",
+      "target": "database/deadlocks"
+    },
+    {
+      "source": "concurrency/locks-and-race-conditions",
+      "target": "dotnet/task-vs-thread"
+    },
+    {
+      "source": "concurrency/concurrency-vs-parallelism",
+      "target": "concurrency/thread-safety"
+    },
+    {
+      "source": "concurrency/thread-safety",
+      "target": "dotnet/garbage-collection"
+    },
+    {
+      "source": "csharp/abstract-factory",
+      "target": "csharp/factory-pattern"
+    },
+    {
+      "source": "csharp/abstract-factory",
+      "target": "csharp/builder"
+    },
+    {
+      "source": "csharp/abstract-factory",
+      "target": "csharp/strategy"
+    },
+    {
+      "source": "csharp/adapter",
+      "target": "csharp/decorator"
+    },
+    {
+      "source": "csharp/adapter",
+      "target": "csharp/facade"
+    },
+    {
+      "source": "csharp/adapter",
+      "target": "csharp/proxy"
+    },
+    {
+      "source": "csharp/boxing-and-unboxing",
+      "target": "csharp/value-vs-reference-types"
+    },
+    {
+      "source": "csharp/boxing-and-unboxing",
+      "target": "csharp/generics"
+    },
+    {
+      "source": "csharp/boxing-and-unboxing",
+      "target": "dotnet/garbage-collection"
+    },
+    {
+      "source": "csharp/builder",
+      "target": "csharp/factory-pattern"
+    },
+    {
+      "source": "csharp/builder",
+      "target": "csharp/prototype"
+    },
+    {
+      "source": "csharp/builder",
+      "target": "dotnet/records"
+    },
+    {
+      "source": "csharp/chain-of-responsibility",
+      "target": "dotnet/middleware-pipeline"
+    },
+    {
+      "source": "csharp/chain-of-responsibility",
+      "target": "csharp/decorator"
+    },
+    {
+      "source": "csharp/chain-of-responsibility",
+      "target": "csharp/command"
+    },
+    {
+      "source": "csharp/command",
+      "target": "csharp/mediator"
+    },
+    {
+      "source": "csharp/command",
+      "target": "csharp/cqrs"
+    },
+    {
+      "source": "csharp/composite",
+      "target": "csharp/decorator"
+    },
+    {
+      "source": "csharp/builder",
+      "target": "csharp/composite"
+    },
+    {
+      "source": "csharp/composite",
+      "target": "oop/polymorphism"
+    },
+    {
+      "source": "csharp/cqrs",
+      "target": "csharp/mediator"
+    },
+    {
+      "source": "csharp/cqrs",
+      "target": "database/normalization"
+    },
+    {
+      "source": "csharp/cqrs",
+      "target": "microservices/event-driven"
+    },
+    {
+      "source": "csharp/decorator",
+      "target": "csharp/proxy"
+    },
+    {
+      "source": "csharp/decorator",
+      "target": "oop/composition-vs-inheritance"
+    },
+    {
+      "source": "csharp/delegates-events",
+      "target": "csharp/observer"
+    },
+    {
+      "source": "csharp/delegates-events",
+      "target": "csharp/linq-internals"
+    },
+    {
+      "source": "csharp/delegates-events",
+      "target": "csharp/extension-methods"
+    },
+    {
+      "source": "csharp/extension-methods",
+      "target": "csharp/linq-internals"
+    },
+    {
+      "source": "csharp/extension-methods",
+      "target": "csharp/generics"
+    },
+    {
+      "source": "csharp/facade",
+      "target": "csharp/proxy"
+    },
+    {
+      "source": "csharp/facade",
+      "target": "microservices/api-gateway"
+    },
+    {
+      "source": "csharp/factory-pattern",
+      "target": "csharp/singleton-pattern"
+    },
+    {
+      "source": "csharp/factory-pattern",
+      "target": "dotnet/dependency-injection"
+    },
+    {
+      "source": "csharp/generics",
+      "target": "csharp/variance"
+    },
+    {
+      "source": "csharp/generics",
+      "target": "dotnet/memory-management"
+    },
+    {
+      "source": "csharp/generics",
+      "target": "csharp/linq-internals"
+    },
+    {
+      "source": "csharp/linq-internals",
+      "target": "csharp/yield-iterators"
+    },
+    {
+      "source": "csharp/linq-internals",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "csharp/mediator",
+      "target": "csharp/observer"
+    },
+    {
+      "source": "csharp/observer",
+      "target": "microservices/event-driven"
+    },
+    {
+      "source": "csharp/prototype",
+      "target": "dotnet/records"
+    },
+    {
+      "source": "csharp/prototype",
+      "target": "dotnet/memory-management"
+    },
+    {
+      "source": "csharp/proxy",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "csharp/records",
+      "target": "csharp/value-vs-reference-types"
+    },
+    {
+      "source": "concurrency/thread-safety",
+      "target": "csharp/records"
+    },
+    {
+      "source": "csharp/records",
+      "target": "oop/encapsulation"
+    },
+    {
+      "source": "csharp/reflection",
+      "target": "dotnet/assemblies"
+    },
+    {
+      "source": "csharp/reflection",
+      "target": "dotnet/source-generators"
+    },
+    {
+      "source": "csharp/reflection",
+      "target": "dotnet/aot-compilation"
+    },
+    {
+      "source": "csharp/repository",
+      "target": "csharp/unit-of-work"
+    },
+    {
+      "source": "csharp/repository",
+      "target": "csharp/specification"
+    },
+    {
+      "source": "csharp/repository",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "csharp/singleton-pattern",
+      "target": "oop/solid"
+    },
+    {
+      "source": "csharp/singleton-pattern",
+      "target": "dotnet/dependency-injection"
+    },
+    {
+      "source": "csharp/linq-internals",
+      "target": "csharp/specification"
+    },
+    {
+      "source": "csharp/specification",
+      "target": "csharp/strategy"
+    },
+    {
+      "source": "csharp/state",
+      "target": "csharp/strategy"
+    },
+    {
+      "source": "csharp/command",
+      "target": "csharp/state"
+    },
+    {
+      "source": "csharp/state",
+      "target": "dotnet/pattern-matching"
+    },
+    {
+      "source": "csharp/factory-pattern",
+      "target": "csharp/strategy"
+    },
+    {
+      "source": "csharp/strategy",
+      "target": "oop/composition-vs-inheritance"
+    },
+    {
+      "source": "csharp/strategy",
+      "target": "csharp/template-method"
+    },
+    {
+      "source": "csharp/factory-pattern",
+      "target": "csharp/template-method"
+    },
+    {
+      "source": "csharp/template-method",
+      "target": "dotnet/ihostedservice"
+    },
+    {
+      "source": "csharp/unit-of-work",
+      "target": "database/transactions-acid"
+    },
+    {
+      "source": "csharp/unit-of-work",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "csharp/value-vs-reference-types",
+      "target": "dotnet/memory-management"
+    },
+    {
+      "source": "csharp/delegates-events",
+      "target": "csharp/variance"
+    },
+    {
+      "source": "csharp/variance",
+      "target": "oop/polymorphism"
+    },
+    {
+      "source": "csharp/yield-iterators",
+      "target": "dotnet/async-await"
+    },
+    {
+      "source": "csharp/extension-methods",
+      "target": "csharp/yield-iterators"
+    },
+    {
+      "source": "database/caching-strategies",
+      "target": "database/redis"
+    },
+    {
+      "source": "database/caching-strategies",
+      "target": "system-design/sessions"
+    },
+    {
+      "source": "database/caching-strategies",
+      "target": "database/replication"
+    },
+    {
+      "source": "database/connection-pooling",
+      "target": "database/transactions-acid"
+    },
+    {
+      "source": "database/connection-pooling",
+      "target": "dotnet/threadpool"
+    },
+    {
+      "source": "database/connection-pooling",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "database/deadlocks",
+      "target": "database/transactions-acid"
+    },
+    {
+      "source": "database/deadlocks",
+      "target": "database/isolation-levels"
+    },
+    {
+      "source": "database/connection-pooling",
+      "target": "database/deadlocks"
+    },
+    {
+      "source": "database/execution-plans",
+      "target": "database/indexing"
+    },
+    {
+      "source": "database/execution-plans",
+      "target": "database/transactions-acid"
+    },
+    {
+      "source": "database/execution-plans",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "database/indexing",
+      "target": "database/transactions-acid"
+    },
+    {
+      "source": "database/indexing",
+      "target": "database/sharding"
+    },
+    {
+      "source": "database/isolation-levels",
+      "target": "database/transactions-acid"
+    },
+    {
+      "source": "database/isolation-levels",
+      "target": "system-design/cap-theorem"
+    },
+    {
+      "source": "database/indexing",
+      "target": "database/normalization"
+    },
+    {
+      "source": "database/normalization",
+      "target": "database/sharding"
+    },
+    {
+      "source": "database/normalization",
+      "target": "database/sql-vs-nosql"
+    },
+    {
+      "source": "database/nosql-patterns",
+      "target": "database/sql-vs-nosql"
+    },
+    {
+      "source": "database/nosql-patterns",
+      "target": "database/redis"
+    },
+    {
+      "source": "database/nosql-patterns",
+      "target": "database/sharding"
+    },
+    {
+      "source": "database/redis",
+      "target": "system-design/sessions"
+    },
+    {
+      "source": "database/replication",
+      "target": "database/sharding"
+    },
+    {
+      "source": "database/replication",
+      "target": "system-design/cap-theorem"
+    },
+    {
+      "source": "database/sharding",
+      "target": "system-design/consistent-hashing"
+    },
+    {
+      "source": "database/sharding",
+      "target": "system-design/cap-theorem"
+    },
+    {
+      "source": "database/sql-vs-nosql",
+      "target": "system-design/cap-theorem"
+    },
+    {
+      "source": "database/stored-procedures-vs-orm",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "database/execution-plans",
+      "target": "database/stored-procedures-vs-orm"
+    },
+    {
+      "source": "database/indexing",
+      "target": "database/stored-procedures-vs-orm"
+    },
+    {
+      "source": "database/transactions-acid",
+      "target": "microservices/saga-pattern"
+    },
+    {
+      "source": "devops/ci-cd-pipelines",
+      "target": "devops/containers-and-images"
+    },
+    {
+      "source": "devops/ci-cd-pipelines",
+      "target": "devops/deployment-strategies"
+    },
+    {
+      "source": "devops/ci-cd-pipelines",
+      "target": "git/branching-strategies"
+    },
+    {
+      "source": "devops/containers-and-images",
+      "target": "microservices/docker"
+    },
+    {
+      "source": "devops/containers-and-images",
+      "target": "microservices/kubernetes"
+    },
+    {
+      "source": "devops/deployment-strategies",
+      "target": "devops/feature-flags"
+    },
+    {
+      "source": "devops/deployment-strategies",
+      "target": "interview-scenarios/responding-to-a-production-outage"
+    },
+    {
+      "source": "devops/feature-flags",
+      "target": "git/branching-strategies"
+    },
+    {
+      "source": "devops/feature-flags",
+      "target": "interview-scenarios/responding-to-a-production-outage"
+    },
+    {
+      "source": "devops/ci-cd-pipelines",
+      "target": "devops/infrastructure-as-code"
+    },
+    {
+      "source": "devops/infrastructure-as-code",
+      "target": "microservices/kubernetes"
+    },
+    {
+      "source": "devops/infrastructure-as-code",
+      "target": "interview-scenarios/managing-secrets-and-credentials"
+    },
+    {
+      "source": "dotnet/aot-compilation",
+      "target": "dotnet/jit-compilation"
+    },
+    {
+      "source": "dotnet/aot-compilation",
+      "target": "dotnet/source-generators"
+    },
+    {
+      "source": "dotnet/aot-compilation",
+      "target": "dotnet/clr"
+    },
+    {
+      "source": "dotnet/assemblies",
+      "target": "dotnet/clr"
+    },
+    {
+      "source": "dotnet/assemblies",
+      "target": "dotnet/jit-compilation"
+    },
+    {
+      "source": "dotnet/async-await",
+      "target": "dotnet/task-vs-thread"
+    },
+    {
+      "source": "dotnet/async-await",
+      "target": "dotnet/threadpool"
+    },
+    {
+      "source": "dotnet/auth-pipeline",
+      "target": "dotnet/middleware-pipeline"
+    },
+    {
+      "source": "dotnet/auth-pipeline",
+      "target": "system-design/sessions"
+    },
+    {
+      "source": "dotnet/auth-pipeline",
+      "target": "web-fundamentals/jwt"
+    },
+    {
+      "source": "dotnet/blazor",
+      "target": "dotnet/signalr"
+    },
+    {
+      "source": "dotnet/blazor",
+      "target": "dotnet/minimal-apis"
+    },
+    {
+      "source": "dotnet/aot-compilation",
+      "target": "dotnet/blazor"
+    },
+    {
+      "source": "dotnet/clr",
+      "target": "dotnet/jit-compilation"
+    },
+    {
+      "source": "dotnet/clr",
+      "target": "dotnet/garbage-collection"
+    },
+    {
+      "source": "dotnet/configuration",
+      "target": "dotnet/logging"
+    },
+    {
+      "source": "dotnet/configuration",
+      "target": "dotnet/dependency-injection"
+    },
+    {
+      "source": "dotnet/configuration",
+      "target": "dotnet/health-checks"
+    },
+    {
+      "source": "dotnet/dependency-injection",
+      "target": "oop/solid"
+    },
+    {
+      "source": "dotnet/dependency-injection",
+      "target": "dotnet/middleware-pipeline"
+    },
+    {
+      "source": "database/indexing",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "dotnet/dependency-injection",
+      "target": "dotnet/ef-core-internals"
+    },
+    {
+      "source": "dotnet/ef-core-internals",
+      "target": "dotnet/logging"
+    },
+    {
+      "source": "dotnet/garbage-collection",
+      "target": "dotnet/memory-management"
+    },
+    {
+      "source": "dotnet/garbage-collection",
+      "target": "dotnet/span"
+    },
+    {
+      "source": "dotnet/global-usings",
+      "target": "dotnet/minimal-apis"
+    },
+    {
+      "source": "dotnet/global-usings",
+      "target": "dotnet/nullable-reference-types"
+    },
+    {
+      "source": "dotnet/global-usings",
+      "target": "dotnet/records"
+    },
+    {
+      "source": "dotnet/grpc",
+      "target": "dotnet/minimal-apis"
+    },
+    {
+      "source": "dotnet/grpc",
+      "target": "dotnet/signalr"
+    },
+    {
+      "source": "dotnet/grpc",
+      "target": "microservices/inter-service-comms"
+    },
+    {
+      "source": "dotnet/health-checks",
+      "target": "dotnet/ihostedservice"
+    },
+    {
+      "source": "dotnet/health-checks",
+      "target": "dotnet/logging"
+    },
+    {
+      "source": "dotnet/dependency-injection",
+      "target": "dotnet/http-client-factory"
+    },
+    {
+      "source": "dotnet/http-client-factory",
+      "target": "microservices/circuit-breaker"
+    },
+    {
+      "source": "dotnet/grpc",
+      "target": "dotnet/http-client-factory"
+    },
+    {
+      "source": "dotnet/ihostedservice",
+      "target": "dotnet/task-vs-thread"
+    },
+    {
+      "source": "dotnet/dependency-injection",
+      "target": "dotnet/ihostedservice"
+    },
+    {
+      "source": "dotnet/ihostedservice",
+      "target": "dotnet/logging"
+    },
+    {
+      "source": "dotnet/dependency-injection",
+      "target": "dotnet/logging"
+    },
+    {
+      "source": "dotnet/memory-management",
+      "target": "dotnet/span"
+    },
+    {
+      "source": "dotnet/memory-management",
+      "target": "dotnet/records"
+    },
+    {
+      "source": "dotnet/middleware-pipeline",
+      "target": "dotnet/minimal-apis"
+    },
+    {
+      "source": "dotnet/dependency-injection",
+      "target": "dotnet/minimal-apis"
+    },
+    {
+      "source": "dotnet/nullable-reference-types",
+      "target": "dotnet/pattern-matching"
+    },
+    {
+      "source": "dotnet/nullable-reference-types",
+      "target": "dotnet/records"
+    },
+    {
+      "source": "dotnet/pattern-matching",
+      "target": "dotnet/records"
+    },
+    {
+      "source": "dotnet/pattern-matching",
+      "target": "dotnet/span"
+    },
+    {
+      "source": "dotnet/signalr",
+      "target": "web-fundamentals/websockets"
+    },
+    {
+      "source": "dotnet/signalr",
+      "target": "system-design/sessions"
+    },
+    {
+      "source": "dotnet/assemblies",
+      "target": "dotnet/source-generators"
+    },
+    {
+      "source": "dotnet/jit-compilation",
+      "target": "dotnet/source-generators"
+    },
+    {
+      "source": "dotnet/records",
+      "target": "dotnet/span"
+    },
+    {
+      "source": "dotnet/task-vs-thread",
+      "target": "dotnet/threadpool"
+    },
+    {
+      "source": "dotnet/ihostedservice",
+      "target": "dotnet/threadpool"
+    },
+    {
+      "source": "dsa/arrays-vs-linked-lists",
+      "target": "dsa/big-o-cheat-sheet"
+    },
+    {
+      "source": "dsa/arrays-vs-linked-lists",
+      "target": "dsa/stacks-and-queues"
+    },
+    {
+      "source": "dsa/big-o-cheat-sheet",
+      "target": "dsa/big-o-notation"
+    },
+    {
+      "source": "dsa/big-o-cheat-sheet",
+      "target": "dsa/hash-tables"
+    },
+    {
+      "source": "dsa/big-o-cheat-sheet",
+      "target": "dsa/sorting-algorithms"
+    },
+    {
+      "source": "dsa/big-o-notation",
+      "target": "dsa/sorting-algorithms"
+    },
+    {
+      "source": "dsa/big-o-notation",
+      "target": "dsa/hash-tables"
+    },
+    {
+      "source": "csharp/boxing-and-unboxing",
+      "target": "dsa/hash-tables"
+    },
+    {
+      "source": "dsa/stacks-and-queues",
+      "target": "dsa/trees-and-graphs"
+    },
+    {
+      "source": "dsa/big-o-cheat-sheet",
+      "target": "dsa/trees-and-graphs"
+    },
+    {
+      "source": "git/branching-strategies",
+      "target": "git/merge-vs-rebase"
+    },
+    {
+      "source": "git/branching-strategies",
+      "target": "git/resolving-conflicts"
+    },
+    {
+      "source": "git/branching-strategies",
+      "target": "microservices/docker"
+    },
+    {
+      "source": "git/git-internals",
+      "target": "git/merge-vs-rebase"
+    },
+    {
+      "source": "git/branching-strategies",
+      "target": "git/git-internals"
+    },
+    {
+      "source": "git/git-internals",
+      "target": "git/undoing-changes"
+    },
+    {
+      "source": "git/merge-vs-rebase",
+      "target": "git/resolving-conflicts"
+    },
+    {
+      "source": "git/resolving-conflicts",
+      "target": "git/undoing-changes"
+    },
+    {
+      "source": "git/merge-vs-rebase",
+      "target": "git/undoing-changes"
+    },
+    {
+      "source": "git/undoing-changes",
+      "target": "interview-scenarios/responding-to-a-production-outage"
+    },
+    {
+      "source": "interview-scenarios/cache-stampede",
+      "target": "system-design/caching"
+    },
+    {
+      "source": "database/caching-strategies",
+      "target": "interview-scenarios/cache-stampede"
+    },
+    {
+      "source": "interview-scenarios/cache-stampede",
+      "target": "interview-scenarios/hot-key-problem"
+    },
+    {
+      "source": "interview-scenarios/data-consistency-across-services",
+      "target": "microservices/saga-pattern"
+    },
+    {
+      "source": "interview-scenarios/data-consistency-across-services",
+      "target": "microservices/outbox-pattern"
+    },
+    {
+      "source": "interview-scenarios/data-consistency-across-services",
+      "target": "interview-scenarios/idempotency-in-distributed-systems"
+    },
+    {
+      "source": "interview-scenarios/debugging-a-latency-spike",
+      "target": "microservices/distributed-tracing"
+    },
+    {
+      "source": "interview-scenarios/debugging-a-latency-spike",
+      "target": "microservices/centralized-logging"
+    },
+    {
+      "source": "interview-scenarios/debugging-a-latency-spike",
+      "target": "interview-scenarios/preventing-cascading-failures"
+    },
+    {
+      "source": "interview-scenarios/debugging-a-latency-spike",
+      "target": "interview-scenarios/debugging-a-memory-leak"
+    },
+    {
+      "source": "dotnet/garbage-collection",
+      "target": "interview-scenarios/debugging-a-memory-leak"
+    },
+    {
+      "source": "dotnet/memory-management",
+      "target": "interview-scenarios/debugging-a-memory-leak"
+    },
+    {
+      "source": "interview-scenarios/designing-a-rate-limiter",
+      "target": "system-design/rate-limiting"
+    },
+    {
+      "source": "interview-scenarios/designing-a-rate-limiter",
+      "target": "interview-scenarios/designing-an-api-for-high-throughput"
+    },
+    {
+      "source": "interview-scenarios/designing-a-rate-limiter",
+      "target": "interview-scenarios/mitigating-a-ddos-attack"
+    },
+    {
+      "source": "interview-scenarios/designing-an-api-for-high-throughput",
+      "target": "interview-scenarios/scaling-a-web-application"
+    },
+    {
+      "source": "interview-scenarios/designing-an-api-for-high-throughput",
+      "target": "system-design/load-balancers"
+    },
+    {
+      "source": "interview-scenarios/designing-an-authentication-system",
+      "target": "interview-scenarios/where-to-store-jwt-frontend"
+    },
+    {
+      "source": "interview-scenarios/designing-an-authentication-system",
+      "target": "interview-scenarios/storing-passwords-securely"
+    },
+    {
+      "source": "interview-scenarios/designing-an-authentication-system",
+      "target": "web-fundamentals/oauth"
+    },
+    {
+      "source": "database/transactions-acid",
+      "target": "interview-scenarios/designing-for-durability"
+    },
+    {
+      "source": "database/replication",
+      "target": "interview-scenarios/designing-for-durability"
+    },
+    {
+      "source": "interview-scenarios/designing-for-durability",
+      "target": "interview-scenarios/designing-for-high-availability"
+    },
+    {
+      "source": "interview-scenarios/designing-for-high-availability",
+      "target": "system-design/cap-theorem"
+    },
+    {
+      "source": "database/replication",
+      "target": "interview-scenarios/designing-for-high-availability"
+    },
+    {
+      "source": "interview-scenarios/designing-for-high-availability",
+      "target": "interview-scenarios/preventing-cascading-failures"
+    },
+    {
+      "source": "dotnet/async-await",
+      "target": "interview-scenarios/handling-concurrent-users"
+    },
+    {
+      "source": "database/connection-pooling",
+      "target": "interview-scenarios/handling-concurrent-users"
+    },
+    {
+      "source": "interview-scenarios/handling-concurrent-users",
+      "target": "interview-scenarios/surviving-traffic-spikes"
+    },
+    {
+      "source": "interview-scenarios/hot-key-problem",
+      "target": "system-design/consistent-hashing"
+    },
+    {
+      "source": "interview-scenarios/hot-key-problem",
+      "target": "system-design/how-twitter-timeline"
+    },
+    {
+      "source": "interview-scenarios/idempotency-in-distributed-systems",
+      "target": "microservices/outbox-pattern"
+    },
+    {
+      "source": "interview-scenarios/idempotency-in-distributed-systems",
+      "target": "microservices/saga-pattern"
+    },
+    {
+      "source": "interview-scenarios/managing-secrets-and-credentials",
+      "target": "interview-scenarios/responding-to-a-ransomware-incident"
+    },
+    {
+      "source": "interview-scenarios/managing-secrets-and-credentials",
+      "target": "interview-scenarios/securing-a-rest-api"
+    },
+    {
+      "source": "interview-scenarios/managing-secrets-and-credentials",
+      "target": "interview-scenarios/storing-passwords-securely"
+    },
+    {
+      "source": "interview-scenarios/mitigating-a-ddos-attack",
+      "target": "interview-scenarios/surviving-traffic-spikes"
+    },
+    {
+      "source": "interview-scenarios/mitigating-a-ddos-attack",
+      "target": "system-design/cdn"
+    },
+    {
+      "source": "interview-scenarios/preventing-cascading-failures",
+      "target": "microservices/circuit-breaker"
+    },
+    {
+      "source": "interview-scenarios/preventing-cascading-failures",
+      "target": "microservices/retry-bulkhead"
+    },
+    {
+      "source": "interview-scenarios/handling-concurrent-users",
+      "target": "interview-scenarios/preventing-cascading-failures"
+    },
+    {
+      "source": "interview-scenarios/preventing-xss-and-csrf",
+      "target": "interview-scenarios/where-to-store-jwt-frontend"
+    },
+    {
+      "source": "interview-scenarios/preventing-xss-and-csrf",
+      "target": "interview-scenarios/securing-a-rest-api"
+    },
+    {
+      "source": "interview-scenarios/preventing-xss-and-csrf",
+      "target": "web-fundamentals/cors"
+    },
+    {
+      "source": "database/sharding",
+      "target": "interview-scenarios/read-heavy-vs-write-heavy"
+    },
+    {
+      "source": "database/sql-vs-nosql",
+      "target": "interview-scenarios/read-heavy-vs-write-heavy"
+    },
+    {
+      "source": "interview-scenarios/read-heavy-vs-write-heavy",
+      "target": "interview-scenarios/scaling-the-database"
+    },
+    {
+      "source": "interview-scenarios/reducing-latency-globally",
+      "target": "system-design/cdn"
+    },
+    {
+      "source": "interview-scenarios/reducing-latency-globally",
+      "target": "system-design/caching"
+    },
+    {
+      "source": "database/replication",
+      "target": "interview-scenarios/reducing-latency-globally"
+    },
+    {
+      "source": "interview-scenarios/debugging-a-latency-spike",
+      "target": "interview-scenarios/responding-to-a-production-outage"
+    },
+    {
+      "source": "interview-scenarios/preventing-cascading-failures",
+      "target": "interview-scenarios/responding-to-a-production-outage"
+    },
+    {
+      "source": "interview-scenarios/responding-to-a-production-outage",
+      "target": "interview-scenarios/responding-to-a-ransomware-incident"
+    },
+    {
+      "source": "interview-scenarios/designing-for-durability",
+      "target": "interview-scenarios/responding-to-a-ransomware-incident"
+    },
+    {
+      "source": "interview-scenarios/scaling-a-web-application",
+      "target": "system-design/horizontal-vs-vertical-scaling"
+    },
+    {
+      "source": "interview-scenarios/scaling-a-web-application",
+      "target": "system-design/load-balancers"
+    },
+    {
+      "source": "interview-scenarios/scaling-a-web-application",
+      "target": "interview-scenarios/scaling-the-database"
+    },
+    {
+      "source": "database/sharding",
+      "target": "interview-scenarios/scaling-the-database"
+    },
+    {
+      "source": "database/replication",
+      "target": "interview-scenarios/scaling-the-database"
+    },
+    {
+      "source": "interview-scenarios/securing-a-rest-api",
+      "target": "interview-scenarios/where-to-store-jwt-frontend"
+    },
+    {
+      "source": "interview-scenarios/securing-a-rest-api",
+      "target": "web-fundamentals/oauth"
+    },
+    {
+      "source": "interview-scenarios/securing-a-rest-api",
+      "target": "web-fundamentals/https-tls"
+    },
+    {
+      "source": "interview-scenarios/securing-a-rest-api",
+      "target": "interview-scenarios/storing-passwords-securely"
+    },
+    {
+      "source": "interview-scenarios/surviving-traffic-spikes",
+      "target": "system-design/rate-limiting"
+    },
+    {
+      "source": "interview-scenarios/surviving-traffic-spikes",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "interview-scenarios/cache-stampede",
+      "target": "interview-scenarios/surviving-traffic-spikes"
+    },
+    {
+      "source": "interview-scenarios/where-to-store-jwt-frontend",
+      "target": "web-fundamentals/jwt"
+    },
+    {
+      "source": "interview-scenarios/where-to-store-jwt-frontend",
+      "target": "web-fundamentals/cookies"
+    },
+    {
+      "source": "database/replication",
+      "target": "interview-scenarios/zero-downtime-database-migration"
+    },
+    {
+      "source": "database/normalization",
+      "target": "interview-scenarios/zero-downtime-database-migration"
+    },
+    {
+      "source": "interview-scenarios/data-consistency-across-services",
+      "target": "interview-scenarios/zero-downtime-database-migration"
+    },
+    {
+      "source": "microservices/api-gateway",
+      "target": "microservices/monolith-vs-microservices"
+    },
+    {
+      "source": "microservices/api-gateway",
+      "target": "system-design/rate-limiting"
+    },
+    {
+      "source": "dotnet/auth-pipeline",
+      "target": "microservices/api-gateway"
+    },
+    {
+      "source": "microservices/api-gateway",
+      "target": "microservices/api-versioning"
+    },
+    {
+      "source": "microservices/api-versioning",
+      "target": "web-fundamentals/rest"
+    },
+    {
+      "source": "interview-scenarios/zero-downtime-database-migration",
+      "target": "microservices/api-versioning"
+    },
+    {
+      "source": "microservices/centralized-logging",
+      "target": "microservices/distributed-tracing"
+    },
+    {
+      "source": "dotnet/logging",
+      "target": "microservices/centralized-logging"
+    },
+    {
+      "source": "dotnet/health-checks",
+      "target": "microservices/centralized-logging"
+    },
+    {
+      "source": "microservices/circuit-breaker",
+      "target": "microservices/retry-bulkhead"
+    },
+    {
+      "source": "microservices/circuit-breaker",
+      "target": "microservices/inter-service-comms"
+    },
+    {
+      "source": "dotnet/logging",
+      "target": "microservices/distributed-tracing"
+    },
+    {
+      "source": "microservices/distributed-tracing",
+      "target": "microservices/inter-service-comms"
+    },
+    {
+      "source": "microservices/docker",
+      "target": "microservices/kubernetes"
+    },
+    {
+      "source": "microservices/docker",
+      "target": "microservices/dotnet-microservices"
+    },
+    {
+      "source": "dotnet/aot-compilation",
+      "target": "microservices/docker"
+    },
+    {
+      "source": "microservices/api-gateway",
+      "target": "microservices/dotnet-microservices"
+    },
+    {
+      "source": "microservices/dotnet-microservices",
+      "target": "microservices/event-driven"
+    },
+    {
+      "source": "microservices/distributed-tracing",
+      "target": "microservices/dotnet-microservices"
+    },
+    {
+      "source": "microservices/event-driven",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "microservices/event-driven",
+      "target": "microservices/saga-pattern"
+    },
+    {
+      "source": "microservices/event-driven",
+      "target": "microservices/outbox-pattern"
+    },
+    {
+      "source": "microservices/inter-service-comms",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "microservices/event-driven",
+      "target": "microservices/inter-service-comms"
+    },
+    {
+      "source": "microservices/kubernetes",
+      "target": "microservices/service-discovery"
+    },
+    {
+      "source": "dotnet/health-checks",
+      "target": "microservices/kubernetes"
+    },
+    {
+      "source": "microservices/inter-service-comms",
+      "target": "microservices/monolith-vs-microservices"
+    },
+    {
+      "source": "microservices/dotnet-microservices",
+      "target": "microservices/monolith-vs-microservices"
+    },
+    {
+      "source": "microservices/outbox-pattern",
+      "target": "microservices/saga-pattern"
+    },
+    {
+      "source": "database/transactions-acid",
+      "target": "microservices/outbox-pattern"
+    },
+    {
+      "source": "dotnet/http-client-factory",
+      "target": "microservices/retry-bulkhead"
+    },
+    {
+      "source": "dotnet/threadpool",
+      "target": "microservices/retry-bulkhead"
+    },
+    {
+      "source": "microservices/service-discovery",
+      "target": "system-design/load-balancers"
+    },
+    {
+      "source": "microservices/api-gateway",
+      "target": "microservices/service-discovery"
+    },
+    {
+      "source": "microservices/circuit-breaker",
+      "target": "microservices/service-mesh"
+    },
+    {
+      "source": "microservices/kubernetes",
+      "target": "microservices/service-mesh"
+    },
+    {
+      "source": "microservices/distributed-tracing",
+      "target": "microservices/service-mesh"
+    },
+    {
+      "source": "microservices/monolith-vs-microservices",
+      "target": "microservices/strangler-fig-pattern"
+    },
+    {
+      "source": "microservices/api-gateway",
+      "target": "microservices/strangler-fig-pattern"
+    },
+    {
+      "source": "interview-scenarios/zero-downtime-database-migration",
+      "target": "microservices/strangler-fig-pattern"
+    },
+    {
+      "source": "observability/alerting-and-dashboards",
+      "target": "observability/metrics-and-slos"
+    },
+    {
+      "source": "observability/alerting-and-dashboards",
+      "target": "observability/three-pillars-of-observability"
+    },
+    {
+      "source": "interview-scenarios/responding-to-a-production-outage",
+      "target": "observability/alerting-and-dashboards"
+    },
+    {
+      "source": "observability/metrics-and-slos",
+      "target": "observability/three-pillars-of-observability"
+    },
+    {
+      "source": "interview-scenarios/designing-for-high-availability",
+      "target": "observability/metrics-and-slos"
+    },
+    {
+      "source": "observability/structured-logging",
+      "target": "observability/three-pillars-of-observability"
+    },
+    {
+      "source": "microservices/centralized-logging",
+      "target": "observability/structured-logging"
+    },
+    {
+      "source": "observability/alerting-and-dashboards",
+      "target": "observability/structured-logging"
+    },
+    {
+      "source": "microservices/distributed-tracing",
+      "target": "observability/three-pillars-of-observability"
+    },
+    {
+      "source": "microservices/distributed-tracing",
+      "target": "observability/tracing-and-spans"
+    },
+    {
+      "source": "observability/three-pillars-of-observability",
+      "target": "observability/tracing-and-spans"
+    },
+    {
+      "source": "interview-scenarios/debugging-a-latency-spike",
+      "target": "observability/tracing-and-spans"
+    },
+    {
+      "source": "oop/abstract-vs-interface",
+      "target": "oop/abstraction"
+    },
+    {
+      "source": "oop/abstract-vs-interface",
+      "target": "oop/inheritance"
+    },
+    {
+      "source": "oop/abstract-vs-interface",
+      "target": "oop/polymorphism"
+    },
+    {
+      "source": "oop/abstraction",
+      "target": "oop/encapsulation"
+    },
+    {
+      "source": "oop/abstraction",
+      "target": "oop/solid"
+    },
+    {
+      "source": "oop/composition-vs-inheritance",
+      "target": "oop/inheritance"
+    },
+    {
+      "source": "oop/composition-vs-inheritance",
+      "target": "oop/solid"
+    },
+    {
+      "source": "dotnet/dependency-injection",
+      "target": "oop/composition-vs-inheritance"
+    },
+    {
+      "source": "oop/coupling-cohesion",
+      "target": "oop/solid"
+    },
+    {
+      "source": "oop/coupling-cohesion",
+      "target": "oop/law-of-demeter"
+    },
+    {
+      "source": "oop/coupling-cohesion",
+      "target": "oop/encapsulation"
+    },
+    {
+      "source": "oop/dry-kiss-yagni",
+      "target": "oop/solid"
+    },
+    {
+      "source": "oop/coupling-cohesion",
+      "target": "oop/dry-kiss-yagni"
+    },
+    {
+      "source": "oop/composition-vs-inheritance",
+      "target": "oop/dry-kiss-yagni"
+    },
+    {
+      "source": "oop/encapsulation",
+      "target": "oop/solid"
+    },
+    {
+      "source": "oop/inheritance",
+      "target": "oop/polymorphism"
+    },
+    {
+      "source": "oop/encapsulation",
+      "target": "oop/law-of-demeter"
+    },
+    {
+      "source": "oop/law-of-demeter",
+      "target": "oop/solid"
+    },
+    {
+      "source": "oop/abstraction",
+      "target": "oop/polymorphism"
+    },
+    {
+      "source": "oop/polymorphism",
+      "target": "oop/solid"
+    },
+    {
+      "source": "dotnet/async-await",
+      "target": "oop/solid"
+    },
+    {
+      "source": "security/authentication-vs-authorization",
+      "target": "security/hashing-and-salting"
+    },
+    {
+      "source": "interview-scenarios/securing-a-rest-api",
+      "target": "security/authentication-vs-authorization"
+    },
+    {
+      "source": "security/authentication-vs-authorization",
+      "target": "web-fundamentals/oauth"
+    },
+    {
+      "source": "security/cross-site-scripting",
+      "target": "security/sql-injection"
+    },
+    {
+      "source": "interview-scenarios/preventing-xss-and-csrf",
+      "target": "security/cross-site-scripting"
+    },
+    {
+      "source": "interview-scenarios/where-to-store-jwt-frontend",
+      "target": "security/cross-site-scripting"
+    },
+    {
+      "source": "security/encryption-basics",
+      "target": "web-fundamentals/https-tls"
+    },
+    {
+      "source": "security/encryption-basics",
+      "target": "security/hashing-and-salting"
+    },
+    {
+      "source": "interview-scenarios/managing-secrets-and-credentials",
+      "target": "security/encryption-basics"
+    },
+    {
+      "source": "interview-scenarios/storing-passwords-securely",
+      "target": "security/hashing-and-salting"
+    },
+    {
+      "source": "interview-scenarios/securing-a-rest-api",
+      "target": "security/sql-injection"
+    },
+    {
+      "source": "database/indexing",
+      "target": "security/sql-injection"
+    },
+    {
+      "source": "database/caching-strategies",
+      "target": "system-design/caching"
+    },
+    {
+      "source": "database/redis",
+      "target": "system-design/caching"
+    },
+    {
+      "source": "system-design/caching",
+      "target": "system-design/cdn"
+    },
+    {
+      "source": "system-design/cdn",
+      "target": "web-fundamentals/http-caching"
+    },
+    {
+      "source": "system-design/cdn",
+      "target": "web-fundamentals/dns"
+    },
+    {
+      "source": "system-design/cdn",
+      "target": "system-design/load-balancers"
+    },
+    {
+      "source": "system-design/caching",
+      "target": "system-design/consistent-hashing"
+    },
+    {
+      "source": "system-design/cap-theorem",
+      "target": "system-design/consistent-hashing"
+    },
+    {
+      "source": "system-design/horizontal-vs-vertical-scaling",
+      "target": "system-design/load-balancers"
+    },
+    {
+      "source": "system-design/horizontal-vs-vertical-scaling",
+      "target": "system-design/sessions"
+    },
+    {
+      "source": "database/sharding",
+      "target": "system-design/horizontal-vs-vertical-scaling"
+    },
+    {
+      "source": "system-design/how-gmail",
+      "target": "system-design/sessions"
+    },
+    {
+      "source": "system-design/how-gmail",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "database/sharding",
+      "target": "system-design/how-gmail"
+    },
+    {
+      "source": "system-design/how-instagram-feed",
+      "target": "system-design/how-twitter-timeline"
+    },
+    {
+      "source": "system-design/cdn",
+      "target": "system-design/how-instagram-feed"
+    },
+    {
+      "source": "database/sharding",
+      "target": "system-design/how-instagram-feed"
+    },
+    {
+      "source": "system-design/cdn",
+      "target": "system-design/how-netflix-streaming"
+    },
+    {
+      "source": "microservices/monolith-vs-microservices",
+      "target": "system-design/how-netflix-streaming"
+    },
+    {
+      "source": "system-design/how-netflix-streaming",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "system-design/caching",
+      "target": "system-design/how-twitter-timeline"
+    },
+    {
+      "source": "system-design/how-twitter-timeline",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "system-design/load-balancers",
+      "target": "system-design/sessions"
+    },
+    {
+      "source": "dotnet/health-checks",
+      "target": "system-design/load-balancers"
+    },
+    {
+      "source": "microservices/outbox-pattern",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "dotnet/ihostedservice",
+      "target": "system-design/message-queues"
+    },
+    {
+      "source": "database/redis",
+      "target": "system-design/rate-limiting"
+    },
+    {
+      "source": "system-design/rate-limiting",
+      "target": "web-fundamentals/http-status-codes"
+    },
+    {
+      "source": "system-design/sessions",
+      "target": "web-fundamentals/jwt"
+    },
+    {
+      "source": "system-design/sessions",
+      "target": "web-fundamentals/cookies"
+    },
+    {
+      "source": "system-design/caching",
+      "target": "system-design/sessions"
+    },
+    {
+      "source": "testing/integration-testing",
+      "target": "testing/test-pyramid"
+    },
+    {
+      "source": "testing/integration-testing",
+      "target": "testing/unit-testing"
+    },
+    {
+      "source": "microservices/docker",
+      "target": "testing/integration-testing"
+    },
+    {
+      "source": "testing/mocking-and-test-doubles",
+      "target": "testing/unit-testing"
+    },
+    {
+      "source": "oop/solid",
+      "target": "testing/mocking-and-test-doubles"
+    },
+    {
+      "source": "csharp/repository",
+      "target": "testing/mocking-and-test-doubles"
+    },
+    {
+      "source": "testing/tdd",
+      "target": "testing/unit-testing"
+    },
+    {
+      "source": "testing/tdd",
+      "target": "testing/test-pyramid"
+    },
+    {
+      "source": "oop/solid",
+      "target": "testing/tdd"
+    },
+    {
+      "source": "testing/test-pyramid",
+      "target": "testing/unit-testing"
+    },
+    {
+      "source": "web-fundamentals/content-negotiation",
+      "target": "web-fundamentals/http"
+    },
+    {
+      "source": "web-fundamentals/content-negotiation",
+      "target": "web-fundamentals/rest"
+    },
+    {
+      "source": "web-fundamentals/content-negotiation",
+      "target": "web-fundamentals/http-caching"
+    },
+    {
+      "source": "web-fundamentals/cookies",
+      "target": "web-fundamentals/jwt"
+    },
+    {
+      "source": "web-fundamentals/cookies",
+      "target": "web-fundamentals/cors"
+    },
+    {
+      "source": "web-fundamentals/cors",
+      "target": "web-fundamentals/http"
+    },
+    {
+      "source": "dotnet/middleware-pipeline",
+      "target": "web-fundamentals/cors"
+    },
+    {
+      "source": "web-fundamentals/dns",
+      "target": "web-fundamentals/https-tls"
+    },
+    {
+      "source": "web-fundamentals/dns",
+      "target": "web-fundamentals/http"
+    },
+    {
+      "source": "web-fundamentals/http",
+      "target": "web-fundamentals/http-caching"
+    },
+    {
+      "source": "web-fundamentals/http-caching",
+      "target": "web-fundamentals/http-status-codes"
+    },
+    {
+      "source": "web-fundamentals/http",
+      "target": "web-fundamentals/http-status-codes"
+    },
+    {
+      "source": "web-fundamentals/http-status-codes",
+      "target": "web-fundamentals/rest"
+    },
+    {
+      "source": "dotnet/auth-pipeline",
+      "target": "web-fundamentals/http-status-codes"
+    },
+    {
+      "source": "web-fundamentals/http",
+      "target": "web-fundamentals/rest"
+    },
+    {
+      "source": "web-fundamentals/http",
+      "target": "web-fundamentals/https-tls"
+    },
+    {
+      "source": "web-fundamentals/cors",
+      "target": "web-fundamentals/https-tls"
+    },
+    {
+      "source": "web-fundamentals/jwt",
+      "target": "web-fundamentals/oauth"
+    },
+    {
+      "source": "system-design/sessions",
+      "target": "web-fundamentals/oauth"
+    },
+    {
+      "source": "dotnet/auth-pipeline",
+      "target": "web-fundamentals/oauth"
+    },
+    {
+      "source": "dotnet/grpc",
+      "target": "web-fundamentals/rest"
+    },
+    {
+      "source": "web-fundamentals/http",
+      "target": "web-fundamentals/websockets"
+    },
+    {
+      "source": "system-design/sessions",
+      "target": "web-fundamentals/websockets"
+    }
+  ]
+}

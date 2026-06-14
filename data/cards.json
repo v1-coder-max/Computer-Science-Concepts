@@ -1,0 +1,2095 @@
+{
+  "generated": "2026-06-13",
+  "cards": [
+    {
+      "category": "concurrency",
+      "slug": "async-await-pitfalls",
+      "title": "Async/Await Pitfalls",
+      "url": "concepts/concurrency/async-await-pitfalls.html",
+      "takeaways": [
+        "Never block on async (<code>.Result</code>/<code>.Wait()</code>) — go <strong>async all the way</strong> to avoid deadlocks and starvation.",
+        "Avoid <strong>async void</strong> (except event handlers); return <code>Task</code> so exceptions are observable.",
+        "Use <strong>ConfigureAwait(false)</strong> in libraries; don't fire-and-forget Tasks you care about."
+      ]
+    },
+    {
+      "category": "concurrency",
+      "slug": "cancellation-and-timeouts",
+      "title": "Cancellation & Timeouts",
+      "url": "concepts/concurrency/cancellation-and-timeouts.html",
+      "takeaways": [
+        "Cancellation is <strong>cooperative</strong> — pass a <code>CancellationToken</code> through every async call; code checks it and throws <code>OperationCanceledException</code>.",
+        "A <strong>timeout</strong> is cancellation on a timer (<code>CancellationTokenSource(TimeSpan)</code>) — the key to not hanging on slow dependencies.",
+        "<strong>Link</strong> tokens to combine timeout + request cancellation; treat cancellation as expected, not an error."
+      ]
+    },
+    {
+      "category": "concurrency",
+      "slug": "channels-and-producer-consumer",
+      "title": "Channels & Producer/Consumer",
+      "url": "concepts/concurrency/channels-and-producer-consumer.html",
+      "takeaways": [
+        "<strong>Channels</strong> give a thread-safe, async producer/consumer pipe — no manual locking.",
+        "A <strong>bounded</strong> channel provides <strong>backpressure</strong>: a full channel makes the producer wait, keeping memory bounded.",
+        "It's the modern async replacement for <code>BlockingCollection</code> and the building block for in-process pipelines."
+      ]
+    },
+    {
+      "category": "concurrency",
+      "slug": "concurrency-vs-parallelism",
+      "title": "Concurrency vs Parallelism",
+      "url": "concepts/concurrency/concurrency-vs-parallelism.html",
+      "takeaways": [
+        "Concurrency = <strong>structure</strong> (tasks interleave, even on one core); parallelism = <strong>simultaneous execution</strong> (needs multiple cores).",
+        "Use <strong>async</strong> for I/O-bound work, <strong>parallelism</strong> for CPU-bound work.",
+        "They compose — a server is concurrent across requests and may be parallel within one."
+      ]
+    },
+    {
+      "category": "concurrency",
+      "slug": "locks-and-race-conditions",
+      "title": "Locks & Race Conditions",
+      "url": "concepts/concurrency/locks-and-race-conditions.html",
+      "takeaways": [
+        "A <strong>race condition</strong> = correctness depends on thread timing; <code>count++</code> is not atomic.",
+        "A <strong>lock</strong> gives mutual exclusion — keep the critical section tiny to limit contention.",
+        "Prefer <strong>Interlocked</strong>, concurrent collections, or immutability; acquire multiple locks in a consistent order to avoid deadlock."
+      ]
+    },
+    {
+      "category": "concurrency",
+      "slug": "thread-safety",
+      "title": "Thread Safety & Atomicity",
+      "url": "concepts/concurrency/thread-safety.html",
+      "takeaways": [
+        "Prefer, in order: <strong>immutability → confinement → atomics (Interlocked) → concurrent collections → locks</strong>.",
+        "Thread safety needs <strong>both</strong> atomicity and <strong>visibility</strong> (a memory barrier), or threads won't see each other's writes.",
+        "The cheapest synchronization is none — immutable, unshared data can't race."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "abstract-factory",
+      "title": "Abstract Factory",
+      "url": "concepts/csharp/abstract-factory.html",
+      "takeaways": [
+        "Abstract Factory creates <strong>families of related objects</strong> through one interface — guaranteeing they’re used together.",
+        "Swap the entire family by swapping the factory; the client (which uses only abstract products) doesn’t change.",
+        "Use it only when real product families exist — otherwise it’s heavier than a plain factory."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "adapter",
+      "title": "Adapter Pattern",
+      "url": "concepts/csharp/adapter.html",
+      "takeaways": [
+        "Adapter converts an incompatible interface (adaptee) into the one your code expects (target).",
+        "It’s for integrating third-party/legacy code you can’t change — confine the foreign API behind one adapter.",
+        "Prefer the object adapter (composition + delegation) over the class adapter (inheritance)."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "boxing-and-unboxing",
+      "title": "Boxing & Unboxing",
+      "url": "concepts/csharp/boxing-and-unboxing.html",
+      "takeaways": [
+        "<strong>Boxing</strong> wraps a value type in a heap-allocated <code>object</code> (copy + allocation); <strong>unboxing</strong> extracts it back.",
+        "It's often <strong>invisible</strong> and cheap once, but boxing in hot paths causes <strong>allocations and GC pressure</strong>.",
+        "<strong>Generics</strong> (<code>List&lt;int&gt;</code>) avoid it — prefer generic APIs over <code>object</code>-based ones; watch struct-to-interface boxing."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "builder",
+      "title": "Builder Pattern",
+      "url": "concepts/csharp/builder.html",
+      "takeaways": [
+        "Builder constructs a complex object step by step, replacing telescoping constructors with a readable fluent API.",
+        "Each step returns the builder; <code>Build()</code> validates invariants and returns the (often immutable) result.",
+        "For simple objects, C# object initializers / records with <code>init</code> often make a builder unnecessary."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "chain-of-responsibility",
+      "title": "Chain of Responsibility",
+      "url": "concepts/csharp/chain-of-responsibility.html",
+      "takeaways": [
+        "A request travels a chain of handlers; each handles it or passes it on, decoupling sender from receiver.",
+        "Handlers can be added, removed, or reordered freely; any can short-circuit the chain.",
+        "The ASP.NET Core <strong>middleware pipeline</strong> is this pattern — the clearest real example."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "command",
+      "title": "Command Pattern",
+      "url": "concepts/csharp/command.html",
+      "takeaways": [
+        "Command wraps a request (receiver + action + args) as an object with <code>Execute()</code> (and often <code>Undo()</code>).",
+        "Because the action is data, you can queue, log, schedule, and undo it — and the invoker is decoupled from the receiver.",
+        "It’s the basis of undo/redo, task queues, UI <code>ICommand</code>, and MediatR/CQRS commands."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "composite",
+      "title": "Composite Pattern",
+      "url": "concepts/csharp/composite.html",
+      "takeaways": [
+        "Composite models part-whole <strong>trees</strong>; leaves and composites share one component interface.",
+        "The composite implements operations by <strong>recursing</strong> over children — clients treat the whole tree uniformly, with no type-checking.",
+        "File systems, UI/DOM trees, and org charts are classic composites."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "cqrs",
+      "title": "CQRS",
+      "url": "concepts/csharp/cqrs.html",
+      "takeaways": [
+        "CQRS separates the write model (commands, state-changing) from the read model (queries, side-effect-free).",
+        "The light version is just separate handlers on one DB; the heavy version uses separate read/write stores synced by events (eventual consistency).",
+        "It’s not a default — apply it where read and write needs genuinely diverge; it adds real complexity."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "decorator",
+      "title": "Decorator Pattern",
+      "url": "concepts/csharp/decorator.html",
+      "takeaways": [
+        "Decorator wraps an object in another with the <strong>same interface</strong>, adding behavior and delegating the rest.",
+        "Decorators <strong>stack</strong> — compose caching, logging, retry, etc. without a class per combination (composition over inheritance).",
+        "Same interface + <em>adds</em> behavior distinguishes it from Adapter (changes interface) and Proxy (controls access)."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "delegates-events",
+      "title": "Delegates & Events",
+      "url": "concepts/csharp/delegates-events.html",
+      "takeaways": [
+        "A delegate is a type-safe method reference (use <code>Func</code>/<code>Action</code>/<code>Predicate</code>); lambdas create them; they’re multicast.",
+        "An event is a restricted delegate: outsiders can only subscribe/unsubscribe (<code>+=</code>/<code>-=</code>); only the declaring class can raise it.",
+        "They make behavior a first-class value — the basis of callbacks, the observer pattern, and LINQ."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "extension-methods",
+      "title": "Extension Methods",
+      "url": "concepts/csharp/extension-methods.html",
+      "takeaways": [
+        "An extension method is a <code>static</code> method (in a <code>static</code> class) with a <code>this</code> first parameter — called with instance syntax on types you don’t own.",
+        "It’s syntactic sugar: <code>obj.Ext()</code> compiles to <code>Static.Ext(obj)</code>; no access to privates, no change to the type, visible only via <code>using</code>.",
+        "LINQ and ASP.NET Core’s fluent config are built on extension methods — the canonical examples."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "facade",
+      "title": "Facade Pattern",
+      "url": "concepts/csharp/facade.html",
+      "takeaways": [
+        "A facade exposes one simple interface over a complex subsystem, reducing coupling to its internals.",
+        "It only <em>simplifies</em> — unlike a decorator (adds behavior) or adapter (changes the interface).",
+        "Any “service”/“manager” class that hides several lower-level steps is a facade; clients can still go deeper if needed."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "factory-pattern",
+      "title": "Factory Pattern",
+      "url": "concepts/csharp/factory-pattern.html",
+      "takeaways": [
+        "A factory decouples object <em>creation</em> from <em>use</em> — callers depend on an interface, not <code>new ConcreteType()</code>.",
+        "Simple Factory = one method picks the concrete type; Factory Method (GoF) = subclasses decide via a virtual creator.",
+        "It supports Open/Closed (add a type without editing callers); DI containers are the general-purpose factory."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "generics",
+      "title": "Generics",
+      "url": "concepts/csharp/generics.html",
+      "takeaways": [
+        "Generics give type-safe, reusable code parameterized by type — no casting and no boxing for value types.",
+        "Constraints (<code>where T : …</code>) let you require a base/interface/<code>new()</code> so you can use <code>T</code> meaningfully.",
+        "The CLR specializes generics per value type but shares one implementation for reference types — fast and compact."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "linq-internals",
+      "title": "LINQ Internals",
+      "url": "concepts/csharp/linq-internals.html",
+      "takeaways": [
+        "LINQ uses <strong>deferred execution</strong> — the query runs when enumerated, not when defined.",
+        "<code>IEnumerable</code> runs in memory via delegates/iterators; <code>IQueryable</code> builds expression trees a provider (EF) translates to SQL.",
+        "Don’t cross to <code>IEnumerable</code> too early (loses SQL translation), and avoid multiple enumeration (re-runs the query) — <code>ToList()</code> to materialize."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "mediator",
+      "title": "Mediator Pattern",
+      "url": "concepts/csharp/mediator.html",
+      "takeaways": [
+        "Mediator routes interactions through a central hub so objects don’t reference each other — N×N coupling becomes N spokes.",
+        "The coordination logic lives in one place; keep the mediator focused so it doesn’t become a god object.",
+        "In .NET it’s MediatR: send a request → dispatched to a handler (plus notifications + a behavior pipeline) — the basis of CQRS."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "observer",
+      "title": "Observer Pattern",
+      "url": "concepts/csharp/observer.html",
+      "takeaways": [
+        "Observer is a one-to-many dependency: the subject notifies all subscribers when it changes, without knowing who they are (loose coupling).",
+        "In C# it’s built in — <code>delegate</code> + <code>event</code> (<code>+=</code>/<code>-=</code>); <code>IObservable&lt;T&gt;</code> for value streams.",
+        "Unsubscribe to prevent the event-handler memory leak."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "prototype",
+      "title": "Prototype Pattern",
+      "url": "concepts/csharp/prototype.html",
+      "takeaways": [
+        "Prototype creates objects by cloning a configured instance instead of constructing from scratch.",
+        "Mind <strong>shallow vs deep</strong> copy — shared nested references cause subtle bugs; deep-copy when you need independence.",
+        "Avoid <code>ICloneable</code> (ambiguous); prefer copy constructors or records’ <code>with</code> expression."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "proxy",
+      "title": "Proxy Pattern",
+      "url": "concepts/csharp/proxy.html",
+      "takeaways": [
+        "A proxy shares the subject’s interface and <strong>controls access</strong> to it — virtual (lazy), protection, remote, or caching.",
+        "Same structure as a decorator, different intent: proxy <em>controls access</em>; decorator <em>adds behavior</em>.",
+        "EF Core lazy loading and gRPC clients are real-world proxies (virtual and remote)."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "records",
+      "title": "Records",
+      "url": "concepts/csharp/records.html",
+      "takeaways": [
+        "<strong>Records</strong> generate a concise, immutable data type with <strong>value-based equality</strong>, <code>ToString</code>, and deconstruction.",
+        "Equal by <strong>contents</strong> (not reference); 'change' via a <strong>with-expression</strong> that copies a new instance (non-destructive mutation).",
+        "Use for <strong>DTOs, value objects, events</strong>; <code>record class</code> (reference) vs <code>record struct</code> (value) — keep classes for identity-rich entities."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "reflection",
+      "title": "Reflection & Attributes",
+      "url": "concepts/csharp/reflection.html",
+      "takeaways": [
+        "Reflection reads/uses type metadata at runtime — discover members, read attributes, create instances, invoke methods, with no compile-time reference.",
+        "Attributes are declarative metadata that only matter when something reflects over them; together they power DI, serializers, ORMs, validation, and test runners.",
+        "It’s slow and AOT/trim-hostile — cache results and prefer <strong>source generators</strong> for performance/AOT."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "repository",
+      "title": "Repository Pattern",
+      "url": "concepts/csharp/repository.html",
+      "takeaways": [
+        "Repository gives a collection-like interface over data access, decoupling the domain from the DB/ORM and aiding testability.",
+        "EF Core’s <code>DbContext</code>/<code>DbSet</code> already <em>are</em> a repository + unit of work — wrapping them generically is often redundant and leaky.",
+        "When you do use it, prefer a repository per <strong>aggregate</strong> with intent-revealing methods over a generic <code>Repository&lt;T&gt;</code>."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "singleton-pattern",
+      "title": "Singleton Pattern",
+      "url": "concepts/csharp/singleton-pattern.html",
+      "takeaways": [
+        "Singleton = private constructor + one static instance, exposed through a single access point.",
+        "Use <code>Lazy&lt;T&gt;</code> for correct lazy, thread-safe initialization — don’t hand-roll double-checked locking.",
+        "Prefer a DI container singleton (<code>AddSingleton</code>) over a global <code>X.Instance</code> — you get one instance <em>and</em> testability."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "specification",
+      "title": "Specification Pattern",
+      "url": "concepts/csharp/specification.html",
+      "takeaways": [
+        "Specification encapsulates a business rule/query as a reusable object (<code>IsSatisfiedBy</code> + an expression).",
+        "Specs <strong>compose</strong> with And/Or/Not, eliminating duplicated <code>Where</code> predicates and keeping rules in one place.",
+        "Expose an <code>Expression&lt;Func&lt;T,bool&gt;&gt;</code> so EF translates it to SQL; pairs with Repository (Ardalis.Specification)."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "state",
+      "title": "State Pattern",
+      "url": "concepts/csharp/state.html",
+      "takeaways": [
+        "State turns each state into an object; the context delegates to its current state, which drives transitions.",
+        "It replaces sprawling <code>switch (status)</code> logic with a clean, extensible state machine (illegal actions rejected in one place).",
+        "Same structure as Strategy, different intent: states know each other and transition; strategies are independent."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "strategy",
+      "title": "Strategy Pattern",
+      "url": "concepts/csharp/strategy.html",
+      "takeaways": [
+        "Strategy encapsulates interchangeable algorithms behind one interface and swaps them at runtime — composition over conditionals.",
+        "It replaces big <code>switch</code>/<code>if</code> ladders and supports Open/Closed (new algorithm = new class).",
+        "In C#, a <code>Func&lt;&gt;</code> delegate is often the whole strategy — see LINQ <code>OrderBy</code> and <code>List.Sort</code>."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "template-method",
+      "title": "Template Method Pattern",
+      "url": "concepts/csharp/template-method.html",
+      "takeaways": [
+        "Template Method fixes an algorithm’s skeleton in a base method and defers variable steps to subclass hooks.",
+        "It’s the Hollywood Principle — the base calls your overrides; subclasses can’t change the structure, only the steps.",
+        "It’s the inheritance-based counterpart to Strategy (composition); prefer Strategy unless there’s a real is-a lifecycle."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "unit-of-work",
+      "title": "Unit of Work",
+      "url": "concepts/csharp/unit-of-work.html",
+      "takeaways": [
+        "Unit of Work tracks all changes in an operation and commits them as one atomic transaction (all-or-nothing).",
+        "EF Core’s <code>DbContext</code> + <code>SaveChanges</code> <em>are</em> a Unit of Work — you use it constantly without naming it.",
+        "A custom <code>IUnitOfWork</code> helps share a transaction across repositories, but a thin wrapper over <code>DbContext</code> is often redundant."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "value-vs-reference-types",
+      "title": "Value vs Reference Types",
+      "url": "concepts/csharp/value-vs-reference-types.html",
+      "takeaways": [
+        "<strong>Value types (structs)</strong> copy the whole value (independent); <strong>reference types (classes)</strong> copy the reference (shared object).",
+        "Value types are usually <strong>inline/stack</strong> (no GC); reference types live on the <strong>heap</strong> (GC-managed).",
+        "It drives <strong>default equality</strong> (contents vs identity) and <strong>mutation</strong> semantics — use structs for small, immutable, value-like data."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "variance",
+      "title": "Covariance & Contravariance",
+      "url": "concepts/csharp/variance.html",
+      "takeaways": [
+        "Generics are invariant by default; variance allows safe substitution based on producer/consumer roles.",
+        "<strong>Covariance (<code>out</code>)</strong> = output/producer, preserves direction (<code>IEnumerable&lt;out T&gt;</code>); <strong>contravariance (<code>in</code>)</strong> = input/consumer, reverses it (<code>Action&lt;in T&gt;</code>).",
+        "Mnemonic: out = producer, in = consumer. Arrays are covariant but unsafely (runtime exception) — generics fixed that."
+      ]
+    },
+    {
+      "category": "csharp",
+      "slug": "yield-iterators",
+      "title": "yield & Iterators",
+      "url": "concepts/csharp/yield-iterators.html",
+      "takeaways": [
+        "<code>yield return</code> produces a sequence lazily, one item at a time; the compiler generates an <code>IEnumerator&lt;T&gt;</code> state machine (same idea as async).",
+        "It enables deferred execution, memory-efficient streaming, and infinite/early-stop sequences.",
+        "LINQ operators are iterators — which is why LINQ is lazy and composable."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "caching-strategies",
+      "title": "Caching Strategies",
+      "url": "concepts/database/caching-strategies.html",
+      "takeaways": [
+        "Cache-aside (app loads on miss) is the default; read-through moves that into the cache layer.",
+        "Write-through keeps the cache fresh (slower writes); write-back is fastest but can lose data.",
+        "Invalidation is the hard part — use TTLs + eviction on write, and guard against thundering herds."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "connection-pooling",
+      "title": "Connection Pooling",
+      "url": "concepts/database/connection-pooling.html",
+      "takeaways": [
+        "Opening connections is expensive; the pool reuses open ones, keyed by the connection string.",
+        "Forgetting to dispose (or holding connections in long operations) causes <strong>pool exhaustion</strong> and timeouts.",
+        "Always <code>using</code>/dispose, keep work short, and size <code>Max Pool Size</code> to the DB’s limits."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "deadlocks",
+      "title": "Deadlocks",
+      "url": "concepts/database/deadlocks.html",
+      "takeaways": [
+        "A deadlock is a circular lock wait; the DB detects it and aborts a victim transaction.",
+        "Prevent it with consistent lock ordering, short transactions, and good indexes (less locking).",
+        "They can’t be eliminated entirely — wrap write transactions in retry-on-deadlock logic."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "execution-plans",
+      "title": "Reading Execution Plans",
+      "url": "concepts/database/execution-plans.html",
+      "takeaways": [
+        "The optimizer is cost-based and statistics-driven; the execution plan is the operator tree it chose.",
+        "Hunt for scans-instead-of-seeks, key lookups, and big estimated-vs-actual row gaps.",
+        "Stale statistics and parameter sniffing are the usual culprits behind a suddenly-slow query."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "indexing",
+      "title": "Database Indexing",
+      "url": "concepts/database/indexing.html",
+      "takeaways": [
+        "An index is a sorted B-tree that turns a scan (<code>O(n)</code>) into a seek (<code>O(log n)</code>).",
+        "Clustered = the table’s physical order (one per table); non-clustered = a side structure pointing back to rows (many).",
+        "Indexes speed reads but tax writes and storage — and a function on the column disables them. Index deliberately."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "isolation-levels",
+      "title": "Isolation Levels",
+      "url": "concepts/database/isolation-levels.html",
+      "takeaways": [
+        "Three anomalies — dirty read, non-repeatable read, phantom — are prevented by progressively stronger levels.",
+        "Read Uncommitted → Committed → Repeatable Read → Serializable: more consistency, less concurrency.",
+        "MVCC/snapshot isolation gives consistent reads without blocking writers; choose the lowest correct level."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "normalization",
+      "title": "Normalization vs Denormalization",
+      "url": "concepts/database/normalization.html",
+      "takeaways": [
+        "Normalization (1NF–3NF) stores each fact once — write integrity, no update anomalies, but more joins.",
+        "Denormalization duplicates/pre-joins for read speed — faster reads, harder writes, risk of drift.",
+        "Normalize OLTP; denormalize read-heavy paths deliberately (read models, materialized views)."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "nosql-patterns",
+      "title": "NoSQL Patterns",
+      "url": "concepts/database/nosql-patterns.html",
+      "takeaways": [
+        "Four families: document (whole-entity), key-value (cache/sessions), wide-column (huge writes/feeds), graph (relationships).",
+        "NoSQL favors flexible schemas, horizontal scale, and denormalization — often BASE/eventual consistency over ACID.",
+        "Choose by access pattern; real systems mix stores (polyglot persistence)."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "redis",
+      "title": "Redis Internals",
+      "url": "concepts/database/redis.html",
+      "takeaways": [
+        "Redis is fast because it’s in-memory and single-threaded — no locks, and every command is atomic.",
+        "It’s a data-structure store (strings, hashes, lists, sets, sorted sets, streams), not just key→string.",
+        "Optional persistence (RDB/AOF) + TTL + eviction make it ideal for cache, sessions, rate limits, and leaderboards."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "replication",
+      "title": "Replication",
+      "url": "concepts/database/replication.html",
+      "takeaways": [
+        "Leader–follower: writes to the leader, reads from followers — scales reads and provides HA standbys.",
+        "Async replication is fast but creates <strong>replication lag</strong> (eventual consistency); sync avoids loss but is slower.",
+        "Watch read-your-own-writes and failover; replication copies the whole dataset (vs sharding, which splits it)."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "sharding",
+      "title": "Partitioning & Sharding",
+      "url": "concepts/database/sharding.html",
+      "takeaways": [
+        "Sharding = horizontal partitioning across multiple servers, scaling writes and storage, not just reads.",
+        "The shard key is everything: even distribution (no hotspots) and alignment with your main query.",
+        "Cross-shard joins/transactions are hard — shard only after indexing, caching, and replicas fall short."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "sql-vs-nosql",
+      "title": "SQL vs NoSQL",
+      "url": "concepts/database/sql-vs-nosql.html",
+      "takeaways": [
+        "SQL: structure, relationships, ACID, joins, strong consistency — choose for transactional/relational data.",
+        "NoSQL: flexible schema, horizontal scale, high throughput, BASE — choose by a known access pattern.",
+        "It’s usually <strong>both</strong> (polyglot persistence), with SQL guarding data that must be exact."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "stored-procedures-vs-orm",
+      "title": "Stored Procedures vs ORMs",
+      "url": "concepts/database/stored-procedures-vs-orm.html",
+      "takeaways": [
+        "Stored procedures: reused plans, network-efficient, encapsulated — but logic in the DB, harder to test/version, DB-specific.",
+        "ORMs: productivity, type-safety, maintainability, migrations — but can emit inefficient SQL (N+1) and leak on complex queries.",
+        "Pragmatic answer: ORM by default, drop to raw SQL / Dapper / a stored proc for the hot, complex 10%."
+      ]
+    },
+    {
+      "category": "database",
+      "slug": "transactions-acid",
+      "title": "Transactions & ACID",
+      "url": "concepts/database/transactions-acid.html",
+      "takeaways": [
+        "A transaction is an all-or-nothing unit: <code>COMMIT</code> applies everything, <code>ROLLBACK</code> undoes it.",
+        "ACID = Atomicity, Consistency, Isolation, Durability — the four guarantees relational DBs give you.",
+        "The write-ahead log delivers atomicity + durability: log to disk before applying, replay/undo on recovery."
+      ]
+    },
+    {
+      "category": "devops",
+      "slug": "ci-cd-pipelines",
+      "title": "CI/CD Pipelines",
+      "url": "concepts/devops/ci-cd-pipelines.html",
+      "takeaways": [
+        "<strong>CI</strong> = integrate often + automated build/test on every push (fast feedback); <strong>CD</strong> = always-deployable, automated path to release.",
+        "A pipeline is a chain of <strong>gates</strong> producing an <strong>immutable artifact</strong> promoted across environments.",
+        "<strong>Small, frequent batches</strong> are safer than big releases — high deploy frequency and low failure rate go together."
+      ]
+    },
+    {
+      "category": "devops",
+      "slug": "containers-and-images",
+      "title": "Containers & Images",
+      "url": "concepts/devops/containers-and-images.html",
+      "takeaways": [
+        "A container is an isolated <strong>process</strong> sharing the host kernel (light); an <strong>image</strong> is the immutable template it runs from.",
+        "Images are <strong>layered and cached</strong> — order the Dockerfile so dependencies precede source for fast rebuilds.",
+        "CI builds an immutable, versioned image in a <strong>registry</strong>; the exact tested artifact is what runs in prod."
+      ]
+    },
+    {
+      "category": "devops",
+      "slug": "deployment-strategies",
+      "title": "Deployment Strategies",
+      "url": "concepts/devops/deployment-strategies.html",
+      "takeaways": [
+        "<strong>Rolling</strong> = gradual replace (cheap, no downtime); <strong>blue-green</strong> = two environments, instant flip + rollback (2× infra); <strong>canary</strong> = small slice first, ramp on health (smallest blast radius).",
+        "All require <strong>health checks and fast rollback</strong>; <strong>feature flags</strong> decouple deploying code from releasing it.",
+        "The trade-off is blast radius / rollback speed vs infrastructure cost and orchestration."
+      ]
+    },
+    {
+      "category": "devops",
+      "slug": "feature-flags",
+      "title": "Feature Flags",
+      "url": "concepts/devops/feature-flags.html",
+      "takeaways": [
+        "A feature flag <strong>decouples deploy from release</strong> — ship code dark, expose it by config.",
+        "Enables <strong>gradual rollout</strong> (app-layer canary), trunk-based dev, A/B tests, and an instant <strong>kill switch</strong>.",
+        "Flags are <strong>debt</strong> — remove them after full rollout to avoid stale, untested branches."
+      ]
+    },
+    {
+      "category": "devops",
+      "slug": "infrastructure-as-code",
+      "title": "Infrastructure as Code",
+      "url": "concepts/devops/infrastructure-as-code.html",
+      "takeaways": [
+        "IaC = infrastructure as <strong>version-controlled, declarative code</strong> — reproducible, reviewable, diffable.",
+        "Declarative + <strong>idempotent</strong>: describe desired state, apply repeatably with no duplicates.",
+        "Eliminates <strong>snowflakes and drift</strong>; enables identical environments and rebuild-from-code recovery."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "aot-compilation",
+      "title": "Native AOT",
+      "url": "concepts/dotnet/aot-compilation.html",
+      "takeaways": [
+        "Native AOT compiles to a self-contained native binary at build — no JIT, instant startup, low memory.",
+        "The cost: limited reflection, mandatory trimming, and platform-specific builds.",
+        "Use source generators to replace reflection; ideal for serverless, containers, and CLIs — not reflection-heavy apps."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "assemblies",
+      "title": "Assemblies &amp; Metadata",
+      "url": "concepts/dotnet/assemblies.html",
+      "takeaways": [
+        "An assembly (<code>.dll</code>/<code>.exe</code>) = IL + metadata + manifest; it’s the unit of deployment, versioning, and <code>internal</code> access.",
+        "Metadata is self-describing, which is what makes reflection, serialization, and DI scanning possible — no header files needed.",
+        "The CLR loads assemblies into an <code>AssemblyLoadContext</code> (the modern <code>AppDomain</code>), enabling plugins and isolated unload."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "async-await",
+      "title": "Async / Await Internals",
+      "url": "concepts/dotnet/async-await.html",
+      "takeaways": [
+        "<code>await</code> frees the thread during I/O — it’s concurrency, not parallelism, and uses no thread while waiting.",
+        "The compiler rewrites each <code>async</code> method into a state machine; locals are hoisted so they survive the pause and resume.",
+        "Never <code>.Result</code>/<code>.Wait()</code> on async code — go async end-to-end and use <code>ConfigureAwait(false)</code> in libraries."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "auth-pipeline",
+      "title": "Authentication &amp; Authorization",
+      "url": "concepts/dotnet/auth-pipeline.html",
+      "takeaways": [
+        "Authentication = who you are (builds a <code>ClaimsPrincipal</code>); authorization = what you may do (policies/roles/claims).",
+        "<code>UseAuthentication</code> must run before <code>UseAuthorization</code> in the pipeline.",
+        "<strong>401</strong> = unknown/invalid identity; <strong>403</strong> = known but not permitted. Prefer policies over scattered role checks."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "blazor",
+      "title": "Blazor Basics",
+      "url": "concepts/dotnet/blazor.html",
+      "takeaways": [
+        "Blazor builds web UI from C# components (<code>.razor</code>) — markup plus an <code>@code</code> block, with binding and events.",
+        "<strong>Server</strong> runs UI on the server over SignalR (tiny download, needs a live connection); <strong>WebAssembly</strong> runs C# in the browser (offline-capable, bigger download).",
+        ".NET 8 unifies them with per-component render modes (Server / WebAssembly / Auto) on top of static SSR."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "clr",
+      "title": "The CLR",
+      "url": "concepts/dotnet/clr.html",
+      "takeaways": [
+        "C# → IL + metadata (compile time); the CLR JITs IL → native and runs it (runtime).",
+        "The CLR provides GC, type safety, exceptions, and threading — that’s what “managed code” buys you.",
+        "Modern .NET runs on CoreCLR, cross-platform; the old .NET Framework CLR was Windows-only."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "configuration",
+      "title": "The Configuration System",
+      "url": "concepts/dotnet/configuration.html",
+      "takeaways": [
+        "Config is layered providers merged into one <code>IConfiguration</code>; later sources (env vars, CLI) override earlier (JSON files).",
+        "The Options pattern binds a section to a typed class injected as <code>IOptions&lt;T&gt;</code> — no magic strings.",
+        "<code>IOptions</code> = startup snapshot; <code>IOptionsSnapshot</code> = per request; <code>IOptionsMonitor</code> = live reload."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "dependency-injection",
+      "title": "Dependency Injection",
+      "url": "concepts/dotnet/dependency-injection.html",
+      "takeaways": [
+        "DI hands a class its dependencies (via constructor) instead of it creating them — loose coupling and testability.",
+        "Three lifetimes: <strong>singleton</strong> (app), <strong>scoped</strong> (per request), <strong>transient</strong> (per resolve).",
+        "Never inject a shorter-lived service into a longer-lived one — that’s the captive-dependency bug."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "ef-core-internals",
+      "title": "EF Core Internals",
+      "url": "concepts/dotnet/ef-core-internals.html",
+      "takeaways": [
+        "The <code>DbContext</code> is a unit of work; the change tracker diffs entity states and <code>SaveChanges</code> emits batched SQL in a transaction.",
+        "LINQ over <code>IQueryable</code> becomes SQL on the server — don’t cross into <code>IEnumerable</code> too early.",
+        "Avoid N+1 with <code>Include</code>/projection, and use <code>AsNoTracking</code> for read-only queries."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "garbage-collection",
+      "title": "Garbage Collection",
+      "url": "concepts/dotnet/garbage-collection.html",
+      "takeaways": [
+        "The GC reclaims <em>unreachable</em> objects; it’s generational because most objects die young — gen 0 is cheap, gen 2 is costly.",
+        "The GC does not free unmanaged resources promptly — use <code>IDisposable</code> + <code>using</code> for those.",
+        "Reduce GC pressure by reducing allocations (pooling, <code>Span&lt;T&gt;</code>, structs), not by calling <code>GC.Collect()</code>."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "global-usings",
+      "title": "Global Usings",
+      "url": "concepts/dotnet/global-usings.html",
+      "takeaways": [
+        "<code>global using</code> applies a namespace import to the entire project — declared once, not per file.",
+        "<code>ImplicitUsings</code> makes the SDK add the common namespaces for your project type automatically.",
+        "Keep them in one place (<code>GlobalUsings.cs</code> or the <code>.csproj</code>); they support <code>static</code> and alias forms too."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "grpc",
+      "title": "gRPC",
+      "url": "concepts/dotnet/grpc.html",
+      "takeaways": [
+        "gRPC is schema-first RPC: a <code>.proto</code> generates typed clients/servers; messages are binary Protocol Buffers over HTTP/2.",
+        "It’s faster and smaller than JSON/REST and supports four streaming modes — ideal for internal service-to-service traffic.",
+        "Browsers can’t call it directly (need gRPC-Web); keep REST for public, browser-facing APIs."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "health-checks",
+      "title": "Health Checks",
+      "url": "concepts/dotnet/health-checks.html",
+      "takeaways": [
+        "Health checks expose a standard verdict (Healthy/Degraded/Unhealthy) for orchestrators and load balancers.",
+        "<strong>Liveness</strong> failing → restart the pod; <strong>readiness</strong> failing → stop sending traffic (don’t restart). Keep them separate.",
+        "Register a check per dependency, tag them, and expose <code>/health/live</code> and <code>/health/ready</code> separately."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "http-client-factory",
+      "title": "HttpClientFactory",
+      "url": "concepts/dotnet/http-client-factory.html",
+      "takeaways": [
+        "<code>new HttpClient()</code> per request → socket exhaustion; one forever-singleton → stale DNS. The factory avoids both by pooling and rotating handlers.",
+        "Prefer <strong>typed clients</strong> (base address + calls in one class) injected via DI.",
+        "Attach Polly/standard resilience (retry, timeout, circuit breaker) at registration — transparent to callers."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "ihostedservice",
+      "title": "IHostedService",
+      "url": "concepts/dotnet/ihostedservice.html",
+      "takeaways": [
+        "<code>IHostedService</code> (<code>StartAsync</code>/<code>StopAsync</code>) runs background work tied to the host lifetime; <code>BackgroundService</code> wraps it in an <code>ExecuteAsync</code> loop.",
+        "On shutdown the host cancels the token — honor it to drain in-flight work gracefully.",
+        "It’s a singleton: create a DI scope per work item for scoped dependencies, and never let the loop throw out."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "jit-compilation",
+      "title": "JIT Compilation",
+      "url": "concepts/dotnet/jit-compilation.html",
+      "takeaways": [
+        "The JIT compiles IL → native per method on first call, then caches it.",
+        "Tiered compilation starts fast (Tier 0) and re-optimizes hot methods (Tier 1) in the background.",
+        "ReadyToRun pre-JITs at publish for faster cold start; Native AOT removes the JIT entirely."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "logging",
+      "title": "Logging",
+      "url": "concepts/dotnet/logging.html",
+      "takeaways": [
+        "Use message templates with named placeholders — structured properties are queryable; string interpolation is not.",
+        "<code>ILogger</code> is the abstraction; providers/sinks (Serilog, NLog) decide where logs go and can be swapped freely.",
+        "Pass the exception object to <code>LogError(ex, …)</code> and use scopes for correlation context."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "memory-management",
+      "title": "Memory Management",
+      "url": "concepts/dotnet/memory-management.html",
+      "takeaways": [
+        "Value types copy their data and are often stack-allocated; reference types live on the heap and copy a pointer.",
+        "Boxing turns a value type into a heap allocation — avoid it on hot paths (watch <code>object</code>/non-generic APIs).",
+        "Cut allocations with <code>struct</code>, <code>Span&lt;T&gt;</code>/<code>stackalloc</code>, and <code>ArrayPool&lt;T&gt;</code> to lighten the GC."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "middleware-pipeline",
+      "title": "The Middleware Pipeline",
+      "url": "concepts/dotnet/middleware-pipeline.html",
+      "takeaways": [
+        "A request flows through ordered middleware (the onion): inward to the endpoint, then back out through each layer.",
+        "<strong>Order matters</strong> — exception handling first, auth before authz, routing before endpoints.",
+        "Middleware that skips <code>next()</code> short-circuits the request (e.g. auth rejection, rate limiting)."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "minimal-apis",
+      "title": "Minimal APIs",
+      "url": "concepts/dotnet/minimal-apis.html",
+      "takeaways": [
+        "Minimal APIs define endpoints as lambdas via <code>MapGet/MapPost</code> — no controllers, minimal boilerplate.",
+        "Parameters bind automatically from route, query, JSON body, and DI; return a value or an <code>IResult</code> for the status code.",
+        "Use <code>MapGroup</code> for shared prefixes/policies and endpoint filters for cross-cutting concerns; pick controllers when you want MVC’s richer conventions."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "nullable-reference-types",
+      "title": "Nullable Reference Types",
+      "url": "concepts/dotnet/nullable-reference-types.html",
+      "takeaways": [
+        "<code>string</code> = non-null, <code>string?</code> = maybe-null; the compiler warns on unsafe dereferences and tracks nullability through flow analysis.",
+        "It’s <strong>compile-time only</strong> — static analysis, not a runtime guard; nulls can still arrive from untyped sources.",
+        "The <code>!</code> null-forgiving operator silences the compiler — use it sparingly; prefer real checks and <code>required</code> members."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "pattern-matching",
+      "title": "Pattern Matching",
+      "url": "concepts/dotnet/pattern-matching.html",
+      "takeaways": [
+        "Patterns test shape and bind data at once — type, property, relational/logical, positional, and list patterns.",
+        "The <strong>switch expression</strong> returns a value, turning branchy mapping logic into one readable block.",
+        "The compiler warns on non-exhaustive switches — lean on it, and use <code>_</code> for the default arm."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "records",
+      "title": "Records",
+      "url": "concepts/dotnet/records.html",
+      "takeaways": [
+        "Records give compiler-generated <strong>value equality</strong> plus <code>ToString</code>/<code>Deconstruct</code>/copy from a concise declaration.",
+        "They’re built for immutable data: init-only props and non-destructive <code>with</code> copies.",
+        "Use records for DTOs/value objects/events; use <code>class</code> for entities with identity and behavior."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "signalr",
+      "title": "SignalR",
+      "url": "concepts/dotnet/signalr.html",
+      "takeaways": [
+        "SignalR gives real-time, bidirectional push via <strong>Hubs</strong> (RPC both ways) over a persistent connection.",
+        "It negotiates the best transport (WebSockets → SSE → long polling) automatically.",
+        "Scaling to multiple servers requires a <strong>backplane</strong> (Redis) so messages reach clients on every instance."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "source-generators",
+      "title": "Source Generators",
+      "url": "concepts/dotnet/source-generators.html",
+      "takeaways": [
+        "Source generators inspect your code at compile time and emit additional C# compiled with it — purely additive.",
+        "They replace runtime reflection (JSON, regex, logging), giving faster startup, fewer allocations, and AOT/trim safety.",
+        "Incremental generators cache their work so they don’t bog down the IDE."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "span",
+      "title": "Span<T> & Memory<T>",
+      "url": "concepts/dotnet/span.html",
+      "takeaways": [
+        "<code>Span&lt;T&gt;</code> is a zero-copy, bounds-checked window over array/stack/unmanaged memory — slicing allocates nothing.",
+        "It’s a <code>ref struct</code> (stack-only): no fields, closures, or use across <code>await</code>.",
+        "For async or stored scenarios use <code>Memory&lt;T&gt;</code> and get its <code>.Span</code> at the point of use."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "task-vs-thread",
+      "title": "Task vs Thread",
+      "url": "concepts/dotnet/task-vs-thread.html",
+      "takeaways": [
+        "<code>Thread</code> = a heavy OS resource you manage; <code>Task</code> = a lightweight future you compose with <code>async/await</code>.",
+        "<code>Task.Run</code> borrows a pool thread for CPU work; awaited I/O uses no thread while waiting.",
+        "Default to <code>Task</code>; use a raw <code>Thread</code> only for dedicated long-running work needing special control."
+      ]
+    },
+    {
+      "category": "dotnet",
+      "slug": "threadpool",
+      "title": "The Thread Pool",
+      "url": "concepts/dotnet/threadpool.html",
+      "takeaways": [
+        "The pool reuses a small set of worker threads for short work items — <code>Task.Run</code>, continuations, timers, I/O callbacks all use it.",
+        "It grows slowly under load, so <strong>blocking</strong> pool threads causes thread-pool starvation (latency cliff).",
+        "The cure is async-all-the-way, not raising min threads."
+      ]
+    },
+    {
+      "category": "dsa",
+      "slug": "arrays-vs-linked-lists",
+      "title": "Arrays vs Linked Lists",
+      "url": "concepts/dsa/arrays-vs-linked-lists.html",
+      "takeaways": [
+        "<strong>Array</strong>: O(1) index, O(n) middle insert/delete, contiguous + cache-friendly; <strong>linked list</strong>: O(1) insert/delete given the node, but O(n) to find it.",
+        "In practice <strong>arrays usually win</strong> — prefetching/cache locality beats pointer-chasing, and nodes add memory overhead.",
+        "Default to a <strong>dynamic array</strong> (<code>List&lt;T&gt;</code>); use linked lists only for genuine frequent O(1) end/known-node edits (e.g. LRU)."
+      ]
+    },
+    {
+      "category": "dsa",
+      "slug": "big-o-cheat-sheet",
+      "title": "Big-O Cheat Sheet",
+      "url": "concepts/dsa/big-o-cheat-sheet.html",
+      "takeaways": [
+        "Hash table = <strong>O(1) average</strong>, O(n) worst; <strong>balanced</strong> BST = O(log n); array = O(1) index but O(n) search.",
+        "Comparison sorts bottom out at <strong>O(n log n)</strong> — quicksort fastest in practice, mergesort stable but O(n) space, heapsort in-place.",
+        "<strong>Stable</strong> sorts preserve equal-element order; counting/radix beat O(n log n) only for bounded integer keys."
+      ]
+    },
+    {
+      "category": "dsa",
+      "slug": "big-o-notation",
+      "title": "Big-O Notation",
+      "url": "concepts/dsa/big-o-notation.html",
+      "takeaways": [
+        "Big-O measures how cost <strong>grows with input size</strong> (worst-case, dropping constants/lower terms) — growth, not wall-clock time.",
+        "Know the ladder: <strong>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²) &lt; O(2ⁿ) &lt; O(n!)</strong>.",
+        "The gap is huge at scale (an accidental <strong>O(n²)</strong> is the classic prod slowdown) — but consider constants at small n, and analyze <strong>space</strong> too."
+      ]
+    },
+    {
+      "category": "dsa",
+      "slug": "hash-tables",
+      "title": "Hash Tables",
+      "url": "concepts/dsa/hash-tables.html",
+      "takeaways": [
+        "A hash table maps keys to buckets via a <strong>hash function</strong> → <strong>O(1) average</strong> insert/lookup/delete.",
+        "<strong>Collisions</strong> (chaining or open addressing) and a high <strong>load factor</strong> degrade it; resizing keeps buckets short — worst case is <strong>O(n)</strong>.",
+        "Keys need consistent <strong>Equals + GetHashCode</strong> and should be <strong>immutable</strong> (mutating a key loses it)."
+      ]
+    },
+    {
+      "category": "dsa",
+      "slug": "sorting-algorithms",
+      "title": "Sorting Algorithms",
+      "url": "concepts/dsa/sorting-algorithms.html",
+      "takeaways": [
+        "Comparison sorts can't beat <strong>O(n log n)</strong>; choose among them by speed, space, and stability — not Big-O class.",
+        "<strong>Quicksort</strong>: fastest in practice, in-place, O(n²) worst; <strong>mergesort</strong>: stable + guaranteed but O(n) space; <strong>heapsort</strong>: in-place, not stable.",
+        "<strong>Counting/radix</strong> beat the bound (O(n+k)) for bounded integer keys; libraries use hybrids (introsort/Timsort) and switch to insertion sort for small inputs."
+      ]
+    },
+    {
+      "category": "dsa",
+      "slug": "stacks-and-queues",
+      "title": "Stacks & Queues",
+      "url": "concepts/dsa/stacks-and-queues.html",
+      "takeaways": [
+        "<strong>Stack</strong> = LIFO (push/pop the top); <strong>queue</strong> = FIFO (enqueue back, dequeue front) — both O(1) at their ends.",
+        "Stacks model nesting/reversal (<strong>call stack</strong>, undo, parsing, <strong>DFS</strong>); queues model in-order/fair processing (scheduling, buffers, <strong>BFS</strong>).",
+        "Variants: <strong>deque</strong> (both ends) and <strong>priority queue/heap</strong> (dequeue by priority, not arrival)."
+      ]
+    },
+    {
+      "category": "dsa",
+      "slug": "trees-and-graphs",
+      "title": "Trees & Graphs",
+      "url": "concepts/dsa/trees-and-graphs.html",
+      "takeaways": [
+        "<strong>Tree</strong> = hierarchy, no cycles (BST/heap/trie for sorted/priority/prefix); <strong>graph</strong> = network with arbitrary edges (adjacency list for sparse).",
+        "<strong>DFS</strong> (stack/recursion) goes deep — paths, cycles, topo-sort; <strong>BFS</strong> (queue) goes wide — <strong>shortest path</strong> in unweighted graphs.",
+        "Always track <strong>visited</strong> nodes on graphs (cycles!) — that's the key difference from tree traversal."
+      ]
+    },
+    {
+      "category": "git",
+      "slug": "branching-strategies",
+      "title": "Branching Strategies",
+      "url": "concepts/git/branching-strategies.html",
+      "takeaways": [
+        "Spectrum: <strong>Git Flow</strong> (heavy, versioned releases) → <strong>GitHub Flow</strong> (short branches, always-deployable main) → <strong>trunk-based</strong> (commit to main daily + feature flags).",
+        "Core trade-off: <strong>branch lifetime vs merge pain</strong> — long branches diverge and cause merge hell.",
+        "High-performing CI/CD teams favor <strong>trunk-based development</strong> with small batches and feature flags."
+      ]
+    },
+    {
+      "category": "git",
+      "slug": "git-internals",
+      "title": "How Git Works: Objects & Refs",
+      "url": "concepts/git/git-internals.html",
+      "takeaways": [
+        "Git stores <strong>snapshots, not diffs</strong>: blobs (files), trees (dirs), commits (tree + parents), all content-addressed by hash.",
+        "Commits form a <strong>DAG</strong>; a <strong>branch is just a movable pointer</strong> to a commit (so branching is instant).",
+        "Merge = a commit with two parents; rebase = replay commits onto a new base (new hashes)."
+      ]
+    },
+    {
+      "category": "git",
+      "slug": "merge-vs-rebase",
+      "title": "Merge vs Rebase",
+      "url": "concepts/git/merge-vs-rebase.html",
+      "takeaways": [
+        "<strong>Merge</strong> = non-destructive, adds a merge commit (true history); <strong>rebase</strong> = replays commits for a clean linear history (new hashes).",
+        "Common workflow: <strong>rebase local</strong> branches to stay current, <strong>merge (or squash)</strong> into main.",
+        "<strong>Golden rule:</strong> never rebase commits others have already pulled — it rewrites shared history."
+      ]
+    },
+    {
+      "category": "git",
+      "slug": "resolving-conflicts",
+      "title": "Resolving Merge Conflicts",
+      "url": "concepts/git/resolving-conflicts.html",
+      "takeaways": [
+        "A conflict means two branches changed the <strong>same lines</strong>; Git pauses and asks you to choose — it never guesses.",
+        "Resolve by editing between the <strong>markers</strong> (<code>&lt;&lt;&lt;</code>/<code>===</code>/<code>&gt;&gt;&gt;</code>), then <code>git add</code> and commit/continue; a 3-way merge tool helps.",
+        "Prevent conflicts by <strong>integrating early</strong>, keeping changes small, and standardizing formatting."
+      ]
+    },
+    {
+      "category": "git",
+      "slug": "undoing-changes",
+      "title": "Undoing Changes: reset, revert, reflog",
+      "url": "concepts/git/undoing-changes.html",
+      "takeaways": [
+        "<strong>revert</strong> = new inverse commit, safe on <strong>shared</strong> branches; <strong>reset</strong> = move the branch pointer, for <strong>local</strong> history only.",
+        "reset modes: <code>--soft</code> (keep staged), <code>--mixed</code> (keep in working dir), <code>--hard</code> (discard).",
+        "<strong>reflog</strong> is the safety net — it remembers where HEAD has been (~90 days), so 'lost' commits are usually recoverable."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "cache-stampede",
+      "title": "Cache Stampede & Thundering Herd",
+      "url": "concepts/interview-scenarios/cache-stampede.html",
+      "takeaways": [
+        "A stampede = a hot key expires and every concurrent request misses and hits the DB at once.",
+        "Fix with <strong>request coalescing / single-flight</strong> (or a rebuild lock): exactly one request recomputes, the rest wait or serve stale.",
+        "<strong>Stale-while-revalidate</strong> removes the synchronous miss; <strong>TTL jitter</strong> stops many keys expiring in lockstep."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "data-consistency-across-services",
+      "title": "Keeping Data Consistent Across Services",
+      "url": "concepts/interview-scenarios/data-consistency-across-services.html",
+      "takeaways": [
+        "Avoid distributed transactions (2PC) across services — use <strong>sagas</strong>: local transactions coordinated by events, with <strong>compensations</strong> to undo on failure.",
+        "Use the <strong>transactional outbox</strong> to write state + event atomically, so the dual-write problem can't lose events.",
+        "Embrace <strong>eventual consistency</strong>: consumers are idempotent and the UX models 'processing' states between steps."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "debugging-a-latency-spike",
+      "title": "Debugging a Production Latency Spike",
+      "url": "concepts/interview-scenarios/debugging-a-latency-spike.html",
+      "takeaways": [
+        "Start with <strong>“what changed?”</strong> — a deploy/flag/traffic change is the usual cause; a fast rollback is the fastest mitigation.",
+        "Read the <strong>golden signals</strong> (latency, traffic, errors, saturation) to split overload from a degraded dependency.",
+        "Drill <strong>metrics → traces → logs</strong> to localize tier → span → cause; mitigate first (rollback/scale/timeout), then fix durably."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "debugging-a-memory-leak",
+      "title": "Debugging a Memory Leak in Production",
+      "url": "concepts/interview-scenarios/debugging-a-memory-leak.html",
+      "takeaways": [
+        "Confirm a <strong>steady, non-recovering growth</strong> trend (not just high load), then capture and <strong>diff heap dumps</strong> to find the growing type.",
+        "A managed leak = objects still <strong>referenced</strong> (can't be GC'd); find the root — static collections, <strong>unremoved event handlers</strong>, undisposed resources, unbounded caches.",
+        "Mitigate with restarts, but <strong>fix at the root</strong>: unsubscribe, dispose, and bound caches — GC tuning won't reclaim a rooted object."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "designing-a-rate-limiter",
+      "title": "Designing a Rate Limiter",
+      "url": "concepts/interview-scenarios/designing-a-rate-limiter.html",
+      "takeaways": [
+        "Know the algorithms: <strong>fixed/sliding window</strong> (simple) vs <strong>token/leaky bucket</strong> (bursts vs smooth) — token bucket is the common default.",
+        "Across a fleet the counter must be a <strong>shared, atomic store</strong> (Redis INCR/Lua), or each instance allows N× the limit.",
+        "Key per user/API-key/IP, enforce at the <strong>gateway</strong>, and respond with <strong>429 + Retry-After</strong> so clients back off."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "designing-an-api-for-high-throughput",
+      "title": "Designing an API for 1 Million Requests/Second",
+      "url": "concepts/interview-scenarios/designing-an-api-for-high-throughput.html",
+      "takeaways": [
+        "A million RPS = a <strong>stateless fleet</strong> behind a load balancer, not one big server — capacity becomes a dial.",
+        "<strong>Cache at every layer</strong> (edge/CDN + Redis); a high hit rate is what makes the origin survivable.",
+        "Keep the request path cheap (<strong>async I/O, pooled connections, small payloads</strong>) and <strong>queue writes</strong>; rate-limit at the gateway."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "designing-an-authentication-system",
+      "title": "Designing Authentication & Sessions",
+      "url": "concepts/interview-scenarios/designing-an-authentication-system.html",
+      "takeaways": [
+        "Core trade-off: <strong>sessions</strong> (stateful, easy revoke, needs a store) vs <strong>JWTs</strong> (stateless, scalable, hard to revoke).",
+        "Square the circle with <strong>short-lived access tokens + refresh tokens</strong>; store access in memory, refresh in an HttpOnly cookie.",
+        "<strong>Delegate to OAuth2/OIDC</strong> to avoid storing passwords; add MFA, throttling, and secure reset flows."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "designing-for-durability",
+      "title": "Designing So You Never Lose Data",
+      "url": "concepts/interview-scenarios/designing-for-durability.html",
+      "takeaways": [
+        "Durability is about honest <strong>acknowledgments</strong> — never confirm a write until it's persisted (<strong>WAL + fsync</strong>) and <strong>replicated</strong>.",
+        "<strong>Synchronous/quorum replication</strong> (W + R > N) protects acknowledged data from single-node loss, at a latency cost.",
+        "<strong>Backups + point-in-time recovery</strong> cover what replication can't (bad deploys, accidental deletes); test the restore."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "designing-for-high-availability",
+      "title": "Designing for High Availability",
+      "url": "concepts/interview-scenarios/designing-for-high-availability.html",
+      "takeaways": [
+        "High availability = <strong>no single point of failure</strong>: redundancy at every tier, spread across availability zones.",
+        "Recovery must be <strong>automatic</strong> — health checks pull bad instances, replicas get promoted; size it by <strong>RTO</strong> (recovery time) and <strong>RPO</strong> (data loss).",
+        "Availability <strong>multiplies</strong> across tiers, and during a partition you trade availability vs consistency (CAP) — so redundancy has to be everywhere."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "handling-concurrent-users",
+      "title": "Handling Many Concurrent Users",
+      "url": "concepts/interview-scenarios/handling-concurrent-users.html",
+      "takeaways": [
+        "Separate <strong>concurrency</strong> from <strong>throughput</strong>; most concurrent users are idle, so the limit is in-flight requests, not total users.",
+        "<strong>Async, non-blocking I/O</strong> is the biggest lever — it frees the thread during waits; never block (<code>.Result</code>/<code>.Wait()</code>) on the request path.",
+        "Bound scarce resources (<strong>connection pools</strong>) and add <strong>backpressure / load shedding</strong> so the service degrades gracefully instead of collapsing."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "hot-key-problem",
+      "title": "The Hot Key (Celebrity) Problem",
+      "url": "concepts/interview-scenarios/hot-key-problem.html",
+      "takeaways": [
+        "Sharding spreads keys, not <strong>load</strong> — one popular key concentrates on a single shard (hot partition), and more shards don't help.",
+        "Hot <strong>reads</strong>: replicate + cache aggressively (it's the ideal cache target); hot <strong>writes</strong>: split the key into N sub-counters and sum.",
+        "For social fan-out, treat celebrities specially — <strong>fan-out-on-read</strong> instead of pushing to millions of inboxes."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "idempotency-in-distributed-systems",
+      "title": "Idempotency in Distributed Systems",
+      "url": "concepts/interview-scenarios/idempotency-in-distributed-systems.html",
+      "takeaways": [
+        "Timeouts make success <strong>unknowable</strong>, so clients must retry — and the server must make repeats harmless.",
+        "An <strong>idempotency key</strong> + a persisted <code>(key → result)</code> dedup record turns retries into a replay of the stored result, not a second effect.",
+        "Prefer naturally idempotent operations (set a value, not apply a delta); queue consumers are <strong>at-least-once</strong>, so they must be idempotent too."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "managing-secrets-and-credentials",
+      "title": "Managing Secrets & Credentials",
+      "url": "concepts/interview-scenarios/managing-secrets-and-credentials.html",
+      "takeaways": [
+        "<strong>Never in code or git</strong> — a committed secret is a public secret; bots find them in minutes.",
+        "Store in a <strong>secrets manager/vault</strong>, inject at runtime via a <strong>managed identity</strong> (no bootstrap secret to leak).",
+        "Prefer <strong>short-lived, least-privilege</strong> credentials, rotate regularly, and run secret-scanning in CI."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "mitigating-a-ddos-attack",
+      "title": "Mitigating a DDoS Attack",
+      "url": "concepts/interview-scenarios/mitigating-a-ddos-attack.html",
+      "takeaways": [
+        "Classify the attack: <strong>volumetric</strong> (bandwidth), <strong>protocol</strong> (connection state), <strong>L7</strong> (expensive valid-looking requests).",
+        "<strong>Absorb at the edge</strong> (CDN/scrubbing via anycast) — you can't soak a volumetric flood at a single origin.",
+        "Layer <strong>WAF + rate limits + challenges + caching + autoscale</strong>, and have it configured <em>before</em> the attack."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "preventing-cascading-failures",
+      "title": "Preventing Cascading Failures",
+      "url": "concepts/interview-scenarios/preventing-cascading-failures.html",
+      "takeaways": [
+        "Cascades spread through <strong>resource exhaustion</strong>: callers block on a slow dependency until they run out of threads.",
+        "<strong>Timeouts</strong> (fail fast) + <strong>circuit breakers</strong> (stop calling the sick service) are the core defenses.",
+        "<strong>Bulkheads</strong> isolate per-dependency resources; retries need <strong>backoff + jitter</strong>, and a <strong>fallback</strong> degrades gracefully."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "preventing-xss-and-csrf",
+      "title": "Defending Against XSS & CSRF",
+      "url": "concepts/interview-scenarios/preventing-xss-and-csrf.html",
+      "takeaways": [
+        "<strong>XSS</strong> = attacker's script runs on your page → <strong>output-encode, CSP, HttpOnly cookies, sanitize</strong>.",
+        "<strong>CSRF</strong> = forged authenticated request via auto-sent cookies → <strong>SameSite cookies, anti-forgery tokens, Origin checks</strong>.",
+        "They're distinct threats needing distinct fixes — and HttpOnly cookies (anti-XSS) still require CSRF defense."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "read-heavy-vs-write-heavy",
+      "title": "Read-Heavy vs Write-Heavy Systems",
+      "url": "concepts/interview-scenarios/read-heavy-vs-write-heavy.html",
+      "takeaways": [
+        "Reads and writes scale with <strong>opposite</strong> tools — ask the read/write ratio first.",
+        "Read-heavy → <strong>cache + read replicas + denormalize</strong> (accept replication lag); write-heavy → <strong>shard + batch + queue + LSM stores</strong>.",
+        "Replicas help reads but tax writes; when a system is both, split the models with <strong>CQRS</strong>."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "reducing-latency-globally",
+      "title": "Reducing Latency for a Global Audience",
+      "url": "concepts/interview-scenarios/reducing-latency-globally.html",
+      "takeaways": [
+        "Latency is round trips and distance — fix it by moving <strong>data/compute closer</strong> (CDN, edge, regional replicas), not by adding CPU.",
+        "Static and cacheable content belongs on a <strong>CDN</strong>; geo-route users to the <strong>nearest region</strong> (the stateless app tier makes this easy).",
+        "<strong>Writes</strong> are the hard part of going global — single write region (simpler) vs multi-primary (faster, but eventual consistency + conflicts)."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "responding-to-a-production-outage",
+      "title": "Responding to a Production Outage",
+      "url": "concepts/interview-scenarios/responding-to-a-production-outage.html",
+      "takeaways": [
+        "Declare an incident and assign an <strong>incident commander</strong> — don't debug a major outage silently or alone.",
+        "<strong>Mitigate before root-causing</strong>: rollback, failover, scale, or feature-flag off; restoring service beats understanding it.",
+        "Diagnose via <strong>what-changed + metrics→traces→logs</strong>, then run a <strong>blameless post-mortem</strong> with concrete action items."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "responding-to-a-ransomware-incident",
+      "title": "Ransomware Hit Your Cloud Storage: The First 15 Minutes",
+      "url": "concepts/interview-scenarios/responding-to-a-ransomware-incident.html",
+      "takeaways": [
+        "It's an <strong>incident-response</strong> question: contain → assess → communicate → recover, and never start fixing a breach solo.",
+        "<strong>Contain first</strong> (revoke keys, lock the bucket); the entry point is almost certainly a compromised write credential.",
+        "Recovery depends on <strong>immutable, isolated backups</strong> (versioning + Object Lock) — set those up <em>before</em> the incident; don't pay the ransom."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "scaling-a-web-application",
+      "title": "Scaling a Web Application",
+      "url": "concepts/interview-scenarios/scaling-a-web-application.html",
+      "takeaways": [
+        "Scale <strong>incrementally</strong>, each step forced by a real bottleneck: split tiers → stateless app fleet + LB → cache + CDN → replicas/sharding → async queue.",
+        "Horizontal scaling of the app tier <strong>requires statelessness</strong> — sessions, files, and caches live in shared stores.",
+        "The <strong>database</strong> is the hardest tier; caching and read replicas defer the pain, sharding eventually divides it."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "scaling-the-database",
+      "title": "Scaling the Database Tier",
+      "url": "concepts/interview-scenarios/scaling-the-database.html",
+      "takeaways": [
+        "<strong>Tune first</strong> (indexes, N+1, connection pool) — it often beats adding hardware.",
+        "Climb in order: <strong>cache → read replicas → partition → shard</strong>; each rung targets a different bottleneck and adds complexity.",
+        "<strong>Sharding</strong> is the powerful-but-painful last resort — cross-shard joins/transactions get hard, and the <strong>shard key</strong> must be high-cardinality and evenly distributed."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "securing-a-rest-api",
+      "title": "Securing a REST API",
+      "url": "concepts/interview-scenarios/securing-a-rest-api.html",
+      "takeaways": [
+        "Security is <strong>layers</strong>: TLS → authentication → authorization → input validation → rate limiting → secrets/audit.",
+        "The most common failure is <strong>broken object-level authorization (BOLA/IDOR)</strong> — check ownership on every resource, not just 'is logged in.'",
+        "Use proven auth (OAuth2/OIDC), never roll your own crypto, lock down CORS, and follow the <strong>OWASP API Top 10</strong>."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "storing-passwords-securely",
+      "title": "Storing Passwords Securely",
+      "url": "concepts/interview-scenarios/storing-passwords-securely.html",
+      "takeaways": [
+        "Never plaintext, never <strong>reversible encryption</strong>, never a <strong>fast hash</strong> (MD5/SHA) — use Argon2/bcrypt/scrypt.",
+        "A <strong>unique salt per user</strong> defeats rainbow tables; a tunable <strong>work factor</strong> makes brute force expensive (and raise it over time).",
+        "Use the platform's library, <strong>constant-time compare</strong>, optionally a pepper, and add MFA — don't roll your own."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "surviving-traffic-spikes",
+      "title": "Surviving Traffic Spikes",
+      "url": "concepts/interview-scenarios/surviving-traffic-spikes.html",
+      "takeaways": [
+        "You can't autoscale in seconds — combine <strong>caching</strong> (absorb), a <strong>queue</strong> (flatten), and <strong>pre-warming/rate limits</strong> (cap).",
+        "Turn synchronous spikes into asynchronous streams: accept fast (202), process at a sustainable rate.",
+        "<strong>Degrade gracefully</strong> — stale data, disabled extras, a waiting room — because partial service beats a full outage."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "where-to-store-jwt-frontend",
+      "title": "Where to Store a JWT on the Frontend",
+      "url": "concepts/interview-scenarios/where-to-store-jwt-frontend.html",
+      "takeaways": [
+        "It's an <strong>XSS vs CSRF</strong> trade-off: localStorage is XSS-readable; cookies are auto-sent (CSRF).",
+        "Default to <strong>HttpOnly + Secure + SameSite</strong> cookies (XSS can't read the token) plus a CSRF token — avoid localStorage for sensitive tokens.",
+        "Best practice: <strong>short-lived access token in memory + refresh token in an HttpOnly cookie</strong>; and remember XSS prevention (CSP) is the real fix."
+      ]
+    },
+    {
+      "category": "interview-scenarios",
+      "slug": "zero-downtime-database-migration",
+      "title": "Zero-Downtime Database Migration",
+      "url": "concepts/interview-scenarios/zero-downtime-database-migration.html",
+      "takeaways": [
+        "During a rolling deploy old + new code share the DB, so <strong>every step must be backward-compatible</strong> — no big-bang destructive change.",
+        "Use <strong>expand → migrate → contract</strong>: add additively, dual-write + backfill in batches, then switch reads and drop the old shape later.",
+        "Gate the cutover behind a <strong>feature flag</strong> and verify with shadow reads; keep each step reversible until the final drop."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "api-gateway",
+      "title": "API Gateway",
+      "url": "concepts/microservices/api-gateway.html",
+      "takeaways": [
+        "An API gateway is the single entry point that routes to services and centralizes auth, rate limiting, TLS, aggregation, and protocol translation.",
+        "The BFF pattern gives each client type (web/mobile) its own tailored gateway.",
+        "Keep it thin (no business logic) and highly available — it’s a potential bottleneck and single point of failure."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "api-versioning",
+      "title": "API Versioning",
+      "url": "concepts/microservices/api-versioning.html",
+      "takeaways": [
+        "An API is a <strong>contract</strong> — prefer <strong>additive, backward-compatible</strong> changes (no version needed); version only on breaking changes.",
+        "Strategies: <strong>URL path</strong> (most common), query string, custom header, or media type — pick one, stay consistent.",
+        "Run old + new in <strong>parallel</strong> with a clear <strong>deprecation policy</strong>; internally, additive changes + contract tests often suffice."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "centralized-logging",
+      "title": "Centralized Logging",
+      "url": "concepts/microservices/centralized-logging.html",
+      "takeaways": [
+        "Ship logs from every service to one searchable store (ELK/Loki/Seq) — per-instance container logs are ephemeral and useless alone.",
+        "Use <strong>structured logging</strong> so you can query by field, and stamp a <strong>correlation/trace ID</strong> to follow one request across services.",
+        "Logs + metrics + traces are the three pillars of observability; the shared trace ID links logs to traces."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "circuit-breaker",
+      "title": "Circuit Breaker",
+      "url": "concepts/microservices/circuit-breaker.html",
+      "takeaways": [
+        "A circuit breaker stops calls to a failing dependency, failing fast to keep your service responsive and let the dependency recover.",
+        "Three states: Closed (pass + count), Open (reject/fallback), Half-Open (one trial, then close or re-open).",
+        "It prevents cascading failures; combine it with timeouts, retries, and a sensible fallback."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "distributed-tracing",
+      "title": "Distributed Tracing",
+      "url": "concepts/microservices/distributed-tracing.html",
+      "takeaways": [
+        "A trace follows one request across services; it’s a tree of spans (each span = one timed operation).",
+        "Context propagation via the trace ID (W3C <code>traceparent</code>) ties all the hops to one trace.",
+        "OpenTelemetry is the standard; a backend (Jaeger/Zipkin) renders the waterfall to pinpoint the slow service. Tracing + logs + metrics = observability."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "docker",
+      "title": "Docker & Containers",
+      "url": "concepts/microservices/docker.html",
+      "takeaways": [
+        "A container packages an app + its dependencies into a portable, isolated unit — same behavior everywhere.",
+        "Image = immutable layered template; container = a running instance. A Dockerfile is the build recipe; layers are cached.",
+        "Containers share the host kernel (lightweight, fast) — unlike VMs, which each ship a full guest OS."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "dotnet-microservices",
+      "title": "Microservices with .NET",
+      "url": "concepts/microservices/dotnet-microservices.html",
+      "takeaways": [
+        "YARP/Ocelot (gateway), MassTransit (messaging/saga/outbox), Dapr (portable infra building blocks via a sidecar), Aspire (compose + dev-time observability).",
+        "gRPC + Polly + OpenTelemetry + Health Checks cover sync calls, resilience, and observability; Docker + K8s for packaging/running.",
+        "Each tool implements a pattern from this category — choose per concern, not all at once."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "event-driven",
+      "title": "Event-Driven Architecture",
+      "url": "concepts/microservices/event-driven.html",
+      "takeaways": [
+        "Services publish immutable events and subscribe to the ones they care about — producers don’t know consumers (loose coupling).",
+        "Extensible by design: add a new subscriber without changing the producer.",
+        "Choreography (decentralized reactions) vs orchestration (a coordinator); the system is eventually consistent; event sourcing stores events as the source of truth."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "inter-service-comms",
+      "title": "Inter-Service Communication",
+      "url": "concepts/microservices/inter-service-comms.html",
+      "takeaways": [
+        "Synchronous (REST/gRPC) is simple and immediate but tightly couples services and risks cascading failures.",
+        "Asynchronous (events/queues) decouples services and adds resilience, at the cost of eventual consistency.",
+        "Sync for queries; async for commands/events. Avoid chatty deep sync chains; prefer gRPC for internal sync calls."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "kubernetes",
+      "title": "Kubernetes Concepts",
+      "url": "concepts/microservices/kubernetes.html",
+      "takeaways": [
+        "Kubernetes orchestrates containers declaratively: you describe desired state, it reconciles reality to match.",
+        "Core objects: Pod (smallest unit), Deployment (replicas + rolling updates), Service (stable endpoint + LB), Ingress (HTTP routing).",
+        "You get self-healing, autoscaling, and zero-downtime rolling updates out of the box."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "monolith-vs-microservices",
+      "title": "Monolith vs Microservices",
+      "url": "concepts/microservices/monolith-vs-microservices.html",
+      "takeaways": [
+        "Monolith = simple, one deploy, easy transactions; microservices = independent deploy/scale + team autonomy.",
+        "Microservices trade code complexity for <strong>distributed-systems complexity</strong> (network, consistency, observability, ops).",
+        "Start with a (modular) monolith; extract services only when a real driver — scale, teams, or a clear bounded context — demands it."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "outbox-pattern",
+      "title": "Outbox Pattern",
+      "url": "concepts/microservices/outbox-pattern.html",
+      "takeaways": [
+        "The dual-write problem: a DB write + a broker publish aren’t atomic, so events get lost or sent for nothing.",
+        "The outbox writes the event into an outbox table in the <strong>same transaction</strong> as the data — atomic by construction.",
+        "A relay publishes the outbox separately with retries → at-least-once delivery (consumers must be idempotent). CDC/Debezium is the log-tailing variant."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "retry-bulkhead",
+      "title": "Retry, Timeout & Bulkhead",
+      "url": "concepts/microservices/retry-bulkhead.html",
+      "takeaways": [
+        "Retry transient faults with <strong>exponential backoff + jitter</strong>, only for idempotent operations, with a cap.",
+        "Put a <strong>timeout</strong> on every remote call — unbounded waits cause cascading failures.",
+        "<strong>Bulkhead</strong> isolates resource pools per dependency so one slow service can’t exhaust everything."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "saga-pattern",
+      "title": "Saga Pattern",
+      "url": "concepts/microservices/saga-pattern.html",
+      "takeaways": [
+        "A saga replaces a cross-service ACID transaction with a sequence of local transactions.",
+        "On failure, run <strong>compensating transactions</strong> to semantically undo completed steps (eventual consistency, not rollback).",
+        "Choreography (events, decentralized) vs orchestration (a central coordinator/state machine)."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "service-discovery",
+      "title": "Service Discovery",
+      "url": "concepts/microservices/service-discovery.html",
+      "takeaways": [
+        "Instances have dynamic IPs, so services find each other by <strong>name</strong> via a registry, not hardcoded addresses.",
+        "Client-side discovery (caller queries the registry) vs server-side (a stable LB/gateway does it).",
+        "Health checks register/deregister instances; Kubernetes provides DNS-based discovery out of the box."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "service-mesh",
+      "title": "Service Mesh",
+      "url": "concepts/microservices/service-mesh.html",
+      "takeaways": [
+        "A service mesh moves <strong>cross-cutting networking</strong> (retries, timeouts, mTLS, tracing, traffic shifting) out of app code into <strong>sidecar proxies</strong>.",
+        "<strong>Data plane</strong> (proxies) does the work; <strong>control plane</strong> configures them centrally — change policy without redeploying services.",
+        "Wins: uniform mTLS, consistent resilience/observability; costs: operational complexity and per-hop latency — worth it <em>at scale</em>."
+      ]
+    },
+    {
+      "category": "microservices",
+      "slug": "strangler-fig-pattern",
+      "title": "Strangler Fig Pattern",
+      "url": "concepts/microservices/strangler-fig-pattern.html",
+      "takeaways": [
+        "Replace a legacy system <strong>incrementally</strong> — one slice at a time behind a façade — instead of a risky big-bang rewrite.",
+        "A <strong>routing layer/gateway</strong> sends migrated functionality to new services and the rest to the legacy, shifting over time.",
+        "It's incremental, reversible, and ships value throughout; the hard parts are <strong>shared data</strong> during transition and finishing the last slices."
+      ]
+    },
+    {
+      "category": "observability",
+      "slug": "alerting-and-dashboards",
+      "title": "Alerting & Dashboards",
+      "url": "concepts/observability/alerting-and-dashboards.html",
+      "takeaways": [
+        "<strong>Alert on symptoms</strong> (user impact, SLO burn), not causes (CPU) — symptom alerts catch what matters and novel failures.",
+        "Every page must be <strong>actionable and urgent</strong>; <strong>alert fatigue</strong> from noisy alerts is the real danger — tune ruthlessly.",
+        "Dashboards show health at a glance via the <strong>golden signals</strong>, with drill-downs for investigation."
+      ]
+    },
+    {
+      "category": "observability",
+      "slug": "metrics-and-slos",
+      "title": "Metrics, SLIs & SLOs",
+      "url": "concepts/observability/metrics-and-slos.html",
+      "takeaways": [
+        "Measure the <strong>four golden signals</strong> (latency, traffic, errors, saturation); pick SLIs that reflect <strong>user experience</strong>.",
+        "<strong>SLI</strong> = the measure, <strong>SLO</strong> = the target, <strong>SLA</strong> = the customer contract (looser than the SLO).",
+        "The <strong>error budget</strong> (gap to 100%) turns reliability-vs-velocity into a number you spend; don't chase 100%."
+      ]
+    },
+    {
+      "category": "observability",
+      "slug": "structured-logging",
+      "title": "Structured Logging",
+      "url": "concepts/observability/structured-logging.html",
+      "takeaways": [
+        "Log events as <strong>key-value fields</strong> (usually JSON), not concatenated strings — so logs are queryable, not just readable.",
+        "Use <strong>message templates</strong> (<code>{OrderId}</code>) to get a readable message <em>and</em> structured properties, plus a <strong>correlation/trace id</strong>.",
+        "Use appropriate <strong>levels</strong>; never log secrets/PII, and avoid drowning the signal."
+      ]
+    },
+    {
+      "category": "observability",
+      "slug": "three-pillars-of-observability",
+      "title": "The Three Pillars: Logs, Metrics, Traces",
+      "url": "concepts/observability/three-pillars-of-observability.html",
+      "takeaways": [
+        "<strong>Observability</strong> = understand internal state from outputs (debug unknowns), broader than monitoring (watch knowns).",
+        "Three pillars: <strong>metrics</strong> (is it wrong?), <strong>traces</strong> (where?), <strong>logs</strong> (what exactly?).",
+        "Use them together — drill <strong>metrics → traces → logs</strong>, correlated by a shared trace id."
+      ]
+    },
+    {
+      "category": "observability",
+      "slug": "tracing-and-spans",
+      "title": "Distributed Tracing & Spans",
+      "url": "concepts/observability/tracing-and-spans.html",
+      "takeaways": [
+        "A <strong>trace</strong> is one request's journey as a tree of timed <strong>spans</strong>; the root is the entry request, children are downstream calls.",
+        "<strong>Context propagation</strong> (a trace id passed in headers, e.g. W3C <code>traceparent</code>) reassembles work across services into one trace.",
+        "It's the only signal that <strong>localizes latency/failure</strong> in a distributed call; standardize on <strong>OpenTelemetry</strong>, use sampling for volume."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "abstract-vs-interface",
+      "title": "Abstract Class vs Interface",
+      "url": "concepts/oop/abstract-vs-interface.html",
+      "takeaways": [
+        "Interface = a contract/capability with no instance state, implementable by many unrelated types.",
+        "Abstract class = a partial base with shared code, state, and constructors — single inheritance only.",
+        "Default rule: prefer an interface unless you need shared implementation/state; default interface methods narrow but don’t erase the gap."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "abstraction",
+      "title": "Abstraction",
+      "url": "concepts/oop/abstraction.html",
+      "takeaways": [
+        "Abstraction exposes the essential operations and hides the implementation behind a contract.",
+        "Interfaces/abstract classes let callers depend on the “what,” so implementations are swappable and testable.",
+        "Only abstract where there’s real variation — an interface with one forever-implementation is noise."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "composition-vs-inheritance",
+      "title": "Composition vs Inheritance",
+      "url": "concepts/oop/composition-vs-inheritance.html",
+      "takeaways": [
+        "Inheritance = is-a, fixed and tightly coupled; composition = has-a, assembled and swappable.",
+        "Composition avoids the fragile base class problem and lets you change behavior at runtime.",
+        "“Favor composition” isn’t “never inherit” — use inheritance for true, stable is-a specialization."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "coupling-cohesion",
+      "title": "Coupling & Cohesion",
+      "url": "concepts/oop/coupling-cohesion.html",
+      "takeaways": [
+        "Coupling = inter-module dependence (want it <strong>low</strong>); cohesion = intra-module focus (want it <strong>high</strong>).",
+        "“Loose coupling, high cohesion” — focused classes wired by stable contracts are easy to change and test.",
+        "SRP attacks cohesion; Dependency Inversion attacks coupling — SOLID is largely about these two forces."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "dry-kiss-yagni",
+      "title": "DRY, KISS & YAGNI",
+      "url": "concepts/oop/dry-kiss-yagni.html",
+      "takeaways": [
+        "DRY = one home for each piece of knowledge; KISS = simplest solution that works; YAGNI = don’t build for an imagined future.",
+        "They’re heuristics in tension — over-applying one hurts the others.",
+        "DRY targets duplicated <em>knowledge</em>, not look-alike code: the wrong abstraction is costlier than a little duplication."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "encapsulation",
+      "title": "Encapsulation",
+      "url": "concepts/oop/encapsulation.html",
+      "takeaways": [
+        "Keep state <code>private</code> and expose a controlled surface so the object enforces its own invariants.",
+        "Properties + access modifiers funnel every change through one trustworthy place.",
+        "Encapsulation hides <em>data</em>; abstraction hides <em>complexity</em> — related but distinct."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "inheritance",
+      "title": "Inheritance",
+      "url": "concepts/oop/inheritance.html",
+      "takeaways": [
+        "Inheritance models is-a: a derived class reuses and specializes a base via <code>virtual</code>/<code>override</code>.",
+        "C# allows one base class but many interfaces; <code>sealed</code> stops the chain, <code>abstract</code> forces implementation.",
+        "Favor composition when you’re only reusing code — deep hierarchies are rigid and fragile."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "law-of-demeter",
+      "title": "Law of Demeter",
+      "url": "concepts/oop/law-of-demeter.html",
+      "takeaways": [
+        "Talk only to immediate friends (self, parameters, things you create, your fields) — not their friends.",
+        "Train-wreck chains (<code>a.GetB().GetC().Do()</code>) couple you to a whole object graph; “tell, don’t ask” instead.",
+        "Fluent/LINQ chains returning the same type aren’t violations — it’s about reaching into <em>others’</em> internals."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "polymorphism",
+      "title": "Polymorphism",
+      "url": "concepts/oop/polymorphism.html",
+      "takeaways": [
+        "Polymorphism = one interface, many behaviors; the call resolves to the object’s actual type.",
+        "Runtime (virtual/override, dynamic dispatch) vs compile-time (overloading, generics).",
+        "It enables Open/Closed — add new types without editing the code that consumes them, killing <code>switch(type)</code> ladders."
+      ]
+    },
+    {
+      "category": "oop",
+      "slug": "solid",
+      "title": "SOLID Principles",
+      "url": "concepts/oop/solid.html",
+      "takeaways": [
+        "SOLID exists for one reason: keep code cheap and safe to change. Every principle attacks rigidity from a different angle.",
+        "Dependency Inversion + Open/Closed are the workhorses — program to interfaces and add behavior by adding types, not editing old ones.",
+        "They’re heuristics, not commandments. Over-applying SOLID creates its own mess (a factory for every class) — use judgment."
+      ]
+    },
+    {
+      "category": "security",
+      "slug": "authentication-vs-authorization",
+      "title": "Authentication vs Authorization",
+      "url": "concepts/security/authentication-vs-authorization.html",
+      "takeaways": [
+        "<strong>Authentication</strong> = who you are (login); <strong>authorization</strong> = what you're allowed to do (permissions) — authn first, then authz.",
+        "Failure codes: <strong>401</strong> (not authenticated) vs <strong>403</strong> (authenticated but forbidden).",
+        "Most real breaches are <strong>authorization</strong> failures — check per-resource ownership, not just 'is logged in.'"
+      ]
+    },
+    {
+      "category": "security",
+      "slug": "cross-site-scripting",
+      "title": "Cross-Site Scripting (XSS)",
+      "url": "concepts/security/cross-site-scripting.html",
+      "takeaways": [
+        "XSS = untrusted input rendered as <strong>script</strong>, running the attacker's JS in the victim's browser (session theft, actions-as-user).",
+        "Three types: <strong>stored</strong> (worst), <strong>reflected</strong>, <strong>DOM-based</strong>.",
+        "Defend with <strong>output encoding</strong> (frameworks auto-encode), a <strong>CSP</strong>, sanitizing allowed HTML, and <strong>HttpOnly</strong> cookies."
+      ]
+    },
+    {
+      "category": "security",
+      "slug": "encryption-basics",
+      "title": "Encryption Basics",
+      "url": "concepts/security/encryption-basics.html",
+      "takeaways": [
+        "<strong>Symmetric</strong> (one shared key, e.g. AES) is fast for bulk data; <strong>asymmetric</strong> (public/private pair) solves key distribution and identity.",
+        "<strong>TLS</strong> combines them: asymmetric handshake to exchange a symmetric session key.",
+        "Encrypt <strong>in transit</strong> (TLS) <em>and</em> <strong>at rest</strong>; <strong>never roll your own crypto</strong> — use vetted libraries."
+      ]
+    },
+    {
+      "category": "security",
+      "slug": "hashing-and-salting",
+      "title": "Hashing & Salting",
+      "url": "concepts/security/hashing-and-salting.html",
+      "takeaways": [
+        "Hashing is <strong>one-way</strong> (no key to reverse it) — store the hash, compare at login; encryption is the wrong tool for passwords.",
+        "A per-user <strong>salt</strong> makes identical passwords hash differently, defeating <strong>rainbow tables</strong>.",
+        "Use a <strong>slow, memory-hard</strong> password hash (Argon2/bcrypt) with a work factor — never fast MD5/SHA for passwords."
+      ]
+    },
+    {
+      "category": "security",
+      "slug": "sql-injection",
+      "title": "SQL Injection",
+      "url": "concepts/security/sql-injection.html",
+      "takeaways": [
+        "SQL injection = untrusted input concatenated into a query, so it executes as <strong>code</strong>, not data.",
+        "The fix is <strong>parameterized queries / prepared statements</strong> — they bind input strictly as data; ORMs do this by default.",
+        "<strong>Escaping/blocklists are not reliable</strong>; add least-privilege DB accounts and input validation as defense in depth."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "caching",
+      "title": "Caching at Scale",
+      "url": "concepts/system-design/caching.html",
+      "takeaways": [
+        "Caching is layered: browser → CDN → in-process → distributed (Redis/Memcached) → DB. Serve as high as you can.",
+        "The hit ratio is the headline metric; cache read-heavy, expensive-to-compute data.",
+        "Memcached = simple fast string cache; Redis = data structures + persistence + extras (usually the pick)."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "cap-theorem",
+      "title": "CAP Theorem",
+      "url": "concepts/system-design/cap-theorem.html",
+      "takeaways": [
+        "Consistency, Availability, Partition tolerance — during a partition you can keep at most two.",
+        "Partitions are unavoidable, so the real choice is <strong>CP</strong> (correct, may refuse) vs <strong>AP</strong> (available, may be stale).",
+        "It’s decided per use case (bank = CP, cart/feed = AP); PACELC adds the latency-vs-consistency trade when there’s no partition."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "cdn",
+      "title": "CDNs",
+      "url": "concepts/system-design/cdn.html",
+      "takeaways": [
+        "A CDN caches content on edge servers near users — lower latency, big origin offload, spike/DDoS resilience.",
+        "Routing is via GeoDNS/anycast to the nearest edge; the origin is hit only on a cache miss.",
+        "Control caching with <code>Cache-Control</code>/TTL and ship changes via purge or versioned filenames."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "consistent-hashing",
+      "title": "Consistent Hashing",
+      "url": "concepts/system-design/consistent-hashing.html",
+      "takeaways": [
+        "<code>hash(key) % N</code> remaps almost all keys when N changes — terrible for caches and sharding.",
+        "Consistent hashing puts keys and nodes on a ring; a key goes to the next node clockwise, so adding/removing a node moves only ~1/N of keys.",
+        "Virtual nodes spread each server across the ring for even load and smoother rebalancing."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "horizontal-vs-vertical-scaling",
+      "title": "Horizontal vs Vertical Scaling",
+      "url": "concepts/system-design/horizontal-vs-vertical-scaling.html",
+      "takeaways": [
+        "Vertical = bigger machine (simple, but a ceiling + single point of failure); horizontal = more machines (elastic + fault-tolerant).",
+        "Horizontal scaling requires <strong>stateless</strong> services — move state to a shared store (Redis, DB, object storage).",
+        "Start vertical, go horizontal at the ceiling; the database is usually the hardest tier (hence replication/sharding)."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "how-gmail",
+      "title": "How Gmail Works",
+      "url": "concepts/system-design/how-gmail.html",
+      "takeaways": [
+        "Storage is sharded by user (horizontal scale); attachments go to object storage.",
+        "Instant search is an <strong>inverted index</strong> (word → messages), not a mailbox scan; delivery is real-time push over a long-lived connection.",
+        "Labels (one message, many tags) beat folders; inbound mail is ML-spam-filtered before it lands."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "how-instagram-feed",
+      "title": "How Instagram's Feed Works",
+      "url": "concepts/system-design/how-instagram-feed.html",
+      "takeaways": [
+        "A modern feed is a pipeline: candidate generation → ML ranking by predicted engagement → serve.",
+        "Media dominates cost — transcode to multiple sizes and deliver from a CDN; metadata is small and sharded.",
+        "Time-sortable sharded IDs let billions of posts stay ordered and routable without a central bottleneck."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "how-netflix-streaming",
+      "title": "How Netflix Streaming Works",
+      "url": "concepts/system-design/how-netflix-streaming.html",
+      "takeaways": [
+        "ABR encodes each title into many bitrates, chunked into small segments; the player adapts per chunk to current bandwidth.",
+        "Chunks are served from CDN edges (Netflix’s Open Connect, inside ISPs), with popular content pre-positioned.",
+        "A microservices control plane handles browse/recommendations/auth/DRM — decoupled from serving the video bytes."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "how-twitter-timeline",
+      "title": "How Twitter's Timeline Works",
+      "url": "concepts/system-design/how-twitter-timeline.html",
+      "takeaways": [
+        "A home timeline is a fan-out problem: precompute on <strong>write</strong> (fast reads) or assemble on <strong>read</strong> (cheap writes).",
+        "Pure push breaks for celebrities (millions of list writes per tweet) → use a <strong>hybrid</strong>: push for normal users, pull for mega-accounts.",
+        "Cache timelines in Redis as lists of IDs; hydrate the tweet content separately."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "load-balancers",
+      "title": "Load Balancers & Reverse Proxies",
+      "url": "concepts/system-design/load-balancers.html",
+      "takeaways": [
+        "A load balancer gives scale + high availability and ejects unhealthy servers via health checks.",
+        "L4 (fast, IP/port) vs L7 (HTTP-aware: route by URL/header, TLS termination); algorithms: round-robin, least-connections, IP hash, weighted.",
+        "Keep servers stateless (shared session store) so you don’t need sticky sessions."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "message-queues",
+      "title": "Message Queues",
+      "url": "concepts/system-design/message-queues.html",
+      "takeaways": [
+        "Queues decouple producer/consumer, buffer spikes, and add resilience (retries, dead-letter queues).",
+        "Traditional queue (RabbitMQ): one consumer, message removed on ack. Log/stream (Kafka): retained, partitioned, replayable, many consumer groups.",
+        "Delivery is usually at-least-once → make consumers idempotent."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "rate-limiting",
+      "title": "Rate Limiting Algorithms",
+      "url": "concepts/system-design/rate-limiting.html",
+      "takeaways": [
+        "Rate limiting prevents abuse/overload and ensures fairness; over-limit → <code>429</code> + <code>Retry-After</code>.",
+        "Fixed window (simple, boundary bursts), sliding window (smooth), token bucket (allows bursts — most common), leaky bucket (smooths output).",
+        "For multiple servers, use a shared store (Redis) so the limit is global, not per-instance."
+      ]
+    },
+    {
+      "category": "system-design",
+      "slug": "sessions",
+      "title": "How Sessions Work",
+      "url": "concepts/system-design/sessions.html",
+      "takeaways": [
+        "HTTP is stateless; a session adds server-side memory keyed by an opaque ID carried in a cookie.",
+        "To scale horizontally, move that memory into a shared store (Redis) so any server can resolve any session.",
+        "Sessions are <em>stateful</em> on the server — JWTs trade that for client-held, signed state (no server lookup, harder to revoke)."
+      ]
+    },
+    {
+      "category": "testing",
+      "slug": "integration-testing",
+      "title": "Integration Testing",
+      "url": "concepts/testing/integration-testing.html",
+      "takeaways": [
+        "Integration tests catch the bugs <em>between</em> units: wiring, SQL, serialization, configuration — what mocks hide.",
+        "Use <strong>WebApplicationFactory</strong> for the real HTTP pipeline and a <strong>real DB in a container</strong> (Testcontainers), not an in-memory fake.",
+        "They're slower and fewer (the pyramid's middle) — keep each isolated with a fresh DB or transaction rollback."
+      ]
+    },
+    {
+      "category": "testing",
+      "slug": "mocking-and-test-doubles",
+      "title": "Mocking & Test Doubles",
+      "url": "concepts/testing/mocking-and-test-doubles.html",
+      "takeaways": [
+        "Test doubles (<strong>dummy, stub, fake, spy, mock</strong>) stand in for real dependencies to isolate the unit.",
+        "<strong>Stubs/fakes</strong> support state verification; <strong>mocks/spies</strong> verify interactions — use mocks when the call <em>is</em> the behavior.",
+        "<strong>Don't over-mock</strong>: double real boundaries (I/O, services), use the real thing for pure logic."
+      ]
+    },
+    {
+      "category": "testing",
+      "slug": "tdd",
+      "title": "Test-Driven Development",
+      "url": "concepts/testing/tdd.html",
+      "takeaways": [
+        "TDD = <strong>red-green-refactor</strong>: failing test first, simplest code to pass, then clean up — in tiny cycles.",
+        "It's a <strong>design discipline</strong>: writing the test first surfaces coupling and pushes toward testable, modular code.",
+        "Best for logic-rich code; even without strict TDD, 'hard to test ⇒ probably badly designed' is the lesson worth keeping."
+      ]
+    },
+    {
+      "category": "testing",
+      "slug": "test-pyramid",
+      "title": "The Test Pyramid",
+      "url": "concepts/testing/test-pyramid.html",
+      "takeaways": [
+        "Write <strong>many fast unit tests</strong>, fewer integration tests, very few slow E2E tests.",
+        "Inverting it (the <strong>ice-cream cone</strong>) gives a slow, flaky suite that can't localize failures.",
+        "Push tests <strong>down</strong>: prefer a unit test to an E2E test whenever it catches the same bug."
+      ]
+    },
+    {
+      "category": "testing",
+      "slug": "unit-testing",
+      "title": "Unit Testing",
+      "url": "concepts/testing/unit-testing.html",
+      "takeaways": [
+        "A unit test checks <strong>one unit in isolation</strong>, fast and deterministic, so failures localize precisely.",
+        "Structure as <strong>Arrange-Act-Assert</strong>; keep tests <strong>FIRST</strong> (Fast, Isolated, Repeatable, Self-validating, Timely).",
+        "Test <strong>behavior, not implementation</strong>, so tests survive refactors instead of obstructing them."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "content-negotiation",
+      "title": "Content Negotiation",
+      "url": "concepts/web-fundamentals/content-negotiation.html",
+      "takeaways": [
+        "Clients state preferences with <code>Accept</code>/<code>Accept-Language</code>/<code>Accept-Encoding</code>; the server returns the best representation and names it in <code>Content-*</code>.",
+        "Always send <code>Vary</code> so caches keep a separate copy per negotiated variant.",
+        "The everyday case is compression (gzip/brotli) — a large, near-free transfer-size win."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "cookies",
+      "title": "How Cookies Work",
+      "url": "concepts/web-fundamentals/cookies.html",
+      "takeaways": [
+        "The server sets a cookie via <code>Set-Cookie</code>; the browser auto-sends it on every request to the domain.",
+        "Always use <code>HttpOnly</code> + <code>Secure</code> for auth cookies, and <code>SameSite</code> to blunt CSRF.",
+        "No expiry = session cookie; with expiry = persistent. Keep cookies tiny (store an ID, not data)."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "cors",
+      "title": "CORS",
+      "url": "concepts/web-fundamentals/cors.html",
+      "takeaways": [
+        "The same-origin policy blocks cross-origin reads; CORS is the server opting specific origins back in.",
+        "Non-simple requests trigger a preflight <code>OPTIONS</code> the server must approve.",
+        "CORS is browser-enforced and protects users — it is <strong>not</strong> server security, and <code>*</code> can’t be combined with credentials."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "dns",
+      "title": "How DNS Works",
+      "url": "concepts/web-fundamentals/dns.html",
+      "takeaways": [
+        "DNS maps names to IPs via a cached hierarchy: resolver → root → TLD → authoritative.",
+        "Key record types: A/AAAA (address), CNAME (alias), MX (mail), TXT, NS.",
+        "TTL controls caching — low TTL before changes for fast propagation, high TTL for fewer lookups."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "http-caching",
+      "title": "HTTP Caching",
+      "url": "concepts/web-fundamentals/http-caching.html",
+      "takeaways": [
+        "Freshness (<code>max-age</code>) serves from cache with no network; validation (ETag/Last-Modified) yields a cheap <code>304</code> when unchanged.",
+        "<code>no-cache</code> = revalidate before use (not “don’t cache”); <code>no-store</code> = never store.",
+        "Cache static assets hard and bust the cache with content-hashed filenames."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "http-status-codes",
+      "title": "HTTP Status Codes",
+      "url": "concepts/web-fundamentals/http-status-codes.html",
+      "takeaways": [
+        "The first digit = the class: 2xx success, 3xx redirect, 4xx client error, 5xx server error.",
+        "Know the confusable pairs: 401 (who are you?) vs 403 (not allowed); 301 (permanent) vs 302 (temporary).",
+        "Use 201 + <code>Location</code> for creates, 204 for empty successes, 409 for conflicts, 429 for rate limits."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "http",
+      "title": "HTTP Fundamentals",
+      "url": "concepts/web-fundamentals/http.html",
+      "takeaways": [
+        "HTTP is a stateless request/response protocol: method + path + headers + body ↔ status + headers + body.",
+        "Honor method semantics: GET is safe/idempotent, PUT/DELETE idempotent, POST is not.",
+        "HTTP/2 multiplexes streams over one connection; HTTP/3 runs on QUIC/UDP — same model, faster transport."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "https-tls",
+      "title": "HTTPS & TLS",
+      "url": "concepts/web-fundamentals/https-tls.html",
+      "takeaways": [
+        "TLS gives confidentiality, integrity, and server authentication; HTTPS = HTTP over TLS.",
+        "The handshake uses slow asymmetric keys to agree a fast symmetric session key, then encrypts traffic with it.",
+        "A CA-signed certificate proves the server’s identity — that’s what defeats man-in-the-middle attacks."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "jwt",
+      "title": "JWT & Stateless Auth",
+      "url": "concepts/web-fundamentals/jwt.html",
+      "takeaways": [
+        "A JWT is <code>header.payload.signature</code>; validating = re-checking the signature and expiry, with no server lookup.",
+        "It’s signed, not encrypted — readable by anyone, so no secrets in the payload.",
+        "Stateless and scalable, but hard to revoke before expiry → short-lived tokens + refresh flow."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "oauth",
+      "title": "OAuth 2.0 & OpenID Connect",
+      "url": "concepts/web-fundamentals/oauth.html",
+      "takeaways": [
+        "OAuth 2.0 = delegated authorization: an app gets a scoped access token, never your password.",
+        "Use the Authorization Code flow with PKCE; scopes limit access, refresh tokens renew it.",
+        "OpenID Connect adds an ID token for identity — OAuth = access, OIDC = login."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "rest",
+      "title": "REST API Design",
+      "url": "concepts/web-fundamentals/rest.html",
+      "takeaways": [
+        "Model resources as nouns with URIs; use HTTP methods as the verbs — no action URLs.",
+        "Be stateless and use correct status codes — that’s “level 2” REST and what most great APIs ship.",
+        "Uniform, predictable interfaces make an API learnable; HATEOAS is optional and rarely used."
+      ]
+    },
+    {
+      "category": "web-fundamentals",
+      "slug": "websockets",
+      "title": "WebSockets vs Polling vs SSE",
+      "url": "concepts/web-fundamentals/websockets.html",
+      "takeaways": [
+        "Polling repeats requests (simple, wasteful); SSE is a one-way server→client stream; WebSockets are full-duplex over one persistent connection.",
+        "Choose by direction: one-way push → SSE; chatty two-way low-latency → WebSockets.",
+        "SignalR abstracts the choice with automatic transport fallback."
+      ]
+    }
+  ]
+}

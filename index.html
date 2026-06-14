@@ -20,6 +20,7 @@
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="alternate" type="application/rss+xml" title="DevLens — new concepts" href="feed.xml" />
 </head>
 <body data-title="Home">
 
@@ -82,6 +83,33 @@
         <p>Sixteen tracks from CLR internals to system-design interviews.</p>
       </div>
       <section class="category-grid" id="categoryGrid"><!-- nav.js renderHomeGrid --></section>
+
+      <!-- Tools -->
+      <div class="section-head">
+        <h2>Tools</h2>
+        <p>Study, navigate and track the whole knowledge base.</p>
+      </div>
+      <section class="tool-grid">
+        <a class="tool-card" href="roadmap.html" style="--cat:var(--cat-system-design)">
+          <span class="cat-icon">🗺️</span><h3>Roadmap</h3>
+          <p>Progress across every track — built vs planned, at a glance.</p>
+        </a>
+        <a class="tool-card" href="conceptmap.html" style="--cat:var(--cat-dotnet)">
+          <span class="cat-icon">🕸️</span><h3>Concept map</h3>
+          <p>An interactive graph of how all the concepts connect.</p>
+        </a>
+        <a class="tool-card" href="cheatsheet.html" style="--cat:var(--cat-testing)">
+          <span class="cat-icon">📝</span><h3>Cheat sheets</h3>
+          <p>Every track distilled to its key takeaways, scannable.</p>
+        </a>
+        <a class="tool-card" href="feed.xml" style="--cat:var(--cat-database)">
+          <span class="cat-icon">📡</span><h3>RSS feed</h3>
+          <p>Subscribe to newly added concepts.</p>
+        </a>
+      </section>
+      <p style="max-width:1100px;margin:12px auto 0;color:var(--text-faint);font-size:0.88rem">
+        💡 On any concept page, hit <b>“🎴 Study these as flashcards”</b> under the key takeaways for a quick recall quiz.
+      </p>
 
       <!-- What every page gives you -->
       <div class="section-head">

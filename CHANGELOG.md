@@ -7,6 +7,21 @@ interview tip) and is registered in `assets/js/nav.js` + `data/search-index.json
 
 ## [Unreleased]
 
+### Added — 2026-06-13 · Interactive site features (Phase 3)
+
+- **Roadmap** (`roadmap.html`) — live build progress across all tracks (built vs
+  planned, completion status), rendered from `nav.js`.
+- **Concept map** (`conceptmap.html`) — an interactive force-directed graph
+  (vanilla JS + SVG, no libraries) of every “related concept” link: hover to
+  highlight neighbours, click to open, scroll to zoom, drag to pan, filter by track.
+- **Cheat sheets** (`cheatsheet.html?cat=<track>`) — every track distilled to its
+  concepts’ three key takeaways, scannable, from `data/cards.json`.
+- **Flashcard / quiz mode** — every concept page gains a “🎴 Study these as
+  flashcards” button (injected by `nav.js`, no per-page edits) that turns the 3 key
+  takeaways into cloze recall cards (blank the bold term, flip to reveal; keyboard-driven).
+- **RSS feed** (`feed.xml`) — newly added concepts, auto-discovered on every page.
+- New generated data: `data/cards.json` (takeaways) and `data/graph.json` (concept graph).
+
 ### Added — 2026-06-13 · More tracks + cheat sheet (Phase 2)
 
 - **DevOps & CI/CD** 🚀 (5) — CI/CD Pipelines · Containers & Images · Deployment

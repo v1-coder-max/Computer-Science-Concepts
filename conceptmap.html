@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concept Map — DevLens</title>
+  <meta name="description" content="An interactive graph of how DevLens concepts connect — every related-concept link as an edge you can explore." />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("devlens-theme");
+        if (!t) t = (window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%236ea8fe' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%236ea8fe'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="alternate" type="application/rss+xml" title="DevLens — new concepts" href="feed.xml" />
+</head>
+<body data-title="Concept Map">
+  <header class="topbar">
+    <button class="icon-btn menu-toggle" data-menu-toggle aria-label="Open navigation">☰</button>
+    <a class="brand" href="index.html">
+      <svg class="brand-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="var(--brand)" stroke-width="3"/>
+        <circle cx="16" cy="16" r="5" fill="var(--brand)"/>
+      </svg>
+      <span class="brand-name">Dev<b>Lens</b></span>
+    </a>
+    <span class="spacer"></span>
+    <button class="search-trigger" data-search-open aria-label="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">Search…</span>
+      <span class="kbd">Ctrl K</span>
+    </button>
+    <button class="icon-btn" data-theme-toggle aria-label="Toggle theme">🌙</button>
+  </header>
+
+  <div class="scrim"></div>
+
+  <div class="layout no-toc">
+    <aside class="sidebar" id="sidebar" aria-label="Topic navigation"></aside>
+    <main class="content">
+      <div class="content-inner">
+        <article class="article">
+          <h1>Concept Map</h1>
+          <p class="lede">How the concepts connect. Each dot is a page; each line is a “related concept” link. Hover to highlight, click to open, scroll to zoom, drag to pan.</p>
+
+          <div class="graph-controls">
+            <label>Focus a track:
+              <select id="catFilter"><option value="all">All tracks</option></select>
+            </label>
+            <button class="flash-btn" id="resetView" type="button">Reset view</button>
+            <span id="graphStats" style="font-size:0.82rem;color:var(--text-faint)"></span>
+          </div>
+
+          <div class="graph-wrap">
+            <svg id="graph" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" aria-label="Concept graph">
+              <g id="gRoot"><g id="gLinks"></g><g id="gNodes"></g></g>
+            </svg>
+          </div>
+          <div class="graph-legend" id="legend"></div>
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p><strong>DevLens</strong> · <a href="index.html">Home</a> · <a href="roadmap.html">Roadmap</a> · <a href="cheatsheet.html">Cheat sheets</a> · <a href="feed.xml">RSS</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/nav.js"></script>
+  <script src="assets/js/search.js"></script>
+  <script>
+  (function () {
+    var N = window.DevLensNav; if (!N) return;
+    var W = 1000, H = 700, SVGNS = "http://www.w3.org/2000/svg";
+    var meta = {}; N.SITE.categories.forEach(function (c) { meta[c.id] = c; });
+    var svg = document.getElementById("graph"),
+        gRoot = document.getElementById("gRoot"),
+        gLinks = document.getElementById("gLinks"),
+        gNodes = document.getElementById("gNodes");
+    var view = { x: 0, y: 0, k: 1 };
+
+    function applyView() { gRoot.setAttribute("transform", "translate(" + view.x + "," + view.y + ") scale(" + view.k + ")"); }
+
+    fetch(N.ROOT + "data/graph.json").then(function (r) { return r.json(); }).then(function (data) {
+      var allNodes = data.nodes, allLinks = data.links;
+      // category filter options + legend (only categories present)
+      var present = N.SITE.categories.filter(function (c) { return allNodes.some(function (n) { return n.category === c.id; }); });
+      var sel = document.getElementById("catFilter");
+      present.forEach(function (c) { var o = document.createElement("option"); o.value = c.id; o.textContent = c.icon + " " + c.title; sel.appendChild(o); });
+      document.getElementById("legend").innerHTML = present.map(function (c) {
+        return '<span><i style="background:' + c.color + '"></i>' + c.title + "</span>";
+      }).join("");
+
+      function build(filter) {
+        // choose subset
+        var keep;
+        if (filter === "all") { keep = new Set(allNodes.map(function (n) { return n.id; })); }
+        else {
+          keep = new Set();
+          allNodes.forEach(function (n) { if (n.category === filter) keep.add(n.id); });
+          allLinks.forEach(function (l) {           // include direct neighbors for context
+            if (keep.has(l.source) && !keep.has(l.target)) keep.add(l.target);
+            else if (keep.has(l.target) && !keep.has(l.source)) keep.add(l.source);
+          });
+        }
+        var nodes = allNodes.filter(function (n) { return keep.has(n.id); }).map(function (n) { return { id: n.id, title: n.title, category: n.category }; });
+        var byId = {}; nodes.forEach(function (n) { byId[n.id] = n; });
+        var links = allLinks.filter(function (l) { return byId[l.source] && byId[l.target]; });
+
+        // degree (for node size + neighbor highlight)
+        var deg = {}, nbr = {};
+        nodes.forEach(function (n) { deg[n.id] = 0; nbr[n.id] = new Set(); });
+        links.forEach(function (l) { deg[l.source]++; deg[l.target]++; nbr[l.source].add(l.target); nbr[l.target].add(l.source); });
+
+        layout(nodes, byId, links, 320);
+        render(nodes, links, deg, nbr, byId);
+        document.getElementById("graphStats").textContent = nodes.length + " concepts · " + links.length + " links";
+        view = { x: 0, y: 0, k: 1 }; applyView();
+      }
+
+      function layout(nodes, byId, links, iters) {
+        var k = Math.sqrt((W * H) / Math.max(nodes.length, 1)) * 0.8;
+        nodes.forEach(function (n, i) {
+          var a = (i / nodes.length) * Math.PI * 2, r = 30 + Math.random() * Math.min(W, H) * 0.4;
+          n.x = W / 2 + Math.cos(a) * r; n.y = H / 2 + Math.sin(a) * r; n.vx = 0; n.vy = 0;
+        });
+        for (var it = 0; it < iters; it++) {
+          var alpha = 1 - it / iters;
+          for (var i = 0; i < nodes.length; i++) {
+            for (var j = i + 1; j < nodes.length; j++) {
+              var a = nodes[i], b = nodes[j];
+              var dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy + 0.01, d = Math.sqrt(d2);
+              var f = (k * k) / d2; var fx = dx / d * f, fy = dy / d * f;
+              a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+            }
+          }
+          for (var li = 0; li < links.length; li++) {
+            var a2 = byId[links[li].source], b2 = byId[links[li].target];
+            var dx2 = b2.x - a2.x, dy2 = b2.y - a2.y, d3 = Math.sqrt(dx2 * dx2 + dy2 * dy2) + 0.01;
+            var f2 = (d3 - k) / d3 * 0.13; var fx2 = dx2 * f2, fy2 = dy2 * f2;
+            a2.vx += fx2; a2.vy += fy2; b2.vx -= fx2; b2.vy -= fy2;
+          }
+          for (var n2 = 0; n2 < nodes.length; n2++) {
+            var nd = nodes[n2];
+            nd.vx += (W / 2 - nd.x) * 0.01; nd.vy += (H / 2 - nd.y) * 0.01;
+            nd.x += Math.max(-32, Math.min(32, nd.vx)) * alpha * 0.5;
+            nd.y += Math.max(-32, Math.min(32, nd.vy)) * alpha * 0.5;
+            nd.vx *= 0.86; nd.vy *= 0.86;
+          }
+        }
+        // normalize into the viewbox with padding
+        var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        nodes.forEach(function (n) { minX = Math.min(minX, n.x); minY = Math.min(minY, n.y); maxX = Math.max(maxX, n.x); maxY = Math.max(maxY, n.y); });
+        var pad = 40, sx = (W - 2 * pad) / Math.max(maxX - minX, 1), sy = (H - 2 * pad) / Math.max(maxY - minY, 1), s = Math.min(sx, sy);
+        nodes.forEach(function (n) { n.x = pad + (n.x - minX) * s; n.y = pad + (n.y - minY) * s; });
+      }
+
+      function render(nodes, links, deg, nbr, byId) {
+        gLinks.innerHTML = ""; gNodes.innerHTML = "";
+        links.forEach(function (l) {
+          var a = byId[l.source], b = byId[l.target];
+          var ln = document.createElementNS(SVGNS, "line");
+          ln.setAttribute("class", "glink");
+          ln.setAttribute("x1", a.x); ln.setAttribute("y1", a.y); ln.setAttribute("x2", b.x); ln.setAttribute("y2", b.y);
+          ln.dataset.s = l.source; ln.dataset.t = l.target;
+          gLinks.appendChild(ln);
+        });
+        nodes.forEach(function (n) {
+          var g = document.createElementNS(SVGNS, "g");
+          g.setAttribute("class", "gnode"); g.dataset.id = n.id;
+          var c = document.createElementNS(SVGNS, "circle");
+          c.setAttribute("cx", n.x); c.setAttribute("cy", n.y);
+          c.setAttribute("r", 4 + Math.min(deg[n.id] || 0, 10) * 0.9);
+          c.setAttribute("fill", (meta[n.category] && meta[n.category].color) || "var(--accent)");
+          var t = document.createElementNS(SVGNS, "text");
+          t.setAttribute("x", n.x); t.setAttribute("y", n.y - 8 - Math.min(deg[n.id] || 0, 10) * 0.9);
+          t.setAttribute("text-anchor", "middle");
+          t.textContent = n.title.length > 22 ? n.title.slice(0, 21) + "…" : n.title;
+          g.appendChild(c); g.appendChild(t);
+          g.addEventListener("mouseenter", function () { highlight(n.id, nbr); });
+          g.addEventListener("mouseleave", clearHi);
+          g.addEventListener("click", function (e) { if (!dragged) { e.stopPropagation(); location.href = N.ROOT + "concepts/" + n.id + ".html"; } });
+          gNodes.appendChild(g);
+        });
+      }
+
+      function highlight(id, nbr) {
+        var keep = nbr[id] || new Set();
+        gNodes.querySelectorAll(".gnode").forEach(function (g) {
+          var on = g.dataset.id === id || keep.has(g.dataset.id);
+          g.classList.toggle("hot", g.dataset.id === id);
+          g.classList.toggle("dimmed", !on);
+        });
+        gLinks.querySelectorAll(".glink").forEach(function (l) {
+          var inc = l.dataset.s === id || l.dataset.t === id;
+          l.classList.toggle("hot", inc);
+          l.classList.toggle("dimmed", !inc);
+        });
+      }
+      function clearHi() {
+        gNodes.querySelectorAll(".gnode").forEach(function (g) { g.classList.remove("hot", "dimmed"); });
+        gLinks.querySelectorAll(".glink").forEach(function (l) { l.classList.remove("hot", "dimmed"); });
+      }
+
+      // pan / zoom
+      var dragging = false, dragged = false, sx0 = 0, sy0 = 0;
+      svg.addEventListener("pointerdown", function (e) { dragging = true; dragged = false; sx0 = e.clientX; sy0 = e.clientY; svg.classList.add("panning"); svg.setPointerCapture(e.pointerId); });
+      svg.addEventListener("pointermove", function (e) {
+        if (!dragging) return;
+        var dx = e.clientX - sx0, dy = e.clientY - sy0;
+        if (Math.abs(dx) + Math.abs(dy) > 3) dragged = true;
+        var rect = svg.getBoundingClientRect(), scaleToVB = W / rect.width;
+        view.x += dx * scaleToVB; view.y += dy * scaleToVB;
+        sx0 = e.clientX; sy0 = e.clientY; applyView();
+      });
+      function endDrag(e) { dragging = false; svg.classList.remove("panning"); try { svg.releasePointerCapture(e.pointerId); } catch (x) {} }
+      svg.addEventListener("pointerup", endDrag);
+      svg.addEventListener("pointercancel", endDrag);
+      svg.addEventListener("wheel", function (e) {
+        e.preventDefault();
+        var rect = svg.getBoundingClientRect(), scaleToVB = W / rect.width;
+        var mx = (e.clientX - rect.left) * scaleToVB, my = (e.clientY - rect.top) * scaleToVB;
+        var f = e.deltaY < 0 ? 1.12 : 1 / 1.12, nk = Math.max(0.3, Math.min(4, view.k * f));
+        // zoom around cursor
+        view.x = mx - (mx - view.x) * (nk / view.k);
+        view.y = my - (my - view.y) * (nk / view.k);
+        view.k = nk; applyView();
+      }, { passive: false });
+
+      document.getElementById("resetView").addEventListener("click", function () { view = { x: 0, y: 0, k: 1 }; applyView(); });
+      sel.addEventListener("change", function () { build(sel.value); });
+
+      build("all");
+    }).catch(function () {
+      document.querySelector(".graph-wrap").innerHTML = '<p style="padding:24px;color:var(--text-muted)">Could not load the concept-map data.</p>';
+    });
+  })();
+  </script>
+</body>
+</html>
